@@ -1,25 +1,34 @@
 <template>
   <div class="view-home">
-    <header class="mobile-header">
-      <div class="brand">
-        <img src="/logo.png" alt="Peggy Chef Logo" class="chef-logo-img">
-        <div>
-          <h1>TY的食譜筆記</h1>
-          <p class="status-online">● 共有 {{ recipes.length }} 道私房料理</p>
+    
+    <header class="mobile-mega-header">
+      <div class="mega-brand-container">
+        
+        <div class="logo-left-wing">
+          <img src="/chef_logo_full.webp" alt="Peggy Full Logo" class="chef-logo-img-large">
         </div>
+        
+        <div class="control-right-wing">
+          <div class="title-status-block">
+            <h1>TY的私人食譜</h1>
+            <p class="status-online">● 共有 {{ recipes.length }} 道私房料理</p>
+          </div>
+          
+          <div class="mobile-search-section">
+            <input 
+              :value="searchQuery"
+              @input="$emit('update:searchQuery', $event.target.value)"
+              type="text" 
+              placeholder="🔍 搜尋你想吃什麼料理..." 
+              class="search-input"
+            >
+          </div>
+        </div>
+
       </div>
     </header>
 
-    <div class="mobile-search-section">
-      <input 
-        :value="searchQuery"
-        @input="$emit('update:searchQuery', $event.target.value)"
-        type="text" 
-        placeholder="🔍 搜尋你想吃什麼料理..." 
-        class="search-input"
-      >
-    </div>
-
+    <!-- 🌟 調整後的獨立分類頁籤區塊 -->
     <div class="category-tabs-container">
       <div class="category-tabs">
         <button 
@@ -86,24 +95,77 @@ defineEmits(['update:searchQuery', 'update:selectedCategory', 'open-detail'])
 </script>
 
 <style scoped>
-.mobile-header {
-  background: #ffffff; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e1e4e8; box-sizing: border-box;
-  @media (min-width: 768px) { max-width: 800px; margin: 0 auto; border-left: 1px solid #e1e4e8; border-right: 1px solid #e1e4e8; border-radius: 0 0 12px 12px; }
-  
-  .brand { display: flex; align-items: center; gap: 12px; 
-  .chef-logo-img { width: 56px; height: 56px; object-fit: contain; }
-  h1 { margin: 0; font-size: 20px; font-weight: 800; color: #1f2937; }; 
-  .status-online { margin: 4px 0 0 0; font-size: 11.5px; color: #1a7f37; font-weight: 600; } 
+/* 🌟 大氣複合式中台看板 CSS */
+.mobile-mega-header {
+  background: #ffffff;
+  padding: 24px 20px 16px 20px; /* 稍微調整底部內襯 */
+  box-sizing: border-box;
+  @media (min-width: 768px) { max-width: 800px; margin: 0 auto; border-left: 1px solid #e1e4e8; border-right: 1px solid #e1e4e8; border-bottom: 1px solid #e1e4e8; border-radius: 0 0 12px 12px; }
+
+  .mega-brand-container {
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+    
+    .logo-left-wing {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      
+      .chef-logo-img-large { 
+        width: 100px; 
+        height: 100px; 
+        object-fit: contain; 
+      }
+    }
+
+    .control-right-wing {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      
+      .title-status-block {
+        h1 { margin: 0; font-size: 22px; font-weight: 800; color: #111827; letter-spacing: -0.5px; line-height: 1.2; }
+        .status-online { margin: 4px 0 0 0; font-size: 12px; color: #16a34a; font-weight: 600; }
+      }
+
+      .mobile-search-section {
+        padding: 0;
+        .search-input { 
+          width: 100%; 
+          padding: 10px 14px; 
+          font-size: 15px; 
+          border: 1px solid #d0d7de; 
+          border-radius: 8px; 
+          background: #f6f8fa; 
+          box-sizing: border-box; 
+          transition: all 0.15s ease;
+          &:focus { outline: none; background: #ffffff; border-color: #2da44e; box-shadow: 0 0 0 3px rgba(45, 164, 78, 0.15); }
+        }
+      }
+    }
   }
 }
-.mobile-search-section { 
-  padding: 12px 16px 6px 16px; background: #ffffff; 
-  @media (min-width: 768px) { max-width: 800px; margin: 16px auto 0 auto; border: 1px solid #e1e4e8; border-bottom: none; border-radius: 12px 12px 0 0; box-sizing: border-box; }
-  .search-input { width: 100%; padding: 12px 16px; font-size: 16px; border: 1px solid #d0d7de; border-radius: 8px; background: #f6f8fa; box-sizing: border-box; } 
-}
+
+/* 🌟 分類頁籤專屬大底槽 - 已修改為獨立、不黏貼的漂浮卡片樣式 */
 .category-tabs-container {
-  background: #ffffff; padding: 4px 16px 14px 16px; border-bottom: 1px solid #e1e4e8;
-  @media (min-width: 768px) { max-width: 800px; margin: 0 auto 12px auto; border-left: 1px solid #e1e4e8; border-right: 1px solid #e1e4e8; border-bottom: 1px solid #e1e4e8; border-radius: 0 0 12px 12px; box-shadow: 0 4px 12px rgba(140, 149, 159, 0.03); box-sizing: border-box; }
+  background: #ffffff; 
+  padding: 14px 16px;          /* 讓上下內襯更平均平衡 */
+  margin: 16px 16px 0 16px;    /* 核心修改：利用 margin-top 直接把分類跟上面 header 頂開，左右留白 */
+  border: 1px solid #e1e4e8;   /* 讓它在手機端成為獨立卡片 */
+  border-radius: 12px;         /* 手機端四邊圓角 */
+  box-shadow: 0 4px 12px rgba(140, 149, 159, 0.02);
+
+  @media (min-width: 768px) { 
+    max-width: 800px; 
+    margin: 16px auto 0 auto;  /* 電腦端置中，並與上方保持 16px 距離 */
+    padding: 14px 16px;
+    box-shadow: 0 4px 12px rgba(140, 149, 159, 0.03); 
+    box-sizing: border-box; 
+  }
+
   .category-tabs {
     display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch;
     &::-webkit-scrollbar { display: none; }
@@ -114,6 +176,8 @@ defineEmits(['update:searchQuery', 'update:selectedCategory', 'open-detail'])
     }
   }
 }
+
+/* 主要內容網格區 */
 .mobile-main { padding: 16px; @media (min-width: 768px) { max-width: 800px; margin: 0 auto; padding: 16px 0; } }
 .recipe-grid {
   display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; box-sizing: border-box;
