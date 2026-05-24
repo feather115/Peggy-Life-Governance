@@ -1,7 +1,6 @@
 <template>
   <div class="view-detail">
     <header class="mobile-header detail-header">
-      <button @click="$emit('back')" class="back-btn">⬅️ 返回食譜牆</button>
       <div class="hint-badge">⏱️ 長按標記進度</div>
     </header>
 
@@ -159,132 +158,36 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
+import { useRecipeDetail } from '../composables/useRecipeDetail'
 
 const props = defineProps({
   recipe: Object
 })
-defineEmits(['back'])
 
-const currentWeight = ref(null)
-const completedItems = ref({})
-let pressTimer = null
-
-const formatDate = (dateStr) => {
-  if (!dateStr) return ''
-  const date = new Date(dateStr)
-  if (isNaN(date.getTime())) return dateStr
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
-}
-
-// 判斷是否有填寫工藝參數
-const hasParameters = computed(() => {
-  const params = props.recipe.parameters
-  return params && typeof params === 'object' && Object.keys(params).length > 0
-})
-
-// 安全將 yield_info 解析為純文字陣列
-const parsedYieldInfo = computed(() => {
-  if (!props.recipe.yield_info) return []
-  if (Array.isArray(props.recipe.yield_info)) return props.recipe.yield_info
-  return []
-})
-
-// 食材基礎解析與智慧分組
-const parsedIngredients = computed(() => {
-  if (!props.recipe.ingredients) return []
-  if (Array.isArray(props.recipe.ingredients)) return props.recipe.ingredients
-  return Object.entries(props.recipe.ingredients).map(([name, amount], index) => ({
-    name, amount, is_base: index === 0, brand: "", type: ""
-  }))
-})
-
-const groupedIngredients = computed(() => {
-  const list = parsedIngredients.value
-  if (list.length === 0) return []
-  const hasTypeInfo = list.some(item => item.type && item.type.trim() !== '')
-  if (!hasTypeInfo) return [{ typeName: 'DEFAULT', items: list }]
-  
-  const groupsMap = {}
-  list.forEach(item => {
-    const currentType = (item.type && item.type.trim()) ? item.type.trim() : '其他'
-    if (!groupsMap[currentType]) groupsMap[currentType] = []
-    groupsMap[currentType].push(item)
-  })
-  return Object.entries(groupsMap).map(([typeName, items]) => ({ typeName, items }))
-})
-
-// 工序基礎解析與權重排序
-const parsedSteps = computed(() => {
-  if (!props.recipe.steps) return []
-  if (Array.isArray(props.recipe.steps) && typeof props.recipe.steps[0] === 'object') {
-    return props.recipe.steps.map(s => ({ text: s.text || "", type: s.type || "", sort: Number(s.sort) || 1 }))
-  }
-  if (Array.isArray(props.recipe.steps) && typeof props.recipe.steps[0] === 'string') {
-    return props.recipe.steps.map(s => ({ text: s, type: "", sort: 1 }))
-  }
-  if (typeof props.recipe.steps === 'string') {
-    return props.recipe.steps.split('\n').filter(s => s.trim()).map(s => ({ text: s, type: "", sort: 1 }))
-  }
-  return []
-})
-
-const sortedGroupedSteps = computed(() => {
-  const list = parsedSteps.value
-  if (list.length === 0) return []
-  const hasTypeInfo = list.some(item => item.type && item.type.trim() !== '')
-  if (!hasTypeInfo) return [{ typeName: 'DEFAULT', items: list }]
-
-  const groupsMap = {}
-  list.forEach(item => {
-    const currentType = (item.type && item.type.trim()) ? item.type.trim() : '其他'
-    if (!groupsMap[currentType]) groupsMap[currentType] = []
-    groupsMap[currentType].push(item)
-  })
-
-  const unSortedGroups = Object.entries(groupsMap).map(([typeName, items]) => {
-    const groupSortOrder = items[0]?.sort || 1
-    return { typeName, items, order: groupSortOrder }
-  })
-  return unSortedGroups.sort((a, b) => a.order - b.order)
-})
-
-const baseIng = computed(() => parsedIngredients.value.find(ing => ing.is_base) || parsedIngredients.value[0])
-
-const scaleRatio = computed(() => {
-  if (!currentWeight.value || currentWeight.value <= 0 || !baseIng.value) return 1
-  const originalNumber = parseFloat(baseIng.value.amount)
-  return originalNumber ? currentWeight.value / originalNumber : 1
-})
-
-const isScaled = computed(() => currentWeight.value && currentWeight.value > 0)
-
-const getScaledAmount = (ing) => {
-  if (baseIng.value && ing.name === baseIng.name && currentWeight.value) return `${currentWeight.value} g`
-  if (scaleRatio.value === 1) return ing.amount
-  const originalNumber = parseFloat(ing.amount)
-  if (isNaN(originalNumber)) return ing.amount
-  return `${(originalNumber * scaleRatio.value).toFixed(1)} ${ing.amount.includes('ml') ? 'ml' : 'g'}`
-}
-
-const formattedNotes = computed(() => {
-  if (!props.recipe.notes) return []
-  if (Array.isArray(props.recipe.notes)) return props.recipe.notes.filter(n => n.trim())
-  return typeof props.recipe.notes === 'string' ? [props.recipe.notes] : []
-})
-
-const startLongPress = (id) => {
-  if (pressTimer) clearTimeout(pressTimer)
-  pressTimer = setTimeout(() => { completedItems.value[id] = !completedItems.value[id] }, 700)
-}
-const endLongPress = () => { if (pressTimer) clearTimeout(pressTimer) }
+const recipeRef = computed(() => props.recipe)
+const {
+  currentWeight,
+  completedItems,
+  hasParameters,
+  parsedYieldInfo,
+  groupedIngredients,
+  sortedGroupedSteps,
+  baseIng,
+  scaleRatio,
+  isScaled,
+  getScaledAmount,
+  formattedNotes,
+  formatDate,
+  startLongPress,
+  endLongPress
+} = useRecipeDetail(recipeRef)
 </script>
 
 <style scoped>
 .detail-header { 
-  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  display: flex; align-items: center; justify-content: flex-end; gap: 8px;
   @media (min-width: 768px) { max-width: 800px; margin: 0 auto; }
-  .back-btn { background: #f6f8fa; color: #24292e; border: 1px solid #d0d7de; padding: 7px 14px; font-size: 14px; font-weight: 600; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: all 0.15s; &:hover { background-color: #f3f4f6; border-color: #0969da; color: #0969da; } &:active { transform: scale(0.97); } }
   .hint-badge { font-size: 11px; color: #657280; background: #f1f5f9; padding: 4px 8px; border-radius: 4px; white-space: nowrap; }
 }
 .mobile-main { padding: 16px; @media (min-width: 768px) { max-width: 800px; margin: 0 auto; padding: 16px 0; } }
