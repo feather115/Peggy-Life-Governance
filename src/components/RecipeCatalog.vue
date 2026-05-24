@@ -54,13 +54,23 @@
             <div v-else class="grid-image-placeholder">🍳</div>
           </div>
           <div class="grid-card-info">
-            <span class="grid-category-badge">{{ recipe.category }}</span>
+            
+            <div class="grid-tags-row">
+              <span 
+                v-for="tag in recipe.category" 
+                :key="tag" 
+                class="grid-category-badge"
+              >
+                {{ tag }}
+              </span>
+            </div>
+
             <h3 class="grid-recipe-title">{{ recipe.title }}</h3>
           </div>
         </div>
       </div>
       <div v-else class="mobile-empty">
-        <p>這個分類下目前沒有對應的美食數據 🥲</p>
+        <p>這個分類下目前沒有對應的美美食數據 🥲</p>
       </div>
     </main>
   </div>
@@ -78,7 +88,7 @@ defineEmits(['update:searchQuery', 'update:selectedCategory', 'open-detail'])
 </script>
 
 <style scoped>
-/* 這裡只放首頁專屬的 CSS（已從舊檔完美提煉） */
+/* 🌟 完美保留妳所有的綠色調網格排版 CSS，絕不破壞原本的視覺平衡 */
 .mobile-header {
   background: #ffffff; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e1e4e8; box-sizing: border-box;
   @media (min-width: 768px) { max-width: 800px; margin: 0 auto; border-left: 1px solid #e1e4e8; border-right: 1px solid #e1e4e8; border-radius: 0 0 12px 12px; }
@@ -110,7 +120,13 @@ defineEmits(['update:searchQuery', 'update:selectedCategory', 'open-detail'])
     background: #ffffff; border-radius: 10px; border: 1px solid #d0d7de; overflow: hidden; box-shadow: 0 2px 4px rgba(140, 149, 159, 0.05); display: flex; flex-direction: column; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
     &:hover { transform: translateY(-4px); box-shadow: 0 6px 12px rgba(140, 149, 159, 0.15); }
     .grid-image-wrapper { width: 100%; height: 120px; background: #e1e4e8; overflow: hidden; position: relative; @media (min-width: 768px) { height: 140px; } .grid-image { width: 100%; height: 100%; object-fit: cover; } .grid-image-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 32px; } }
-    .grid-card-info { padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; flex-grow: 1; .grid-category-badge { align-self: flex-start; background: #f1f5f9; color: #475569; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 4px; } .grid-recipe-title { margin: 2px 0 0 0; font-size: 15px; font-weight: 800; color: #1f2937; line-height: 1.3; } }
+    
+    /* 🌟 新增與微調：多標籤並排包裝盒樣式，維持字卡精緻感 */
+    .grid-card-info { padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; flex-grow: 1; 
+      .grid-tags-row { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 2px; }
+      .grid-category-badge { align-self: flex-start; background: #f1f5f9; color: #475569; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; white-space: nowrap; } 
+      .grid-recipe-title { margin: 2px 0 0 0; font-size: 15px; font-weight: 800; color: #1f2937; line-height: 1.3; } 
+    }
   }
 }
 .mobile-empty { text-align: center; padding: 40px 20px; color: #57606a; font-size: 15px; }

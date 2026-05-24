@@ -36,9 +36,12 @@ const selectedCategory = ref('全部')
 const currentView = ref('home')
 const selectedRecipe = ref(null)
 
+// 🌟 核心升級：標準文字陣列的攤平去重大腦
 const availableCategories = computed(() => {
-  const categories = recipes.value.map(r => r.category).filter(Boolean)
-  return [...new Set(categories)]
+  // 攤平所有食譜的 category 陣列，過濾掉空格，最後用 Set 去重
+  const allTags = recipes.value.flatMap(r => Array.isArray(r.category) ? r.category : [])
+  const cleanTags = allTags.map(tag => tag ? tag.trim() : '').filter(Boolean)
+  return [...new Set(cleanTags)]
 })
 
 const openRecipeDetail = (recipe) => {
@@ -56,13 +59,13 @@ const fetchData = async () => {
   try {
     const { data, error } = await supabase
       .from('recipes')
-      /* 🌟 核心修正：撈取欄位正式加入 yield_info */
       .select('id, title, category, ingredients, steps, notes, image_url, last_cooked_at, yield_info')
     if (error) throw error
     
-    // 🛡️ 空值安全防線：萬一有舊食譜欄位是 NULL，自動在前端補上空陣列，確保系統絕不崩潰
     recipes.value = data.map(r => ({
       ...r,
+      // 🛡️ 防禦防線：確保 category 絕對是陣列，萬一是 null 則給予空陣列
+      category: Array.isArray(r.category) ? r.category : [],
       yield_info: r.yield_info || []
     }))
   } catch (error) {
@@ -72,11 +75,20 @@ const fetchData = async () => {
 
 onMounted(() => fetchData())
 
+// 🌟 核心升級：標準文字陣列的交叉篩選與搜尋
 const filteredRecipes = computed(() => {
   return recipes.value.filter(recipe => {
-    const matchCategory = selectedCategory.value === '全部' || recipe.category === selectedCategory.value
+    // 檢查這道菜的分類陣列中，是否包含了目前點選的標籤名稱
+    const matchCategory = selectedCategory.value === '全部' || 
+      recipe.category.includes(selectedCategory.value)
+    
     const query = searchQuery.value.trim().toLowerCase()
-    const matchSearch = !query || recipe.title.toLowerCase().includes(query) || recipe.category.toLowerCase().includes(query)
+    
+    // 智慧關鍵字搜尋：食譜名稱或分類標籤有命中都算數
+    const matchSearch = !query || 
+      recipe.title.toLowerCase().includes(query) || 
+      recipe.category.some(tag => tag.toLowerCase().includes(query))
+      
     return matchCategory && matchSearch
   })
 })

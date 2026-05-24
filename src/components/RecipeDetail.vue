@@ -13,7 +13,16 @@
 
         <div class="card-header">
           <div class="header-badges-row">
-            <span class="category-badge">{{ recipe.category }}</span>
+            
+            <template v-if="Array.isArray(recipe.category)">
+              <span 
+                v-for="tag in recipe.category" 
+                :key="tag" 
+                class="category-badge"
+              >
+                {{ tag }}
+              </span>
+            </template>
             
             <template v-if="parsedYieldInfo.length > 0">
               <span 
@@ -151,7 +160,7 @@ const formatDate = (dateStr) => {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 }
 
-// 🌟 核心修正：安全將 yield_info 解析為純文字陣列
+// 安全將 yield_info 解析為純文字陣列
 const parsedYieldInfo = computed(() => {
   if (!props.recipe.yield_info) return []
   if (Array.isArray(props.recipe.yield_info)) return props.recipe.yield_info
@@ -262,11 +271,12 @@ const endLongPress = () => { if (pressTimer) clearTimeout(pressTimer) }
   .card-header { 
     margin-bottom: 14px; 
     .header-badges-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
-    .category-badge { display: inline-block; background: #dafbe1; color: #1a7f37; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }; 
     
-    /* 🍽️ 灰白色高質感規格小膠囊樣式 */
+    /* 🌟 保持原本極緻精確的綠色調分類 Badge 樣式，但現在支援多個並排與換行 */
+    .category-badge { display: inline-block; background: #dafbe1; color: #1a7f37; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 4px; white-space: nowrap; }; 
+    
     .yield-spec-badge {
-      display: inline-block; background: #f1f5f9; color: #475569; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; border: 1px solid #e2e8f0;
+      display: inline-block; background: #f1f5f9; color: #475569; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; border: 1px solid #e2e8f0; white-space: nowrap;
     }
     .recipe-title { margin: 0; font-size: 24px; font-weight: 800; } 
   }
