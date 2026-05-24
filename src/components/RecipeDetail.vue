@@ -33,7 +33,11 @@
               </span>
             </template>
           </div>
-          <h2 class="recipe-title">{{ recipe.title }}</h2>
+          
+          <div class="title-with-logo-row">
+            <img src="/logo.png" alt="Peggy Chef Logo" class="inline-chef-logo">
+            <h2 class="recipe-title">{{ recipe.title }}</h2>
+          </div>
         </div>
 
         <div v-if="hasParameters" class="parameters-dashboard">
@@ -277,9 +281,11 @@ const endLongPress = () => { if (pressTimer) clearTimeout(pressTimer) }
 </script>
 
 <style scoped>
-.detail-header { justify-content: space-between; @media (min-width: 768px) { max-width: 800px; margin: 0 auto; }
+.detail-header { 
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  @media (min-width: 768px) { max-width: 800px; margin: 0 auto; }
   .back-btn { background: #f6f8fa; color: #24292e; border: 1px solid #d0d7de; padding: 7px 14px; font-size: 14px; font-weight: 600; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: all 0.15s; &:hover { background-color: #f3f4f6; border-color: #0969da; color: #0969da; } &:active { transform: scale(0.97); } }
-  .hint-badge { font-size: 11px; color: #657280; background: #f1f5f9; padding: 4px 8px; border-radius: 4px; }
+  .hint-badge { font-size: 11px; color: #657280; background: #f1f5f9; padding: 4px 8px; border-radius: 4px; white-space: nowrap; }
 }
 .mobile-main { padding: 16px; @media (min-width: 768px) { max-width: 800px; margin: 0 auto; padding: 16px 0; } }
 .cooking-card {
@@ -292,7 +298,11 @@ const endLongPress = () => { if (pressTimer) clearTimeout(pressTimer) }
     .header-badges-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
     .category-badge { display: inline-block; background: #dafbe1; color: #1a7f37; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 4px; white-space: nowrap; }; 
     .yield-spec-badge { display: inline-block; background: #f1f5f9; color: #475569; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; border: 1px solid #e2e8f0; white-space: nowrap; }
-    .recipe-title { margin: 0; font-size: 24px; font-weight: 800; } 
+    
+    /* 🌟 核心樣式升級：菜名與 Logo 的黃金排版線路 */
+    .title-with-logo-row { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
+    .inline-chef-logo { width: 34px; height: 34px; object-fit: contain; flex-shrink: 0; }
+    .recipe-title { margin: 0; font-size: 24px; font-weight: 800; color: #1f2937; line-height: 1.2; } 
   }
 
   /* 核心工藝參數控制面板 CSS */
