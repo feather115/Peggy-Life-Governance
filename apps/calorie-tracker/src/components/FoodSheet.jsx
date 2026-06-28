@@ -1,5 +1,5 @@
 // Food library bottom sheet: select built-in/custom food to add to meal, or switch to the form to add new custom foods.
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { FOODS, MEALS_DEF } from '../constants.js';
 import Sheet from './Sheet.jsx';
 
@@ -12,6 +12,16 @@ export default function FoodSheet({ app, selectedDate, mealKey, onClose }) {
   const [aiBusy, setAiBusy] = useState(false);
   const [aiError, setAiError] = useState('');
   const [qtyMap, setQtyMap] = useState({}); // Currently selected servings for each food, defaults to 1
+  const [toastMsg, setToastMsg] = useState('');
+  const toastTimerRef = useRef(null);
+
+  const showToast = (message) => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    setToastMsg(message);
+    toastTimerRef.current = setTimeout(() => {
+      setToastMsg('');
+    }, 1500);
+  };
 
   const isMid = mealKey === 'midnight';
   const mealLabel = MEALS_DEF.find((m) => m.key === mealKey)?.label || '';
@@ -48,6 +58,7 @@ export default function FoodSheet({ app, selectedDate, mealKey, onClose }) {
       cal: Math.round(fo.cal * qty), p: round1((fo.p || 0) * qty), c: round1((fo.c || 0) * qty), f: round1((fo.f || 0) * qty),
     });
     setQty(fo.id, 1);
+    showToast(`已加入 ${fo.name}`);
   };
 
   const startEdit = (fo) => {
@@ -83,9 +94,11 @@ export default function FoodSheet({ app, selectedDate, mealKey, onClose }) {
     const payload = { name: form.name.trim(), brand: form.brand.trim(), note: form.note.trim(), unit: form.unit.trim() || '1 份', cal: Math.round(fcn), p: parseFloat(form.p) || 0, c: parseFloat(form.c) || 0, f: parseFloat(form.f) || 0 };
     if (editingId) {
       await updateCustomFood(editingId, payload);
+      showToast(`已更新 ${payload.name}`);
     } else {
       const nf = await addCustomFood(payload);
       await addMeal(selectedDate, mealKey, { foodRef: nf.id, name: nf.name, brand: nf.brand, unit: nf.unit, cal: nf.cal, p: nf.p, c: nf.c, f: nf.f });
+      showToast(`已加入 ${payload.name}`);
     }
     setEditingId(null);
     setFormOpen(false);
@@ -93,6 +106,18 @@ export default function FoodSheet({ app, selectedDate, mealKey, onClose }) {
 
   return (
     <Sheet onBackdrop={onClose} height="min(76vh, 720px)" zIndex={10}>
+      {toastMsg && (
+        <div style={{
+          position: 'absolute', top: 58, left: '50%', transform: 'translateX(-50%)',
+          background: '#2E8B5E', color: '#fff',
+          padding: '8px 16px', borderRadius: 20, zIndex: 100,
+          fontWeight: 800, fontSize: 13, boxShadow: '0 8px 24px rgba(46,139,94,.3)',
+          pointerEvents: 'none', display: 'flex', alignItems: 'center', gap: 6
+        }}>
+          <span>✓</span>
+          <span>{toastMsg}</span>
+        </div>
+      )}
       <div style={{ padding: '8px 20px 6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ fontSize: 18, fontWeight: 900, color: '#234034' }}>加入{mealLabel}</span>
         <button onClick={onClose} style={{ border: 'none', background: '#2E8B5E', color: '#fff', fontWeight: 800, fontSize: 14, padding: '8px 16px', borderRadius: 18, cursor: 'pointer' }}>完成</button>
