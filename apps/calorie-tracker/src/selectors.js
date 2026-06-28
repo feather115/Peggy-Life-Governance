@@ -211,21 +211,25 @@ export { MEMBER_PALETTE };
 // Returns: [{ userId, name, isMe, kgDiff(null=unregistered), lastUpdated, rank, color }]
 export function computeLeaderboard(challenge, myUserId) {
   if (!challenge) return [];
-  const byUser = {};
-  challenge.entries.forEach(e => {
-    const cur = byUser[e.userId];
-    // Sort by week_label (representing the week) rather than recordedAt (write timestamp) -
-    // when backfilling historical data, write timestamps are almost identical, which leads to selecting the wrong "latest entry"
-    if (!cur || e.weekLabel > cur.weekLabel) byUser[e.userId] = e;
-  });
   const rows = challenge.members.map(m => {
-    const latest = byUser[m.userId];
+    const userEntries = challenge.entries
+      .filter(e => e.userId === m.userId)
+      .sort((a, b) => b.weekLabel.localeCompare(a.weekLabel));
+
+    const latest = userEntries[0];
+    const previous = userEntries[1];
+
+    const kgDiff = latest ? Number(latest.kgDiff) : null;
+    const previousKgDiff = previous ? Number(previous.kgDiff) : null;
+    const weeklyChange = (kgDiff !== null && previousKgDiff !== null) ? (kgDiff - previousKgDiff) : null;
+
     return {
       userId: m.userId,
       name: m.name,
       color: memberColor(challenge, m.userId),
       isMe: m.userId === myUserId,
-      kgDiff: latest ? Number(latest.kgDiff) : null,
+      kgDiff,
+      weeklyChange,
       lastUpdated: latest ? latest.recordedAt : null,
     };
   });

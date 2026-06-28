@@ -253,7 +253,7 @@ PostgREST 沒 expose 的 schema 即使有 grant 也讀不到，會回 schema not
 - 體重欄填的是「從挑戰開始到現在的差值（公斤）」，減重用負數。
 - `(challenge_id, user_id, week_label)` 是 UNIQUE — 同一天再登記會 upsert（覆蓋舊值）。
 - 折線圖 X 軸是所有人實際登記過的日期（distinct），不是強制「每週一格」 — 但若大家都選週五，畫面就會自然每週一個點。
-- **排行榜排序用 `week_label` 不是 `recordedAt`**——`week_label` 代表「哪一週」，`recordedAt` 是「寫入資料庫的時間」。如果用 SQL 一次性補登多筆歷史資料（例如幫朋友手動 insert 過去半年的紀錄），這些筆的 `recordedAt` 幾乎同一時間，用它排序會抓錯「最新一筆」。`selectors.js` 的 `computeLeaderboard()` 已修正為比較 `week_label` 字串大小。
+- **排行榜排序用 `week_label` 不是 `recordedAt`**——`week_label` 代表「哪一週」，`recordedAt` 是「寫入資料庫的時間」。如果用 SQL 一次性補登多筆歷史資料（例如幫朋友手動 insert 過去半年的紀錄），這些筆的 `recordedAt` 幾乎同一時間，用它排序會抓錯「最新一筆」。`selectors.js` 的 `computeLeaderboard()` 已修正為比較 `week_label` 字串大小，同時會計算最新一週與前一週的差值（`weeklyChange`），並在排行榜與頒獎台下方顯示如「比上週 -0.7 kg」的動態差值反饋。
 - **輸入框有 `±` 切換鈕**——某些 Android 手機的數字鍵盤打不出負號，`ChallengeTab.jsx` 的 `EntryForm` 把輸入框換成 `inputMode="decimal"` 文字框，並在旁邊加一個按鈕直接反轉正負號，不用靠鍵盤打 `-`。
 - **登記紀錄可編輯**——`EntryForm` 顯示「全部」歷史登記（不只最近幾筆），每筆旁邊有 ✏ 編輯按鈕：點了會把數值帶回表單、鎖住日期欄位（避免改日期變成新增一筆），送出後會 upsert 覆蓋原本那筆。
 

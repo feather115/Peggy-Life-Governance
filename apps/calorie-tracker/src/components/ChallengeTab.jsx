@@ -18,6 +18,20 @@ function fmtKgDiff(v) {
 const diffColor = (v) => v === null ? '#9bb0a3' : v < 0 ? '#2E8B5E' : '#D9544F';
 const rankColor = (r) => r === 1 ? '#E8A13C' : r === 2 ? '#9bb0a3' : r === 3 ? '#A06B3B' : '#9bb0a3';
 
+const getWeeklyChangeText = (change) => {
+  if (change === null || change === undefined) return '累積差值';
+  if (change < 0) return `比上週 -${(-change).toFixed(1)} kg`;
+  if (change > 0) return `比上週 +${change.toFixed(1)} kg`;
+  return '比上週持平';
+};
+
+const getWeeklyChangeColor = (change) => {
+  if (change === null || change === undefined) return '#9bb0a3';
+  if (change < 0) return '#2E8B5E';
+  if (change > 0) return '#D9544F';
+  return '#9bb0a3';
+};
+
 export default function ChallengeTab({ app }) {
   const { challenges, userId, joinChallenge, createChallenge, leaveChallenge, updateChallenge, endChallenge, deleteChallenge, submitWeightEntry, removeWeightEntry, setMemberColor } = app;
   const [createOpen, setCreateOpen] = useState(false);
@@ -185,6 +199,11 @@ function ChallengeView({ challenge, myUserId, onSubmitEntry, onRemoveEntry, onUp
                     <div style={{ fontSize: 12, fontWeight: 800, color: diffColor(item.kgDiff), marginTop: 2 }}>
                       {item.kgDiff < 0 ? `▼ ${(-item.kgDiff).toFixed(1)}` : `▲ ${item.kgDiff.toFixed(1)}`} kg
                     </div>
+                    {item.weeklyChange !== null && (
+                      <div style={{ fontSize: 9, fontWeight: 800, color: getWeeklyChangeColor(item.weeklyChange), marginTop: 1 }}>
+                        {item.weeklyChange < 0 ? `比上週 -${(-item.weeklyChange).toFixed(1)}` : `比上週 +${item.weeklyChange.toFixed(1)}`}
+                      </div>
+                    )}
                   </div>
                   <div style={block}>
                     <span style={{ fontSize: 28, lineHeight: 1 }}>{MEDAL_EMOJIS[pos]}</span>
@@ -210,7 +229,9 @@ function ChallengeView({ challenge, myUserId, onSubmitEntry, onRemoveEntry, onUp
               </div>
               <div style={{ textAlign: 'right' }}>
                 <div style={{ fontSize: 18, fontWeight: 900, color: diffColor(item.kgDiff), lineHeight: 1 }}>{fmtKgDiff(item.kgDiff)}</div>
-                <div style={{ fontSize: 10, color: '#9bb0a3', fontWeight: 700, marginTop: 2 }}>差值</div>
+                <div style={{ fontSize: 10, color: getWeeklyChangeColor(item.weeklyChange), fontWeight: 700, marginTop: 2 }}>
+                  {getWeeklyChangeText(item.weeklyChange)}
+                </div>
               </div>
             </div>
           ))}
