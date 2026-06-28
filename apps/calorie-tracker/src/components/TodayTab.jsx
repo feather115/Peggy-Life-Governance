@@ -44,6 +44,12 @@ export default function TodayTab({ app, selectedDate, setSelectedDate, onOpenShe
 
   return (
     <div style={{ padding: '6px 18px 20px' }}>
+      {/* 頂部標頭 */}
+      <header style={{ marginBottom: 14 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 900, color: '#234034', lineHeight: 1.2, margin: 0 }}>TY Calorie Tracker</h1>
+        <div style={{ fontSize: 13, color: '#6E8B7C', fontWeight: 700, marginTop: 4 }}>{greeting()}{displayName ? `，${displayName}` : ''}</div>
+      </header>
+
       {/* 日期切換列 */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
         <button onClick={prevDay} style={{ border: 'none', background: '#fff', color: '#234034', width: 36, height: 36, borderRadius: '50%', cursor: 'pointer', fontSize: 20, fontWeight: 900, lineHeight: 1, boxShadow: '0 4px 12px -8px rgba(0,0,0,.2)' }}>‹</button>
@@ -58,7 +64,7 @@ export default function TodayTab({ app, selectedDate, setSelectedDate, onOpenShe
       {/* 卡路里環卡片 */}
       <div style={{ background: '#fff', borderRadius: 28, padding: '24px 20px 20px', marginTop: 12, boxShadow: '0 14px 32px -18 rgba(46,139,94,.4)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-          <div style={{ fontSize: 14, color: '#6E8B7C', fontWeight: 700 }}>{greeting()}{displayName ? `，${displayName}` : ''}</div>
+          <div style={{ fontSize: 14, color: '#6E8B7C', fontWeight: 700 }}>每日消耗進度</div>
           <button onClick={onOpenImport} title="匯入 JSON" style={{ border: 'none', background: '#F6FAF7', color: '#2E8B5E', fontWeight: 900, fontSize: 13, padding: '5px 10px', borderRadius: 14, cursor: 'pointer', fontFamily: 'monospace' }}>{'{ }'}</button>
         </div>
         <div style={{ position: 'relative', width: 190, height: 190, margin: '6px auto' }}>
