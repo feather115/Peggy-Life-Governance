@@ -42,6 +42,10 @@ export default function SettingsTab({ app, session, onSignOut }) {
   };
   const doClear = async () => {
     if (!confirmClear) { setConfirmClear(true); return; }
+    if (!confirm('⚠️ 警告：確定要清除所有的飲食紀錄與自訂食物嗎？這個動作將會刪除所有歷史資料，且無法復原！')) {
+      setConfirmClear(false);
+      return;
+    }
     await clearAll();
     setConfirmClear(false);
   };
