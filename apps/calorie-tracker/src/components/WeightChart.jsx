@@ -2,7 +2,7 @@
 import React from 'react';
 import { memberColor } from '../selectors.js';
 
-export default function WeightChart({ challenge, highlightUserId = null }) {
+export default function WeightChart({ challenge, highlightUserId = null, selectedWeek = null, onSelectWeek = null }) {
   const entries = challenge.entries;
   if (!entries.length) return null;
 
@@ -92,10 +92,34 @@ export default function WeightChart({ challenge, highlightUserId = null }) {
             <g key={`m${m.userId}`} opacity={isDim ? 0.18 : 1}>
               {showArea && <path d={area} fill={`url(#wc_g_${m.userId})`} />}
               <path d={path} fill="none" stroke={color} strokeWidth={highlightUserId === m.userId ? 3 : 2} strokeLinejoin="round" strokeLinecap="round" />
-              {pts.map((p, i) => (
-                <circle key={`p${i}`} cx={p.x} cy={p.y} r={isDim ? 2.5 : 3.5} fill={color} stroke="#fff" strokeWidth={1.5} />
-              ))}
+              {pts.map((p, i) => {
+                const isSelected = selectedWeek === pe[i].weekLabel;
+                return (
+                  <circle key={`p${i}`} cx={p.x} cy={p.y} r={isSelected ? 6.5 : (isDim ? 2.5 : 3.5)} fill={color} stroke="#fff" strokeWidth={isSelected ? 2 : 1.5} />
+                );
+              })}
             </g>
+          );
+        })}
+
+        {/* Selected week indicator line */}
+        {selectedWeek && (() => {
+          const idx = allWeeks.indexOf(selectedWeek);
+          if (idx === -1) return null;
+          const x = xS(idx);
+          return (
+            <line x1={x} y1={PAD.t} x2={x} y2={H - PAD.b} stroke="#2E8B5E" strokeWidth={1.5} strokeDasharray="4,4" pointerEvents="none" />
+          );
+        })()}
+
+        {/* Clickable week columns */}
+        {onSelectWeek && allWeeks.map((w, i) => {
+          const xCenter = xS(i);
+          const colW = allWeeks.length <= 1 ? cW : cW / (allWeeks.length - 1);
+          const x = xCenter - colW / 2;
+          return (
+            <rect key={`click-col-${i}`} x={x} y={PAD.t} width={colW} height={cH}
+              fill="transparent" cursor="pointer" onClick={() => onSelectWeek(selectedWeek === w ? null : w)} />
           );
         })}
       </svg>

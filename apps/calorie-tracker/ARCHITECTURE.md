@@ -266,7 +266,7 @@ PostgREST 沒 expose 的 schema 即使有 grant 也讀不到，會回 schema not
 ### 折線圖與顏色（`WeightChart.jsx` + `selectors.js`）
 - 多人疊在一起時用 bezier 曲線連點（`smooth()`，現為 `linePath()`），但**不畫面積填色**——人多時透明面積疊加會糊成一片「陰影」，只有「單獨高亮一條線」時才畫面積。
 - 點的半徑縮小（3.5px 一般 / 2.5px 被淡化時），去掉了原本的外圈光暈，手機上看起來比較乾淨。
-- 點圖例任一人名可單獨高亮那條線、其他人淡化到 0.18 透明度（`highlightUserId` 狀態存在 `ChallengeTab.jsx` 的 `ProgressChartCard`）。
+- 點圖例任一人名可單獨高亮那條線、其他人淡化到 0.18 透明度（`highlightUserId` 狀態存在 `ChallengeTab.jsx` 的 `ProgressChartCard`）。同時支援點選圖表特定週數的柱位，點選後會在圖表下方展開該週的戰績詳情，顯示當週所有人的登記體重差值以及與上週相比的變化。
 - X 軸標籤太多週數時只挑約 8 個顯示（含最後一週），避免擠成一團。
 - **顏色分配**：`selectors.js` 的 `memberColor(challenge, userId)` 優先用 `challenge_members.color`（使用者自訂），沒設就依「加入挑戰的時間順序」從 16 色色盤（`MEMBER_PALETTE`）固定分配 index，保證同一挑戰內每個人顏色都不同（不是用 userId 雜湊，雜湊在人少色盤小時容易撞色）。
 - **自訂顏色 UI**：圖表下方圖例，自己的名字旁邊有 🎨 按鈕，點開 `ColorPicker` 選色盤裡的顏色，存到 `challenge_members.color`（透過 `db.js` 的 `setMemberColor()`），只影響自己這個挑戰裡的顯示顏色。

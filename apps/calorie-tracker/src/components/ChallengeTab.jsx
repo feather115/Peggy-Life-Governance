@@ -286,17 +286,60 @@ function ChallengeView({ challenge, myUserId, onSubmitEntry, onRemoveEntry, onUp
 function ProgressChartCard({ challenge, myUserId, onSetColor }) {
   const [highlight, setHighlight] = useState(null);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [selectedWeek, setSelectedWeek] = useState(null);
   return (
     <div style={{ marginTop: 16, background: '#fff', borderRadius: 20, padding: '18px 14px 14px', boxShadow: '0 10px 24px -18px rgba(46,139,94,.5)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
         <div style={{ fontSize: 16, fontWeight: 900, color: '#234034' }}>🔥 每週甩肉戰績</div>
         <span style={{ fontSize: 11, color: '#9bb0a3', fontWeight: 700 }}>每週五登記</span>
       </div>
-      <WeightChart challenge={challenge} highlightUserId={highlight} />
+      <WeightChart challenge={challenge} highlightUserId={highlight} selectedWeek={selectedWeek} onSelectWeek={setSelectedWeek} />
+      
+      {selectedWeek && (
+        <div style={{ marginTop: 14, padding: '12px 14px', background: '#F6FAF7', borderRadius: 16, border: '1px solid #DCEDE3' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <span style={{ fontSize: 13, fontWeight: 900, color: '#234034' }}>📅 {dateLabel(selectedWeek)} 戰績清單</span>
+            <button onClick={() => setSelectedWeek(null)} style={{ border: 'none', background: 'transparent', color: '#6E8B7C', fontWeight: 800, fontSize: 15, cursor: 'pointer', padding: '0 4px' }}>×</button>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {challenge.members.map(m => {
+              const entry = challenge.entries.find(e => e.userId === m.userId && e.weekLabel === selectedWeek);
+              const kgVal = entry ? Number(entry.kgDiff) : null;
+              
+              // Calculate weekly change compared to the previous registered entry
+              const userEntries = challenge.entries
+                .filter(e => e.userId === m.userId)
+                .sort((a, b) => b.weekLabel.localeCompare(a.weekLabel));
+              const curIdx = userEntries.findIndex(e => e.weekLabel === selectedWeek);
+              const prevEntry = curIdx !== -1 ? userEntries[curIdx + 1] : null;
+              const prevKgVal = prevEntry ? Number(prevEntry.kgDiff) : null;
+              const chg = (kgVal !== null && prevKgVal !== null) ? (kgVal - prevKgVal) : null;
+
+              return (
+                <div key={m.userId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 8px', background: '#fff', borderRadius: 10 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <Avatar name={m.name} color={memberColor(challenge, m.userId)} size={24} />
+                    <span style={{ fontSize: 13, fontWeight: 800, color: '#234034' }}>{m.name}</span>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <span style={{ fontSize: 14, fontWeight: 900, color: diffColor(kgVal), marginRight: 6 }}>
+                      {fmtKgDiff(kgVal)}
+                    </span>
+                    {chg !== null && (
+                      <span style={{ fontSize: 11, fontWeight: 800, color: getWeeklyChangeColor(chg) }}>
+                        ({chg < 0 ? `-${(-chg).toFixed(1)}` : `+${chg.toFixed(1)}`})
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 10px', marginTop: 12, paddingTop: 12, borderTop: '1px solid #EEF4F0' }}>
-        {challenge.members.length > 1 && (
-          <div style={{ fontSize: 11, color: '#bcccc2', fontWeight: 700, width: '100%' }}>點人名可單獨看那條線</div>
-        )}
+        <div style={{ fontSize: 11, color: '#bcccc2', fontWeight: 700, width: '100%', marginBottom: 4 }}>💡 點選圖表柱位可看該週戰績 · 點人名可過濾線條</div>
         {challenge.members.map(m => {
           const dim = highlight && highlight !== m.userId;
           const isMe = m.userId === myUserId;
