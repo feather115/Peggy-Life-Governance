@@ -1,0 +1,18 @@
+// 把目前登入中的帳號跟這個 LINE 使用者綁在一起，之後從 LINE 開啟就會直接登入這個帳號
+import { verifyLineIdToken } from './_lineVerify.js';
+import { getSupabaseAdmin } from './_supabaseAdmin.js';
+
+export async function linkLineAccount(idToken, channelId, accessToken) {
+  if (!accessToken) throw new Error('缺少登入憑證，請先用 email 登入再連結');
+  const admin = getSupabaseAdmin();
+
+  const { data: userData, error: userErr } = await admin.auth.getUser(accessToken);
+  if (userErr || !userData?.user) throw new Error('登入憑證無效，請重新登入後再試');
+
+  const payload = await verifyLineIdToken(idToken, channelId);
+
+  const { error } = await admin.from('line_links').upsert({ line_sub: payload.sub, user_id: userData.user.id });
+  if (error) throw error;
+
+  return { ok: true };
+}

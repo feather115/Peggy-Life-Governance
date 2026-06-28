@@ -1,0 +1,104 @@
+// 體重挑戰 — 每週折線圖（每位成員一條曲線，向上 = 減重越多）
+import React from 'react';
+import { memberColor } from '../selectors.js';
+
+export default function WeightChart({ challenge, highlightUserId = null }) {
+  const entries = challenge.entries;
+  if (!entries.length) return null;
+
+  const allWeeks = [...new Set(entries.map(e => e.weekLabel))].sort();
+  if (!allWeeks.length) return null;
+
+  const W = 580, H = 280;
+  // 把右側留白縮小（已不再放姓名+kg 標籤，改靠下方 legend 顯示人名）
+  const PAD = { l: 26, r: 16, t: 18, b: 36 };
+  const cW = W - PAD.l - PAD.r, cH = H - PAD.t - PAD.b;
+
+  // Y 軸：把 kgDiff 負號去掉，這樣 UP = 減越多
+  const allVals = entries.map(e => -e.kgDiff);
+  const yMax = Math.max(...allVals, 0.5) * 1.18;
+  const yMin = Math.min(...allVals, 0) - 0.15;
+  const yRange = yMax - yMin;
+
+  const xS = (i) => allWeeks.length <= 1 ? PAD.l + cW / 2 : PAD.l + (i / (allWeeks.length - 1)) * cW;
+  const yS = (v) => H - PAD.b - ((v - yMin) / yRange) * cH;
+  const zY = yS(0);
+
+  const linePath = (pts) => pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+
+  return (
+    <div style={{ width: '100%', overflow: 'hidden' }}>
+      <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} style={{ overflow: 'visible', display: 'block' }}>
+        <defs>
+          {challenge.members.map(m => (
+            <linearGradient key={m.userId} id={`wc_g_${m.userId}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={memberColor(challenge, m.userId)} stopOpacity="0.22" />
+              <stop offset="100%" stopColor={memberColor(challenge, m.userId)} stopOpacity="0" />
+            </linearGradient>
+          ))}
+        </defs>
+
+        {/* Grid lines */}
+        {Array.from({ length: Math.floor(yMax * 2) + 1 }).map((_, idx) => {
+          const v = idx * 0.5;
+          if (v < 0.5) return null;
+          const y = yS(v);
+          if (y < PAD.t) return null;
+          return (
+            <g key={`grid${idx}`}>
+              <line x1={PAD.l} y1={y} x2={W - PAD.r} y2={y} stroke="#EEF4F0" strokeWidth={1} />
+              <text x={PAD.l - 6} y={y + 4} textAnchor="end" fill="#bcccc2" fontSize={10}>{v.toFixed(1)}</text>
+            </g>
+          );
+        })}
+
+        {/* Zero line */}
+        {zY >= PAD.t && zY <= H - PAD.b && (
+          <g>
+            <line x1={PAD.l} y1={zY} x2={W - PAD.r} y2={zY} stroke="#9bb0a3" strokeWidth={1.5} strokeDasharray="6,5" opacity={0.6} />
+            <text x={PAD.l - 6} y={zY + 4} textAnchor="end" fill="#9bb0a3" fontSize={10}>0</text>
+          </g>
+        )}
+
+        {/* X axis labels — 週數太多時只挑幾個顯示，避免擠成一團 */}
+        {(() => {
+          const maxLabels = 8;
+          const step = Math.max(1, Math.ceil(allWeeks.length / maxLabels));
+          return allWeeks.map((w, i) => {
+            if (i % step !== 0 && i !== allWeeks.length - 1) return null;
+            const x = xS(i);
+            return (
+              <g key={`x${i}`}>
+                <line x1={x} y1={H - PAD.b} x2={x} y2={H - PAD.b + 5} stroke="#bcccc2" strokeWidth={1} />
+                <text x={x} y={H - PAD.b + 18} textAnchor="middle" fill="#6E8B7C" fontSize={11} fontWeight={700}>{w.slice(5).replace('-', '/')}</text>
+              </g>
+            );
+          });
+        })()}
+
+        {/* Each member — 有人被選中時，其他人淡化、不畫面積填色，被選中的畫最後（蓋在最上層） */}
+        {[...challenge.members].sort((a, b) => (a.userId === highlightUserId ? 1 : 0) - (b.userId === highlightUserId ? 1 : 0)).map(m => {
+          const pe = entries.filter(e => e.userId === m.userId).sort((a, b) => a.weekLabel.localeCompare(b.weekLabel));
+          if (!pe.length) return null;
+          const color = memberColor(challenge, m.userId);
+          const isDim = highlightUserId && highlightUserId !== m.userId;
+          const pts = pe.map(e => ({ x: xS(allWeeks.indexOf(e.weekLabel)), y: yS(-e.kgDiff) }));
+          const path = linePath(pts);
+          const last = pts[pts.length - 1];
+          const area = path + ` L${last.x.toFixed(1)},${zY.toFixed(1)} L${pts[0].x.toFixed(1)},${zY.toFixed(1)} Z`;
+          // 只有單獨高亮一條線時才畫面積填色，多人同時顯示時面積疊在一起會變成一片「陰影」，拿掉比較乾淨
+          const showArea = highlightUserId === m.userId;
+          return (
+            <g key={`m${m.userId}`} opacity={isDim ? 0.18 : 1}>
+              {showArea && <path d={area} fill={`url(#wc_g_${m.userId})`} />}
+              <path d={path} fill="none" stroke={color} strokeWidth={highlightUserId === m.userId ? 3 : 2} strokeLinejoin="round" strokeLinecap="round" />
+              {pts.map((p, i) => (
+                <circle key={`p${i}`} cx={p.x} cy={p.y} r={isDim ? 2.5 : 3.5} fill={color} stroke="#fff" strokeWidth={1.5} />
+              ))}
+            </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
