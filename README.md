@@ -5,7 +5,7 @@ Monorepo，包含兩個獨立的 app，各自部署到不同的 Vercel 專案。
 ## Apps
 
 - [`apps/calorie-tracker`](./apps/calorie-tracker) — 飲食卡路里記錄 app（React + Vite + Supabase）
-- [`apps/recipe-book`](./apps/recipe-book) — 食譜紀錄網站（Vue + Vite + Supabase）
+- [`apps/recipe-book`](./apps/recipe-book) — 食譜紀錄網站（React + Vite + Supabase）
 
 每個 app 的設定、開發、部署細節請看各自資料夾裡的 README。
 
@@ -36,3 +36,34 @@ npm run dev:recipe-book
 
 Vercel 會自動偵測 Root Directory 下的 `package.json` 並只建置該 app，互不影響。
 記得在各自的 Vercel 專案環境變數中設定對應的 `.env` 內容（不要 commit `.env`）。
+
+## 共用套件
+
+- [`packages/shared`](./packages/shared) — `@peggy-life/shared`，提供 Supabase client factory (`createAppSupabase`) 和共用元件 (`ConfigMissing`)
+
+## Supabase 架構
+
+兩個 app 共用同一個 Supabase 專案，用不同的 PostgreSQL schema 隔離資料：
+
+| Schema | 用途 | 內容 |
+|---|---|---|
+| `calorie_tracker` | 飲食卡路里 | 11 張表 + 2 個 RPC (`is_challenge_member`, `find_challenge_by_code`) |
+| `recipe_book` | 食譜紀錄 | `recipes` 表 |
+| `auth` | 共用驗證 | Supabase 內建 `auth.users`，兩個 app 共用同一群使用者 |
+| `public` | trigger | `handle_new_user` trigger function（綁在 `auth.users` 上，所以留在 public） |
+
+### 第一次設定 Supabase（完整順序）
+
+1. 到 [Supabase Dashboard](https://supabase.com) 建立專案
+2. 左側 **SQL Editor**，依序貼上並執行：
+   - `apps/calorie-tracker/supabase/schema.sql`（建立基本表在 public）
+   - `apps/calorie-tracker/supabase/` 下的各 migration SQL（按日期順序）
+   - `apps/recipe-book/supabase/schema.sql`
+   - 最後跑兩支 schema isolation migration：
+     - `apps/calorie-tracker/supabase/2026-06-28_schema_isolation.sql`（把 11 張表從 public 搬到 `calorie_tracker` schema）
+     - `apps/recipe-book/supabase/2026-06-28_schema_isolation.sql`（把 recipes 從 public 搬到 `recipe_book` schema）
+3. 到 **Integrations → Data API → Settings**，在 **Exposed schemas** 加入 `calorie_tracker` 和 `recipe_book`，按 Save
+4. 等 30 秒讓 PostgREST 重新載入
+5. 到 **Settings → API** 複製 `Project URL` 和 `anon public` key，填入各 app 的 `.env`
+
+> **注意**：schema isolation migration 會搬移表並重建 RLS policy，跑之前確認 `schema.sql` 和其他 migration 都已執行完畢。
