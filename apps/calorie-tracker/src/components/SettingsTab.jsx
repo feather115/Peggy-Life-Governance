@@ -67,6 +67,11 @@ export default function SettingsTab({ app, session, onSignOut }) {
           <PasswordChanger />
           <LineLinker />
         </div>
+        {canLinkLine() && (
+          <div style={{ fontSize: 11, color: '#9bb0a3', marginTop: 6, fontWeight: 600 }}>
+            連結後，之後從 LINE 開啟會直接登入這個帳號
+          </div>
+        )}
       </div>
 
       {/* Daily Goals */}
@@ -179,14 +184,13 @@ function LineLinker() {
   };
 
   return (
-    <div>
+    <>
       <button onClick={link} disabled={busy} style={{ border: 'none', background: '#F0F3F1', color: '#06C755', fontWeight: 800, fontSize: 13, padding: '10px 16px', borderRadius: 12, cursor: 'pointer' }}>
         {busy ? '連結中…' : '🔗 連結 LINE 帳號'}
       </button>
-      <div style={{ fontSize: 11, color: '#9bb0a3', marginTop: 6, fontWeight: 600 }}>連結後，之後從 LINE 開啟會直接登入這個帳號</div>
-      {msg === 'success' && <div style={{ marginTop: 8, fontSize: 13, color: '#15803D', background: '#DCFCE7', padding: '8px 12px', borderRadius: 10, fontWeight: 700 }}>已連結成功</div>}
-      {msg && msg !== 'success' && <div style={{ marginTop: 8, fontSize: 13, color: '#B91C1C', background: '#FEE2E2', padding: '8px 12px', borderRadius: 10, fontWeight: 700 }}>{msg}</div>}
-    </div>
+      {msg === 'success' && <div style={{ width: '100%', marginTop: 8, fontSize: 13, color: '#15803D', background: '#DCFCE7', padding: '8px 12px', borderRadius: 10, fontWeight: 700 }}>已連結成功</div>}
+      {msg && msg !== 'success' && <div style={{ width: '100%', marginTop: 8, fontSize: 13, color: '#B91C1C', background: '#FEE2E2', padding: '8px 12px', borderRadius: 10, fontWeight: 700 }}>{msg}</div>}
+    </>
   );
 }
 

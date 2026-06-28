@@ -15,15 +15,15 @@
 begin;
 
 create schema if not exists recipe_book;
-grant usage on schema recipe_book to anon, authenticated;
+grant usage on schema recipe_book to anon, authenticated, service_role;
 
 -- 表 + 索引 + RLS + policy 都會跟著搬
 alter table public.recipes set schema recipe_book;
 
--- PostgREST 用的表權限（RLS 還是會擋）
-grant select on all tables in schema recipe_book to anon, authenticated;
+-- PostgREST 與 service_role 用的表權限（RLS 還是會擋，但 service_role 可以繞過 RLS）
+grant select, insert, update, delete on all tables in schema recipe_book to anon, authenticated, service_role;
 alter default privileges in schema recipe_book
-  grant select on tables to anon, authenticated;
+  grant select, insert, update, delete on tables to anon, authenticated, service_role;
 
 -- recipes 唯一的 policy「recipes are readable by everyone」用 using (true)
 -- 沒有跨表 reference，搬完直接生效，不用重建。

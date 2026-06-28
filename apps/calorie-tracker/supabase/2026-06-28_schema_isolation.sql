@@ -21,9 +21,9 @@
 
 begin;
 
--- 1) 建 schema 並授權給 PostgREST 用的 role
+-- 1) 建 schema 並授權給 PostgREST 和 service_role 用的 role
 create schema if not exists calorie_tracker;
-grant usage on schema calorie_tracker to anon, authenticated;
+grant usage on schema calorie_tracker to anon, authenticated, service_role;
 
 -- 2) 搬資料表（FK / 索引 / RLS 開關 / policy 都會跟著走，
 --    policy body 裡的 public.xxx 寫法不會被自動改寫，下面會 drop & recreate）
@@ -40,14 +40,13 @@ alter table public.weight_entries    set schema calorie_tracker;
 alter table public.line_links        set schema calorie_tracker;
 
 -- 3) 給新 schema 的表 grant select/insert/update/delete
---    （PostgREST 用，實際存取仍由 RLS 控管）
-grant select, insert, update, delete on all tables in schema calorie_tracker to authenticated;
-grant select, insert, update, delete on all tables in schema calorie_tracker to anon;
+--    （PostgREST 與 service_role 用，實際存取仍由 RLS 控管，但 service_role 可以繞過 RLS）
+grant select, insert, update, delete on all tables in schema calorie_tracker to authenticated, anon, service_role;
 -- 未來新增的表也自動有同樣的權限
 alter default privileges in schema calorie_tracker
-  grant select, insert, update, delete on tables to authenticated, anon;
+  grant select, insert, update, delete on tables to authenticated, anon, service_role;
 alter default privileges in schema calorie_tracker
-  grant usage, select on sequences to authenticated, anon;
+  grant usage, select on sequences to authenticated, anon, service_role;
 
 -- 4) 重建跨表 reference 的 RLS policy
 --    （policy 跟著表搬到 calorie_tracker schema 了，但 policy body 裡
