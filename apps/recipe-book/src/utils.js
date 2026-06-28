@@ -20,7 +20,18 @@ export function normalizeRecipe(recipe) {
 export function getAvailableCategories(recipes) {
   const allTags = recipes.flatMap((r) => (Array.isArray(r.category) ? r.category : []));
   const cleanTags = allTags.map((t) => (t ? t.trim() : '')).filter(Boolean);
-  return [...new Set(cleanTags)];
+  const uniqueTags = [...new Set(cleanTags)];
+
+  const hasUncategorized = recipes.some((r) => {
+    const cats = Array.isArray(r.category) ? r.category : [];
+    return cats.map((t) => (t ? t.trim() : '')).filter(Boolean).length === 0;
+  });
+
+  if (hasUncategorized) {
+    uniqueTags.push('未分類');
+  }
+
+  return uniqueTags;
 }
 
 export function recipeOwnershipKey(recipe, currentUserId) {
@@ -38,7 +49,16 @@ export function filterRecipes(recipes, { category, search, ownershipSet, current
   return recipes
     .filter((recipe) => {
       if (ownershipSet && !ownershipSet.has(recipeOwnershipKey(recipe, currentUserId))) return false;
-      if (cat !== ALL_CATEGORY && !recipe.category.includes(cat)) return false;
+
+      if (cat !== ALL_CATEGORY) {
+        const cleanCats = recipe.category.map((t) => (t ? t.trim() : '')).filter(Boolean);
+        if (cat === '未分類') {
+          if (cleanCats.length > 0 && !cleanCats.includes('未分類')) return false;
+        } else {
+          if (!cleanCats.includes(cat)) return false;
+        }
+      }
+
       if (query) {
         const match = recipe.title.toLowerCase().includes(query)
           || recipe.category.some((tag) => tag.toLowerCase().includes(query));
