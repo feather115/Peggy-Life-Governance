@@ -163,7 +163,6 @@ export default function CookCalendar({ recipes, cookRecords, cookRecordError, on
             if (!dateKey) return <div key={`empty-${index}`} />;
             const date = parseDateKey(dateKey);
             const dayRecords = recordsByDate[dateKey] || [];
-            const firstRecipe = dayRecords[0] ? recipeById.get(String(dayRecords[0].recipe_id)) : null;
             const isSelected = selectedDate === dateKey;
             const isToday = todayKey() === dateKey;
             return (
@@ -179,7 +178,6 @@ export default function CookCalendar({ recipes, cookRecords, cookRecordError, on
               >
                 <span style={S.dayNum}>{date.getDate()}</span>
                 {dayRecords.length > 0 && <span style={S.count}>{dayRecords.length}</span>}
-                {firstRecipe && <span style={S.tinyTitle}>{firstRecipe.title}</span>}
               </button>
             );
           })}
