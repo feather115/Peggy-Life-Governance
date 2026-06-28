@@ -13,7 +13,6 @@
 
         <div class="card-header">
           <div class="header-badges-row">
-            
             <template v-if="Array.isArray(recipe.category)">
               <span 
                 v-for="tag in recipe.category" 
@@ -35,6 +34,20 @@
             </template>
           </div>
           <h2 class="recipe-title">{{ recipe.title }}</h2>
+        </div>
+
+        <div v-if="hasParameters" class="parameters-dashboard">
+          <div class="dashboard-title">⚙️ 核心工藝參數面板</div>
+          <div class="dashboard-grid">
+            <div 
+              v-for="(value, key) in recipe.parameters" 
+              :key="key" 
+              class="dashboard-item"
+            >
+              <span class="param-key">{{ key }}</span>
+              <span class="param-value">{{ value }}</span>
+            </div>
+          </div>
         </div>
 
         <div v-if="baseIng" class="scale-controller">
@@ -160,6 +173,12 @@ const formatDate = (dateStr) => {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 }
 
+// 判斷是否有填寫工藝參數
+const hasParameters = computed(() => {
+  const params = props.recipe.parameters
+  return params && typeof params === 'object' && Object.keys(params).length > 0
+})
+
 // 安全將 yield_info 解析為純文字陣列
 const parsedYieldInfo = computed(() => {
   if (!props.recipe.yield_info) return []
@@ -269,16 +288,21 @@ const endLongPress = () => { if (pressTimer) clearTimeout(pressTimer) }
   .recipe-image-wrapper { margin: -20px -20px 16px -20px; height: 200px; overflow: hidden; background-color: #e1e4e8; border-bottom: 1px solid #d0d7de; @media (min-width: 768px) { height: 320px; } .recipe-image { width: 100%; height: 100%; object-fit: cover; object-position: center; } }
   
   .card-header { 
-    margin-bottom: 14px; 
+    margin-bottom: 16px; 
     .header-badges-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
-    
-    /* 🌟 保持原本極緻精確的綠色調分類 Badge 樣式，但現在支援多個並排與換行 */
     .category-badge { display: inline-block; background: #dafbe1; color: #1a7f37; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 4px; white-space: nowrap; }; 
-    
-    .yield-spec-badge {
-      display: inline-block; background: #f1f5f9; color: #475569; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; border: 1px solid #e2e8f0; white-space: nowrap;
-    }
+    .yield-spec-badge { display: inline-block; background: #f1f5f9; color: #475569; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; border: 1px solid #e2e8f0; white-space: nowrap; }
     .recipe-title { margin: 0; font-size: 24px; font-weight: 800; } 
+  }
+
+  /* 核心工藝參數控制面板 CSS */
+  .parameters-dashboard {
+    background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 14px; margin-bottom: 16px;
+    .dashboard-title { font-size: 12.5px; font-weight: 700; color: #475569; letter-spacing: 0.5px; margin-bottom: 10px; text-transform: uppercase; border-bottom: 1px dashed #cbd5e1; padding-bottom: 6px; }
+    .dashboard-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .dashboard-item { display: flex; flex-direction: column; gap: 2px; background: #ffffff; padding: 8px 10px; border-radius: 6px; border: 1px solid #f1f5f9; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+    .param-key { font-size: 11px; font-weight: 600; color: #94a3b8; }
+    .param-value { font-size: 14px; font-weight: 700; color: #1e293b; }
   }
   
   .scale-controller { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 12px; margin-bottom: 16px; .scale-label { font-size: 12.5px; color: #1e40af; font-weight: 600; margin-bottom: 8px; } .scale-inputs { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; .base-name { font-size: 14px; font-weight: 700; color: #1e3a8a; } .weight-input { width: 90px; padding: 6px 10px; font-size: 15px; font-weight: 700; border: 1px solid #3b82f6; border-radius: 6px; text-align: center; color: #1e3a8a; background: #ffffff; } .unit-text { font-size: 14px; color: #1e40af; font-weight: 600; } .reset-scale-btn { background: #ffffff; color: #dc2626; border: 1px solid #fca5a5; padding: 5px 10px; font-size: 12px; font-weight: 600; border-radius: 6px; cursor: pointer; margin-left: auto; } } .scale-alert { margin-top: 8px; font-size: 12px; color: #2563eb; font-weight: 500; } }
