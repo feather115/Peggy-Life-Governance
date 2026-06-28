@@ -21,6 +21,14 @@ export default function SettingsTab({ app, session, onSignOut }) {
   const [confirmClear, setConfirmClear] = useState(false);
 
   const totalRec = totalRecordedDays(days);
+  const displayEmail = (() => {
+    const email = session.user.email || '';
+    if (email.endsWith('@line.invalid')) {
+      const match = email.match(/^line-(U[a-zA-Z0-9]{4})[a-zA-Z0-9]+([a-zA-Z0-9]{4})@line\.invalid$/);
+      return match ? `LINE: ${match[1]}...${match[2]}` : 'LINE 登入帳號';
+    }
+    return email;
+  })();
 
   const goals = [
     { label: '蛋白質 (g)', color: '#2E8B5E', val: goalP, set: setGoalP },
@@ -55,7 +63,7 @@ export default function SettingsTab({ app, session, onSignOut }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <div>
           <div style={{ fontSize: 24, fontWeight: 900, color: '#234034', marginBottom: 4 }}>設定</div>
-          <div style={{ fontSize: 14, color: '#6E8B7C', fontWeight: 700 }}>{session.user.email}</div>
+          <div style={{ fontSize: 14, color: '#6E8B7C', fontWeight: 700 }}>{displayEmail}</div>
         </div>
         <button onClick={onSignOut} style={{ border: 'none', background: '#F0F3F1', color: '#6E8B7C', fontWeight: 800, fontSize: 13, padding: '8px 14px', borderRadius: 14, cursor: 'pointer' }}>登出</button>
       </div>
