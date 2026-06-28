@@ -229,16 +229,20 @@ export default function RecipeForm({ recipe, onSave, onCancel, onDelete }) {
 
         <label style={S.label}>食材</label>
         {ingredients.map((row, idx) => (
-          <React.Fragment key={idx}>
-            <div style={S.row}>
-              <input style={S.smallInput} value={row.name} onChange={(e) => updateIngredient(idx, { name: e.target.value })} placeholder="名稱" />
-              <input style={S.smallInput} value={row.amount} onChange={(e) => updateIngredient(idx, { amount: e.target.value })} placeholder="份量 (200g)" />
+          <div key={idx} style={{ padding: 10, background: '#FDF7F4', borderRadius: 14, marginBottom: 10, border: '1px solid #F3DFD4' }}>
+            <div style={{ display: 'grid', gap: 6, gridTemplateColumns: '1fr 110px 28px', alignItems: 'center' }}>
+              <input style={{ ...S.smallInput, background: '#fff' }} value={row.name} onChange={(e) => updateIngredient(idx, { name: e.target.value })} placeholder="食材名稱（如：雞肉）" />
+              <input style={{ ...S.smallInput, background: '#fff' }} value={row.amount} onChange={(e) => updateIngredient(idx, { amount: e.target.value })} placeholder="份量（如：200g）" />
               <button type="button" style={S.rowBtn} onClick={() => removeIngredient(idx)} aria-label="刪除食材">×</button>
             </div>
-            <label style={S.baseLabel}>
+            <div style={{ display: 'grid', gap: 6, gridTemplateColumns: '1fr 1fr', marginTop: 6 }}>
+              <input style={{ ...S.smallInput, background: '#fff' }} value={row.type || ''} onChange={(e) => updateIngredient(idx, { type: e.target.value })} placeholder="類別/分區（如：主料、醬料）" />
+              <input style={{ ...S.smallInput, background: '#fff' }} value={row.brand || ''} onChange={(e) => updateIngredient(idx, { brand: e.target.value })} placeholder="品牌/備註（如：日式）" />
+            </div>
+            <label style={{ ...S.baseLabel, marginTop: 8 }}>
               <input type="radio" checked={!!row.is_base} onChange={() => setBaseIngredient(idx)} /> 設為主食材（用來縮放配方）
             </label>
-          </React.Fragment>
+          </div>
         ))}
         <button type="button" style={S.addBtn} onClick={addIngredient}>+ 新增一行食材</button>
 
