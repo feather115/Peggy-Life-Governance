@@ -4,6 +4,8 @@ import { normalizeRecipe } from './utils.js';
 
 const RECIPE_SELECT_COLUMNS = [
   'id',
+  'user_id',
+  'is_shared',
   'title',
   'category',
   'ingredients',
@@ -16,9 +18,21 @@ const RECIPE_SELECT_COLUMNS = [
 ].join(', ');
 
 export async function loadRecipes() {
+  // RLS handles filtering: anon sees only is_shared=true; logged-in sees own + shared.
   const { data, error } = await supabase.from('recipes').select(RECIPE_SELECT_COLUMNS);
   if (error) throw error;
   return data.map(normalizeRecipe);
+}
+
+export async function setRecipeShared(recipeId, isShared) {
+  const { data, error } = await supabase
+    .from('recipes')
+    .update({ is_shared: isShared })
+    .eq('id', recipeId)
+    .select(RECIPE_SELECT_COLUMNS)
+    .single();
+  if (error) throw error;
+  return normalizeRecipe(data);
 }
 
 export async function loadCookRecords(userId) {

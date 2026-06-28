@@ -10,10 +10,27 @@ import {
   parseYieldInfo,
 } from '../utils.js';
 
-export default function RecipeDetail({ recipe, onBack }) {
+export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, onSetShared }) {
   const [currentWeight, setCurrentWeight] = useState('');
   const [completedItems, setCompletedItems] = useState({});
+  const [shareBusy, setShareBusy] = useState(false);
+  const [shareError, setShareError] = useState('');
   const pressTimer = useRef(null);
+
+  const isOwner = !isGuest && currentUserId && recipe.user_id === currentUserId;
+
+  const handleToggleShare = async () => {
+    if (!onSetShared) return;
+    setShareBusy(true);
+    setShareError('');
+    try {
+      await onSetShared(recipe.id, !recipe.is_shared);
+    } catch (e) {
+      setShareError(e.message || '更新分享狀態失敗');
+    } finally {
+      setShareBusy(false);
+    }
+  };
 
   const hasParameters = recipe.parameters && typeof recipe.parameters === 'object'
     && Object.keys(recipe.parameters).length > 0;
@@ -352,6 +369,44 @@ export default function RecipeDetail({ recipe, onBack }) {
             <div style={s.titleRow}>
               <h2 style={s.recipeTitle}>{recipe.title}</h2>
             </div>
+
+            {isOwner && (
+              <div style={{ marginBottom: 10 }}>
+                <button
+                  type="button"
+                  onClick={handleToggleShare}
+                  disabled={shareBusy}
+                  style={{
+                    border: 'none',
+                    background: recipe.is_shared ? '#FFF3E0' : '#FDF7F4',
+                    color: recipe.is_shared ? '#E65100' : '#3D281E',
+                    padding: '10px 14px',
+                    borderRadius: 14,
+                    fontSize: 13,
+                    fontWeight: 900,
+                    cursor: shareBusy ? 'wait' : 'pointer',
+                    width: '100%',
+                    textAlign: 'left',
+                  }}
+                >
+                  {shareBusy
+                    ? '更新中…'
+                    : recipe.is_shared
+                      ? '🌐 已分享（點擊收回，恢復為僅自己可見）'
+                      : '🔒 只有我看得到（點擊分享給其他人）'}
+                </button>
+                {shareError && (
+                  <div style={{ marginTop: 6, fontSize: 12, color: '#B91C1C', fontWeight: 800 }}>
+                    {shareError}
+                  </div>
+                )}
+              </div>
+            )}
+            {!isOwner && recipe.is_shared && (
+              <div style={{ marginBottom: 10, fontSize: 12, color: '#8E7568', fontWeight: 800 }}>
+                🌐 這是別人分享的食譜（唯讀）
+              </div>
+            )}
           </div>
 
           {hasParameters && (

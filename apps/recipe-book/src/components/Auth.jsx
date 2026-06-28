@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../supabase.js';
 
-export default function Auth({ lineDebug }) {
+export default function Auth({ lineDebug, onGuest }) {
   const [mode, setMode] = useState('signin'); // 'signin' | 'signup' | 'forgot'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -89,6 +89,20 @@ export default function Auth({ lineDebug }) {
             <button onClick={() => switchMode('signin')} style={linkBtn}>‹ 回到登入</button>
           )}
         </div>
+        {onGuest && (
+          <div style={{ marginTop: 18, paddingTop: 14, borderTop: '1px solid #F3DFD4' }}>
+            <button
+              type="button"
+              onClick={onGuest}
+              style={{ width: '100%', border: 'none', background: '#FDF7F4', color: '#3D281E', fontWeight: 900, fontSize: 14, padding: 12, borderRadius: 14, cursor: 'pointer' }}
+            >
+              👀 以訪客身分瀏覽分享的食譜
+            </button>
+            <div style={{ marginTop: 8, fontSize: 11, color: '#C5B4AC', fontWeight: 700, textAlign: 'center', lineHeight: 1.5 }}>
+              訪客只能看別人分享出來的食譜，無法新增、編輯，也沒有料理行事曆。
+            </div>
+          </div>
+        )}
         {lineDebug && <div style={{ marginTop: 16, fontSize: 11, color: '#bcccc2', fontWeight: 600, lineHeight: 1.6, wordBreak: 'break-word' }}>LINE 自動登入除錯：{lineDebug}</div>}
       </div>
     </div>

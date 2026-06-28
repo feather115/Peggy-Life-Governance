@@ -6,11 +6,12 @@ const TABS = [
   { key: 'calendar', label: '行事曆' },
 ];
 
-export default function TabBar({ tab, onTab }) {
+export default function TabBar({ tab, onTab, hideTabs = [] }) {
+  const visibleTabs = TABS.filter((t) => !hideTabs.includes(t.key));
   return (
     <div style={{ flex: 'none', background: '#fff', boxShadow: '0 -4px 20px rgba(61,40,30,.08)' }}>
       <div style={{ height: 52, display: 'flex', alignItems: 'center', justifyContent: 'space-around' }}>
-        {TABS.map((t) => {
+        {visibleTabs.map((t) => {
           const active = tab === t.key;
           return (
             <button

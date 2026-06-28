@@ -34,6 +34,7 @@ function scrollToTop() {
 }
 
 export function useRecipes(userId) {
+  const isGuest = !userId;
   const [recipes, setRecipes] = useState([]);
   const [cookRecords, setCookRecords] = useState([]);
   const [loaded, setLoaded] = useState(false);
@@ -55,6 +56,11 @@ export function useRecipes(userId) {
       .then(async (recipeRows) => {
         if (cancel) return;
         setRecipes(recipeRows);
+        if (isGuest) {
+          setCookRecords([]);
+          setLoaded(true);
+          return;
+        }
         try {
           const recordRows = await db.loadCookRecords(userId);
           if (cancel) return;
@@ -135,6 +141,12 @@ export function useRecipes(userId) {
     });
   }, [userId]);
 
+  const setRecipeShared = useCallback(async (recipeId, isShared) => {
+    const updated = await db.setRecipeShared(recipeId, isShared);
+    setRecipes((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
+    return updated;
+  }, []);
+
   const removeCookRecord = useCallback(async (recordId) => {
     try {
       await db.removeCookRecord(recordId);
@@ -164,5 +176,7 @@ export function useRecipes(userId) {
     currentView, selectedRecipe,
     openRecipeDetail,
     addCookRecord, removeCookRecord,
+    setRecipeShared,
+    isGuest,
   };
 }

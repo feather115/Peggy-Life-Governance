@@ -37,11 +37,21 @@ const S = {
     fontSize: 11, background: '#FFF5EE', color: '#E87A24', padding: '3px 8px',
     borderRadius: 10, fontWeight: 800, marginRight: 4, display: 'inline-block',
   },
+  ownBadge: {
+    fontSize: 10, background: '#E8F5E9', color: '#2E7D32', padding: '3px 7px',
+    borderRadius: 10, fontWeight: 900, marginRight: 4, display: 'inline-block',
+  },
+  sharedBadge: {
+    fontSize: 10, background: '#FFF3E0', color: '#E65100', padding: '3px 7px',
+    borderRadius: 10, fontWeight: 900, marginRight: 4, display: 'inline-block',
+  },
   cardTitle: { fontSize: 14, fontWeight: 900, color: '#3D281E', marginTop: 6, lineHeight: 1.3, margin: 0, marginBlockStart: 6 },
   empty: { textAlign: 'center', padding: '40px 20px', color: '#C5B4AC', fontSize: 15, fontWeight: 700 },
 };
 
 export default function RecipeCatalog({
+  userId,
+  isGuest,
   recipes,
   searchQuery,
   onSearchQueryChange,
@@ -51,17 +61,21 @@ export default function RecipeCatalog({
   filteredRecipes,
   onOpenDetail,
   onSignOut,
+  signOutLabel = '登出',
 }) {
+  const subtitle = isGuest
+    ? `● 訪客模式・共 ${recipes.length} 道分享食譜`
+    : `● 共有 ${recipes.length} 道私房料理`;
   return (
     <div style={S.viewHome}>
       <header style={{ marginBottom: 14 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
           <div>
             <h1 style={S.title}>TY Recipe Book</h1>
-            <p style={S.status}>● 共有 {recipes.length} 道私房料理</p>
+            <p style={S.status}>{subtitle}</p>
           </div>
           {onSignOut && (
-            <button onClick={onSignOut} style={{ border: 'none', background: '#F0E7E1', color: '#8E7568', fontWeight: 800, fontSize: 13, padding: '8px 14px', borderRadius: 14, cursor: 'pointer' }}>登出</button>
+            <button onClick={onSignOut} style={{ border: 'none', background: '#F0E7E1', color: '#8E7568', fontWeight: 800, fontSize: 13, padding: '8px 14px', borderRadius: 14, cursor: 'pointer' }}>{signOutLabel}</button>
           )}
         </div>
 
@@ -111,6 +125,11 @@ export default function RecipeCatalog({
                 </div>
                 <div style={S.cardInfo}>
                   <div>
+                    {!isGuest && recipe.user_id === userId && (
+                      <span style={recipe.is_shared ? S.sharedBadge : S.ownBadge}>
+                        {recipe.is_shared ? '🌐 已分享' : '🔒 我的'}
+                      </span>
+                    )}
                     {recipe.category.map((tag) => (
                       <span key={tag} style={S.badge}>{tag}</span>
                     ))}

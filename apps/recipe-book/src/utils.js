@@ -12,6 +12,8 @@ export function normalizeRecipe(recipe) {
     category: Array.isArray(recipe.category) ? recipe.category : [],
     yield_info: recipe.yield_info || [],
     parameters: recipe.parameters || {},
+    is_shared: !!recipe.is_shared,
+    user_id: recipe.user_id || null,
   };
 }
 

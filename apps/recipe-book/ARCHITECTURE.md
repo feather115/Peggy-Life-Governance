@@ -94,6 +94,8 @@ Supabase ⇄ db.js ⇄ useRecipes.js ⇄ App.jsx ⇄ Root.jsx (Auth gate / LIFF)
 | 欄位 | 型別 | 用途 |
 |---|---|---|
 | `id` | bigint (PK, identity) | 主鍵 |
+| `user_id` | uuid → `auth.users(id)` | 擁有者（on delete set null） |
+| `is_shared` | boolean | 是否分享給其他人（含未登入訪客）看，預設 false |
 | `title` | text | 食譜名稱 |
 | `category` | text[] | 多分類標籤（GIN 索引） |
 | `ingredients` | jsonb | `[{ name, amount, unit, is_base, brand, type }]` |
@@ -107,7 +109,11 @@ Supabase ⇄ db.js ⇄ useRecipes.js ⇄ App.jsx ⇄ Root.jsx (Auth gate / LIFF)
 | `updated_at` | timestamptz | 更新時間 |
 
 **設計重點：**
-- **RLS 開啟但只有 select policy**（`using (true)`）——所有人可讀，寫入走 service_role 或 SQL Editor。
+- **RLS 權限模型**（見 `2026-06-28_recipe_ownership.sql`）：
+  - SELECT（含 `anon`）：`is_shared = true OR auth.uid() = user_id` ——訪客只看得到分享出來的，擁有者額外看得到自己未分享的。
+  - INSERT / UPDATE / DELETE（只給 `authenticated`）：`auth.uid() = user_id` ——只能改自己的食譜。
+- **訪客模式**：`Root.jsx` 提供「以訪客身分瀏覽」按鈕（不登入），App.jsx 把 `userId = null` 傳給 `useRecipes`，hook 跳過 `loadCookRecords`、`TabBar` 隱藏「行事曆」分頁。
+- **分享按鈕**：`RecipeDetail.jsx` 對擁有者顯示 toggle（`is_shared` 反轉），呼叫 `db.setRecipeShared()` 直接 update。
 - **`ingredients` 支援兩種格式**：新格式是物件陣列 `[{ name, amount, ... }]`，舊格式是 `{ name: amount }` 物件。`utils.js` 的 `parseIngredients()` 統一處理。
 - **`steps` 支援三種格式**：物件陣列、字串陣列、單一字串（換行分隔）。`parseSteps()` 統一處理。
 - **`is_base` 標記主食材**——配方縮放用。輸入主食材的新重量後，其他食材依比例換算。
@@ -136,8 +142,9 @@ RLS：每個人只能 select/insert/update/delete 自己 `user_id` 的列。
 | `schema.sql` | 建 `recipes` 表 + GIN 索引 + RLS + select policy（建在 `public`） |
 | `2026-06-28_schema_isolation.sql` | 把 `recipes` 從 `public` 搬到 `recipe_book` schema |
 | `2026-06-28_recipe_cook_records.sql` | 建 `recipe_book.cooking_history` 表（料理行事曆紀錄）+ RLS + 索引 |
+| `2026-06-28_recipe_ownership.sql` | 加 `user_id` / `is_shared` 欄位、backfill 舊食譜給 feather115、重寫 RLS（讀: 分享或擁有；寫: 只有擁有者） |
 
-> 新環境順序：`schema.sql` → 在 Supabase Exposed schemas 加 `recipe_book` → `2026-06-28_schema_isolation.sql` → `2026-06-28_recipe_cook_records.sql`。
+> 新環境順序：`schema.sql` → 在 Supabase Exposed schemas 加 `recipe_book` → `2026-06-28_schema_isolation.sql` → `2026-06-28_recipe_cook_records.sql` → `2026-06-28_recipe_ownership.sql`。
 
 ---
 

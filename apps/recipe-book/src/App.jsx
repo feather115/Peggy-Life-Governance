@@ -14,26 +14,21 @@ function Centered({ children, color = '#6E8B7C' }) {
   );
 }
 
-export default function App({ session, onSignOut }) {
-  const recipes = useRecipes(session.user.id);
+export default function App({ session, onSignOut, onExitGuest }) {
+  const userId = session?.user?.id || null;
+  const recipes = useRecipes(userId);
   const [tab, setTab] = useState('recipes');
 
   if (!recipes.loaded) return <Centered>載入中…</Centered>;
   if (recipes.loadError) return <Centered color="#B91C1C">載入失敗：{recipes.loadError}</Centered>;
 
-  // Robust back navigation that handles direct URL visits gracefully
   const handleBack = () => {
     if (window.history.state && window.history.state.view === 'detail') {
       window.history.back();
     } else {
-      // Fallback if detail page was opened directly via URL
       window.history.pushState({ view: 'home' }, '', '/');
       window.dispatchEvent(new Event('popstate'));
     }
-  };
-
-  const changeTab = (nextTab) => {
-    setTab(nextTab);
   };
 
   return (
@@ -53,6 +48,8 @@ export default function App({ session, onSignOut }) {
       <div className="ps" style={{ flex: 1, overflowY: 'auto', paddingTop: 8 }}>
         {tab === 'recipes' && recipes.currentView === 'home' && (
           <RecipeCatalog
+            userId={userId}
+            isGuest={recipes.isGuest}
             recipes={recipes.recipes}
             searchQuery={recipes.searchQuery}
             onSearchQueryChange={recipes.setSearchQuery}
@@ -61,18 +58,22 @@ export default function App({ session, onSignOut }) {
             availableCategories={recipes.availableCategories}
             filteredRecipes={recipes.filteredRecipes}
             onOpenDetail={recipes.openRecipeDetail}
-            onSignOut={onSignOut}
+            onSignOut={recipes.isGuest ? onExitGuest : onSignOut}
+            signOutLabel={recipes.isGuest ? '登入' : '登出'}
           />
         )}
 
         {tab === 'recipes' && recipes.currentView === 'detail' && recipes.selectedRecipe && (
           <RecipeDetail
             recipe={recipes.selectedRecipe}
+            currentUserId={userId}
+            isGuest={recipes.isGuest}
             onBack={handleBack}
+            onSetShared={recipes.setRecipeShared}
           />
         )}
 
-        {tab === 'calendar' && (
+        {tab === 'calendar' && !recipes.isGuest && (
           <CookCalendar
             recipes={recipes.recipes}
             cookRecords={recipes.cookRecords}
@@ -81,9 +82,13 @@ export default function App({ session, onSignOut }) {
             onRemoveRecord={recipes.removeCookRecord}
           />
         )}
+
+        {tab === 'calendar' && recipes.isGuest && (
+          <Centered color="#8E7568">登入後才能使用料理行事曆</Centered>
+        )}
       </div>
 
-      <TabBar tab={tab} onTab={changeTab} />
+      <TabBar tab={tab} onTab={setTab} hideTabs={recipes.isGuest ? ['calendar'] : []} />
     </div>
   );
 }
