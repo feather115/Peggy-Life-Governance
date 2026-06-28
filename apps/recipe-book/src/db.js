@@ -48,7 +48,7 @@ export async function createRecipe(userId, payload) {
 export async function updateRecipe(recipeId, patch) {
   const { data, error } = await supabase
     .from('recipes')
-    .update({ ...patch, updated_at: new Date().toISOString() })
+    .update(patch)
     .eq('id', recipeId)
     .select(RECIPE_SELECT_COLUMNS)
     .single();
