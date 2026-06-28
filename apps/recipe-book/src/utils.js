@@ -22,13 +22,22 @@ export function getAvailableCategories(recipes) {
 
 export function filterRecipes(recipes, selectedCategory, searchQuery) {
   const query = (searchQuery || '').trim().toLowerCase();
-  return recipes.filter((recipe) => {
-    const matchCategory = selectedCategory === ALL_CATEGORY || recipe.category.includes(selectedCategory);
-    const matchSearch = !query
-      || recipe.title.toLowerCase().includes(query)
-      || recipe.category.some((tag) => tag.toLowerCase().includes(query));
-    return matchCategory && matchSearch;
-  });
+  return recipes
+    .filter((recipe) => {
+      const matchCategory = selectedCategory === ALL_CATEGORY || recipe.category.includes(selectedCategory);
+      const matchSearch = !query
+        || recipe.title.toLowerCase().includes(query)
+        || recipe.category.some((tag) => tag.toLowerCase().includes(query));
+      return matchCategory && matchSearch;
+    })
+    .sort((a, b) => {
+      const timeA = a.last_cooked_at ? new Date(a.last_cooked_at).getTime() : 0;
+      const timeB = b.last_cooked_at ? new Date(b.last_cooked_at).getTime() : 0;
+      if (timeA !== timeB) {
+        return timeB - timeA;
+      }
+      return a.title.localeCompare(b.title, 'zh-Hant');
+    });
 }
 
 export function parseYieldInfo(yieldInfo) {
