@@ -2,9 +2,9 @@
   <div class="view-home">
     <header class="mobile-header">
       <div class="brand">
-        <span class="chef-avatar">👩‍🍳</span>
+        <img src="/logo.png" alt="Peggy Chef Logo" class="chef-logo-img">
         <div>
-          <h1>PLG 美食館</h1>
+          <h1>TY的食譜筆記</h1>
           <p class="status-online">● 共有 {{ recipes.length }} 道私房料理</p>
         </div>
       </div>
@@ -54,7 +54,6 @@
             <div v-else class="grid-image-placeholder">🍳</div>
           </div>
           <div class="grid-card-info">
-            
             <div class="grid-tags-row">
               <span 
                 v-for="tag in recipe.category" 
@@ -64,13 +63,12 @@
                 {{ tag }}
               </span>
             </div>
-
             <h3 class="grid-recipe-title">{{ recipe.title }}</h3>
           </div>
         </div>
       </div>
       <div v-else class="mobile-empty">
-        <p>這個分類下目前沒有對應的美美食數據 🥲</p>
+        <p>這個分類下目前沒有對應的美食數據 🥲</p>
       </div>
     </main>
   </div>
@@ -88,11 +86,15 @@ defineEmits(['update:searchQuery', 'update:selectedCategory', 'open-detail'])
 </script>
 
 <style scoped>
-/* 🌟 完美保留妳所有的綠色調網格排版 CSS，絕不破壞原本的視覺平衡 */
 .mobile-header {
   background: #ffffff; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e1e4e8; box-sizing: border-box;
   @media (min-width: 768px) { max-width: 800px; margin: 0 auto; border-left: 1px solid #e1e4e8; border-right: 1px solid #e1e4e8; border-radius: 0 0 12px 12px; }
-  .brand { display: flex; align-items: center; gap: 12px; h1 { margin: 0; font-size: 18px; font-weight: 700; }; .status-online { margin: 2px 0 0 0; font-size: 11px; color: #1a7f37; font-weight: 600; } }
+  
+  .brand { display: flex; align-items: center; gap: 12px; 
+  .chef-logo-img { width: 56px; height: 56px; object-fit: contain; }
+  h1 { margin: 0; font-size: 20px; font-weight: 800; color: #1f2937; }; 
+  .status-online { margin: 4px 0 0 0; font-size: 11.5px; color: #1a7f37; font-weight: 600; } 
+  }
 }
 .mobile-search-section { 
   padding: 12px 16px 6px 16px; background: #ffffff; 
@@ -120,8 +122,6 @@ defineEmits(['update:searchQuery', 'update:selectedCategory', 'open-detail'])
     background: #ffffff; border-radius: 10px; border: 1px solid #d0d7de; overflow: hidden; box-shadow: 0 2px 4px rgba(140, 149, 159, 0.05); display: flex; flex-direction: column; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
     &:hover { transform: translateY(-4px); box-shadow: 0 6px 12px rgba(140, 149, 159, 0.15); }
     .grid-image-wrapper { width: 100%; height: 120px; background: #e1e4e8; overflow: hidden; position: relative; @media (min-width: 768px) { height: 140px; } .grid-image { width: 100%; height: 100%; object-fit: cover; } .grid-image-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 32px; } }
-    
-    /* 🌟 新增與微調：多標籤並排包裝盒樣式，維持字卡精緻感 */
     .grid-card-info { padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; flex-grow: 1; 
       .grid-tags-row { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 2px; }
       .grid-category-badge { align-self: flex-start; background: #f1f5f9; color: #475569; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; white-space: nowrap; } 
