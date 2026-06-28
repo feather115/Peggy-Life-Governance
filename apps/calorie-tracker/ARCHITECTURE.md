@@ -109,9 +109,41 @@ Supabase ⇄ db.js ⇄ useAppData.js ⇄ App.jsx ⇄ components/*
 
 ---
 
+## Schema 隔離
+
+兩個 app 共用同一個 Supabase 專案、共用使用者池（`auth.users`），但資料表分別在獨立的 schema：
+
+| Schema | 屬於哪個 app | 內容 |
+|---|---|---|
+| `calorie_tracker` | calorie-tracker | 11 張表（`user_settings`、`day_records`、`meal_items`、`challenges` …）+ 2 個 RPC function（`is_challenge_member`、`find_challenge_by_code`） |
+| `recipe_book` | recipe-book | `recipes` 表 |
+| `auth` | 兩個 app 共用 | Supabase 內建的使用者表 |
+| `public` | （已搬空） | 只剩 `handle_new_user()` trigger function（trigger 在 `auth.users` 上，無法移動） |
+
+**前端 supabase client 怎麼指向新 schema**：在建立 client 時傳 `db.schema`：
+```js
+createClient(url, key, { db: { schema: 'calorie_tracker' } })
+```
+之後所有 `from()`、`rpc()` 都自動指向該 schema。`auth.*` 共用 `auth` schema，不受影響。
+本專案的 client 由 `@peggy-life/shared` 的 `createAppSupabase({ schema })` 工廠建立
+（前端見 `src/supabase.js`，伺服器端 admin client 見 `api/_supabaseAdmin.js`）。
+
+**Supabase Settings → API → Exposed schemas 必須包含** `calorie_tracker`（和 `recipe_book`，給另一個 app 用）；
+PostgREST 沒 expose 的 schema 即使有 grant 也讀不到，會回 schema not found / 404。
+
+**Schema 隔離 migration**：[`2026-06-28_schema_isolation.sql`](./supabase/2026-06-28_schema_isolation.sql)
+做了下面這幾件事，了解原理對未來 troubleshooting 很重要：
+- `alter table public.xxx set schema calorie_tracker` 搬表（FK / 索引 / RLS / policy 都跟著走，**但 policy body 裡的 `public.day_records` 這種寫法不會被自動改寫**，所以跨表 reference 的 policy 要 drop & recreate）
+- RPC function 不只搬，是 `drop` + `create` 在新 schema（因為函式本體裡也寫死了 `public.challenge_members`，且 `supabase.rpc()` 要在 `db.schema` 所指的 schema 找函式）
+- `handle_new_user` trigger function 留在 `public`（trigger 掛在 `auth.users` 上沒法跨 schema 改 reference），但 body 改成 `insert into calorie_tracker.user_settings ...`
+- `grant ... on all tables in schema calorie_tracker` 給 `anon`/`authenticated`（PostgREST 用），`alter default privileges` 確保未來新增的表也自動有權限
+
+---
+
 ## 資料庫結構（Supabase）
 
-完整 SQL 在 `supabase/schema.sql`。六張表：
+完整 SQL 在 `supabase/schema.sql`（用 `public` schema 寫，配合本目錄下的 migration 最後會搬到
+`calorie_tracker`）。六張表：
 
 | 表 | 用途 | 重點 |
 |---|---|---|
@@ -265,6 +297,7 @@ CASCADE 會把對應的成員關聯與體重紀錄一併清掉。`active` 的挑
 | `2026-06-26_line_links.sql` | 建立 `line_links` 對照表（LINE 帳號連結用），開 RLS 但不開 policy（只給伺服器端 `service_role` 用） |
 | `2026-06-28_food_usage.sql` | 建立 `food_usage` 表（食物庫排序用），已併入最新版 `schema.sql` |
 | `2026-06-28_tag_def_colors.sql` | 幫 `tag_defs` 加 `color` 欄位，讓記錄原因標籤可自訂顏色並顯示在報表月曆 |
+| `2026-06-28_schema_isolation.sql` | ⭐ 把 11 張表 + 2 個 RPC function 從 `public` 搬到 `calorie_tracker` schema；重建跨表 RLS policy；更新 `handle_new_user` trigger function。**跑這支前一定要先去 Settings → API → Exposed schemas 加 `calorie_tracker`** |
 
 > 全新環境直接照順序整段貼上跑一次即可；如果是延續舊環境，只需要補跑「還沒跑過」的那幾支（看 Supabase 有沒有對應欄位/function 判斷）。
 >

@@ -17,10 +17,14 @@ npm install
 
 ### 2. 設定 Supabase
 
-1. 到 [supabase.com](https://supabase.com) 建立一個新專案（或沿用 calorie-tracker 用的同一個）
-2. 左側 **SQL Editor** → 貼上 [`supabase/schema.sql`](./supabase/schema.sql) 全部內容 → **Run**
-3. **Settings → API**，複製 `Project URL` 和 `anon public` key
-4. 複製 `.env.example` 成 `.env`，填入：
+1. 到 [supabase.com](https://supabase.com) 建立一個新專案（或沿用 calorie-tracker 用的同一個 —— 兩個
+   app 用同一個 Supabase 專案、共用使用者池，但資料表在不同的 schema 隔開）
+2. **Settings → API → Exposed schemas** 加上 `recipe_book`（如果還沒加），儲存後等 30 秒
+3. 左側 **SQL Editor** → 貼上 [`supabase/schema.sql`](./supabase/schema.sql) → **Run**（建 `recipes` 表）
+4. 再貼 [`supabase/2026-06-28_schema_isolation.sql`](./supabase/2026-06-28_schema_isolation.sql) → **Run**
+   （把 `recipes` 從 `public` 搬到 `recipe_book` schema）
+5. 左側 **Settings → API**，複製 `Project URL` 和 `anon public` key
+6. 複製 `.env.example` 成 `.env`，填入：
    ```
    VITE_SUPABASE_URL=https://你的專案.supabase.co
    VITE_SUPABASE_ANON_KEY=eyJ...

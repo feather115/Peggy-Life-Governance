@@ -1,1 +1,6 @@
-export { supabase, supabaseReady, createSupabaseClient } from './supabase.js';
+export {
+  supabase,
+  supabaseReady,
+  createAppSupabase,
+  createSupabaseClient,
+} from './supabase.js';
