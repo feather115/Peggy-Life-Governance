@@ -87,7 +87,9 @@ Supabase ⇄ db.js ⇄ useRecipes.js ⇄ App.jsx ⇄ Root.jsx (Auth gate / LIFF)
 
 ## 資料庫結構（Supabase）
 
-只有一張表 `recipes`（完整 SQL 見 `supabase/schema.sql`）：
+兩張表：`recipes`（食譜本身，公開可讀）+ `cooking_history`（每個使用者的料理行事曆紀錄）。
+
+### `recipes`（`supabase/schema.sql`）
 
 | 欄位 | 型別 | 用途 |
 |---|---|---|
@@ -110,6 +112,21 @@ Supabase ⇄ db.js ⇄ useRecipes.js ⇄ App.jsx ⇄ Root.jsx (Auth gate / LIFF)
 - **`steps` 支援三種格式**：物件陣列、字串陣列、單一字串（換行分隔）。`parseSteps()` 統一處理。
 - **`is_base` 標記主食材**——配方縮放用。輸入主食材的新重量後，其他食材依比例換算。
 
+### `cooking_history`（`supabase/2026-06-28_recipe_cook_records.sql`）
+
+| 欄位 | 型別 | 用途 |
+|---|---|---|
+| `id` | uuid (PK) | 主鍵 |
+| `user_id` | uuid → `auth.users(id)` | 使用者（CASCADE） |
+| `recipe_id` | uuid → `recipe_book.recipes(id)` | 食譜（CASCADE） |
+| `cooked_date` | date | 哪一天做的 |
+| `created_at` | timestamptz | 寫入時間 |
+
+UNIQUE `(user_id, cooked_date, recipe_id)` — 同一天同一道菜不會重複登記，前端 `addCookRecord` 用 upsert 處理。
+RLS：每個人只能 select/insert/update/delete 自己 `user_id` 的列。
+
+> **重要**：`recipe_id` 是 `uuid`，因為 `recipes.id` 就是 uuid（不要寫成 bigint，FK 會建不起來）。
+
 ---
 
 ## Migration 檔案清單（`supabase/`）
@@ -117,9 +134,10 @@ Supabase ⇄ db.js ⇄ useRecipes.js ⇄ App.jsx ⇄ Root.jsx (Auth gate / LIFF)
 | 檔案 | 做什麼 |
 |---|---|
 | `schema.sql` | 建 `recipes` 表 + GIN 索引 + RLS + select policy（建在 `public`） |
-| 2026-06-28_schema_isolation.sql | 把 `recipes` 從 `public` 搬到 `recipe_book` schema，並授權給 PostgREST 及 service_role |
+| `2026-06-28_schema_isolation.sql` | 把 `recipes` 從 `public` 搬到 `recipe_book` schema |
+| `2026-06-28_recipe_cook_records.sql` | 建 `recipe_book.cooking_history` 表（料理行事曆紀錄）+ RLS + 索引 |
 
-> 新環境：先跑 `schema.sql`，再跑 `2026-06-28_schema_isolation.sql`。跑 schema isolation 前要先在 Supabase Exposed schemas 加 `recipe_book`。
+> 新環境順序：`schema.sql` → 在 Supabase Exposed schemas 加 `recipe_book` → `2026-06-28_schema_isolation.sql` → `2026-06-28_recipe_cook_records.sql`。
 
 ---
 

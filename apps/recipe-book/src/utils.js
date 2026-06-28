@@ -4,6 +4,7 @@
 // ============================================================
 
 export const ALL_CATEGORY = '全部';
+export const DOW = ['日', '一', '二', '三', '四', '五', '六'];
 
 export function normalizeRecipe(recipe) {
   return {
@@ -116,4 +117,45 @@ export function formatDate(dateStr) {
   const m = String(date.getMonth() + 1).padStart(2, '0');
   const d = String(date.getDate()).padStart(2, '0');
   return `${y}-${m}-${d}`;
+}
+
+export function todayKey() {
+  return dateKeyFrom(new Date());
+}
+
+export function dateKeyFrom(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+export function parseDateKey(dateKey) {
+  const [year, month, day] = dateKey.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
+
+export function dateLabel(dateKey) {
+  const date = parseDateKey(dateKey);
+  return `${date.getMonth() + 1}/${date.getDate()}（${DOW[date.getDay()]}）`;
+}
+
+export function monthLabel(year, monthIndex) {
+  return `${year} 年 ${monthIndex + 1} 月`;
+}
+
+export function getMonthDays(year, monthIndex) {
+  const first = new Date(year, monthIndex, 1);
+  const startOffset = first.getDay();
+  const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+  const cells = [];
+
+  for (let i = 0; i < startOffset; i += 1) {
+    cells.push(null);
+  }
+  for (let day = 1; day <= daysInMonth; day += 1) {
+    const date = new Date(year, monthIndex, day);
+    cells.push(dateKeyFrom(date));
+  }
+  while (cells.length % 7 !== 0) {
+    cells.push(null);
+  }
+  return cells;
 }

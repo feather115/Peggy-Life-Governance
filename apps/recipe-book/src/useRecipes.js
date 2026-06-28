@@ -33,10 +33,12 @@ function scrollToTop() {
   window.scrollTo({ top: 0, behavior: 'instant' });
 }
 
-export function useRecipes() {
+export function useRecipes(userId) {
   const [recipes, setRecipes] = useState([]);
+  const [cookRecords, setCookRecords] = useState([]);
   const [loaded, setLoaded] = useState(false);
   const [loadError, setLoadError] = useState('');
+  const [cookRecordError, setCookRecordError] = useState('');
 
   // Search / Category
   const [searchQuery, setSearchQuery] = useState('');
@@ -50,9 +52,20 @@ export function useRecipes() {
   useEffect(() => {
     let cancel = false;
     db.loadRecipes()
-      .then((rows) => {
+      .then(async (recipeRows) => {
         if (cancel) return;
-        setRecipes(rows);
+        setRecipes(recipeRows);
+        try {
+          const recordRows = await db.loadCookRecords(userId);
+          if (cancel) return;
+          setCookRecordError('');
+          setCookRecords(recordRows);
+        } catch (e) {
+          if (cancel) return;
+          console.warn('料理行事曆紀錄載入失敗：', e.message);
+          setCookRecordError(e.message || '行事曆紀錄載入失敗');
+          setCookRecords([]);
+        }
         setLoaded(true);
       })
       .catch((e) => {
@@ -62,7 +75,7 @@ export function useRecipes() {
         setLoaded(true);
       });
     return () => { cancel = true; };
-  }, []);
+  }, [userId]);
 
   // Sync view with URL after loading is complete (supports opening URLs with ?recipe=xxx directly)
   useEffect(() => {
@@ -102,6 +115,37 @@ export function useRecipes() {
     window.history.pushState({ view: 'detail', recipeId: recipe.id }, '', buildDetailUrl(recipe.id));
   }, []);
 
+  const addCookRecord = useCallback(async (cookedOn, recipeId) => {
+    let saved;
+    try {
+      saved = await db.addCookRecord(userId, cookedOn, recipeId);
+      setCookRecordError('');
+    } catch (e) {
+      setCookRecordError(e.message || '料理紀錄新增失敗');
+      throw e;
+    }
+    setCookRecords((prev) => {
+      const withoutDuplicate = prev.filter((record) => !(
+        record.cooked_date === saved.cooked_date && record.recipe_id === saved.recipe_id
+      ));
+      return [...withoutDuplicate, saved].sort((a, b) => {
+        if (a.cooked_date !== b.cooked_date) return b.cooked_date.localeCompare(a.cooked_date);
+        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      });
+    });
+  }, [userId]);
+
+  const removeCookRecord = useCallback(async (recordId) => {
+    try {
+      await db.removeCookRecord(recordId);
+      setCookRecordError('');
+    } catch (e) {
+      setCookRecordError(e.message || '料理紀錄刪除失敗');
+      throw e;
+    }
+    setCookRecords((prev) => prev.filter((record) => record.id !== recordId));
+  }, []);
+
   const availableCategories = useMemo(() => getAvailableCategories(recipes), [recipes]);
   const filteredRecipes = useMemo(
     () => filterRecipes(recipes, selectedCategory, searchQuery),
@@ -113,11 +157,12 @@ export function useRecipes() {
   );
 
   return {
-    loaded, loadError, recipes,
+    loaded, loadError, recipes, cookRecords, cookRecordError,
     searchQuery, setSearchQuery,
     selectedCategory, setSelectedCategory,
     availableCategories, filteredRecipes,
     currentView, selectedRecipe,
     openRecipeDetail,
+    addCookRecord, removeCookRecord,
   };
 }

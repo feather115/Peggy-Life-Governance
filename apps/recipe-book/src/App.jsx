@@ -1,8 +1,10 @@
 // App shell: manages the 520px centered container, fetches recipes using useRecipes hook, and routes to catalog or details.
-import React from 'react';
+import React, { useState } from 'react';
 import { useRecipes } from './useRecipes.js';
+import CookCalendar from './components/CookCalendar.jsx';
 import RecipeCatalog from './components/RecipeCatalog.jsx';
 import RecipeDetail from './components/RecipeDetail.jsx';
+import TabBar from './components/TabBar.jsx';
 
 function Centered({ children, color = '#6E8B7C' }) {
   return (
@@ -13,7 +15,8 @@ function Centered({ children, color = '#6E8B7C' }) {
 }
 
 export default function App({ session, onSignOut }) {
-  const recipes = useRecipes();
+  const recipes = useRecipes(session.user.id);
+  const [tab, setTab] = useState('recipes');
 
   if (!recipes.loaded) return <Centered>載入中…</Centered>;
   if (recipes.loadError) return <Centered color="#B91C1C">載入失敗：{recipes.loadError}</Centered>;
@@ -29,21 +32,26 @@ export default function App({ session, onSignOut }) {
     }
   };
 
+  const changeTab = (nextTab) => {
+    setTab(nextTab);
+  };
+
   return (
     <div style={{
       position: 'relative',
       width: '100%',
       maxWidth: 520,
-      minHeight: '100vh',
-      minHeight: '100dvh',
+      height: '100vh',
+      maxHeight: '100dvh',
       margin: '0 auto',
       background: '#FFF5EE',
       display: 'flex',
       flexDirection: 'column',
       boxShadow: '0 0 60px -20px rgba(0,0,0,.12)',
+      overflow: 'hidden',
     }}>
       <div className="ps" style={{ flex: 1, overflowY: 'auto', paddingTop: 8 }}>
-        {recipes.currentView === 'home' && (
+        {tab === 'recipes' && recipes.currentView === 'home' && (
           <RecipeCatalog
             recipes={recipes.recipes}
             searchQuery={recipes.searchQuery}
@@ -57,13 +65,25 @@ export default function App({ session, onSignOut }) {
           />
         )}
 
-        {recipes.currentView === 'detail' && recipes.selectedRecipe && (
+        {tab === 'recipes' && recipes.currentView === 'detail' && recipes.selectedRecipe && (
           <RecipeDetail
             recipe={recipes.selectedRecipe}
             onBack={handleBack}
           />
         )}
+
+        {tab === 'calendar' && (
+          <CookCalendar
+            recipes={recipes.recipes}
+            cookRecords={recipes.cookRecords}
+            cookRecordError={recipes.cookRecordError}
+            onAddRecord={recipes.addCookRecord}
+            onRemoveRecord={recipes.removeCookRecord}
+          />
+        )}
       </div>
+
+      <TabBar tab={tab} onTab={changeTab} />
     </div>
   );
 }
