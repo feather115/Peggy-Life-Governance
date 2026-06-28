@@ -57,6 +57,46 @@ export default function RecipeForm({ recipe, onSave, onCancel, onDelete }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
+  const [importText, setImportText] = useState('');
+  const [importError, setImportError] = useState('');
+
+  const applyImport = () => {
+    setImportError('');
+    let parsed;
+    try {
+      parsed = JSON.parse(importText);
+    } catch (e) {
+      setImportError('JSON 格式錯誤：' + e.message);
+      return;
+    }
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      setImportError('需要是物件 {} 格式');
+      return;
+    }
+    if (typeof parsed.title === 'string') setTitle(parsed.title);
+    if (typeof parsed.image_url === 'string') setImageUrl(parsed.image_url);
+    if (Array.isArray(parsed.category)) setCategoryText(parsed.category.join('、'));
+    else if (typeof parsed.category === 'string') setCategoryText(parsed.category);
+    if (Array.isArray(parsed.yield_info)) setYieldText(parsed.yield_info.join('、'));
+    else if (typeof parsed.yield_info === 'string') setYieldText(parsed.yield_info);
+    if (parsed.ingredients !== undefined) {
+      const ing = parseIngredients(parsed.ingredients);
+      setIngredients(ing.length > 0 ? ing : [emptyIngredient(true)]);
+    }
+    if (parsed.steps !== undefined) {
+      const st = parseSteps(parsed.steps);
+      setStepsText(st.map((s) => s.text).join('\n'));
+    }
+    if (parsed.notes !== undefined) {
+      setNotesText(parseNotes(parsed.notes).join('\n'));
+    }
+    if (parsed.parameters && typeof parsed.parameters === 'object') {
+      setParameters(paramsToList(parsed.parameters));
+    }
+    setImportOpen(false);
+    setImportText('');
+  };
 
   const updateIngredient = (idx, patch) => {
     setIngredients((prev) => prev.map((row, i) => (i === idx ? { ...row, ...patch } : row)));
@@ -146,7 +186,32 @@ export default function RecipeForm({ recipe, onSave, onCancel, onDelete }) {
       </header>
 
       <div style={{ background: '#fff', borderRadius: 20, padding: 18, boxShadow: '0 10px 24px -18px rgba(232,122,36,.3)' }}>
-        <label style={{ ...S.label, marginTop: 0 }}>食譜名稱 *</label>
+        <div style={{ marginBottom: 4 }}>
+          <button
+            type="button"
+            onClick={() => { setImportOpen((v) => !v); setImportError(''); }}
+            style={{ border: '1px dashed #8E7568', background: 'transparent', color: '#8E7568', padding: '8px 14px', borderRadius: 12, fontSize: 12, fontWeight: 900, cursor: 'pointer', width: '100%' }}
+          >
+            {importOpen ? '× 關閉 JSON 匯入' : '📥 用 JSON 匯入（之後仍可編輯）'}
+          </button>
+          {importOpen && (
+            <div style={{ marginTop: 8 }}>
+              <textarea
+                value={importText}
+                onChange={(e) => setImportText(e.target.value)}
+                style={{ ...S.textarea, minHeight: 140, fontFamily: 'monospace', fontSize: 12 }}
+                placeholder={'貼上食譜 JSON，例如：\n{\n  "title": "番茄炒蛋",\n  "category": ["家常菜"],\n  "ingredients": [\n    { "name": "蛋", "amount": "3 顆", "is_base": true },\n    { "name": "番茄", "amount": "200 g" }\n  ],\n  "steps": ["蛋打散加鹽", "番茄切塊下鍋"],\n  "notes": ["小火慢炒"],\n  "parameters": { "火力": "中小火" }\n}'}
+              />
+              {importError && <div style={{ ...S.errorBox, marginTop: 8 }}>{importError}</div>}
+              <button type="button" onClick={applyImport} style={{ ...S.addBtn, width: '100%', marginTop: 8, borderStyle: 'solid', background: '#FFF3EB' }}>
+                解析並套用到下面的表單
+              </button>
+              <div style={{ ...S.hint, marginTop: 4 }}>套用後欄位會被填上，你可以在下面繼續編輯，按「建立食譜」才會送出。</div>
+            </div>
+          )}
+        </div>
+
+        <label style={{ ...S.label, marginTop: 14 }}>食譜名稱 *</label>
         <input style={S.input} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="例：番茄炒蛋" />
 
         <label style={S.label}>分類標籤</label>
