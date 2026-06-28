@@ -74,7 +74,7 @@ export default function SettingsTab({ app, session, onSignOut }) {
         <div style={{ fontSize: 14, fontWeight: 800, color: '#6E8B7C', marginBottom: 6 }}>暱稱</div>
         <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="例如：小明" maxLength={20}
           style={{ width: '100%', border: 'none', background: '#F6FAF7', borderRadius: 14, padding: '14px 15px', fontSize: 16, fontWeight: 800, color: '#234034' }} />
-        <div style={{ fontSize: 12, color: '#9bb0a3', marginTop: 6, fontWeight: 600 }}>會顯示在今日頁的問候語</div>
+        <div style={{ fontSize: 12, color: '#9bb0a3', marginTop: 6, fontWeight: 600 }}>會顯示在紀錄頁的問候語</div>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'flex-start', marginTop: 14 }}>
           <PasswordChanger />
           <LineLinker />

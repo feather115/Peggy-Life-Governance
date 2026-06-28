@@ -55,17 +55,8 @@ export default function TodayTab({ app, selectedDate, setSelectedDate, onOpenShe
         <button onClick={nextDay} style={{ border: 'none', background: '#fff', color: '#234034', width: 36, height: 36, borderRadius: '50%', cursor: 'pointer', fontSize: 20, fontWeight: 900, lineHeight: 1, opacity: isTod ? 0.3 : 1, boxShadow: '0 4px 12px -8px rgba(0,0,0,.2)' }}>›</button>
       </div>
 
-      {/* 啟用中的標籤 chips */}
-      {activeTags.length > 0 && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
-          {activeTagChips.map((chip, i) => (
-            <button key={i} onClick={onOpenAdvanced} style={{ border: 'none', background: chip.bg, color: chip.color, padding: '5px 12px', borderRadius: 14, fontSize: 13, fontWeight: 800, cursor: 'pointer' }}>{chip.label}</button>
-          ))}
-        </div>
-      )}
-
       {/* 卡路里環卡片 */}
-      <div style={{ background: '#fff', borderRadius: 28, padding: '24px 20px 20px', marginTop: 12, boxShadow: '0 14px 32px -18px rgba(46,139,94,.4)' }}>
+      <div style={{ background: '#fff', borderRadius: 28, padding: '24px 20px 20px', marginTop: 12, boxShadow: '0 14px 32px -18 rgba(46,139,94,.4)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
           <div style={{ fontSize: 14, color: '#6E8B7C', fontWeight: 700 }}>{greeting()}{displayName ? `，${displayName}` : ''}</div>
           <button onClick={onOpenImport} title="匯入 JSON" style={{ border: 'none', background: '#F6FAF7', color: '#2E8B5E', fontWeight: 900, fontSize: 13, padding: '5px 10px', borderRadius: 14, cursor: 'pointer', fontFamily: 'monospace' }}>{'{ }'}</button>
@@ -83,6 +74,16 @@ export default function TodayTab({ app, selectedDate, setSelectedDate, onOpenShe
         <div style={{ textAlign: 'center', marginTop: 8 }}>
           <span style={{ fontSize: 14, fontWeight: 800, color: remainColor, background: remainBg, padding: '7px 16px', borderRadius: 20 }}>{remainText}</span>
         </div>
+
+        {/* 啟用中的標籤 chips */}
+        {activeTags.length > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', marginTop: 16 }}>
+            {activeTagChips.map((chip, i) => (
+              <button key={i} onClick={onOpenAdvanced} style={{ border: 'none', background: chip.bg, color: chip.color, padding: '5px 12px', borderRadius: 14, fontSize: 13, fontWeight: 800, cursor: 'pointer' }}>{chip.label}</button>
+            ))}
+          </div>
+        )}
+
         <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
           {macros.map((macro) => (
             <div key={macro.label}>

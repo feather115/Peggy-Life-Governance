@@ -2,7 +2,7 @@
 import React from 'react';
 
 const TABS = [
-  { key: 'today',     label: '今日' },
+  { key: 'today',     label: '紀錄' },
   { key: 'reports',   label: '報表' },
   { key: 'challenge', label: '挑戰' },
   { key: 'settings',  label: '設定' },
