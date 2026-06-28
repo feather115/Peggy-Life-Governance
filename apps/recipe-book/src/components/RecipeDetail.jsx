@@ -378,7 +378,7 @@ export default function RecipeDetail({ recipe, onBack }) {
                   type="number"
                   value={currentWeight}
                   onChange={(e) => setCurrentWeight(e.target.value)}
-                  placeholder={baseIng.amount}
+                  placeholder={parseFloat(baseIng.amount) || baseIng.amount}
                   style={s.weightInput}
                   pattern="[0-9]*"
                 />
