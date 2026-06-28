@@ -1,5 +1,5 @@
 // Calendar tab: records which recipes were cooked on each day.
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   DOW,
   dateLabel,
@@ -53,6 +53,7 @@ export default function CookCalendar({ recipes, cookRecords, cookRecordError, on
   const [visibleMonth, setVisibleMonth] = useState(new Date(initialDate.getFullYear(), initialDate.getMonth(), 1));
   const [selectedDate, setSelectedDate] = useState(todayKey());
   const [selectedRecipeId, setSelectedRecipeId] = useState('');
+  const [recipeQuery, setRecipeQuery] = useState('');
 
   const recipeById = useMemo(
     () => new Map(recipes.map((recipe) => [String(recipe.id), recipe])),
@@ -72,8 +73,49 @@ export default function CookCalendar({ recipes, cookRecords, cookRecordError, on
     [visibleMonth],
   );
   const selectedRecords = recordsByDate[selectedDate] || [];
-  const selectedRecipeIds = new Set(selectedRecords.map((record) => String(record.recipe_id)));
-  const availableRecipes = recipes.filter((recipe) => !selectedRecipeIds.has(String(recipe.id)));
+
+  const availableRecipes = useMemo(() => {
+    const selectedRecipeIds = new Set(selectedRecords.map((record) => String(record.recipe_id)));
+    const query = recipeQuery.trim().toLowerCase();
+
+    return recipes
+      .filter((recipe) => {
+        if (selectedRecipeIds.has(String(recipe.id))) return false;
+        if (query) {
+          return recipe.title.toLowerCase().includes(query);
+        }
+        return true;
+      })
+      .sort((a, b) => {
+        const timeA = a.last_cooked_at ? new Date(a.last_cooked_at).getTime() : 0;
+        const timeB = b.last_cooked_at ? new Date(b.last_cooked_at).getTime() : 0;
+        if (timeA !== timeB) return timeB - timeA;
+
+        const updateA = a.updated_at ? new Date(a.updated_at).getTime() : 0;
+        const updateB = b.updated_at ? new Date(b.updated_at).getTime() : 0;
+        if (updateA !== updateB) return updateB - updateA;
+
+        const createA = a.created_at ? new Date(a.created_at).getTime() : 0;
+        const createB = b.created_at ? new Date(b.created_at).getTime() : 0;
+        if (createA !== createB) return createB - createA;
+
+        return a.title.localeCompare(b.title, 'zh-Hant');
+      });
+  }, [recipes, selectedRecords, recipeQuery]);
+
+  // Auto-select the first option when the query changes and the current selection is empty or invalid
+  useEffect(() => {
+    if (recipeQuery.trim()) {
+      if (availableRecipes.length > 0) {
+        const currentValid = availableRecipes.some((r) => String(r.id) === String(selectedRecipeId));
+        if (!currentValid) {
+          setSelectedRecipeId(String(availableRecipes[0].id));
+        }
+      } else {
+        setSelectedRecipeId('');
+      }
+    }
+  }, [availableRecipes, recipeQuery, selectedRecipeId]);
 
   const shiftMonth = (delta) => {
     setVisibleMonth((current) => new Date(current.getFullYear(), current.getMonth() + delta, 1));
@@ -90,6 +132,7 @@ export default function CookCalendar({ recipes, cookRecords, cookRecordError, on
     try {
       await onAddRecord(selectedDate, selectedRecipeId);
       setSelectedRecipeId('');
+      setRecipeQuery('');
     } catch {
       // The shared error banner is updated by useRecipes.
     }
@@ -150,13 +193,25 @@ export default function CookCalendar({ recipes, cookRecords, cookRecordError, on
             行事曆資料表還沒準備好。請先在 Supabase 執行 recipe-book 的料理紀錄 migration，完成後等約 30 秒再重新整理。
           </div>
         )}
+        <div style={{ marginBottom: 8 }}>
+          <input
+            type="text"
+            value={recipeQuery}
+            onChange={(e) => {
+              setRecipeQuery(e.target.value);
+              setSelectedRecipeId('');
+            }}
+            placeholder="🔍 輸入料理關鍵字搜尋..."
+            style={S.select}
+          />
+        </div>
         <div style={S.formRow}>
           <select
             value={selectedRecipeId}
             onChange={(event) => setSelectedRecipeId(event.target.value)}
             style={S.select}
           >
-            <option value="">選擇料理</option>
+            <option value="">選擇料理 ({availableRecipes.length} 個符合)</option>
             {availableRecipes.map((recipe) => (
               <option key={recipe.id} value={recipe.id}>{recipe.title}</option>
             ))}

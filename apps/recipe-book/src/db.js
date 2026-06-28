@@ -15,6 +15,8 @@ const RECIPE_SELECT_COLUMNS = [
   'last_cooked_at',
   'yield_info',
   'parameters',
+  'created_at',
+  'updated_at',
 ].join(', ');
 
 export async function loadRecipes() {

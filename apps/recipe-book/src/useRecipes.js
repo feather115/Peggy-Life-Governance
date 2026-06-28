@@ -162,12 +162,30 @@ export function useRecipes(userId) {
       const withoutDuplicate = prev.filter((record) => !(
         record.cooked_date === saved.cooked_date && record.recipe_id === saved.recipe_id
       ));
-      return [...withoutDuplicate, saved].sort((a, b) => {
+      const nextRecords = [...withoutDuplicate, saved].sort((a, b) => {
         if (a.cooked_date !== b.cooked_date) return b.cooked_date.localeCompare(a.cooked_date);
         return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
       });
+
+      const recipe = recipes.find((r) => String(r.id) === String(recipeId));
+      if (recipe && userId && recipe.user_id === userId) {
+        const recipeRecords = nextRecords.filter((r) => String(r.recipe_id) === String(recipeId));
+        const latestDate = recipeRecords.length > 0
+          ? recipeRecords.reduce((max, r) => r.cooked_date.localeCompare(max) > 0 ? r.cooked_date : max, recipeRecords[0].cooked_date)
+          : null;
+
+        db.updateRecipe(recipeId, { last_cooked_at: latestDate })
+          .then((updated) => {
+            setRecipes((prevRecipes) => prevRecipes.map((r) => r.id === updated.id ? updated : r));
+          })
+          .catch((err) => {
+            console.warn('Failed to update last_cooked_at in DB:', err);
+          });
+      }
+
+      return nextRecords;
     });
-  }, [userId]);
+  }, [userId, recipes]);
 
   const setRecipeShared = useCallback(async (recipeId, isShared) => {
     const updated = await db.setRecipeShared(recipeId, isShared);
@@ -197,6 +215,7 @@ export function useRecipes(userId) {
   }, [selectedRecipeId]);
 
   const removeCookRecord = useCallback(async (recordId) => {
+    const recordToRemove = cookRecords.find((r) => r.id === recordId);
     try {
       await db.removeCookRecord(recordId);
       setCookRecordError('');
@@ -204,10 +223,59 @@ export function useRecipes(userId) {
       setCookRecordError(e.message || '料理紀錄刪除失敗');
       throw e;
     }
-    setCookRecords((prev) => prev.filter((record) => record.id !== recordId));
-  }, []);
 
-  const availableCategories = useMemo(() => getAvailableCategories(recipes), [recipes]);
+    if (recordToRemove) {
+      const recipeId = recordToRemove.recipe_id;
+      setCookRecords((prev) => {
+        const nextRecords = prev.filter((record) => record.id !== recordId);
+
+        const recipe = recipes.find((r) => String(r.id) === String(recipeId));
+        if (recipe && userId && recipe.user_id === userId) {
+          const recipeRecords = nextRecords.filter((r) => String(r.recipe_id) === String(recipeId));
+          const latestDate = recipeRecords.length > 0
+            ? recipeRecords.reduce((max, r) => r.cooked_date.localeCompare(max) > 0 ? r.cooked_date : max, recipeRecords[0].cooked_date)
+            : null;
+
+          db.updateRecipe(recipeId, { last_cooked_at: latestDate })
+            .then((updated) => {
+              setRecipes((prevRecipes) => prevRecipes.map((r) => r.id === updated.id ? updated : r));
+            })
+            .catch((err) => {
+              console.warn('Failed to update last_cooked_at in DB on delete:', err);
+            });
+        }
+
+        return nextRecords;
+      });
+    } else {
+      setCookRecords((prev) => prev.filter((record) => record.id !== recordId));
+    }
+  }, [userId, recipes, cookRecords]);
+
+  const recipesWithLastCooked = useMemo(() => {
+    const latestByRecipe = {};
+    cookRecords.forEach((record) => {
+      const rid = String(record.recipe_id);
+      const d = record.cooked_date;
+      if (!latestByRecipe[rid] || d.localeCompare(latestByRecipe[rid]) > 0) {
+        latestByRecipe[rid] = d;
+      }
+    });
+
+    return recipes.map((recipe) => {
+      const rid = String(recipe.id);
+      const latest = latestByRecipe[rid];
+      if (!isGuest) {
+        return {
+          ...recipe,
+          last_cooked_at: latest || null,
+        };
+      }
+      return recipe;
+    });
+  }, [recipes, cookRecords, isGuest]);
+
+  const availableCategories = useMemo(() => getAvailableCategories(recipesWithLastCooked), [recipesWithLastCooked]);
 
   const likeCounts = useMemo(() => {
     const m = new Map();
@@ -222,8 +290,8 @@ export function useRecipes(userId) {
   }, [likes, userId]);
 
   const filteredRecipes = useMemo(
-    () => filterRecipes(recipes, { category: selectedCategory, search: searchQuery, ownershipSet: ownershipFilter, currentUserId: userId, myLikedSet }),
-    [recipes, selectedCategory, searchQuery, ownershipFilter, userId, myLikedSet],
+    () => filterRecipes(recipesWithLastCooked, { category: selectedCategory, search: searchQuery, ownershipSet: ownershipFilter, currentUserId: userId, myLikedSet }),
+    [recipesWithLastCooked, selectedCategory, searchQuery, ownershipFilter, userId, myLikedSet],
   );
 
   const toggleLike = useCallback(async (recipeId) => {
@@ -245,12 +313,12 @@ export function useRecipes(userId) {
     }
   }, [userId, myLikedSet]);
   const selectedRecipe = useMemo(
-    () => recipes.find((r) => r.id === selectedRecipeId) || null,
-    [recipes, selectedRecipeId],
+    () => recipesWithLastCooked.find((r) => r.id === selectedRecipeId) || null,
+    [recipesWithLastCooked, selectedRecipeId],
   );
 
   return {
-    loaded, loadError, recipes, cookRecords, cookRecordError,
+    loaded, loadError, recipes: recipesWithLastCooked, cookRecords, cookRecordError,
     searchQuery, setSearchQuery,
     selectedCategory, setSelectedCategory,
     availableCategories, filteredRecipes,
