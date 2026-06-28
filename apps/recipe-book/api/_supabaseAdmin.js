@@ -11,3 +11,14 @@ export function getSupabaseAdmin() {
     db: { schema: 'recipe_book' },
   });
 }
+
+// Share line_links with calorie-tracker
+export function getSupabaseAdminForLine() {
+  const url = process.env.VITE_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) throw new Error('伺服器未設定 SUPABASE_SERVICE_ROLE_KEY');
+  return createClient(url, key, {
+    auth: { autoRefreshToken: false, persistSession: false },
+    db: { schema: 'calorie_tracker' },
+  });
+}

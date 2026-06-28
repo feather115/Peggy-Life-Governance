@@ -98,3 +98,6 @@ src/
   - 當使用者在行事曆中新增或刪除烹調歷史時，系統會自動在前端與資料庫中同步更新對應食譜的「最後製作時間`last_cooked_at`」欄位。
   - 移除了行事曆日期格子內部顯示第一道料理名稱的設計，讓日曆畫面保持簡潔，僅保留日期與烹調數量角標。
   - 修正了在沒有新增行事曆料理紀錄時，食譜會因為無法推導出 `latestByRecipe` 而導致原本存在資料庫中的 `last_cooked_at` 被強制覆蓋為 `null` 的 Bug（已改為若無行事曆紀錄則自動 Fallback 回讀取資料庫原本的 `last_cooked_at`）。
+- **共享 LINE 帳號綁定資料表** (2026-06-28)：
+  - 修改了後端 Serverless API（`_supabaseAdmin.js`, `_lineLink.js`, `_lineLogin.js`），在處理 LINE 登入與帳號綁定時，改為與 `calorie-tracker` 共用 `calorie_tracker.line_links` 資料表。
+  - 此調整可避免兩個 App 重複綁定與不對等狀態，只要在任一 App 綁定過 LINE，兩邊皆可自動識別並完成免密碼快速登入。
