@@ -74,8 +74,8 @@ export default function RecipeDetail({ recipe, onBack }) {
       padding: '6px 18px 20px',
     },
     hintBadge: {
-      background: '#F6FAF7',
-      color: '#6E8B7C',
+      background: '#FDF7F4',
+      color: '#8E7568',
       padding: '6px 14px',
       borderRadius: 20,
       fontWeight: 800,
@@ -87,7 +87,7 @@ export default function RecipeDetail({ recipe, onBack }) {
       background: '#fff',
       borderRadius: 24,
       padding: '20px 18px',
-      boxShadow: '0 10px 24px -18px rgba(46,139,94,.5)',
+      boxShadow: '0 10px 24px -18px rgba(232,122,36,.3)',
     },
     recipeImage: {
       width: '100%',
@@ -103,7 +103,7 @@ export default function RecipeDetail({ recipe, onBack }) {
       marginBottom: 8,
     },
     categoryBadge: {
-      background: '#2E8B5E',
+      background: '#E87A24',
       color: '#fff',
       padding: '4px 12px',
       borderRadius: 20,
@@ -111,8 +111,8 @@ export default function RecipeDetail({ recipe, onBack }) {
       fontWeight: 800,
     },
     yieldBadge: {
-      background: '#F6FAF7',
-      color: '#6E8B7C',
+      background: '#FDF7F4',
+      color: '#8E7568',
       padding: '4px 12px',
       borderRadius: 20,
       fontSize: 12,
@@ -123,21 +123,14 @@ export default function RecipeDetail({ recipe, onBack }) {
       alignItems: 'center',
       marginBottom: 10,
     },
-    chefLogo: {
-      width: 28,
-      height: 28,
-      borderRadius: '50%',
-      marginRight: 8,
-      verticalAlign: 'middle',
-    },
     recipeTitle: {
       fontSize: 22,
       fontWeight: 900,
-      color: '#234034',
+      color: '#3D281E',
       margin: 0,
     },
     paramsDashboard: {
-      background: '#F6FAF7',
+      background: '#FDF7F4',
       borderRadius: 16,
       padding: 14,
       marginBottom: 10,
@@ -145,7 +138,7 @@ export default function RecipeDetail({ recipe, onBack }) {
     dashboardTitle: {
       fontSize: 13,
       fontWeight: 800,
-      color: '#6E8B7C',
+      color: '#8E7568',
       marginBottom: 8,
     },
     dashboardGrid: {
@@ -156,15 +149,15 @@ export default function RecipeDetail({ recipe, onBack }) {
     paramKey: {
       fontSize: 12,
       fontWeight: 800,
-      color: '#6E8B7C',
+      color: '#8E7568',
     },
     paramValue: {
       fontSize: 16,
       fontWeight: 900,
-      color: '#234034',
+      color: '#3D281E',
     },
     scaleController: {
-      background: '#F6FAF7',
+      background: '#FDF7F4',
       borderRadius: 16,
       padding: 14,
       marginBottom: 10,
@@ -172,7 +165,7 @@ export default function RecipeDetail({ recipe, onBack }) {
     scaleLabel: {
       fontSize: 13,
       fontWeight: 700,
-      color: '#234034',
+      color: '#3D281E',
       marginBottom: 8,
     },
     scaleInputs: {
@@ -184,7 +177,7 @@ export default function RecipeDetail({ recipe, onBack }) {
     baseName: {
       fontSize: 14,
       fontWeight: 800,
-      color: '#234034',
+      color: '#3D281E',
     },
     weightInput: {
       border: 'none',
@@ -193,17 +186,17 @@ export default function RecipeDetail({ recipe, onBack }) {
       padding: '10px 12px',
       fontSize: 16,
       fontWeight: 800,
-      color: '#234034',
+      color: '#3D281E',
       width: 80,
       outline: 'none',
     },
     unitText: {
       fontSize: 13,
-      color: '#6E8B7C',
+      color: '#8E7568',
       fontWeight: 700,
     },
     resetBtn: {
-      background: '#2E8B5E',
+      background: '#E87A24',
       color: '#fff',
       border: 'none',
       borderRadius: 14,
@@ -213,8 +206,8 @@ export default function RecipeDetail({ recipe, onBack }) {
       cursor: 'pointer',
     },
     scaleAlert: {
-      background: '#DCFCE7',
-      color: '#15803D',
+      background: '#FFF3EB',
+      color: '#E87A24',
       borderRadius: 12,
       padding: '8px 12px',
       fontSize: 13,
@@ -224,7 +217,7 @@ export default function RecipeDetail({ recipe, onBack }) {
     sectionDivider: {
       fontSize: 15,
       fontWeight: 900,
-      color: '#234034',
+      color: '#3D281E',
       marginTop: 20,
       marginBottom: 10,
     },
@@ -233,14 +226,14 @@ export default function RecipeDetail({ recipe, onBack }) {
       justifyContent: 'space-between',
       alignItems: 'center',
       padding: '10px 12px',
-      background: '#F6FAF7',
+      background: '#FDF7F4',
       borderRadius: 14,
       marginBottom: 6,
     },
     ingName: {
       fontSize: 14,
       fontWeight: 800,
-      color: '#234034',
+      color: '#3D281E',
     },
     ingBrand: {
       fontSize: 11,
@@ -253,7 +246,7 @@ export default function RecipeDetail({ recipe, onBack }) {
     ingAmount: {
       fontSize: 14,
       fontWeight: 900,
-      color: '#2E8B5E',
+      color: '#E87A24',
     },
     completedOverlay: {
       opacity: 0.25,
@@ -274,7 +267,7 @@ export default function RecipeDetail({ recipe, onBack }) {
       width: 28,
       height: 28,
       borderRadius: '50%',
-      background: '#2E8B5E',
+      background: '#E87A24',
       color: '#fff',
       display: 'flex',
       alignItems: 'center',
@@ -286,14 +279,14 @@ export default function RecipeDetail({ recipe, onBack }) {
     stepText: {
       fontSize: 14,
       fontWeight: 700,
-      color: '#234034',
+      color: '#3D281E',
       lineHeight: 1.6,
     },
     noteSection: {
-      background: '#F6FAF7',
+      background: '#FDF7F4',
       borderRadius: 16,
       padding: 14,
-      border: '1px solid #DCEDE3',
+      border: '1px solid #FCDCC7',
     },
     notesList: {
       listStyle: 'none',
@@ -307,7 +300,7 @@ export default function RecipeDetail({ recipe, onBack }) {
       marginBottom: 8,
     },
     notesBullet: {
-      color: '#2E8B5E',
+      color: '#E87A24',
       fontWeight: 800,
       flexShrink: 0,
     },
@@ -315,12 +308,12 @@ export default function RecipeDetail({ recipe, onBack }) {
       margin: 0,
       fontSize: 14,
       fontWeight: 700,
-      color: '#234034',
+      color: '#3D281E',
       lineHeight: 1.6,
     },
     lastCooked: {
       fontSize: 12,
-      color: '#9bb0a3',
+      color: '#C5B4AC',
       fontWeight: 700,
       textAlign: 'center',
       marginTop: 16,
@@ -331,7 +324,7 @@ export default function RecipeDetail({ recipe, onBack }) {
     <div style={s.viewDetail}>
       <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
         {onBack && (
-          <button onClick={onBack} style={{ border: 'none', background: '#fff', color: '#2E8B5E', fontWeight: 900, fontSize: 14, padding: '8px 16px', borderRadius: 14, cursor: 'pointer', boxShadow: '0 4px 12px -8px rgba(0,0,0,.2)' }}>
+          <button onClick={onBack} style={{ border: 'none', background: '#fff', color: '#E87A24', fontWeight: 900, fontSize: 14, padding: '8px 16px', borderRadius: 14, cursor: 'pointer', boxShadow: '0 4px 12px -8px rgba(0,0,0,.2)' }}>
             ‹ 返回
           </button>
         )}
@@ -357,7 +350,6 @@ export default function RecipeDetail({ recipe, onBack }) {
             </div>
 
             <div style={s.titleRow}>
-              <img src="/chef_logo_bust.webp" alt="Peggy Chef Logo" style={s.chefLogo} />
               <h2 style={s.recipeTitle}>{recipe.title}</h2>
             </div>
           </div>

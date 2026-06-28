@@ -37,7 +37,7 @@ export default function App({ session, onSignOut }) {
       minHeight: '100vh',
       minHeight: '100dvh',
       margin: '0 auto',
-      background: '#EAF5EE',
+      background: '#FFF5EE',
       display: 'flex',
       flexDirection: 'column',
       boxShadow: '0 0 60px -20px rgba(0,0,0,.12)',

@@ -58,20 +58,20 @@ export default function Auth({ lineDebug }) {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-      <div style={{ background: '#fff', borderRadius: 28, padding: 28, width: '100%', maxWidth: 380, boxShadow: '0 20px 50px -20px rgba(46,139,94,.3)' }}>
-        <div style={{ fontSize: 24, fontWeight: 900, color: '#234034', textAlign: 'center' }}>Peggy 食譜</div>
-        <div style={{ fontSize: 14, color: '#6E8B7C', fontWeight: 700, textAlign: 'center', marginTop: 4, marginBottom: 20 }}>
+      <div style={{ background: '#fff', borderRadius: 28, padding: 28, width: '100%', maxWidth: 380, boxShadow: '0 20px 50px -20px rgba(232,122,36,.25)' }}>
+        <div style={{ fontSize: 24, fontWeight: 900, color: '#3D281E', textAlign: 'center' }}>TY Recipe Book</div>
+        <div style={{ fontSize: 14, color: '#8E7568', fontWeight: 700, textAlign: 'center', marginTop: 4, marginBottom: 20 }}>
           {titles[mode]}
         </div>
         <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required
-            style={{ border: 'none', background: '#F6FAF7', borderRadius: 14, padding: '14px 16px', fontSize: 16, fontWeight: 700, color: '#234034' }} />
+            style={{ border: 'none', background: '#FDF7F4', borderRadius: 14, padding: '14px 16px', fontSize: 16, fontWeight: 700, color: '#3D281E' }} />
           {mode !== 'forgot' && (
             <input type="password" placeholder="密碼（至少 6 字元）" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6}
-              style={{ border: 'none', background: '#F6FAF7', borderRadius: 14, padding: '14px 16px', fontSize: 16, fontWeight: 700, color: '#234034' }} />
+              style={{ border: 'none', background: '#FDF7F4', borderRadius: 14, padding: '14px 16px', fontSize: 16, fontWeight: 700, color: '#3D281E' }} />
           )}
           <button type="submit" disabled={busy}
-            style={{ border: 'none', background: busy ? '#C7D6CC' : '#2E8B5E', color: '#fff', fontWeight: 900, fontSize: 15, padding: 14, borderRadius: 14, cursor: 'pointer', marginTop: 6 }}>
+            style={{ border: 'none', background: busy ? '#DCD3CC' : '#E87A24', color: '#fff', fontWeight: 900, fontSize: 15, padding: 14, borderRadius: 14, cursor: 'pointer', marginTop: 6 }}>
             {busy ? '處理中…' : submitLabels[mode]}
           </button>
         </form>
@@ -95,4 +95,4 @@ export default function Auth({ lineDebug }) {
   );
 }
 
-const linkBtn = { width: '100%', border: 'none', background: 'none', color: '#6E8B7C', fontWeight: 800, fontSize: 14, cursor: 'pointer', padding: '6px 0' };
+const linkBtn = { width: '100%', border: 'none', background: 'none', color: '#8E7568', fontWeight: 800, fontSize: 14, cursor: 'pointer', padding: '6px 0' };

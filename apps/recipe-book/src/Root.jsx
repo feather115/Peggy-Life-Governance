@@ -27,7 +27,7 @@ export default function Root() {
     return () => { cancel = true; sub.subscription.unsubscribe(); };
   }, []);
 
-  if (!supabaseReady) return <ConfigMissing appName="Peggy 食譜 App" />;
+  if (!supabaseReady) return <ConfigMissing appName="TY Recipe Book App" />;
   if (!ready) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6E8B7C', fontWeight: 700 }}>初始化…</div>;
   if (!session) return <Auth lineDebug={lineDebug} />;
   return <App session={session} onSignOut={() => supabase.auth.signOut()} />;
