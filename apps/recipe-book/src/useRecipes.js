@@ -268,7 +268,7 @@ export function useRecipes(userId) {
       if (!isGuest) {
         return {
           ...recipe,
-          last_cooked_at: latest || null,
+          last_cooked_at: latest || recipe.last_cooked_at,
         };
       }
       return recipe;
