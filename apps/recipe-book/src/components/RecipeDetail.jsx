@@ -10,6 +10,47 @@ import {
   parseYieldInfo,
 } from '../utils.js';
 
+const S = {
+  viewDetail: { padding: '6px 18px 20px' },
+  hintBadge: { background: '#FDF7F4', color: '#8E7568', padding: '6px 14px', borderRadius: 20, fontWeight: 800, fontSize: 12, textAlign: 'center', marginBottom: 8 },
+  cookingCard: { background: '#fff', borderRadius: 24, padding: '20px 18px', boxShadow: '0 10px 24px -18px rgba(232,122,36,.3)' },
+  recipeImage: { width: '100%', height: 200, objectFit: 'cover', borderRadius: 16, marginBottom: 14 },
+  badgesRow: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 },
+  categoryBadge: { background: '#E87A24', color: '#fff', padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 800 },
+  yieldBadge: { background: '#FDF7F4', color: '#8E7568', padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 800 },
+  titleRow: { display: 'flex', alignItems: 'center', marginBottom: 10 },
+  recipeTitle: { fontSize: 22, fontWeight: 900, color: '#3D281E', margin: 0 },
+  paramsDashboard: { background: '#FDF7F4', borderRadius: 16, padding: 14, marginBottom: 10 },
+  dashboardTitle: { fontSize: 13, fontWeight: 800, color: '#8E7568', marginBottom: 8 },
+  dashboardGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 },
+  paramKey: { fontSize: 12, fontWeight: 800, color: '#8E7568' },
+  paramValue: { fontSize: 16, fontWeight: 900, color: '#3D281E' },
+  scaleController: { background: '#FDF7F4', borderRadius: 16, padding: 14, marginBottom: 10 },
+  scaleLabel: { fontSize: 13, fontWeight: 700, color: '#3D281E', marginBottom: 8 },
+  scaleInputs: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
+  baseName: { fontSize: 14, fontWeight: 800, color: '#3D281E' },
+  weightInput: { border: 'none', background: '#fff', borderRadius: 14, padding: '10px 12px', fontSize: 16, fontWeight: 800, color: '#3D281E', width: 80, outline: 'none' },
+  unitText: { fontSize: 13, color: '#8E7568', fontWeight: 700 },
+  resetBtn: { background: '#E87A24', color: '#fff', border: 'none', borderRadius: 14, padding: '8px 14px', fontSize: 13, fontWeight: 800, cursor: 'pointer' },
+  scaleAlert: { background: '#FFF3EB', color: '#E87A24', borderRadius: 12, padding: '8px 12px', fontSize: 13, fontWeight: 700, marginTop: 8 },
+  sectionDivider: { fontSize: 15, fontWeight: 900, color: '#3D281E', marginTop: 20, marginBottom: 10 },
+  ingredientRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: '#FDF7F4', borderRadius: 14, marginBottom: 6 },
+  ingName: { fontSize: 14, fontWeight: 800, color: '#3D281E' },
+  ingBrand: { fontSize: 11, background: '#E8EDFF', color: '#4361EE', borderRadius: 10, padding: '2px 8px', marginLeft: 6 },
+  ingAmount: { fontSize: 14, fontWeight: 900, color: '#E87A24' },
+  completedOverlay: { opacity: 0.25, textDecoration: 'line-through' },
+  stepsOl: { listStyle: 'none', padding: 0, margin: 0 },
+  stepLi: { display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 10 },
+  stepNumber: { width: 28, height: 28, borderRadius: '50%', background: '#E87A24', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, flexShrink: 0 },
+  stepText: { fontSize: 14, fontWeight: 700, color: '#3D281E', lineHeight: 1.6 },
+  noteSection: { background: '#FDF7F4', borderRadius: 16, padding: 14, border: '1px solid #FCDCC7' },
+  notesList: { listStyle: 'none', padding: 0, margin: 0 },
+  noteLi: { display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 8 },
+  notesBullet: { color: '#E87A24', fontWeight: 800, flexShrink: 0 },
+  notesText: { margin: 0, fontSize: 14, fontWeight: 700, color: '#3D281E', lineHeight: 1.6 },
+  lastCooked: { fontSize: 12, color: '#C5B4AC', fontWeight: 700, textAlign: 'center', marginTop: 16 },
+};
+
 export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, onSetShared, onEdit }) {
   const [currentWeight, setCurrentWeight] = useState('');
   const [completedItems, setCompletedItems] = useState({});
@@ -84,261 +125,8 @@ export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, o
     };
   }
 
-  /* ── Inline style objects ── */
-
-  const s = {
-    viewDetail: {
-      padding: '6px 18px 20px',
-    },
-    hintBadge: {
-      background: '#FDF7F4',
-      color: '#8E7568',
-      padding: '6px 14px',
-      borderRadius: 20,
-      fontWeight: 800,
-      fontSize: 12,
-      textAlign: 'center',
-      marginBottom: 8,
-    },
-    cookingCard: {
-      background: '#fff',
-      borderRadius: 24,
-      padding: '20px 18px',
-      boxShadow: '0 10px 24px -18px rgba(232,122,36,.3)',
-    },
-    recipeImage: {
-      width: '100%',
-      height: 200,
-      objectFit: 'cover',
-      borderRadius: 16,
-      marginBottom: 14,
-    },
-    badgesRow: {
-      display: 'flex',
-      flexWrap: 'wrap',
-      gap: 6,
-      marginBottom: 8,
-    },
-    categoryBadge: {
-      background: '#E87A24',
-      color: '#fff',
-      padding: '4px 12px',
-      borderRadius: 20,
-      fontSize: 12,
-      fontWeight: 800,
-    },
-    yieldBadge: {
-      background: '#FDF7F4',
-      color: '#8E7568',
-      padding: '4px 12px',
-      borderRadius: 20,
-      fontSize: 12,
-      fontWeight: 800,
-    },
-    titleRow: {
-      display: 'flex',
-      alignItems: 'center',
-      marginBottom: 10,
-    },
-    recipeTitle: {
-      fontSize: 22,
-      fontWeight: 900,
-      color: '#3D281E',
-      margin: 0,
-    },
-    paramsDashboard: {
-      background: '#FDF7F4',
-      borderRadius: 16,
-      padding: 14,
-      marginBottom: 10,
-    },
-    dashboardTitle: {
-      fontSize: 13,
-      fontWeight: 800,
-      color: '#8E7568',
-      marginBottom: 8,
-    },
-    dashboardGrid: {
-      display: 'grid',
-      gridTemplateColumns: '1fr 1fr',
-      gap: 8,
-    },
-    paramKey: {
-      fontSize: 12,
-      fontWeight: 800,
-      color: '#8E7568',
-    },
-    paramValue: {
-      fontSize: 16,
-      fontWeight: 900,
-      color: '#3D281E',
-    },
-    scaleController: {
-      background: '#FDF7F4',
-      borderRadius: 16,
-      padding: 14,
-      marginBottom: 10,
-    },
-    scaleLabel: {
-      fontSize: 13,
-      fontWeight: 700,
-      color: '#3D281E',
-      marginBottom: 8,
-    },
-    scaleInputs: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: 8,
-      flexWrap: 'wrap',
-    },
-    baseName: {
-      fontSize: 14,
-      fontWeight: 800,
-      color: '#3D281E',
-    },
-    weightInput: {
-      border: 'none',
-      background: '#fff',
-      borderRadius: 14,
-      padding: '10px 12px',
-      fontSize: 16,
-      fontWeight: 800,
-      color: '#3D281E',
-      width: 80,
-      outline: 'none',
-    },
-    unitText: {
-      fontSize: 13,
-      color: '#8E7568',
-      fontWeight: 700,
-    },
-    resetBtn: {
-      background: '#E87A24',
-      color: '#fff',
-      border: 'none',
-      borderRadius: 14,
-      padding: '8px 14px',
-      fontSize: 13,
-      fontWeight: 800,
-      cursor: 'pointer',
-    },
-    scaleAlert: {
-      background: '#FFF3EB',
-      color: '#E87A24',
-      borderRadius: 12,
-      padding: '8px 12px',
-      fontSize: 13,
-      fontWeight: 700,
-      marginTop: 8,
-    },
-    sectionDivider: {
-      fontSize: 15,
-      fontWeight: 900,
-      color: '#3D281E',
-      marginTop: 20,
-      marginBottom: 10,
-    },
-    ingredientRow: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      padding: '10px 12px',
-      background: '#FDF7F4',
-      borderRadius: 14,
-      marginBottom: 6,
-    },
-    ingName: {
-      fontSize: 14,
-      fontWeight: 800,
-      color: '#3D281E',
-    },
-    ingBrand: {
-      fontSize: 11,
-      background: '#E8EDFF',
-      color: '#4361EE',
-      borderRadius: 10,
-      padding: '2px 8px',
-      marginLeft: 6,
-    },
-    ingAmount: {
-      fontSize: 14,
-      fontWeight: 900,
-      color: '#E87A24',
-    },
-    completedOverlay: {
-      opacity: 0.25,
-      textDecoration: 'line-through',
-    },
-    stepsOl: {
-      listStyle: 'none',
-      padding: 0,
-      margin: 0,
-    },
-    stepLi: {
-      display: 'flex',
-      alignItems: 'flex-start',
-      gap: 10,
-      marginBottom: 10,
-    },
-    stepNumber: {
-      width: 28,
-      height: 28,
-      borderRadius: '50%',
-      background: '#E87A24',
-      color: '#fff',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      fontSize: 13,
-      fontWeight: 800,
-      flexShrink: 0,
-    },
-    stepText: {
-      fontSize: 14,
-      fontWeight: 700,
-      color: '#3D281E',
-      lineHeight: 1.6,
-    },
-    noteSection: {
-      background: '#FDF7F4',
-      borderRadius: 16,
-      padding: 14,
-      border: '1px solid #FCDCC7',
-    },
-    notesList: {
-      listStyle: 'none',
-      padding: 0,
-      margin: 0,
-    },
-    noteLi: {
-      display: 'flex',
-      alignItems: 'flex-start',
-      gap: 8,
-      marginBottom: 8,
-    },
-    notesBullet: {
-      color: '#E87A24',
-      fontWeight: 800,
-      flexShrink: 0,
-    },
-    notesText: {
-      margin: 0,
-      fontSize: 14,
-      fontWeight: 700,
-      color: '#3D281E',
-      lineHeight: 1.6,
-    },
-    lastCooked: {
-      fontSize: 12,
-      color: '#C5B4AC',
-      fontWeight: 700,
-      textAlign: 'center',
-      marginTop: 16,
-    },
-  };
-
   return (
-    <div style={s.viewDetail}>
+    <div style={S.viewDetail}>
       <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
         {onBack && (
           <button onClick={onBack} style={{ border: 'none', background: '#fff', color: '#E87A24', fontWeight: 900, fontSize: 14, padding: '8px 16px', borderRadius: 14, cursor: 'pointer', boxShadow: '0 4px 12px -8px rgba(0,0,0,.2)' }}>
@@ -351,30 +139,30 @@ export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, o
               ✏️ 編輯
             </button>
           )}
-          <div style={{ ...s.hintBadge, marginBottom: 0 }}>⏱️ 長按標記進度</div>
+          <div style={{ ...S.hintBadge, marginBottom: 0 }}>⏱️ 長按標記進度</div>
         </div>
       </header>
 
       <main>
-        <div style={s.cookingCard}>
+        <div style={S.cookingCard}>
           {recipe.image_url && (
             <div>
-              <img src={recipe.image_url} alt={recipe.title} style={s.recipeImage} />
+              <img src={recipe.image_url} alt={recipe.title} style={S.recipeImage} />
             </div>
           )}
 
           <div>
-            <div style={s.badgesRow}>
+            <div style={S.badgesRow}>
               {Array.isArray(recipe.category) && recipe.category.map((tag) => (
-                <span key={tag} style={s.categoryBadge}>{tag}</span>
+                <span key={tag} style={S.categoryBadge}>{tag}</span>
               ))}
               {parsedYieldInfo.map((yieldText, idx) => (
-                <span key={idx} style={s.yieldBadge}>🍽️ {yieldText}</span>
+                <span key={idx} style={S.yieldBadge}>🍽️ {yieldText}</span>
               ))}
             </div>
 
-            <div style={s.titleRow}>
-              <h2 style={s.recipeTitle}>{recipe.title}</h2>
+            <div style={S.titleRow}>
+              <h2 style={S.recipeTitle}>{recipe.title}</h2>
             </div>
 
             {isOwner && (
@@ -417,14 +205,14 @@ export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, o
           </div>
 
           {hasParameters && (
-            <div style={s.paramsDashboard}>
-              <div style={s.dashboardTitle}>重點參數</div>
-              <div style={s.dashboardGrid}>
+            <div style={S.paramsDashboard}>
+              <div style={S.dashboardTitle}>重點參數</div>
+              <div style={S.dashboardGrid}>
                 {Object.entries(recipe.parameters).map(([key, value]) => (
                   <div key={key}>
-                    <span style={s.paramKey}>{key}</span>
+                    <span style={S.paramKey}>{key}</span>
                     <br />
-                    <span style={s.paramValue}>{value}</span>
+                    <span style={S.paramValue}>{value}</span>
                   </div>
                 ))}
               </div>
@@ -432,25 +220,25 @@ export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, o
           )}
 
           {baseIng && (
-            <div style={s.scaleController}>
-              <div style={s.scaleLabel}>⚖️ 依據主食材等比例縮放配方：</div>
-              <div style={s.scaleInputs}>
-                <span style={s.baseName}>{baseIng.name}</span>
+            <div style={S.scaleController}>
+              <div style={S.scaleLabel}>⚖️ 依據主食材等比例縮放配方：</div>
+              <div style={S.scaleInputs}>
+                <span style={S.baseName}>{baseIng.name}</span>
                 <input
                   type="number"
                   value={currentWeight}
                   onChange={(e) => setCurrentWeight(e.target.value)}
                   placeholder={parseFloat(baseIng.amount) || baseIng.amount}
-                  style={s.weightInput}
+                  style={S.weightInput}
                   pattern="[0-9]*"
                 />
-                <span style={s.unitText}>克 (g)</span>
+                <span style={S.unitText}>克 (g)</span>
                 {isScaled && (
-                  <button type="button" style={s.resetBtn} onClick={() => setCurrentWeight('')}>重設</button>
+                  <button type="button" style={S.resetBtn} onClick={() => setCurrentWeight('')}>重設</button>
                 )}
               </div>
               {isScaled && (
-                <div style={s.scaleAlert}>
+                <div style={S.scaleAlert}>
                   📢 比例已調整為原本的 <b>{scaleRatio.toFixed(2)}</b> 倍
                 </div>
               )}
@@ -459,7 +247,7 @@ export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, o
 
           {groupedIngredients.map((group) => (
             <div key={group.typeName}>
-              <div style={s.sectionDivider}>
+              <div style={S.sectionDivider}>
                 {group.typeName === 'DEFAULT'
                   ? <span>📦 準備食材</span>
                   : <span>📦 準備食材：{group.typeName}</span>}
@@ -473,16 +261,16 @@ export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, o
                     <div
                       key={ing.name}
                       style={{
-                        ...s.ingredientRow,
-                        ...(isCompleted ? s.completedOverlay : {}),
+                        ...S.ingredientRow,
+                        ...(isCompleted ? S.completedOverlay : {}),
                       }}
                       {...pressHandlers(id)}
                     >
                       <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <span style={s.ingName}>{ing.name}</span>
-                        {ing.brand && <span style={s.ingBrand}>{ing.brand}</span>}
+                        <span style={S.ingName}>{ing.name}</span>
+                        {ing.brand && <span style={S.ingBrand}>{ing.brand}</span>}
                       </div>
-                      <span style={s.ingAmount}>{getScaledAmount(ing)}</span>
+                      <span style={S.ingAmount}>{getScaledAmount(ing)}</span>
                     </div>
                   );
                 })}
@@ -492,13 +280,13 @@ export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, o
 
           {sortedGroupedSteps.map((stepGroup) => (
             <div key={stepGroup.typeName}>
-              <div style={s.sectionDivider}>
+              <div style={S.sectionDivider}>
                 {stepGroup.typeName === 'DEFAULT'
                   ? <span>⏱️ 料理工序</span>
                   : <span>⏱️ 料理工序：{stepGroup.typeName}</span>}
               </div>
 
-              <ol style={s.stepsOl}>
+              <ol style={S.stepsOl}>
                 {stepGroup.items.map((step, index) => {
                   const id = `step-${recipe.id}-${stepGroup.typeName}-${index}`;
                   const isCompleted = !!completedItems[id];
@@ -506,13 +294,13 @@ export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, o
                     <li
                       key={index}
                       style={{
-                        ...s.stepLi,
-                        ...(isCompleted ? s.completedOverlay : {}),
+                        ...S.stepLi,
+                        ...(isCompleted ? S.completedOverlay : {}),
                       }}
                       {...pressHandlers(id)}
                     >
-                      <div style={s.stepNumber}>{index + 1}</div>
-                      <div style={s.stepText}>{step.text}</div>
+                      <div style={S.stepNumber}>{index + 1}</div>
+                      <div style={S.stepText}>{step.text}</div>
                     </li>
                   );
                 })}
@@ -522,8 +310,8 @@ export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, o
 
           {formattedNotes.length > 0 && (
             <div>
-              <div style={s.sectionDivider}><span>💡 心得與備註</span></div>
-              <ul style={{ ...s.notesList, ...s.noteSection }}>
+              <div style={S.sectionDivider}><span>💡 心得與備註</span></div>
+              <ul style={{ ...S.notesList, ...S.noteSection }}>
                 {formattedNotes.map((note, index) => {
                   const id = `note-${recipe.id}-${index}`;
                   const isCompleted = !!completedItems[id];
@@ -531,13 +319,13 @@ export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, o
                     <li
                       key={index}
                       style={{
-                        ...s.noteLi,
-                        ...(isCompleted ? s.completedOverlay : {}),
+                        ...S.noteLi,
+                        ...(isCompleted ? S.completedOverlay : {}),
                       }}
                       {...pressHandlers(id)}
                     >
-                      <span style={s.notesBullet}>●</span>
-                      <p style={s.notesText}>{note}</p>
+                      <span style={S.notesBullet}>●</span>
+                      <p style={S.notesText}>{note}</p>
                     </li>
                   );
                 })}
@@ -546,7 +334,7 @@ export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, o
           )}
 
           {recipe.last_cooked_at && (
-            <div style={s.lastCooked}>
+            <div style={S.lastCooked}>
               🕒 上次製作：{formatDate(recipe.last_cooked_at)}
             </div>
           )}

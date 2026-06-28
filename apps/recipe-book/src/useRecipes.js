@@ -13,19 +13,14 @@ import {
 } from './utils.js';
 
 function getRecipeIdFromUrl() {
-  const url = new URL(window.location.href);
-  return url.searchParams.get('recipe');
+  return new URL(window.location.href).searchParams.get('recipe');
 }
 
-function buildDetailUrl(recipeId) {
+// recipeId=null → catalog URL; recipeId 有值 → detail URL
+function buildUrl(recipeId) {
   const url = new URL(window.location.href);
-  url.searchParams.set('recipe', recipeId);
-  return url.toString();
-}
-
-function buildHomeUrl() {
-  const url = new URL(window.location.href);
-  url.searchParams.delete('recipe');
+  if (recipeId) url.searchParams.set('recipe', recipeId);
+  else url.searchParams.delete('recipe');
   return url.toString();
 }
 
@@ -108,7 +103,7 @@ export function useRecipes(userId) {
       return;
     }
     if (list.length > 0) {
-      window.history.replaceState({ view: 'home' }, '', buildHomeUrl());
+      window.history.replaceState({ view: 'home' }, '', buildUrl(null));
       setCurrentView('home');
       setSelectedRecipeId(null);
     }
@@ -118,7 +113,7 @@ export function useRecipes(userId) {
     setSelectedRecipeId(recipe.id);
     setCurrentView('detail');
     scrollToTop();
-    window.history.pushState({ view: 'detail', recipeId: recipe.id }, '', buildDetailUrl(recipe.id));
+    window.history.pushState({ view: 'detail', recipeId: recipe.id }, '', buildUrl(recipe.id));
   }, []);
 
   const addCookRecord = useCallback(async (cookedOn, recipeId) => {
@@ -164,7 +159,7 @@ export function useRecipes(userId) {
     if (selectedRecipeId === recipeId) {
       setSelectedRecipeId(null);
       setCurrentView('home');
-      window.history.replaceState({ view: 'home' }, '', buildHomeUrl());
+      window.history.replaceState({ view: 'home' }, '', buildUrl(null));
     }
   }, [selectedRecipeId]);
 
