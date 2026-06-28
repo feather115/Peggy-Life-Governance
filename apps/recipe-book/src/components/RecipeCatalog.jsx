@@ -173,12 +173,7 @@ export default function RecipeCatalog({
                     )}
                   </div>
                   <div style={S.cardInfo}>
-                    <div>
-                      {recipe.category.map((tag) => (
-                        <span key={tag} style={S.badge}>{tag}</span>
-                      ))}
-                    </div>
-                    <h3 style={S.cardTitle}>{recipe.title}</h3>
+                    <h3 style={{ ...S.cardTitle, marginBlockStart: 0, marginTop: 0 }}>{recipe.title}</h3>
                   </div>
                 </div>
               );

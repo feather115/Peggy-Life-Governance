@@ -101,3 +101,5 @@ src/
 - **共享 LINE 帳號綁定資料表** (2026-06-28)：
   - 修改了後端 Serverless API（`_supabaseAdmin.js`, `_lineLink.js`, `_lineLogin.js`），在處理 LINE 登入與帳號綁定時，改為與 `calorie-tracker` 共用 `calorie_tracker.line_links` 資料表。
   - 此調整可避免兩個 App 重複綁定與不對等狀態，只要在任一 App 綁定過 LINE，兩邊皆可自動識別並完成免密碼快速登入。
+- **食譜清單卡片樣式優化** (2026-06-28)：
+  - 移除了食譜清單中每張食譜卡片圖片下方的「分類標籤（如：點心、中式料理等）」顯示，讓食譜卡片視覺更加簡潔，僅保留圖片與食譜標題。
