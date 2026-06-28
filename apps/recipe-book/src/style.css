@@ -1,0 +1,8 @@
+body { margin: 0; background-color: #f6f8fa; }
+
+.mobile-cooking-app-container {
+  min-height: 100vh;
+  background-color: #f6f8fa;
+  color: #24292e;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+}

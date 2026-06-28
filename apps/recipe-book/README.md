@@ -1,7 +1,7 @@
 # 食譜紀錄網站 Recipe Book
 
 瀏覽與管理 Peggy 的食譜：依分類/關鍵字搜尋、檢視食材、步驟、製作參數與最後烹調時間。
-資料存在 Supabase `recipes` 表，前端為 Vue 3 + Vite。
+資料存在 Supabase `recipes` 表，前端為 React 19 + Vite。
 
 ---
 
@@ -52,23 +52,21 @@ Vercel 會用本資料夾的 `package.json` 自動偵測 Vite，不影響其他 
 
 ## 程式結構
 
+對齊 calorie-tracker 的慣例：`main.jsx → Root.jsx → App.jsx → components/`，狀態集中在
+`useRecipes.js`，純函式在 `utils.js`，Supabase 查詢在 `db.js`，Supabase client 走共用
+`@peggy-life/shared`。
+
 ```
 src/
-├── App.vue                      # 頂層元件，切換 catalog/detail 兩個 view
-├── main.js                      # Vue app 入口
-├── style.css                    # 全域樣式（目前為空，樣式都在 component scoped）
-├── components/
-│   ├── RecipeCatalog.vue        # 食譜清單、搜尋、分類 tab
-│   └── RecipeDetail.vue         # 單一食譜的食材、步驟、參數頁
-├── composables/
-│   ├── useRecipes.js            # 取得食譜列表
-│   ├── useRecipeFilters.js      # 搜尋 + 分類篩選
-│   ├── useRecipeNavigation.js   # catalog ↔ detail view 切換
-│   └── useRecipeDetail.js       # 單一食譜的細節邏輯
-├── services/
-│   └── recipeService.js         # Supabase 查詢封裝
-├── lib/
-│   └── supabaseClient.js        # Supabase client 建立
-└── utils/
-    └── recipeData.js            # normalize / filter / categories
+├── main.jsx                       # 進入點
+├── Root.jsx                       # config check + 載入 recipes，再餵給 App
+├── App.jsx                        # catalog/detail 切換
+├── supabase.js                    # re-export 共用 supabase client
+├── db.js                          # Supabase 查詢（loadRecipes）
+├── utils.js                       # normalize / filter / parse / formatDate
+├── useRecipes.js                  # 狀態中樞（清單、搜尋、分類、view 導覽）
+├── style.css                      # 全域樣式
+└── components/
+    ├── RecipeCatalog.jsx + .css   # 食譜清單、搜尋、分類 tab
+    └── RecipeDetail.jsx + .css    # 單一食譜的食材、步驟、參數頁
 ```
