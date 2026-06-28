@@ -15,7 +15,7 @@ begin;
 create table if not exists recipe_book.cooking_history (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
-  recipe_id uuid not null references recipe_book.recipes(id) on delete cascade,
+  recipe_id bigint not null references recipe_book.recipes(id) on delete cascade,
   cooked_date date not null,
   created_at timestamptz not null default now(),
   unique (user_id, cooked_date, recipe_id)

@@ -93,7 +93,7 @@ Supabase ⇄ db.js ⇄ useRecipes.js ⇄ App.jsx ⇄ Root.jsx (Auth gate / LIFF)
 
 | 欄位 | 型別 | 用途 |
 |---|---|---|
-| `id` | uuid (PK) | 主鍵 |
+| `id` | bigint (PK, identity) | 主鍵 |
 | `title` | text | 食譜名稱 |
 | `category` | text[] | 多分類標籤（GIN 索引） |
 | `ingredients` | jsonb | `[{ name, amount, unit, is_base, brand, type }]` |
@@ -118,14 +118,14 @@ Supabase ⇄ db.js ⇄ useRecipes.js ⇄ App.jsx ⇄ Root.jsx (Auth gate / LIFF)
 |---|---|---|
 | `id` | uuid (PK) | 主鍵 |
 | `user_id` | uuid → `auth.users(id)` | 使用者（CASCADE） |
-| `recipe_id` | uuid → `recipe_book.recipes(id)` | 食譜（CASCADE） |
+| `recipe_id` | bigint → `recipe_book.recipes(id)` | 食譜（CASCADE） |
 | `cooked_date` | date | 哪一天做的 |
 | `created_at` | timestamptz | 寫入時間 |
 
 UNIQUE `(user_id, cooked_date, recipe_id)` — 同一天同一道菜不會重複登記，前端 `addCookRecord` 用 upsert 處理。
 RLS：每個人只能 select/insert/update/delete 自己 `user_id` 的列。
 
-> **重要**：`recipe_id` 是 `uuid`，因為 `recipes.id` 就是 uuid（不要寫成 bigint，FK 會建不起來）。
+> **重要**：`recipe_id` 是 `bigint`，必須跟 `recipes.id` 型別一致，FK 才建得起來。
 
 ---
 
