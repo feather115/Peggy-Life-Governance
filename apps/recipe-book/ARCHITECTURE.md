@@ -15,13 +15,13 @@ Supabase client 由 `@peggy-life/shared` 的 `createAppSupabase({ schema: 'recip
 ## 資料流
 
 ```
-Supabase ⇄ db.js ⇄ useRecipes.js ⇄ Root.jsx → App.jsx → components/*
-           (純 API)  (狀態+動作)     (載入)     (切換)     (畫面)
+Supabase ⇄ db.js ⇄ useRecipes.js ⇄ App.jsx ⇄ Root.jsx (Auth gate / LIFF)
+                                              └── Auth.jsx
 ```
 
 - 元件**不會**直接呼叫 `db.js`。`useRecipes()` 一次提供所有 state 和 action。
-- `Root.jsx` 負責：`.env` 檢查 → 呼叫 `useRecipes()` → 載入完成後交給 `App`。
-- `App.jsx` 只負責 catalog / detail 兩個 view 的切換。
+- `Root.jsx` 負責：LINE LIFF 初始化、LINE 自動登入與 Supabase Auth 登入閘口。
+- `App.jsx` 負責裝載行動版的外殼（maxWidth 520px），並依 `currentView` 控制 `RecipeCatalog` / `RecipeDetail` 兩個 view 的切換與返回。
 
 ---
 
@@ -29,8 +29,8 @@ Supabase ⇄ db.js ⇄ useRecipes.js ⇄ Root.jsx → App.jsx → components/*
 
 | 你想改的東西 | 檔案 |
 |---|---|
-| **食譜清單（搜尋框、分類 tab、卡片網格）** | `src/components/RecipeCatalog.jsx` + `.css` |
-| **單一食譜詳情（食材、步驟、心得、參數）** | `src/components/RecipeDetail.jsx` + `.css` |
+| **食譜清單（搜尋框、分類 tab、卡片網格、登出鈕）** | `src/components/RecipeCatalog.jsx` (Inline styles) |
+| **單一食譜詳情（返回鈕、食材、步驟、心得、參數）** | `src/components/RecipeDetail.jsx` (Inline styles) |
 | **配方等比例縮放** | `src/components/RecipeDetail.jsx` → `getScaledAmount()` |
 | **長按標記完成** | `src/components/RecipeDetail.jsx` → `startLongPress()` / `pressHandlers()` |
 | **搜尋 / 分類篩選邏輯** | `src/utils.js` → `filterRecipes()` / `getAvailableCategories()` |
@@ -39,31 +39,29 @@ Supabase ⇄ db.js ⇄ useRecipes.js ⇄ Root.jsx → App.jsx → components/*
 | **日期格式** | `src/utils.js` → `formatDate()` |
 | **Supabase 查詢（目前只有 loadRecipes）** | `src/db.js` |
 | **Supabase client 連線** | `src/supabase.js`（re-export `@peggy-life/shared`） |
+| **LINE LIFF 初始化與登入** | `src/liff.js` |
+| **Email/密碼與 LINE 自動登入閘口** | `src/Root.jsx` |
+| **Email 登入/註冊/重設密碼頁面** | `src/components/Auth.jsx` |
 | **URL 同步（?recipe=xxx 支援直連）** | `src/useRecipes.js` → `syncViewWithUrl()` / `openRecipeDetail()` |
-| **載入中 / 載入失敗 / .env 缺失畫面** | `src/Root.jsx` |
-| **catalog ↔ detail 切換** | `src/App.jsx` |
-| **全域 CSS** | `src/style.css` |
-| **資料庫建表 SQL** | `supabase/schema.sql` |
-| **Schema 隔離 migration** | `supabase/2026-06-28_schema_isolation.sql` |
+| **主頁外殼與載入中畫面** | `src/App.jsx` |
 
 ---
 
 ## 每個檔案在幹嘛
 
 ### 核心
-- **`src/main.jsx`** — 進入點，掛 `<Root/>`。
-- **`src/Root.jsx`** — 檢查 `.env` → 載入 `useRecipes()` → 交給 `App`。
-- **`src/App.jsx`** — 依 `currentView` 切換 `RecipeCatalog` / `RecipeDetail`。
+- **`src/main.jsx`** — 進入點，呼叫 `initLiff()` 完成後掛載 `<Root/>`。
+- **`src/Root.jsx`** — 檢查 `.env` → 執行 LINE 自動登入 / Auth 驗證 → 已登入則載入 `<App/>`。
+- **`src/App.jsx`** — 行動載具外殼（`maxWidth: 520`），載入 `useRecipes()` 並切換 `RecipeCatalog` / `RecipeDetail`。
 - **`src/useRecipes.js`** — ⭐ **狀態中樞**。載入食譜、搜尋/分類篩選、catalog ↔ detail 導覽（含 URL 同步 `?recipe=xxx`）。
+- **`src/liff.js`** — LINE LIFF 初始化、LINE 自動登入及帳號綁定。
 - **`src/db.js`** — Supabase 的純查詢函式（`loadRecipes`）。
 - **`src/supabase.js`** — re-export `@peggy-life/shared` 的 supabase client（`schema: 'recipe_book'`）。
 
-### 無狀態工具
-- **`src/utils.js`** — 正規化、篩選、parse 各種 JSONB 欄位格式、日期格式化。
-
-### 畫面（`src/components/`）
-- **`RecipeCatalog.jsx` + `.css`** — 食譜清單：header（logo + 食譜數）、搜尋框、分類 tab、網格卡片。
-- **`RecipeDetail.jsx` + `.css`** — 食譜詳情：食材（可依主食材等比例縮放）、步驟、心得、重點參數、上次製作日期。長按 700ms 可標記食材/步驟完成（前端 state，不存 DB）。
+### 畫面與組件（`src/components/`）
+- **`RecipeCatalog.jsx`** — 食譜清單：頂部 header（Peggy logo + 登出按鈕 + 食譜數）、搜尋欄、分類 tab、雙欄食譜網格。全 inline styles。
+- **`RecipeDetail.jsx`** — 食譜詳情：返回按鈕、食材、工序、心得、重點參數。全 inline styles。
+- **`Auth.jsx`** — 登入介面：Email + 密碼登入、註冊、忘記密碼。與 calorie-tracker 風格一致。
 
 ---
 

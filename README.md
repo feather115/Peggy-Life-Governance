@@ -4,8 +4,8 @@ Monorepo，包含兩個獨立的 app，各自部署到不同的 Vercel 專案。
 
 ## Apps
 
-- [`apps/calorie-tracker`](./apps/calorie-tracker) — 飲食卡路里記錄 app（React + Vite + Supabase）
-- [`apps/recipe-book`](./apps/recipe-book) — 食譜紀錄網站（React + Vite + Supabase）
+- [`apps/calorie-tracker`](./apps/calorie-tracker) — 飲食卡路里記錄 app（React + Vite + Supabase + LINE LIFF）
+- [`apps/recipe-book`](./apps/recipe-book) — Peggy 食譜 app（React + Vite + Supabase + LINE LIFF）
 
 每個 app 的設定、開發、部署細節請看各自資料夾裡的 README。
 

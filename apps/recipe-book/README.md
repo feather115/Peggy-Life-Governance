@@ -28,6 +28,7 @@ npm install
    ```
    VITE_SUPABASE_URL=https://你的專案.supabase.co
    VITE_SUPABASE_ANON_KEY=eyJ...
+   VITE_LIFF_ID=12345678-abcdef  # (選填，若要在 LINE 裡面開啟並自動登入才需要設定)
    ```
 
 ---
@@ -48,7 +49,7 @@ npm run dev:recipe-book
 
 1. 建立新的 Vercel 專案，連到本 monorepo
 2. **Settings → Root Directory** 設成 `apps/recipe-book`
-3. **Environment Variables** 補上 `VITE_SUPABASE_URL`、`VITE_SUPABASE_ANON_KEY`
+3. **Environment Variables** 補上 `VITE_SUPABASE_URL`、`VITE_SUPABASE_ANON_KEY`，以及選填的 `VITE_LIFF_ID`
 
 Vercel 會用本資料夾的 `package.json` 自動偵測 Vite，不影響其他 app。
 
@@ -62,15 +63,16 @@ Vercel 會用本資料夾的 `package.json` 自動偵測 Vite，不影響其他 
 
 ```
 src/
-├── main.jsx                       # 進入點
-├── Root.jsx                       # config check + 載入 recipes，再餵給 App
-├── App.jsx                        # catalog/detail 切換
+├── main.jsx                       # 進入點（初始化 LINE LIFF）
+├── Root.jsx                       # config check + LIFF / Auth 登入閘口，登入後交給 App
+├── App.jsx                        # 520px 行動外殼 + 載入 recipes 與 view 導覽切換
 ├── supabase.js                    # re-export 共用 supabase client
+├── liff.js                        # LINE LIFF 初始化與自動登入/帳號綁定邏輯
 ├── db.js                          # Supabase 查詢（loadRecipes）
 ├── utils.js                       # normalize / filter / parse / formatDate
-├── useRecipes.js                  # 狀態中樞（清單、搜尋、分類、view 導覽）
-├── style.css                      # 全域樣式
+├── useRecipes.js                  # 狀態中樞（清單、搜尋、分類、URL 同步等）
 └── components/
-    ├── RecipeCatalog.jsx + .css   # 食譜清單、搜尋、分類 tab
-    └── RecipeDetail.jsx + .css    # 單一食譜的食材、步驟、參數頁
+    ├── Auth.jsx                   # Email / 密碼與 LINE 快速登入頁面
+    ├── RecipeCatalog.jsx          # 食譜清單、搜尋、分類 tab（全 inline styles）
+    └── RecipeDetail.jsx           # 單一食譜的食材、步驟、參數頁，含返回按鈕（全 inline styles）
 ```
