@@ -113,10 +113,25 @@ Supabase ⇄ db.js ⇄ useRecipes.js ⇄ App.jsx ⇄ Root.jsx (Auth gate / LIFF)
   - SELECT（含 `anon`）：`is_shared = true OR auth.uid() = user_id` ——訪客只看得到分享出來的，擁有者額外看得到自己未分享的。
   - INSERT / UPDATE / DELETE（只給 `authenticated`）：`auth.uid() = user_id` ——只能改自己的食譜。
 - **訪客模式**：`Root.jsx` 提供「以訪客身分瀏覽」按鈕（不登入），App.jsx 把 `userId = null` 傳給 `useRecipes`，hook 跳過 `loadCookRecords`、`TabBar` 隱藏「行事曆」分頁。
-- **分享按鈕**：`RecipeDetail.jsx` 對擁有者顯示 toggle（`is_shared` 反轉），呼叫 `db.setRecipeShared()` 直接 update。
+- **分享狀態**：`is_shared` 由 `RecipeForm.jsx` 編輯頁面的 checkbox 控制（用 `saveRecipe` 一起 update）。
+- **Catalog 分組**：登入者看 3 個分頁 `我的私房 / 我已分享 / 大家分享`（`useRecipes.ownershipTab`，`filterRecipes` 用 `ownershipTab + currentUserId` 過濾），訪客自動鎖在 `others_shared` 不顯示分頁列。
+- **按讚與喜愛排序**：`recipe_likes` 表存按讚紀錄，`useRecipes` 算出 `likeCounts` / `myLikedSet`。RecipeDetail 顯示按讚數＋按讚按鈕（擁有者只見數字、訪客只見數字、登入者可 toggle）；catalog 卡片右上角顯示 ❤️ N 計數；`filterRecipes` 把我喜愛的食譜排在每個分頁的最前面。
 - **`ingredients` 支援兩種格式**：新格式是物件陣列 `[{ name, amount, ... }]`，舊格式是 `{ name: amount }` 物件。`utils.js` 的 `parseIngredients()` 統一處理。
 - **`steps` 支援三種格式**：物件陣列、字串陣列、單一字串（換行分隔）。`parseSteps()` 統一處理。
 - **`is_base` 標記主食材**——配方縮放用。輸入主食材的新重量後，其他食材依比例換算。
+
+### `recipe_likes`（`supabase/2026-06-28_recipe_likes.sql`）
+
+| 欄位 | 型別 | 用途 |
+|---|---|---|
+| `id` | uuid (PK) | 主鍵 |
+| `user_id` | uuid → `auth.users(id)` | 按讚者（CASCADE） |
+| `recipe_id` | bigint → `recipe_book.recipes(id)` | 食譜（CASCADE） |
+| `created_at` | timestamptz | 按讚時間 |
+
+UNIQUE `(user_id, recipe_id)` — 同一人對同一食譜只能按一次。
+RLS：select 對任何人（含 anon）開放，讓按讚總數所有人都看得到；insert/delete 只能對自己的列。
+前端 `loadAllLikes()` 一次抓全部，client 端 group 出 `likeCounts: Map<recipeId, number>` 和 `myLikedSet: Set<recipeId>`。資料小、量不會爆，不值得加 RPC。
 
 ### `cooking_history`（`supabase/2026-06-28_recipe_cook_records.sql`）
 
@@ -144,8 +159,9 @@ RLS：每個人只能 select/insert/update/delete 自己 `user_id` 的列。
 | `2026-06-28_recipe_cook_records.sql` | 建 `recipe_book.cooking_history` 表（料理行事曆紀錄）+ RLS + 索引 |
 | `2026-06-28_recipe_ownership.sql` | 加 `user_id` / `is_shared` 欄位、backfill 舊食譜給 feather115、重寫 RLS（讀: 分享或擁有；寫: 只有擁有者） |
 | `2026-06-28_recipe_rls_hotfix.sql` | 動態 drop 掉 recipe_book.recipes 上所有殘留的 SELECT policy 再重建 — 跑 ownership migration 後若訪客還是看得到全部食譜就跑這支 |
+| `2026-06-28_recipe_likes.sql` | 建 `recipe_book.recipe_likes` 表（按讚 / 喜愛排序用）+ RLS（select 公開、寫入只能對自己） |
 
-> 新環境順序：`schema.sql` → 在 Supabase Exposed schemas 加 `recipe_book` → `2026-06-28_schema_isolation.sql` → `2026-06-28_recipe_cook_records.sql` → `2026-06-28_recipe_ownership.sql` → `2026-06-28_recipe_rls_hotfix.sql`。
+> 新環境順序：`schema.sql` → 在 Supabase Exposed schemas 加 `recipe_book` → `2026-06-28_schema_isolation.sql` → `2026-06-28_recipe_cook_records.sql` → `2026-06-28_recipe_ownership.sql` → `2026-06-28_recipe_rls_hotfix.sql` → `2026-06-28_recipe_likes.sql`。
 
 ---
 

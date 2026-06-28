@@ -84,6 +84,10 @@ export default function App({ session, onSignOut, onExitGuest }) {
                 onSignOut={recipes.isGuest ? onExitGuest : onSignOut}
                 signOutLabel={recipes.isGuest ? '登入' : '登出'}
                 onCreate={recipes.isGuest ? null : () => setEditing({ mode: 'create' })}
+                ownershipTab={recipes.ownershipTab}
+                onOwnershipTabChange={recipes.setOwnershipTab}
+                likeCounts={recipes.likeCounts}
+                myLikedSet={recipes.myLikedSet}
               />
             )}
 
@@ -93,8 +97,10 @@ export default function App({ session, onSignOut, onExitGuest }) {
                 currentUserId={userId}
                 isGuest={recipes.isGuest}
                 onBack={handleBack}
-                onSetShared={recipes.setRecipeShared}
                 onEdit={() => setEditing({ mode: 'edit', recipe: recipes.selectedRecipe })}
+                likeCount={recipes.likeCounts.get(recipes.selectedRecipe.id) || 0}
+                isLiked={recipes.myLikedSet.has(recipes.selectedRecipe.id)}
+                onToggleLike={recipes.toggleLike}
               />
             )}
 

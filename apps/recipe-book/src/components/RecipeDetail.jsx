@@ -51,25 +51,25 @@ const S = {
   lastCooked: { fontSize: 12, color: '#C5B4AC', fontWeight: 700, textAlign: 'center', marginTop: 16 },
 };
 
-export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, onSetShared, onEdit }) {
+export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, onEdit, likeCount = 0, isLiked = false, onToggleLike }) {
   const [currentWeight, setCurrentWeight] = useState('');
   const [completedItems, setCompletedItems] = useState({});
-  const [shareBusy, setShareBusy] = useState(false);
-  const [shareError, setShareError] = useState('');
+  const [likeBusy, setLikeBusy] = useState(false);
+  const [likeError, setLikeError] = useState('');
   const pressTimer = useRef(null);
 
   const isOwner = !isGuest && currentUserId && recipe.user_id === currentUserId;
 
-  const handleToggleShare = async () => {
-    if (!onSetShared) return;
-    setShareBusy(true);
-    setShareError('');
+  const handleToggleLike = async () => {
+    if (isGuest || !onToggleLike) return;
+    setLikeBusy(true);
+    setLikeError('');
     try {
-      await onSetShared(recipe.id, !recipe.is_shared);
+      await onToggleLike(recipe.id);
     } catch (e) {
-      setShareError(e.message || '更新分享狀態失敗');
+      setLikeError(e.message || '按讚失敗');
     } finally {
-      setShareBusy(false);
+      setLikeBusy(false);
     }
   };
 
@@ -165,43 +165,47 @@ export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, o
               <h2 style={S.recipeTitle}>{recipe.title}</h2>
             </div>
 
-            {isOwner && (
-              <div style={{ marginBottom: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
+              {isOwner ? (
+                <div style={{ background: '#FDF7F4', padding: '8px 12px', borderRadius: 12, fontSize: 13, fontWeight: 800, color: '#3D281E', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  ❤️ {likeCount} 人按讚
+                  <span style={{ fontSize: 11, color: '#8E7568', fontWeight: 700 }}>
+                    · {recipe.is_shared ? '已分享' : '未分享（按編輯可開啟）'}
+                  </span>
+                </div>
+              ) : isGuest ? (
+                <div style={{ background: '#FDF7F4', padding: '8px 12px', borderRadius: 12, fontSize: 13, fontWeight: 800, color: '#8E7568' }}>
+                  ❤️ {likeCount} 人按讚 · 別人分享的食譜
+                </div>
+              ) : (
                 <button
                   type="button"
-                  onClick={handleToggleShare}
-                  disabled={shareBusy}
+                  onClick={handleToggleLike}
+                  disabled={likeBusy}
                   style={{
                     border: 'none',
-                    background: recipe.is_shared ? '#FFF3E0' : '#FDF7F4',
-                    color: recipe.is_shared ? '#E65100' : '#3D281E',
-                    padding: '10px 14px',
-                    borderRadius: 14,
+                    background: isLiked ? '#FFE4EC' : '#FDF7F4',
+                    color: isLiked ? '#C2185B' : '#3D281E',
+                    padding: '8px 14px',
+                    borderRadius: 12,
                     fontSize: 13,
                     fontWeight: 900,
-                    cursor: shareBusy ? 'wait' : 'pointer',
-                    width: '100%',
-                    textAlign: 'left',
+                    cursor: likeBusy ? 'wait' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
                   }}
                 >
-                  {shareBusy
-                    ? '更新中…'
-                    : recipe.is_shared
-                      ? '🌐 已分享（點擊收回，恢復為僅自己可見）'
-                      : '🔒 只有我看得到（點擊分享給其他人）'}
+                  {isLiked ? '❤️' : '🤍'} {likeCount}
+                  <span style={{ fontSize: 11, fontWeight: 700, color: isLiked ? '#C2185B' : '#8E7568' }}>
+                    {isLiked ? '已加入喜愛' : '加入喜愛'}
+                  </span>
                 </button>
-                {shareError && (
-                  <div style={{ marginTop: 6, fontSize: 12, color: '#B91C1C', fontWeight: 800 }}>
-                    {shareError}
-                  </div>
-                )}
-              </div>
-            )}
-            {!isOwner && recipe.is_shared && (
-              <div style={{ marginBottom: 10, fontSize: 12, color: '#8E7568', fontWeight: 800 }}>
-                🌐 這是別人分享的食譜（唯讀）
-              </div>
-            )}
+              )}
+              {likeError && (
+                <div style={{ fontSize: 12, color: '#B91C1C', fontWeight: 800 }}>{likeError}</div>
+              )}
+            </div>
           </div>
 
           {hasParameters && (

@@ -61,6 +61,32 @@ export async function deleteRecipe(recipeId) {
   if (error) throw error;
 }
 
+// 一次抓全部 likes（含 user_id），由前端 group 出 counts + myLikedIds。
+// 量小（每筆 < 50B），不會爆。要是之後資料大再改用 RPC 或 view。
+export async function loadAllLikes() {
+  const { data, error } = await supabase
+    .from('recipe_likes')
+    .select('recipe_id, user_id');
+  if (error) throw error;
+  return data || [];
+}
+
+export async function likeRecipe(userId, recipeId) {
+  const { error } = await supabase
+    .from('recipe_likes')
+    .insert({ user_id: userId, recipe_id: recipeId });
+  if (error && error.code !== '23505') throw error; // 23505 = unique violation, 重複按讚當作 no-op
+}
+
+export async function unlikeRecipe(userId, recipeId) {
+  const { error } = await supabase
+    .from('recipe_likes')
+    .delete()
+    .eq('user_id', userId)
+    .eq('recipe_id', recipeId);
+  if (error) throw error;
+}
+
 export async function loadCookRecords(userId) {
   const { data, error } = await supabase
     .from('cooking_history')

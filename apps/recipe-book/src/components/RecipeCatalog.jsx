@@ -37,17 +37,29 @@ const S = {
     fontSize: 11, background: '#FFF5EE', color: '#E87A24', padding: '3px 8px',
     borderRadius: 10, fontWeight: 800, marginRight: 4, display: 'inline-block',
   },
-  ownBadge: {
-    fontSize: 10, background: '#E8F5E9', color: '#2E7D32', padding: '3px 7px',
-    borderRadius: 10, fontWeight: 900, marginRight: 4, display: 'inline-block',
+  likeChip: {
+    position: 'absolute', top: 8, right: 8, background: 'rgba(0,0,0,.55)', color: '#fff',
+    padding: '3px 8px', borderRadius: 12, fontSize: 11, fontWeight: 900,
+    display: 'flex', alignItems: 'center', gap: 3,
   },
-  sharedBadge: {
-    fontSize: 10, background: '#FFF3E0', color: '#E65100', padding: '3px 7px',
-    borderRadius: 10, fontWeight: 900, marginRight: 4, display: 'inline-block',
+  ownerTabs: { display: 'flex', gap: 6, marginTop: 12, marginBottom: 2 },
+  ownerTab: {
+    flex: 1, border: 'none', background: '#FDF7F4', color: '#8E7568',
+    padding: '9px 8px', borderRadius: 12, fontSize: 12, fontWeight: 800, cursor: 'pointer',
+  },
+  ownerTabActive: {
+    flex: 1, border: 'none', background: '#3D281E', color: '#fff',
+    padding: '9px 8px', borderRadius: 12, fontSize: 12, fontWeight: 900, cursor: 'pointer',
   },
   cardTitle: { fontSize: 14, fontWeight: 900, color: '#3D281E', marginTop: 6, lineHeight: 1.3, margin: 0, marginBlockStart: 6 },
   empty: { textAlign: 'center', padding: '40px 20px', color: '#C5B4AC', fontSize: 15, fontWeight: 700 },
 };
+
+const OWNER_TABS = [
+  { key: 'mine_private', label: '我的私房' },
+  { key: 'mine_shared', label: '我已分享' },
+  { key: 'others_shared', label: '大家分享' },
+];
 
 export default function RecipeCatalog({
   userId,
@@ -63,10 +75,14 @@ export default function RecipeCatalog({
   onSignOut,
   signOutLabel = '登出',
   onCreate,
+  ownershipTab,
+  onOwnershipTabChange,
+  likeCounts,
+  myLikedSet,
 }) {
   const subtitle = isGuest
     ? `● 訪客模式・共 ${recipes.length} 道分享食譜`
-    : `● 共有 ${recipes.length} 道私房料理`;
+    : `● 共 ${recipes.length} 道食譜，這個分頁 ${filteredRecipes.length} 道`;
   return (
     <div style={S.viewHome}>
       <header style={{ marginBottom: 14 }}>
@@ -84,6 +100,21 @@ export default function RecipeCatalog({
             )}
           </div>
         </div>
+
+        {!isGuest && (
+          <div style={S.ownerTabs}>
+            {OWNER_TABS.map((t) => (
+              <button
+                key={t.key}
+                type="button"
+                onClick={() => onOwnershipTabChange(t.key)}
+                style={ownershipTab === t.key ? S.ownerTabActive : S.ownerTab}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+        )}
 
         <div>
           <input
@@ -122,32 +153,34 @@ export default function RecipeCatalog({
       <main>
         {filteredRecipes.length > 0 ? (
           <div style={S.grid}>
-            {filteredRecipes.map((recipe) => (
-              <div key={recipe.id} style={S.card} onClick={() => onOpenDetail(recipe)}>
-                <div>
-                  {recipe.image_url
-                    ? <img src={recipe.image_url} alt={recipe.title} style={S.cardImage} loading="lazy" />
-                    : <div style={S.placeholder}>🍳</div>}
-                </div>
-                <div style={S.cardInfo}>
-                  <div>
-                    {!isGuest && recipe.user_id === userId && (
-                      <span style={recipe.is_shared ? S.sharedBadge : S.ownBadge}>
-                        {recipe.is_shared ? '🌐 已分享' : '🔒 我的'}
-                      </span>
+            {filteredRecipes.map((recipe) => {
+              const count = likeCounts?.get(recipe.id) || 0;
+              const liked = myLikedSet?.has(recipe.id);
+              return (
+                <div key={recipe.id} style={S.card} onClick={() => onOpenDetail(recipe)}>
+                  <div style={{ position: 'relative' }}>
+                    {recipe.image_url
+                      ? <img src={recipe.image_url} alt={recipe.title} style={S.cardImage} loading="lazy" />
+                      : <div style={S.placeholder}>🍳</div>}
+                    {count > 0 && (
+                      <div style={S.likeChip}>{liked ? '❤️' : '🤍'} {count}</div>
                     )}
-                    {recipe.category.map((tag) => (
-                      <span key={tag} style={S.badge}>{tag}</span>
-                    ))}
                   </div>
-                  <h3 style={S.cardTitle}>{recipe.title}</h3>
+                  <div style={S.cardInfo}>
+                    <div>
+                      {recipe.category.map((tag) => (
+                        <span key={tag} style={S.badge}>{tag}</span>
+                      ))}
+                    </div>
+                    <h3 style={S.cardTitle}>{recipe.title}</h3>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div style={S.empty}>
-            <p>這個分類下目前沒有對應的美食數據 🥲</p>
+            <p>這個分頁目前沒有食譜 🥲</p>
           </div>
         )}
       </main>

@@ -23,22 +23,31 @@ export function getAvailableCategories(recipes) {
   return [...new Set(cleanTags)];
 }
 
-export function filterRecipes(recipes, selectedCategory, searchQuery) {
-  const query = (searchQuery || '').trim().toLowerCase();
+// ownershipTab: 'mine_private' | 'mine_shared' | 'others_shared' | 'all'
+// myLikedSet: Set<recipeId> — 影響排序（喜愛的排在最前）
+export function filterRecipes(recipes, { category, search, ownershipTab, currentUserId, myLikedSet }) {
+  const query = (search || '').trim().toLowerCase();
+  const cat = category || ALL_CATEGORY;
   return recipes
     .filter((recipe) => {
-      const matchCategory = selectedCategory === ALL_CATEGORY || recipe.category.includes(selectedCategory);
-      const matchSearch = !query
-        || recipe.title.toLowerCase().includes(query)
-        || recipe.category.some((tag) => tag.toLowerCase().includes(query));
-      return matchCategory && matchSearch;
+      if (ownershipTab === 'mine_private' && !(recipe.user_id === currentUserId && !recipe.is_shared)) return false;
+      if (ownershipTab === 'mine_shared' && !(recipe.user_id === currentUserId && recipe.is_shared)) return false;
+      if (ownershipTab === 'others_shared' && !(recipe.user_id !== currentUserId && recipe.is_shared)) return false;
+      if (cat !== ALL_CATEGORY && !recipe.category.includes(cat)) return false;
+      if (query) {
+        const match = recipe.title.toLowerCase().includes(query)
+          || recipe.category.some((tag) => tag.toLowerCase().includes(query));
+        if (!match) return false;
+      }
+      return true;
     })
     .sort((a, b) => {
+      const likedA = myLikedSet?.has(a.id) ? 1 : 0;
+      const likedB = myLikedSet?.has(b.id) ? 1 : 0;
+      if (likedA !== likedB) return likedB - likedA;
       const timeA = a.last_cooked_at ? new Date(a.last_cooked_at).getTime() : 0;
       const timeB = b.last_cooked_at ? new Date(b.last_cooked_at).getTime() : 0;
-      if (timeA !== timeB) {
-        return timeB - timeA;
-      }
+      if (timeA !== timeB) return timeB - timeA;
       return a.title.localeCompare(b.title, 'zh-Hant');
     });
 }

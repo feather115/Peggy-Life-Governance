@@ -54,6 +54,7 @@ export default function RecipeForm({ recipe, onSave, onCancel, onDelete }) {
     const existing = paramsToList(recipe?.parameters);
     return existing.length > 0 ? existing : [];
   });
+  const [isShared, setIsShared] = useState(!!recipe?.is_shared);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -152,6 +153,7 @@ export default function RecipeForm({ recipe, onSave, onCancel, onDelete }) {
       steps: stepsArr,
       notes: notesArr.length > 0 ? notesArr.join('\n') : null,
       parameters: paramsObj,
+      is_shared: isShared,
     };
 
     setBusy(true);
@@ -255,6 +257,11 @@ export default function RecipeForm({ recipe, onSave, onCancel, onDelete }) {
           </div>
         ))}
         <button type="button" style={S.addBtn} onClick={addParam}>+ 新增一筆參數</button>
+
+        <label style={{ ...S.label, display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+          <input type="checkbox" checked={isShared} onChange={(e) => setIsShared(e.target.checked)} />
+          🌐 分享給其他人（取消勾選則只有自己看得到）
+        </label>
 
         {error && <div style={S.errorBox}>{error}</div>}
 

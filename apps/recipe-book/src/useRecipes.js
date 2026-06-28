@@ -32,13 +32,15 @@ export function useRecipes(userId) {
   const isGuest = !userId;
   const [recipes, setRecipes] = useState([]);
   const [cookRecords, setCookRecords] = useState([]);
+  const [likes, setLikes] = useState([]); // [{ recipe_id, user_id }]
   const [loaded, setLoaded] = useState(false);
   const [loadError, setLoadError] = useState('');
   const [cookRecordError, setCookRecordError] = useState('');
 
-  // Search / Category
+  // Search / Category / Ownership tab
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(ALL_CATEGORY);
+  const [ownershipTab, setOwnershipTab] = useState(isGuest ? 'others_shared' : 'mine_private');
 
   // Navigation (catalog ↔ detail)
   const [currentView, setCurrentView] = useState('home');
@@ -51,6 +53,12 @@ export function useRecipes(userId) {
       .then(async (recipeRows) => {
         if (cancel) return;
         setRecipes(recipeRows);
+        try {
+          const likeRows = await db.loadAllLikes();
+          if (!cancel) setLikes(likeRows);
+        } catch (e) {
+          if (!cancel) console.warn('按讚資料載入失敗：', e.message);
+        }
         if (isGuest) {
           setCookRecords([]);
           setLoaded(true);
@@ -175,10 +183,42 @@ export function useRecipes(userId) {
   }, []);
 
   const availableCategories = useMemo(() => getAvailableCategories(recipes), [recipes]);
+
+  const likeCounts = useMemo(() => {
+    const m = new Map();
+    likes.forEach((l) => m.set(l.recipe_id, (m.get(l.recipe_id) || 0) + 1));
+    return m;
+  }, [likes]);
+  const myLikedSet = useMemo(() => {
+    const s = new Set();
+    if (!userId) return s;
+    likes.forEach((l) => { if (l.user_id === userId) s.add(l.recipe_id); });
+    return s;
+  }, [likes, userId]);
+
   const filteredRecipes = useMemo(
-    () => filterRecipes(recipes, selectedCategory, searchQuery),
-    [recipes, selectedCategory, searchQuery],
+    () => filterRecipes(recipes, { category: selectedCategory, search: searchQuery, ownershipTab, currentUserId: userId, myLikedSet }),
+    [recipes, selectedCategory, searchQuery, ownershipTab, userId, myLikedSet],
   );
+
+  const toggleLike = useCallback(async (recipeId) => {
+    if (!userId) throw new Error('要登入才能按讚');
+    const alreadyLiked = myLikedSet.has(recipeId);
+    // Optimistic
+    setLikes((prev) => alreadyLiked
+      ? prev.filter((l) => !(l.user_id === userId && l.recipe_id === recipeId))
+      : [...prev, { user_id: userId, recipe_id: recipeId }]);
+    try {
+      if (alreadyLiked) await db.unlikeRecipe(userId, recipeId);
+      else await db.likeRecipe(userId, recipeId);
+    } catch (e) {
+      // Rollback
+      setLikes((prev) => alreadyLiked
+        ? [...prev, { user_id: userId, recipe_id: recipeId }]
+        : prev.filter((l) => !(l.user_id === userId && l.recipe_id === recipeId)));
+      throw e;
+    }
+  }, [userId, myLikedSet]);
   const selectedRecipe = useMemo(
     () => recipes.find((r) => r.id === selectedRecipeId) || null,
     [recipes, selectedRecipeId],
@@ -195,6 +235,8 @@ export function useRecipes(userId) {
     setRecipeShared,
     saveRecipe,
     deleteRecipeById,
+    ownershipTab, setOwnershipTab,
+    likeCounts, myLikedSet, toggleLike,
     isGuest,
   };
 }
