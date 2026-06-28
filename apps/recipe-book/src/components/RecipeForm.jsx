@@ -151,7 +151,7 @@ export default function RecipeForm({ recipe, onSave, onCancel, onDelete }) {
       yield_info: yieldArr,
       ingredients: cleanIngredients,
       steps: stepsArr,
-      notes: notesArr.length > 0 ? notesArr.join('\n') : null,
+      notes: notesArr,
       parameters: paramsObj,
       is_shared: isShared,
     };
