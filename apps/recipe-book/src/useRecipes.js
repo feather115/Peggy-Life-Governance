@@ -12,6 +12,21 @@ import {
   getAvailableCategories,
 } from './utils.js';
 
+const OWNERSHIP_KEYS = ['mine_shared', 'mine_private', 'others_shared'];
+const ownershipStorageKey = (uid) => `recipe-book:ownership-filter:${uid || 'guest'}`;
+
+function loadOwnershipFilter(uid) {
+  try {
+    const raw = localStorage.getItem(ownershipStorageKey(uid));
+    if (!raw) return new Set(OWNERSHIP_KEYS);
+    const arr = JSON.parse(raw);
+    if (!Array.isArray(arr)) return new Set(OWNERSHIP_KEYS);
+    return new Set(arr.filter((k) => OWNERSHIP_KEYS.includes(k)));
+  } catch {
+    return new Set(OWNERSHIP_KEYS);
+  }
+}
+
 function getRecipeIdFromUrl() {
   return new URL(window.location.href).searchParams.get('recipe');
 }
@@ -40,7 +55,17 @@ export function useRecipes(userId) {
   // Search / Category / Ownership tab
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(ALL_CATEGORY);
-  const [ownershipTab, setOwnershipTab] = useState(isGuest ? 'others_shared' : 'mine_shared');
+  const [ownershipFilter, setOwnershipFilterState] = useState(() => loadOwnershipFilter(userId));
+  useEffect(() => { setOwnershipFilterState(loadOwnershipFilter(userId)); }, [userId]);
+  const toggleOwnership = useCallback((key) => {
+    setOwnershipFilterState((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      try { localStorage.setItem(ownershipStorageKey(userId), JSON.stringify([...next])); } catch {}
+      return next;
+    });
+  }, [userId]);
 
   // Navigation (catalog ↔ detail)
   const [currentView, setCurrentView] = useState('home');
@@ -197,8 +222,8 @@ export function useRecipes(userId) {
   }, [likes, userId]);
 
   const filteredRecipes = useMemo(
-    () => filterRecipes(recipes, { category: selectedCategory, search: searchQuery, ownershipTab, currentUserId: userId, myLikedSet }),
-    [recipes, selectedCategory, searchQuery, ownershipTab, userId, myLikedSet],
+    () => filterRecipes(recipes, { category: selectedCategory, search: searchQuery, ownershipSet: ownershipFilter, currentUserId: userId, myLikedSet }),
+    [recipes, selectedCategory, searchQuery, ownershipFilter, userId, myLikedSet],
   );
 
   const toggleLike = useCallback(async (recipeId) => {
@@ -235,7 +260,7 @@ export function useRecipes(userId) {
     setRecipeShared,
     saveRecipe,
     deleteRecipeById,
-    ownershipTab, setOwnershipTab,
+    ownershipFilter, toggleOwnership,
     likeCounts, myLikedSet, toggleLike,
     isGuest,
   };

@@ -42,14 +42,16 @@ const S = {
     padding: '3px 8px', borderRadius: 12, fontSize: 11, fontWeight: 900,
     display: 'flex', alignItems: 'center', gap: 3,
   },
-  ownerTabs: { display: 'flex', gap: 6, marginTop: 12, marginBottom: 2 },
-  ownerTab: {
-    flex: 1, border: 'none', background: '#FDF7F4', color: '#8E7568',
-    padding: '9px 8px', borderRadius: 12, fontSize: 12, fontWeight: 800, cursor: 'pointer',
+  ownerChips: { display: 'flex', gap: 6, marginTop: 12, marginBottom: 2, flexWrap: 'wrap' },
+  ownerChip: {
+    border: 'none', background: '#FDF7F4', color: '#8E7568',
+    padding: '8px 12px', borderRadius: 999, fontSize: 12, fontWeight: 800, cursor: 'pointer',
+    display: 'flex', alignItems: 'center', gap: 5,
   },
-  ownerTabActive: {
-    flex: 1, border: 'none', background: '#3D281E', color: '#fff',
-    padding: '9px 8px', borderRadius: 12, fontSize: 12, fontWeight: 900, cursor: 'pointer',
+  ownerChipOn: {
+    border: 'none', background: '#3D281E', color: '#fff',
+    padding: '8px 12px', borderRadius: 999, fontSize: 12, fontWeight: 900, cursor: 'pointer',
+    display: 'flex', alignItems: 'center', gap: 5,
   },
   cardTitle: { fontSize: 14, fontWeight: 900, color: '#3D281E', marginTop: 6, lineHeight: 1.3, margin: 0, marginBlockStart: 6 },
   empty: { textAlign: 'center', padding: '40px 20px', color: '#C5B4AC', fontSize: 15, fontWeight: 700 },
@@ -75,8 +77,8 @@ export default function RecipeCatalog({
   onSignOut,
   signOutLabel = '登出',
   onCreate,
-  ownershipTab,
-  onOwnershipTabChange,
+  ownershipFilter,
+  onToggleOwnership,
   likeCounts,
   myLikedSet,
 }) {
@@ -102,17 +104,21 @@ export default function RecipeCatalog({
         </div>
 
         {!isGuest && (
-          <div style={S.ownerTabs}>
-            {OWNER_TABS.map((t) => (
-              <button
-                key={t.key}
-                type="button"
-                onClick={() => onOwnershipTabChange(t.key)}
-                style={ownershipTab === t.key ? S.ownerTabActive : S.ownerTab}
-              >
-                {t.label}
-              </button>
-            ))}
+          <div style={S.ownerChips}>
+            {OWNER_TABS.map((t) => {
+              const on = ownershipFilter?.has(t.key);
+              return (
+                <button
+                  key={t.key}
+                  type="button"
+                  onClick={() => onToggleOwnership(t.key)}
+                  style={on ? S.ownerChipOn : S.ownerChip}
+                >
+                  <span>{on ? '☑' : '☐'}</span>
+                  {t.label}
+                </button>
+              );
+            })}
           </div>
         )}
 

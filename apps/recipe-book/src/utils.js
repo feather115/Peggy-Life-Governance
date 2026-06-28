@@ -23,16 +23,21 @@ export function getAvailableCategories(recipes) {
   return [...new Set(cleanTags)];
 }
 
-// ownershipTab: 'mine_private' | 'mine_shared' | 'others_shared' | 'all'
+export function recipeOwnershipKey(recipe, currentUserId) {
+  if (currentUserId && recipe.user_id === currentUserId) {
+    return recipe.is_shared ? 'mine_shared' : 'mine_private';
+  }
+  return 'others_shared';
+}
+
+// ownershipSet: Set<'mine_shared'|'mine_private'|'others_shared'> — 只顯示勾選的類別
 // myLikedSet: Set<recipeId> — 影響排序（喜愛的排在最前）
-export function filterRecipes(recipes, { category, search, ownershipTab, currentUserId, myLikedSet }) {
+export function filterRecipes(recipes, { category, search, ownershipSet, currentUserId, myLikedSet }) {
   const query = (search || '').trim().toLowerCase();
   const cat = category || ALL_CATEGORY;
   return recipes
     .filter((recipe) => {
-      if (ownershipTab === 'mine_private' && !(recipe.user_id === currentUserId && !recipe.is_shared)) return false;
-      if (ownershipTab === 'mine_shared' && !(recipe.user_id === currentUserId && recipe.is_shared)) return false;
-      if (ownershipTab === 'others_shared' && !(recipe.user_id !== currentUserId && recipe.is_shared)) return false;
+      if (ownershipSet && !ownershipSet.has(recipeOwnershipKey(recipe, currentUserId))) return false;
       if (cat !== ALL_CATEGORY && !recipe.category.includes(cat)) return false;
       if (query) {
         const match = recipe.title.toLowerCase().includes(query)

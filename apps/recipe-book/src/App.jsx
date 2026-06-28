@@ -84,8 +84,8 @@ export default function App({ session, onSignOut, onExitGuest }) {
                 onSignOut={recipes.isGuest ? onExitGuest : onSignOut}
                 signOutLabel={recipes.isGuest ? '登入' : '登出'}
                 onCreate={recipes.isGuest ? null : () => setEditing({ mode: 'create' })}
-                ownershipTab={recipes.ownershipTab}
-                onOwnershipTabChange={recipes.setOwnershipTab}
+                ownershipFilter={recipes.ownershipFilter}
+                onToggleOwnership={recipes.toggleOwnership}
                 likeCounts={recipes.likeCounts}
                 myLikedSet={recipes.myLikedSet}
               />
