@@ -7,13 +7,13 @@ export const supabaseReady = !!(url && key && !url.includes('YOUR_PROJECT'));
 
 const defaultAuth = { persistSession: true, autoRefreshToken: true };
 
-// 預設 client（public schema）。沒指定 schema 的場景使用。
+// Default client (public schema). Used in scenarios where no schema is specified.
 export const supabase = supabaseReady
   ? createClient(url, key, { auth: defaultAuth })
   : null;
 
-// 給各 app 用：傳入它自己的 db.schema，所有 from()/rpc() 自動指向該 schema。
-// auth 共用 auth schema，不受 db.schema 影響。
+// For apps: pass their own db.schema so that all from()/rpc() calls automatically target this schema.
+// auth shares the auth schema and is not affected by db.schema.
 export function createAppSupabase(options = {}) {
   if (!supabaseReady) return null;
   const { schema, db, auth, ...rest } = options;

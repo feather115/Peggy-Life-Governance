@@ -1,4 +1,4 @@
-// 單一食譜詳情：食材、步驟、心得、依主食材縮放配方、長按標記完成。
+// Recipe detail view: ingredients, steps, notes, recipe scaling based on base ingredient, and long-press to complete.
 import React, { useMemo, useRef, useState } from 'react';
 import {
   formatDate,

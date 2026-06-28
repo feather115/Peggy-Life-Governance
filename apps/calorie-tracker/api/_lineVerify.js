@@ -1,7 +1,7 @@
-// 驗證 LIFF 前端送來的 LINE ID Token 是不是真的、沒被竄改
-// LINE_CHANNEL_ID 是「LINE Login channel」的 Channel ID（公開的數字，不是密鑰），在 console 的 Basic settings 頁面可以找到
+// Verifies if the LINE ID Token sent by the LIFF frontend is genuine and untampered.
+// LINE_CHANNEL_ID is the Channel ID of the "LINE Login channel" (a public number, not a secret), which can be found under the Basic settings page in the console.
 
-// 純粹拆 JWT 的第二段看內容，不驗證簽章，只是除錯用（真正的驗證還是交給下面呼叫 LINE 的 /verify）
+// Purely decodes the second part of the JWT to inspect the payload without signature verification; this is for debugging only (the actual verification is performed by calling the LINE /verify endpoint below).
 function peekJwtPayload(token) {
   try {
     const part = token.split('.')[1];
@@ -31,7 +31,7 @@ export async function verifyLineIdToken(idToken, channelId) {
   }
 
   const payload = await res.json();
-  // payload.sub = LINE 使用者唯一 ID，payload.name / payload.picture 是顯示名稱/頭像
+  // payload.sub = LINE user unique ID, payload.name / payload.picture are the display name and avatar URL
   if (!payload.sub) throw new Error('LINE token 驗證結果缺少使用者 ID');
   return payload;
 }

@@ -1,5 +1,5 @@
-// 編輯「已經加入今天的某一筆餐點」：名稱/品牌/份量/卡路里/三大營養素
-// 只改這一筆記錄，不影響食物庫定義，也不影響其他天的歷史記錄
+// Edits an already added meal item: name/brand/unit/calories/nutrients
+// Only updates this specific record; does not affect food library definitions or historical records of other days.
 import React, { useState } from 'react';
 import Sheet from './Sheet.jsx';
 

@@ -1,4 +1,4 @@
-// 食譜清單畫面：搜尋、分類分頁、網格卡片。
+// Recipe catalog view: search, category tabs, and grid cards.
 import React from 'react';
 import { ALL_CATEGORY } from '../utils.js';
 import './RecipeCatalog.css';

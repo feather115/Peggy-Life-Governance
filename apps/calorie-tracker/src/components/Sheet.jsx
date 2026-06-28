@@ -1,5 +1,5 @@
-// 共用的底部彈出面板外殼（食物庫 / JSON匯入 / 進階設定 三者共用）
-// 固定在視窗底部、置中、最大寬 520，含半透明背景與頂部小握把
+// Shared bottom sheet wrapper (used by food library, JSON import, and advanced settings)
+// Fixed to window bottom, centered, max-width 520, with semi-transparent backdrop and top handle
 import React from 'react';
 
 export default function Sheet({ onBackdrop, height, zIndex = 10, children }) {

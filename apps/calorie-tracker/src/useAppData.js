@@ -1,14 +1,14 @@
 // ============================================================
-//  useAppData — 唯一的狀態中樞
-//  所有「資料 + 改資料的動作」都從這個 hook 出來。
-//  元件不直接呼叫 db.js，一律透過這裡回傳的 action。
+//  useAppData — The sole state hub
+//  All data and modification actions come from this hook.
+//  Components do not call db.js directly, but use the actions returned here.
 //
-//  回傳：
-//    狀態   loaded, loadError, days, customFoods, 四個 goal*, 兩組 tagDefs
-//    setter setGoalCal/P/C/F（會自動 debounce 存回 Supabase）
-//    動作   toggleTag, saveDayNote, addMeal, removeMeal,
-//           addCustomFood, removeCustomFood, updateCustomFood, importFoods,
-//           addTagDef, deleteTagDef, clearAll
+//  Returns:
+//    state   loaded, loadError, days, customFoods, four goal*, two tagDefs sets
+//    setter  setGoalCal/P/C/F (automatically debounced and saved to Supabase)
+//    action  toggleTag, saveDayNote, addMeal, removeMeal,
+//            addCustomFood, removeCustomFood, updateCustomFood, importFoods,
+//            addTagDef, deleteTagDef, clearAll
 // ============================================================
 
 import { useState, useEffect, useCallback } from 'react';
@@ -29,13 +29,13 @@ export function useAppData(userId) {
   const [loaded, setLoaded] = useState(false);
   const [loadError, setLoadError] = useState('');
   const [challenges, setChallenges] = useState([]);
-  const [foodUsage, setFoodUsage] = useState({}); // { [foodRef]: last_used_at } — 食物庫排序用
+  const [foodUsage, setFoodUsage] = useState({}); // { [foodRef]: last_used_at } — Used for sorting the food library
 
-  // ── 初次載入（登入後或換使用者時）────────────────────────
+  // ── Initial load (after login or switching user) ────────────────────────
   useEffect(() => {
     let cancel = false;
     setLoaded(false);
-    // 挑戰表載入失敗不致命（schema 可能還沒建立），其它資料正常顯示
+    // Failure to load challenges is non-fatal (schema might not be created yet); other data will display normally.
     Promise.all([
       db.loadAll(userId),
       db.loadMyChallenges(userId).catch((e) => { console.warn('Challenges unavailable:', e.message); return []; }),
@@ -54,13 +54,13 @@ export function useAppData(userId) {
     return () => { cancel = true; };
   }, [userId]);
 
-  // 重新載入所有挑戰資料（建立、加入、結束、登記後呼叫）
+  // Reloads all challenge data (called after creating, joining, ending, or recording weight)
   const reloadChallenges = useCallback(async () => {
     const list = await db.loadMyChallenges(userId);
     setChallenges(list || []);
   }, [userId]);
 
-  // ── 目標變更：debounce 0.5 秒後存回（避免每次按鍵都打 API）──
+  // ── Goal changes: debounced for 0.5 seconds before saving (to avoid calling APIs on every keystroke) ──
   useEffect(() => {
     if (!loaded) return;
     const t = setTimeout(() => {
@@ -69,7 +69,7 @@ export function useAppData(userId) {
     return () => clearTimeout(t);
   }, [goalCal, goalP, goalC, goalF, displayName, loaded, userId]);
 
-  // ── 標籤切換（某天啟用/取消一個標籤）────────────────────
+  // ── Tag toggle (enable/disable a tag for a specific day) ────────────────────
   const toggleTag = useCallback(async (date, tagId, makeActive) => {
     const recordId = await db.toggleDayTag(userId, date, tagId, makeActive);
     setDays((prev) => {
@@ -81,7 +81,7 @@ export function useAppData(userId) {
     });
   }, [userId]);
 
-  // ── 當日 AI 摘要 ──────────────────────────────────────
+  // ── Daily AI Summary ──────────────────────────────────────
   const saveDayNote = useCallback(async (date, note) => {
     const recordId = await db.saveDayNote(userId, date, note);
     setDays((prev) => {
@@ -90,7 +90,7 @@ export function useAppData(userId) {
     });
   }, [userId]);
 
-  // 記錄某個食物剛被選用/新增/編輯，食物庫排序用（最近用過的排最上面）
+  // Logs when a food was selected/added/edited, used for food library sorting (recently used first)
   const touchFood = useCallback((foodRef) => {
     if (!foodRef) return;
     const now = new Date().toISOString();
@@ -98,7 +98,7 @@ export function useAppData(userId) {
     db.touchFoodUsage(userId, foodRef).catch(() => {});
   }, [userId]);
 
-  // ── 加入一筆餐點（snapshot 由呼叫端組好）─────────────────
+  // ── Add a meal item (snapshot compiled by the caller) ─────────────────
   const addMeal = useCallback(async (date, mealKey, snapshot) => {
     const { recordId, item } = await db.addMealItem(userId, date, mealKey, snapshot);
     setDays((prev) => {
@@ -109,7 +109,7 @@ export function useAppData(userId) {
     touchFood(snapshot.foodRef);
   }, [userId, touchFood]);
 
-  // ── 刪除一筆餐點 ──────────────────────────────────────
+  // ── Delete a meal item ──────────────────────────────────────
   const removeMeal = useCallback(async (date, mealKey, itemId) => {
     await db.removeMealItem(itemId);
     setDays((prev) => {
@@ -119,7 +119,7 @@ export function useAppData(userId) {
     });
   }, [userId]);
 
-  // ── 編輯已加入的餐點（名稱/品牌/份量/卡路里/營養素）────────
+  // ── Edit an already added meal item (name/brand/unit/calories/nutrients) ────────
   const editMeal = useCallback(async (date, mealKey, itemId, patch) => {
     const updated = await db.updateMealItem(itemId, patch);
     setDays((prev) => {
@@ -130,7 +130,7 @@ export function useAppData(userId) {
     });
   }, [userId]);
 
-  // ── 自訂食物 ──────────────────────────────────────────
+  // ── Custom Foods ──────────────────────────────────────────
   const addCustomFood = useCallback(async (food) => {
     const nf = await db.addCustomFood(userId, food);
     setCustomFoods((prev) => [...prev, nf]);
@@ -143,7 +143,7 @@ export function useAppData(userId) {
     setCustomFoods((prev) => prev.filter((f) => f.id !== id));
   }, [userId]);
 
-  // 改自訂食物定義；已經記錄過的歷史餐點是快照，不會被這個動作動到
+  // Modify custom food definition; previously recorded meals are snapshots and are not affected by this action.
   const updateCustomFood = useCallback(async (id, food) => {
     const nf = await db.updateCustomFood(id, food);
     setCustomFoods((prev) => prev.map((f) => (f.id === id ? nf : f)));
@@ -151,7 +151,7 @@ export function useAppData(userId) {
     return nf;
   }, [userId, touchFood]);
 
-  // 一次匯入多筆（JSON 匯入用），回傳成功筆數
+  // Bulk import (used for JSON import), returns the count of successfully imported items
   const importFoods = useCallback(async (list) => {
     const added = [];
     for (const v of list) added.push(await db.addCustomFood(userId, v));
@@ -159,10 +159,10 @@ export function useAppData(userId) {
     return added.length;
   }, [userId]);
 
-  // ── 標籤定義（設定頁的新增/刪除）─────────────────────────
+  // ── Tag definitions (adding/deleting in Settings page) ─────────────────────────
   const addTagDef = useCallback(async (type, label, color) => {
     const list = type === 'fasting' ? fastingTagDefs : otherTagDefs;
-    if (list.some((t) => t.label === label)) return false; // 重複名稱不加
+    if (list.some((t) => t.label === label)) return false; // Do not add duplicate names
     const newTag = await db.addTagDef(userId, type, label, list.length, color);
     if (type === 'fasting') setFastingTagDefs((prev) => [...prev, newTag]);
     else setOtherTagDefs((prev) => [...prev, newTag]);
@@ -176,8 +176,8 @@ export function useAppData(userId) {
     else setOtherTagDefs(apply);
   }, []);
 
-  // 刪除標籤定義：資料庫靠 ON DELETE CASCADE 清掉 day_tags，
-  // 這裡再同步清掉前端 days 裡殘留的 id（避免畫面殘影）
+  // Delete tag definition: database uses ON DELETE CASCADE to clear day_tags,
+  // here we synchronize and remove the remaining IDs in frontend days (to prevent UI ghosting)
   const deleteTagDef = useCallback(async (type, id) => {
     await db.deleteTagDef(id);
     if (type === 'fasting') setFastingTagDefs((prev) => prev.filter((t) => t.id !== id));
@@ -193,7 +193,7 @@ export function useAppData(userId) {
     });
   }, [userId]);
 
-  // ── 清除全部資料（保留標籤定義與目標）──────────────────
+  // ── Clear all data (retains tag definitions and goals) ──────────────────
   const clearAll = useCallback(async () => {
     const ids = Object.values(days).map((d) => d.recordId).filter(Boolean);
     if (ids.length) await supabase.from('day_records').delete().in('id', ids);

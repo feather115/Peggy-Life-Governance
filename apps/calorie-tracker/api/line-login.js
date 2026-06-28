@@ -1,4 +1,4 @@
-// Vercel serverless function — 接收 LIFF 前端的 LINE ID Token，驗證後回傳可交換 Supabase session 的憑證
+// Vercel serverless function — Receives the LINE ID Token from LIFF frontend, verifies it, and returns credentials that can be exchanged for a Supabase session.
 import { loginWithLine } from './_lineLogin.js';
 
 export default async function handler(req, res) {

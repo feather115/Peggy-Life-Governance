@@ -1,6 +1,6 @@
-// 報表頁的「飲食歷史」卡片：搜尋某食物哪幾天吃過、或看每個餐別通常吃什麼
-// 展開後的每一筆記錄可以直接編輯（改那一天的數值）或複製進食物庫菜單
-// 複製目標是「食物庫」而不是「今天」，因為歷史那一筆記錄本身之後可能被刪掉，菜單裡才會留得住
+// Report page "Diet History" card: searches which days a specific food was consumed, or views what is usually eaten for each meal.
+// Each expanded record can be edited directly (modifies the value for that day) or copied to the food library.
+// The destination of copying is the "food library" rather than "today", as the historical record itself might be deleted later, while keeping it in the menu preserves it.
 import React, { useState, useMemo } from 'react';
 import { MEALS_DEF } from '../constants.js';
 import { buildFoodHistory, mealTypeBreakdown } from '../selectors.js';
@@ -14,7 +14,7 @@ export default function FoodHistoryCard({ app }) {
   const [expanded, setExpanded] = useState(null);
   const [mealKey, setMealKey] = useState('breakfast');
   const [editing, setEditing] = useState(null); // { date, mealKey, item } | null
-  const [copiedKey, setCopiedKey] = useState(null); // 顯示「已加入菜單」的那一筆
+  const [copiedKey, setCopiedKey] = useState(null); // Displays the item marked "added to menu"
 
   const history = useMemo(() => buildFoodHistory(days), [days]);
   const filtered = useMemo(() => {

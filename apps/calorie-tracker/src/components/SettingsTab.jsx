@@ -1,4 +1,4 @@
-// 「設定」分頁：帳號/登出、個人資料（暱稱+改密碼）、每日目標、標籤管理、資料清除
+// Settings tab: account/sign out, profile (nickname + change password), daily goal, tags management, data clearing
 import React, { useState } from 'react';
 import { FOODS } from '../constants.js';
 import { totalRecordedDays } from '../selectors.js';
@@ -56,18 +56,20 @@ export default function SettingsTab({ app, session, onSignOut }) {
         <button onClick={onSignOut} style={{ border: 'none', background: '#F0F3F1', color: '#6E8B7C', fontWeight: 800, fontSize: 13, padding: '8px 14px', borderRadius: 14, cursor: 'pointer' }}>登出</button>
       </div>
 
-      {/* 個人資料 */}
+      {/* Personal Profile */}
       <div style={{ background: '#fff', borderRadius: 24, padding: '20px 18px', marginTop: 14, boxShadow: '0 10px 24px -18px rgba(46,139,94,.5)' }}>
         <div style={{ fontSize: 16, fontWeight: 900, color: '#234034', marginBottom: 14 }}>個人資料</div>
         <div style={{ fontSize: 14, fontWeight: 800, color: '#6E8B7C', marginBottom: 6 }}>暱稱</div>
         <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="例如：小明" maxLength={20}
           style={{ width: '100%', border: 'none', background: '#F6FAF7', borderRadius: 14, padding: '14px 15px', fontSize: 16, fontWeight: 800, color: '#234034' }} />
         <div style={{ fontSize: 12, color: '#9bb0a3', marginTop: 6, fontWeight: 600 }}>會顯示在今日頁的問候語</div>
-        <PasswordChanger />
-        <LineLinker />
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'flex-start', marginTop: 14 }}>
+          <PasswordChanger />
+          <LineLinker />
+        </div>
       </div>
 
-      {/* 每日目標 */}
+      {/* Daily Goals */}
       <div style={{ background: '#fff', borderRadius: 24, padding: '20px 18px', marginTop: 14, boxShadow: '0 10px 24px -18px rgba(46,139,94,.5)' }}>
         <div style={{ fontSize: 16, fontWeight: 900, color: '#234034', marginBottom: 14 }}>每日目標</div>
         <div style={{ marginBottom: 14 }}>
@@ -84,7 +86,7 @@ export default function SettingsTab({ app, session, onSignOut }) {
         </div>
       </div>
 
-      {/* 標籤管理 */}
+      {/* Tag Management */}
       <div style={{ background: '#fff', borderRadius: 24, padding: '20px 18px', marginTop: 12, boxShadow: '0 10px 24px -18px rgba(46,139,94,.5)' }}>
         <div style={{ fontSize: 16, fontWeight: 900, color: '#234034', marginBottom: 16 }}>標籤管理</div>
         <TagGroup title="⏱ 斷食標籤" titleColor="#4361EE" chipBg="#E8EDFF" chipColor="#4361EE" delColor="#8899DD"
@@ -98,7 +100,7 @@ export default function SettingsTab({ app, session, onSignOut }) {
           color={addOtherColor} setColor={setAddOtherColor} />
       </div>
 
-      {/* 資料管理 */}
+      {/* Data Management */}
       <div style={{ background: '#fff', borderRadius: 24, padding: '20px 18px', marginTop: 12, boxShadow: '0 10px 24px -18px rgba(46,139,94,.5)' }}>
         <div style={{ fontSize: 16, fontWeight: 900, color: '#234034', marginBottom: 6 }}>資料管理</div>
         <div style={{ fontSize: 13, color: '#6E8B7C', fontWeight: 700, marginBottom: 14 }}>已記錄 {totalRec} 天 · 食物庫 {FOODS.length} + {customFoods.length} 自訂</div>
@@ -114,7 +116,7 @@ export default function SettingsTab({ app, session, onSignOut }) {
   );
 }
 
-// 標籤群組（斷食 / 記錄原因共用）
+// Tag groups (shared between fasting and other tag types)
 function TagGroup({ title, titleColor, chipBg, chipColor, delColor, tags, onDelete, onColor, input, setInput, onAdd, addBg, placeholder, color, setColor }) {
   const [editingColorId, setEditingColorId] = useState(null);
   return (
@@ -157,7 +159,7 @@ function ColorSwatches({ current, onPick, compact = false }) {
   );
 }
 
-// 連結 LINE 帳號：只有在 LINE App 裡開啟時才會顯示，連結後從 LINE 開啟就會直接登入這個帳號
+// Link LINE Account: Only shown when opened within the LINE App. Once linked, opening from LINE will log in to this account directly.
 function LineLinker() {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
@@ -177,7 +179,7 @@ function LineLinker() {
   };
 
   return (
-    <div style={{ marginTop: 14 }}>
+    <div>
       <button onClick={link} disabled={busy} style={{ border: 'none', background: '#F0F3F1', color: '#06C755', fontWeight: 800, fontSize: 13, padding: '10px 16px', borderRadius: 12, cursor: 'pointer' }}>
         {busy ? '連結中…' : '🔗 連結 LINE 帳號'}
       </button>
@@ -188,7 +190,7 @@ function LineLinker() {
   );
 }
 
-// 變更密碼小元件
+// Password change component
 function PasswordChanger() {
   const [open, setOpen] = useState(false);
   const [pw, setPw] = useState('');
@@ -206,13 +208,13 @@ function PasswordChanger() {
 
   if (!open) {
     return (
-      <button onClick={() => setOpen(true)} style={{ marginTop: 14, border: 'none', background: '#F0F3F1', color: '#6E8B7C', fontWeight: 800, fontSize: 13, padding: '10px 16px', borderRadius: 12, cursor: 'pointer' }}>
+      <button onClick={() => setOpen(true)} style={{ border: 'none', background: '#F0F3F1', color: '#6E8B7C', fontWeight: 800, fontSize: 13, padding: '10px 16px', borderRadius: 12, cursor: 'pointer' }}>
         🔑 變更密碼
       </button>
     );
   }
   return (
-    <div style={{ marginTop: 14 }}>
+    <div style={{ width: '100%' }}>
       <div style={{ fontSize: 14, fontWeight: 800, color: '#6E8B7C', marginBottom: 6 }}>新密碼</div>
       <input type="password" value={pw} onChange={(e) => setPw(e.target.value)} minLength={6} placeholder="至少 6 字元"
         style={{ width: '100%', border: 'none', background: '#F6FAF7', borderRadius: 14, padding: '14px 15px', fontSize: 16, fontWeight: 700, color: '#234034' }} />

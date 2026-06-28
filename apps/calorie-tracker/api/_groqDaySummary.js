@@ -1,4 +1,4 @@
-// 把當天的飲食記錄整理成文字，交給 Groq 寫一段簡短評語/建議
+// Formats the day's diet log into text and passes it to Groq to generate a brief comment/suggestion.
 import { callGroq } from './_groq.js';
 
 const SYSTEM_PROMPT = `你是親切但專業的營養顧問。使用者會給你今天吃的食物清單、總熱量/三大營養素、目標值、以及今天標記的斷食方式/特殊狀況標籤。

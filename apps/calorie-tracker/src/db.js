@@ -63,7 +63,7 @@ export async function loadAll(userId) {
   };
 }
 
-// 記錄某個食物剛被選用/新增/編輯（食物庫排序用：最近用過的排最上面）
+// Logs when a food was selected/added/edited (for food library sorting: recently used foods appear at the top)
 export async function touchFoodUsage(userId, foodRef) {
   if (!foodRef) return;
   await supabase.from('food_usage').upsert({ user_id: userId, food_ref: String(foodRef), last_used_at: new Date().toISOString() });
@@ -108,7 +108,7 @@ export async function addCustomFood(userId, food) {
   return { id: data.id, name: data.name, unit: data.unit, brand: data.brand || '', note: data.note || '',
     cal: Number(data.cal), p: Number(data.p), c: Number(data.c), f: Number(data.f), custom: true };
 }
-// 只改 custom_foods 這筆定義，已經記錄過的歷史餐點是快照、不會被動到
+// Only updates the custom_foods definition; previously recorded historical meal items are snapshots and will not be affected.
 export async function updateCustomFood(id, food) {
   const { data, error } = await supabase.from('custom_foods').update({
     name: food.name, unit: food.unit, brand: food.brand || null, note: food.note || null,
@@ -144,7 +144,7 @@ export async function addMealItem(userId, date, mealKey, foodSnapshot) {
 export async function removeMealItem(id) {
   await supabase.from('meal_items').delete().eq('id', id);
 }
-// 編輯已經加入的餐點（名稱/品牌/份量/卡路里/營養素），只改這一筆，不影響其他天
+// Edits an already added meal item (name/brand/unit/calories/nutrients); only modifies this specific entry without affecting other days.
 export async function updateMealItem(id, patch) {
   const row = {};
   if (patch.name !== undefined) row.name = patch.name;
@@ -185,23 +185,23 @@ export async function toggleDayTag(userId, date, tagDefId, makeActive) {
 // ═════════════════════════════════════════════════════════════
 
 function genInviteCode() {
-  // 6 字元、避開易混淆 (0/O, 1/I, L)
+  // 6 characters, avoiding easily confused characters (0/O, 1/I, L)
   const alphabet = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
   let s = '';
   for (let i = 0; i < 6; i++) s += alphabet[Math.floor(Math.random() * alphabet.length)];
   return s;
 }
 
-// 載入我參與的所有 challenge（含成員、體重紀錄、成員的 display_name）
+// Loads all challenges I participate in (including members, weight records, and member display_names)
 export async function loadMyChallenges(userId) {
-  // 先抓我是成員的 challenge_id 清單
+  // First fetch the list of challenge_ids where I am a member
   const { data: memberRows, error: memErr } = await supabase
     .from('challenge_members').select('challenge_id').eq('user_id', userId);
   if (memErr) throw memErr;
   const ids = (memberRows || []).map(r => r.challenge_id);
   if (ids.length === 0) return [];
 
-  // 一次撈出所有 challenge 含關聯資料
+  // Fetch all challenges including related data in one query
   const { data: rows, error } = await supabase
     .from('challenges')
     .select('id,name,start_date,end_date,status,winner_user_id,creator_user_id,invite_code,created_at,challenge_members(user_id,joined_at,color),weight_entries(id,user_id,kg_diff,week_label,recorded_at)')
@@ -209,19 +209,19 @@ export async function loadMyChallenges(userId) {
     .order('created_at', { ascending: false });
   if (error) throw error;
 
-  // 把所有成員 user_id 撈出來，一次查詢 display_name + email（後備名稱用）
+  // Extract all member user_ids and query display_name + email in one go (used for fallback names)
   const allUserIds = new Set();
   rows.forEach(c => (c.challenge_members || []).forEach(m => allUserIds.add(m.user_id)));
   let infoByUser = {};
   if (allUserIds.size > 0) {
     const { data: settings, error: settingsErr } = await supabase
       .from('user_settings').select('user_id,display_name,email').in('user_id', [...allUserIds]);
-    if (settingsErr) console.warn('loadMyChallenges: 抓取成員名稱失敗', settingsErr.message);
+    if (settingsErr) console.warn('loadMyChallenges: Failed to fetch member names', settingsErr.message);
     (settings || []).forEach(s => {
       infoByUser[s.user_id] = { displayName: s.display_name || '', email: s.email || '' };
     });
   }
-  // 暱稱優先，沒設就用 email @ 前綴；都沒有則「未命名」
+  // Nickname takes precedence; if not set, use email @ prefix; otherwise "Unnamed"
   const resolveName = (userId) => {
     const info = infoByUser[userId];
     if (!info) return '未命名';
@@ -250,7 +250,7 @@ export async function loadMyChallenges(userId) {
 }
 
 export async function createChallenge(userId, { name, startDate, endDate }) {
-  // 重試最多 5 次以避免 invite_code 撞名
+  // Retry up to 5 times to avoid invite_code collisions
   for (let attempt = 0; attempt < 5; attempt++) {
     const code = genInviteCode();
     const { data, error } = await supabase
@@ -258,29 +258,29 @@ export async function createChallenge(userId, { name, startDate, endDate }) {
       .insert({ name, start_date: startDate, end_date: endDate, creator_user_id: userId, invite_code: code })
       .select('id,invite_code').single();
     if (!error) {
-      // 建立者自動加入成員
+      // Creator automatically joins as a member
       await supabase.from('challenge_members').insert({ challenge_id: data.id, user_id: userId });
       return data.id;
     }
-    if (error.code !== '23505') throw error; // 不是 unique violation 就直接丟出
+    if (error.code !== '23505') throw error; // Throw immediately if it's not a unique violation
   }
   throw new Error('產生邀請碼失敗，請重試');
 }
 
 export async function joinChallengeByCode(userId, code) {
-  // 用 RPC（security definer）查詢，因為還沒加入的人讀不到 challenges 表（RLS 限制）
+  // Query via RPC (security definer) because non-members cannot read the challenges table due to RLS restrictions
   const { data: rows, error } = await supabase.rpc('find_challenge_by_code', { p_code: code });
   if (error) throw error;
   const ch = rows && rows[0];
   if (!ch) throw new Error('找不到這個邀請碼');
-  // 嘗試加入（重複加入會被 PK 擋住，但不視為錯誤）
+  // Attempt to join (duplicate joining is blocked by primary key, but not treated as an error)
   const { error: joinErr } = await supabase
     .from('challenge_members').insert({ challenge_id: ch.id, user_id: userId });
   if (joinErr && joinErr.code !== '23505') throw joinErr;
   return ch.id;
 }
 
-// 成員自訂自己在這個挑戰裡的顏色（圖表/排行榜頭像用），colorHex 傳 null 代表恢復預設
+// Member customizes their own color in this challenge (used for charts/podium avatars); passing null for colorHex restores the default
 export async function setMemberColor(userId, challengeId, colorHex) {
   const { error } = await supabase
     .from('challenge_members').update({ color: colorHex })
@@ -293,7 +293,7 @@ export async function leaveChallenge(userId, challengeId) {
     .eq('challenge_id', challengeId).eq('user_id', userId);
 }
 
-// 只有建立者可改（RLS 強制）；patch 可帶 name / start_date / end_date
+// Only creator can modify (enforced by RLS); patch can contain name / start_date / end_date
 export async function updateChallenge(challengeId, patch) {
   const row = {};
   if (patch.name !== undefined) row.name = patch.name;
@@ -317,7 +317,7 @@ export async function deleteChallenge(challengeId) {
 }
 
 export async function upsertWeightEntry(userId, { challengeId, kgDiff, weekLabel }) {
-  // 同一週標籤已存在 → 改為更新該筆，否則插入
+  // If the entry for the same week already exists -> update it, otherwise insert a new record
   const { data: existing } = await supabase
     .from('weight_entries').select('id')
     .eq('challenge_id', challengeId).eq('user_id', userId).eq('week_label', weekLabel).maybeSingle();

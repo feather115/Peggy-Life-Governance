@@ -1,4 +1,4 @@
-// Vercel serverless function — 把目前登入的帳號跟 LINE 身份綁定
+// Vercel serverless function — Binds the currently logged-in account to the LINE identity.
 import { linkLineAccount } from './_lineLink.js';
 
 export default async function handler(req, res) {

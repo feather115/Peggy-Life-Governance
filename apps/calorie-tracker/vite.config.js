@@ -3,8 +3,8 @@ import react from '@vitejs/plugin-react'
 import { searchFood } from './api/_groqFoodSearch.js'
 import { generateDaySummary } from './api/_groqDaySummary.js'
 
-// 本機開發時模擬 Vercel serverless functions（/api/*），
-// 讓 GROQ_API_KEY 只存在伺服器端（從 .env 讀），不會打包進前端
+// Simulates Vercel serverless functions (/api/*) during local development,
+// keeping GROQ_API_KEY only on the server side (read from .env) and preventing it from being bundled into the frontend
 function devApiRoute(path, handler) {
   return (server) => {
     server.middlewares.use(path, (req, res) => {
@@ -38,7 +38,7 @@ function groqDevApi() {
 }
 
 export default defineConfig(({ mode }) => {
-  // loadEnv 讀 .env 但不限定 VITE_ 前綴，這樣 GROQ_API_KEY 才能進到 process.env（給上面的開發中介層用）
+  // loadEnv reads .env without restricting to VITE_ prefix, so GROQ_API_KEY gets loaded into process.env (used by the dev middleware above)
   const env = loadEnv(mode, process.cwd(), '')
   process.env.GROQ_API_KEY = env.GROQ_API_KEY
 

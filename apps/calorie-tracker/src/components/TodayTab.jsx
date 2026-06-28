@@ -1,4 +1,4 @@
-// 「今日」分頁：日期切換、卡路里環、三大營養素、五個餐別卡、AI摘要、進階入口
+// "Today" tab: date switcher, calorie ring, macronutrients, five meal cards, AI summary, and advanced entries
 import React, { useState } from 'react';
 import { MEALS_DEF } from '../constants.js';
 import { todayKey, dkFrom, parseDk, dateLabel, greeting, pct, emptyDay } from '../utils.js';

@@ -1,4 +1,4 @@
-// 體重挑戰 — 每週折線圖（每位成員一條曲線，向上 = 減重越多）
+// Weight challenge — weekly line chart (one curve per member, UP = more weight lost)
 import React from 'react';
 import { memberColor } from '../selectors.js';
 
@@ -10,11 +10,11 @@ export default function WeightChart({ challenge, highlightUserId = null }) {
   if (!allWeeks.length) return null;
 
   const W = 580, H = 280;
-  // 把右側留白縮小（已不再放姓名+kg 標籤，改靠下方 legend 顯示人名）
+  // Reduce right padding (name+kg labels are no longer placed there, names are shown in the bottom legend instead)
   const PAD = { l: 26, r: 16, t: 18, b: 36 };
   const cW = W - PAD.l - PAD.r, cH = H - PAD.t - PAD.b;
 
-  // Y 軸：把 kgDiff 負號去掉，這樣 UP = 減越多
+  // Y-axis: remove negative sign from kgDiff, so UP = more weight lost
   const allVals = entries.map(e => -e.kgDiff);
   const yMax = Math.max(...allVals, 0.5) * 1.18;
   const yMin = Math.min(...allVals, 0) - 0.15;
@@ -86,7 +86,7 @@ export default function WeightChart({ challenge, highlightUserId = null }) {
           const path = linePath(pts);
           const last = pts[pts.length - 1];
           const area = path + ` L${last.x.toFixed(1)},${zY.toFixed(1)} L${pts[0].x.toFixed(1)},${zY.toFixed(1)} Z`;
-          // 只有單獨高亮一條線時才畫面積填色，多人同時顯示時面積疊在一起會變成一片「陰影」，拿掉比較乾淨
+          // Fill area color only when highlighting a single line; when multiple lines are shown, overlapping areas look like a big shadow, so removing it keeps it cleaner
           const showArea = highlightUserId === m.userId;
           return (
             <g key={`m${m.userId}`} opacity={isDim ? 0.18 : 1}>

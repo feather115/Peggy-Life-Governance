@@ -1,4 +1,4 @@
-// 進階面板：切換當日斷食/記錄原因標籤、編輯當日 AI 摘要（關閉時自動存摘要）
+// Advanced sheet: toggles fasting/other tags for the day, edits daily AI summary (saves automatically on close).
 import React, { useState } from 'react';
 import { dateLabel, emptyDay } from '../utils.js';
 import { dayTotals } from '../selectors.js';
@@ -14,13 +14,13 @@ export default function AdvancedSheet({ app, selectedDate, onClose }) {
   const [aiBusy, setAiBusy] = useState(false);
   const [aiError, setAiError] = useState('');
 
-  // 關閉時把摘要寫回資料庫
+  // Write the summary back to the database upon closing.
   const close = async () => {
     if (note !== (curDay.dayNote || '')) await saveDayNote(selectedDate, note);
     onClose();
   };
 
-  // 把今天實際吃的東西＋目標丟給 AI，請它寫一段評語，直接覆蓋到下面的文字框（送出前都還能自己改）
+  // Passes today's food log + goals to AI to generate a comment, overwriting the textarea below (which can still be manually edited before saving).
   const generateSummary = async () => {
     setAiBusy(true); setAiError('');
     try {

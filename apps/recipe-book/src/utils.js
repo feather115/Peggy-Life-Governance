@@ -1,6 +1,6 @@
 // ============================================================
-//  純工具函式：把 Supabase 抓回來的 recipe 欄位整理成畫面需要的形狀
-//  沒有 React、沒有 Supabase 依賴，可隨意 import
+//  Utility functions: formats recipe fields retrieved from Supabase into the display shape
+//  No React or Supabase dependencies, safe to import anywhere
 // ============================================================
 
 export const ALL_CATEGORY = '全部';
@@ -39,7 +39,7 @@ export function parseYieldInfo(yieldInfo) {
 export function parseIngredients(ingredients) {
   if (!ingredients) return [];
   if (Array.isArray(ingredients)) return ingredients;
-  // 舊資料格式：{ name: amount } 物件
+  // Old data format: { name: amount } object
   return Object.entries(ingredients).map(([name, amount], index) => ({
     name, amount, is_base: index === 0, brand: '', type: '',
   }));

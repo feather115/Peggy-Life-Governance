@@ -1,5 +1,5 @@
-// 把一句自然語言描述轉成食物欄位
-// 被 api/food-search.js（Vercel serverless，正式環境）和 vite.config.js 的開發中介層（本機開發）共用
+// Converts a natural language description into structured food fields.
+// Shared by api/food-search.js (Vercel serverless for production) and development middleware in vite.config.js (for local development).
 
 import { callGroq } from './_groq.js';
 

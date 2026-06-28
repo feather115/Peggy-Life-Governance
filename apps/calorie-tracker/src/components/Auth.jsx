@@ -1,4 +1,4 @@
-// 登入 / 註冊 / 忘記密碼頁（未登入時顯示）。Supabase Email + 密碼。
+// Login / Sign Up / Forgot Password page (shown when not logged in). Supabase Email + Password.
 import React, { useState } from 'react';
 import { supabase } from '../supabase.js';
 

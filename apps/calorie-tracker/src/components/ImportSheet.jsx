@@ -1,4 +1,4 @@
-// JSON 匯入面板：貼上 AI 輸出的食物 JSON，解析後批次加入自訂食物庫
+// JSON import sheet: paste food JSON output from AI, parse it, and bulk-add to custom food library.
 import React, { useState } from 'react';
 import Sheet from './Sheet.jsx';
 

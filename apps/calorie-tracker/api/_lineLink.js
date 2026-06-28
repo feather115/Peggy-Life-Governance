@@ -1,4 +1,4 @@
-// 把目前登入中的帳號跟這個 LINE 使用者綁在一起，之後從 LINE 開啟就會直接登入這個帳號
+// Links the currently logged-in account with this LINE user. Afterwards, opening the app from LINE will automatically log in to this account.
 import { verifyLineIdToken } from './_lineVerify.js';
 import { getSupabaseAdmin } from './_supabaseAdmin.js';
 

@@ -1,4 +1,4 @@
-// 建立新挑戰 / 用邀請碼加入既有挑戰
+// Create new challenge / Join existing challenge using an invitation code
 import React, { useState } from 'react';
 import Sheet from './Sheet.jsx';
 

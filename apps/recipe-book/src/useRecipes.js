@@ -1,7 +1,7 @@
 // ============================================================
-//  useRecipes — 食譜清單的狀態中樞
-//  載入 recipes、搜尋/分類篩選、瀏覽 detail 的網址同步全部從這裡出來。
-//  元件不直接呼叫 db.js，一律透過這個 hook 回傳的 state/action。
+//  useRecipes — The state hub for recipes list
+//  Handles loading recipes, searching/filtering by category, and URL sync for viewing details.
+//  Components do not call db.js directly, but use the state/action returned by this hook.
 // ============================================================
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -38,15 +38,15 @@ export function useRecipes() {
   const [loaded, setLoaded] = useState(false);
   const [loadError, setLoadError] = useState('');
 
-  // 搜尋 / 分類
+  // Search / Category
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(ALL_CATEGORY);
 
-  // 導覽（catalog ↔ detail）
+  // Navigation (catalog ↔ detail)
   const [currentView, setCurrentView] = useState('home');
   const [selectedRecipeId, setSelectedRecipeId] = useState(null);
 
-  // 初次載入
+  // Initial load
   useEffect(() => {
     let cancel = false;
     db.loadRecipes()
@@ -64,7 +64,7 @@ export function useRecipes() {
     return () => { cancel = true; };
   }, []);
 
-  // 載入完成後，根據 URL 同步 view（支援直接開帶 ?recipe=xxx 的網址）
+  // Sync view with URL after loading is complete (supports opening URLs with ?recipe=xxx directly)
   useEffect(() => {
     if (!loaded) return;
     syncViewWithUrl(recipes);

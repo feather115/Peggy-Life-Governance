@@ -1,4 +1,4 @@
-// 「報表」分頁：本週長條圖、月份月曆熱力圖、營養素比例、月份統計、連續達標
+// "Reports" tab: weekly bar chart, monthly calendar heatmap, nutrient ratios, monthly statistics, and streak targets
 import React, { useState } from 'react';
 import { buildWeek, buildMonth, computeStreak } from '../selectors.js';
 import FoodHistoryCard from './FoodHistoryCard.jsx';

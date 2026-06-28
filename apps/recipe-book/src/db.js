@@ -1,4 +1,4 @@
-// Supabase 的純查詢函式，元件不直接打資料庫，一律透過 useRecipes 拿到的 state/actions。
+// Pure fetch functions for Supabase; components do not communicate with the database directly, but use the state/actions returned by useRecipes.
 import { supabase } from './supabase.js';
 import { normalizeRecipe } from './utils.js';
 

@@ -1,5 +1,5 @@
-// 初始化 LINE LIFF + 在 LINE 裡開啟時自動登入
-// 沒設定 VITE_LIFF_ID 時整段跳過，App 照常當一般網頁運作，不影響任何現有功能
+// Initialize LINE LIFF + auto-login when opened inside LINE
+// Skip if VITE_LIFF_ID is not configured; the App will function as a standard web page without affecting any existing features.
 import liff from '@line/liff';
 import { supabase } from './supabase.js';
 
@@ -13,8 +13,8 @@ export async function initLiff() {
   }
 }
 
-// 只有在 LINE App 內開啟（liff.isInClient()）才會自動登入；一般瀏覽器照舊用 email/密碼登入畫面
-// 回傳 { ok, reason }：ok=true 代表已經幫使用者建立好 Supabase session；reason 是診斷用的失敗原因
+// Auto-login only occurs when opened inside the LINE App (liff.isInClient()); standard browsers will fall back to the email/password login screen.
+// Returns { ok, reason }: ok=true means the Supabase session has been established for the user; reason contains the diagnostic failure reason.
 export async function lineAutoLogin() {
   if (!import.meta.env.VITE_LIFF_ID) return { ok: false, reason: '沒設定 VITE_LIFF_ID' };
   if (!liff.isInClient()) return { ok: false, reason: '不是在 LINE App 裡開的（isInClient=false）' };
@@ -40,12 +40,12 @@ export async function lineAutoLogin() {
   }
 }
 
-// 是否能在這台裝置上做 LINE 連結（必須在 LINE App 裡開，且已經是 LIFF 登入狀態）
+// Whether LINE linking can be performed on this device (must be opened in LINE App and logged in via LIFF)
 export function canLinkLine() {
   return !!import.meta.env.VITE_LIFF_ID && liff.isInClient() && liff.isLoggedIn();
 }
 
-// 把目前登入中的帳號跟這個 LINE 身份綁定，之後從 LINE 開啟會直接登入這個帳號（不會變成另一個新帳號）
+// Binds the currently logged-in account to this LINE identity. Afterwards, opening from LINE will directly log in to this account (without creating a new account).
 export async function linkLineAccount() {
   if (!canLinkLine()) throw new Error('請在 LINE App 裡開啟這個頁面才能連結');
 

@@ -1,4 +1,4 @@
-// 「挑戰」分頁：減重比賽（多人邀請碼制、podium、排行榜、週進度圖、本週登記、歷史）
+// "Challenge" tab: weight loss competition (multiplayer invitation code, podium, leaderboard, weekly progress chart, weekly check-in, history)
 import React, { useState, useMemo } from 'react';
 import { daysLeft, computeLeaderboard, myRankIn, lastFriday, memberColor, MEMBER_PALETTE } from '../selectors.js';
 import { dateLabel } from '../utils.js';
@@ -27,7 +27,7 @@ export default function ChallengeTab({ app }) {
   const active = challenges.filter(c => c.status === 'active');
   const ended = challenges.filter(c => c.status === 'ended');
 
-  // 預設選中第一個進行中的挑戰
+  // Default to select the first active challenge
   const current = useMemo(() => {
     if (selectedId) return challenges.find(c => c.id === selectedId) || active[0] || ended[0] || null;
     return active[0] || ended[0] || null;
@@ -260,8 +260,8 @@ function ChallengeView({ challenge, myUserId, onSubmitEntry, onRemoveEntry, onUp
   );
 }
 
-// 進度圖卡片：人多時點圖例可單獨高亮一條線，其他淡化，避免線太多看不清楚
-// 自己的圖例可以點旁邊的調色盤圖示改顏色（存在 challenge_members.color，僅影響自己看到的這個挑戰）
+// Progress chart card: clicking a legend item highlights that line and dims others, preventing clutter when there are many lines
+// You can click the palette icon next to your own legend to change color (saved to challenge_members.color, only affects your view of this challenge)
 function ProgressChartCard({ challenge, myUserId, onSetColor }) {
   const [highlight, setHighlight] = useState(null);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -320,7 +320,7 @@ function EntryForm({ challenge, myUserId, onSubmit, onRemove }) {
   const [date, setDate] = useState(lastFriday());
   const [msg, setMsg] = useState(null); // {kind:'success'|'error', text}
   const [busy, setBusy] = useState(false);
-  const [editingWeek, setEditingWeek] = useState(null); // 正在編輯哪一週（用 week_label 辨識，避免改日期變成新增）
+  const [editingWeek, setEditingWeek] = useState(null); // Which week is currently being edited (identified by week_label to avoid duplicate additions when changing the date)
 
   const myEntries = challenge.entries
     .filter(e => e.userId === myUserId)
@@ -339,7 +339,7 @@ function EntryForm({ challenge, myUserId, onSubmit, onRemove }) {
     if (isNaN(n)) { setMsg({ kind:'error', text:'請輸入有效數字（例如 -2.5）' }); return; }
     setBusy(true);
     try {
-      // 編輯時日期固定用原 week_label，避免改日期變成多新增一筆
+      // The date remains fixed to the original week_label when editing to avoid duplicate additions when changing the date
       await onSubmit({ challengeId: challenge.id, kgDiff: n, weekLabel: editingWeek || date });
       setMsg({ kind:'success', text:`✓ 已${editingWeek ? '更新' : '記錄'} ${n > 0 ? '+' : ''}${n} kg` });
       setKg('');
@@ -422,7 +422,7 @@ function EndedChallengeCard({ challenge, myUserId, onSelect, active }) {
   );
 }
 
-// 建立者用：點「編輯」展開輸入欄位修改挑戰名稱
+// Creator only: click "Edit" to expand the input field for modifying the challenge name
 function EditName({ challenge, onUpdate }) {
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(challenge.name);
@@ -467,7 +467,7 @@ function EditName({ challenge, onUpdate }) {
   );
 }
 
-// 建立者用：點「編輯」展開日期欄位修改結束日期
+// Creator only: click "Edit" to expand date fields for modifying the end date
 function EditEndDate({ challenge, onUpdate }) {
   const [editing, setEditing] = useState(false);
   const [date, setDate] = useState(challenge.endDate);
@@ -514,7 +514,7 @@ function EditEndDate({ challenge, onUpdate }) {
 }
 
 function Avatar({ name, color, size = 32, border = 'none' }) {
-  // 名稱是 @xxx 形式（從 email 來的後備名稱）時，跳過 @ 取下一個字當頭像
+  // If the name is in the format @xxx (fallback name from email), skip @ and use the next character as the avatar
   const raw = name || '?';
   const initial = (raw.startsWith('@') ? raw.slice(1, 2) : raw.slice(0, 1)) || '?';
   return (

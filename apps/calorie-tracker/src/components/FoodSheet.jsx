@@ -1,4 +1,4 @@
-// 食物庫底部面板：選內建/自訂食物加入餐點，或切到表單新增自訂食物
+// Food library bottom sheet: select built-in/custom food to add to meal, or switch to the form to add new custom foods.
 import React, { useState } from 'react';
 import { FOODS, MEALS_DEF } from '../constants.js';
 import Sheet from './Sheet.jsx';
@@ -6,17 +6,17 @@ import Sheet from './Sheet.jsx';
 export default function FoodSheet({ app, selectedDate, mealKey, onClose }) {
   const { customFoods, foodUsage, addMeal, addCustomFood, removeCustomFood, updateCustomFood } = app;
   const [formOpen, setFormOpen] = useState(false);
-  const [editingId, setEditingId] = useState(null); // 編輯中的自訂食物 id，null = 新增模式
+  const [editingId, setEditingId] = useState(null); // ID of the custom food being edited; null = creation mode
   const [form, setForm] = useState({ name: '', brand: '', note: '', unit: '1 份', cal: '', p: '', c: '', f: '' });
   const [aiQuery, setAiQuery] = useState('');
   const [aiBusy, setAiBusy] = useState(false);
   const [aiError, setAiError] = useState('');
-  const [qtyMap, setQtyMap] = useState({}); // 每個食物目前選的份數，預設 1
+  const [qtyMap, setQtyMap] = useState({}); // Currently selected servings for each food, defaults to 1
 
   const isMid = mealKey === 'midnight';
   const mealLabel = MEALS_DEF.find((m) => m.key === mealKey)?.label || '';
 
-  // 食物清單：內建 + 自訂；宵夜時依熱量低→高排序，其他餐別依「最後選用/新增/編輯」時間排序（最近的在最上面）
+  // Food list: built-in + custom; sorted by calories ascending for midnight meal, other meals sorted by "last used/added/edited" timestamp descending (most recent on top).
   let list = [...FOODS, ...customFoods];
   if (isMid) {
     list = [...list].sort((a, b) => a.cal - b.cal);
@@ -34,12 +34,12 @@ export default function FoodSheet({ app, selectedDate, mealKey, onClose }) {
   const canSave = !!form.name.trim() && !isNaN(fcn) && fcn >= 0;
   const setField = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
-  // 份數選擇：例如食譜本身是「1 份」，但今天吃了 2 份，或只吃了 0.3 份，可以直接輸入小數
+  // Serving selection: e.g. recipe is "1 serving", but today consumed 2 servings, or only 0.3 servings; decimal numbers can be input directly.
   const getQty = (id) => qtyMap[id] ?? 1;
   const setQty = (id, v) => setQtyMap((q) => ({ ...q, [id]: Math.max(0.1, round1(v)) }));
   const round1 = (n) => Math.round(n * 10) / 10;
 
-  // 加入既有食物（依目前選的份數把營養數值乘上去，組 snapshot 後交給 app.addMeal）
+  // Add existing food (multiplies nutritional values by current servings, builds a snapshot, and passes it to app.addMeal)
   const pick = (fo) => {
     const qty = getQty(fo.id);
     addMeal(selectedDate, mealKey, {
@@ -57,7 +57,7 @@ export default function FoodSheet({ app, selectedDate, mealKey, onClose }) {
     setFormOpen(true);
   };
 
-  // 用一句話描述食物，AI 估算營養數值後直接帶入下面的表單，使用者送出前都還能自己改
+  // Describe food in one sentence, AI estimates nutritional values and populates the form below, which the user can still manually edit before submitting.
   const aiSearch = async () => {
     if (!aiQuery.trim() || aiBusy) return;
     setAiBusy(true); setAiError('');
@@ -77,7 +77,7 @@ export default function FoodSheet({ app, selectedDate, mealKey, onClose }) {
     }
   };
 
-  // 新增模式：存好後直接加入當前餐別；編輯模式：只改定義，不影響已經記錄過的歷史餐點（snapshot）
+  // Creation mode: once saved, added directly to the current meal; Edit mode: only modifies the definition, not affecting previously recorded historical meal items (snapshot).
   const save = async () => {
     if (!canSave) return;
     const payload = { name: form.name.trim(), brand: form.brand.trim(), note: form.note.trim(), unit: form.unit.trim() || '1 份', cal: Math.round(fcn), p: parseFloat(form.p) || 0, c: parseFloat(form.c) || 0, f: parseFloat(form.f) || 0 };

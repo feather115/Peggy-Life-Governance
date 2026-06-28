@@ -1,5 +1,5 @@
-// Vercel serverless function — 正式環境用。GROQ_API_KEY 在 Vercel 專案設定的環境變數裡設定，
-// 不會被打包進前端，瀏覽器拿不到這個金鑰。
+// Vercel serverless function — for production use. GROQ_API_KEY is configured in Vercel project environment variables,
+// and will not be bundled into the frontend; the browser cannot access this key.
 import { searchFood } from './_groqFoodSearch.js';
 
 export default async function handler(req, res) {

@@ -1,5 +1,5 @@
-// App 外殼：載入資料、管理「目前分頁 / 選取日期 / 哪個面板打開」，把畫面組起來。
-// 注意：這裡只做「協調」，實際資料邏輯都在 useAppData，畫面都在 components/。
+// App shell: loads data, manages current tab / selected date / open sheets, and assembles the UI.
+// Note: This only acts as a coordinator; actual data logic resides in useAppData, and UI components are in components/.
 import React, { useState } from 'react';
 import { useAppData } from './useAppData.js';
 import { todayKey } from './utils.js';
@@ -19,10 +19,10 @@ function Centered({ children, color = '#6E8B7C' }) {
 export default function App({ session, onSignOut }) {
   const app = useAppData(session.user.id);
 
-  // 純 UI 狀態（不進資料庫）
+  // Pure UI states (not persisted to DB)
   const [tab, setTab] = useState('today');
   const [selectedDate, setSelectedDate] = useState(todayKey());
-  const [sheetMeal, setSheetMeal] = useState(null);    // 哪個餐別的食物面板打開（null=關）
+  const [sheetMeal, setSheetMeal] = useState(null);    // Which meal's food sheet is open (null = closed)
   const [importOpen, setImportOpen] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
 

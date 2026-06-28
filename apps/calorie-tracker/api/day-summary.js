@@ -1,4 +1,4 @@
-// Vercel serverless function — 正式環境用。GROQ_API_KEY 在 Vercel 專案環境變數設定，不會打包進前端。
+// Vercel serverless function — for production use. GROQ_API_KEY is configured in Vercel project environment variables and will not be bundled into the frontend.
 import { generateDaySummary } from './_groqDaySummary.js';
 
 export default async function handler(req, res) {

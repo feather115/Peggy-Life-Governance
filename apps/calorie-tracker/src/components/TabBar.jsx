@@ -1,4 +1,4 @@
-// 底部四個分頁按鈕：今日 / 報表 / 挑戰 / 設定
+// Four tab buttons at the bottom: Today / Reports / Challenge / Settings
 import React from 'react';
 
 const TABS = [

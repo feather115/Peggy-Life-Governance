@@ -1,5 +1,5 @@
-// 伺服器端專用的 Supabase admin client（service_role key 可以繞過所有 RLS）
-// 絕對不能加 VITE_ 前綴、絕對不能在前端程式碼匯入這個檔案
+// Server-side dedicated Supabase admin client (the service_role key can bypass all RLS policies).
+// NEVER prefix the service key with VITE_, and NEVER import this file in frontend code.
 import { createClient } from '@supabase/supabase-js';
 
 export function getSupabaseAdmin() {

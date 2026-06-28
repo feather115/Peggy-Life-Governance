@@ -1,4 +1,4 @@
-// 最外層：先檢查 .env 設定，再把 useRecipes 載入的資料丟給 App。
+// Root component: checks .env configuration first, then passes the loaded recipes data to the App.
 import React from 'react';
 import { supabaseReady } from './supabase.js';
 import ConfigMissing from '@peggy-life/shared/ConfigMissing.jsx';
