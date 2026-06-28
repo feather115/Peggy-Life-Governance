@@ -71,18 +71,12 @@ export default function TodayTab({ app, selectedDate, setSelectedDate, onOpenShe
             <div style={{ fontSize: 14, color: '#6E8B7C', fontWeight: 700, marginTop: 3 }}>/ {goalCal} kcal</div>
           </div>
         </div>
-        <div style={{ textAlign: 'center', marginTop: 8 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', alignItems: 'center', marginTop: 8 }}>
           <span style={{ fontSize: 14, fontWeight: 800, color: remainColor, background: remainBg, padding: '7px 16px', borderRadius: 20 }}>{remainText}</span>
+          {activeTagChips.map((chip, i) => (
+            <button key={i} onClick={onOpenAdvanced} style={{ border: 'none', background: chip.bg, color: chip.color, padding: '7px 14px', borderRadius: 20, fontSize: 13, fontWeight: 800, cursor: 'pointer' }}>{chip.label}</button>
+          ))}
         </div>
-
-        {/* 啟用中的標籤 chips */}
-        {activeTags.length > 0 && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', marginTop: 16 }}>
-            {activeTagChips.map((chip, i) => (
-              <button key={i} onClick={onOpenAdvanced} style={{ border: 'none', background: chip.bg, color: chip.color, padding: '5px 12px', borderRadius: 14, fontSize: 13, fontWeight: 800, cursor: 'pointer' }}>{chip.label}</button>
-            ))}
-          </div>
-        )}
 
         <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
           {macros.map((macro) => (
