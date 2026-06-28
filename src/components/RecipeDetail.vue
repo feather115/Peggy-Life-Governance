@@ -35,13 +35,13 @@
           </div>
           
           <div class="title-with-logo-row">
-            <img src="/logo.png" alt="Peggy Chef Logo" class="inline-chef-logo">
+            <img src="/chef_logo_bust.webp" alt="Peggy Chef Logo" class="inline-chef-logo">
             <h2 class="recipe-title">{{ recipe.title }}</h2>
           </div>
         </div>
 
         <div v-if="hasParameters" class="parameters-dashboard">
-          <div class="dashboard-title">⚙️ 核心工藝參數面板</div>
+          <div class="dashboard-title">重點參數</div>
           <div class="dashboard-grid">
             <div 
               v-for="(value, key) in recipe.parameters" 
@@ -132,7 +132,7 @@
         </div>
 
         <div v-if="formattedNotes.length > 0" class="card-section note-section">
-          <div class="section-divider"><span>💡 烘焙心得與備註</span></div>
+          <div class="section-divider"><span>💡 心得與備註</span></div>
           <ul class="cooking-notes-list">
             <li 
               v-for="(note, index) in formattedNotes" 
@@ -301,7 +301,7 @@ const endLongPress = () => { if (pressTimer) clearTimeout(pressTimer) }
     
     /* 🌟 核心樣式升級：菜名與 Logo 的黃金排版線路 */
     .title-with-logo-row { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
-    .inline-chef-logo { width: 34px; height: 34px; object-fit: contain; flex-shrink: 0; }
+    .inline-chef-logo { width: 62px; height: 62px; object-fit: contain; flex-shrink: 0; }
     .recipe-title { margin: 0; font-size: 24px; font-weight: 800; color: #1f2937; line-height: 1.2; } 
   }
 
