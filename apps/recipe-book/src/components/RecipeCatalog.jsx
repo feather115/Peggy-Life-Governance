@@ -56,8 +56,8 @@ const S = {
 };
 
 const OWNER_TABS = [
-  { key: 'mine_private', label: '我的私房' },
   { key: 'mine_shared', label: '我已分享' },
+  { key: 'mine_private', label: '我的私房' },
   { key: 'others_shared', label: '大家分享' },
 ];
 

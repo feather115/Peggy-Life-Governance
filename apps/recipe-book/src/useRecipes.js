@@ -40,7 +40,7 @@ export function useRecipes(userId) {
   // Search / Category / Ownership tab
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(ALL_CATEGORY);
-  const [ownershipTab, setOwnershipTab] = useState(isGuest ? 'others_shared' : 'mine_private');
+  const [ownershipTab, setOwnershipTab] = useState(isGuest ? 'others_shared' : 'mine_shared');
 
   // Navigation (catalog ↔ detail)
   const [currentView, setCurrentView] = useState('home');
