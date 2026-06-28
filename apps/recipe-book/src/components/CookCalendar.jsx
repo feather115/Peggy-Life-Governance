@@ -52,7 +52,6 @@ export default function CookCalendar({ recipes, cookRecords, cookRecordError, on
   const initialDate = useMemo(() => parseDateKey(todayKey()), []);
   const [visibleMonth, setVisibleMonth] = useState(new Date(initialDate.getFullYear(), initialDate.getMonth(), 1));
   const [selectedDate, setSelectedDate] = useState(todayKey());
-  const [selectedRecipeId, setSelectedRecipeId] = useState('');
   const [recipeQuery, setRecipeQuery] = useState('');
 
   const recipeById = useMemo(
@@ -103,20 +102,6 @@ export default function CookCalendar({ recipes, cookRecords, cookRecordError, on
       });
   }, [recipes, selectedRecords, recipeQuery]);
 
-  // Auto-select the first option when the query changes and the current selection is empty or invalid
-  useEffect(() => {
-    if (recipeQuery.trim()) {
-      if (availableRecipes.length > 0) {
-        const currentValid = availableRecipes.some((r) => String(r.id) === String(selectedRecipeId));
-        if (!currentValid) {
-          setSelectedRecipeId(String(availableRecipes[0].id));
-        }
-      } else {
-        setSelectedRecipeId('');
-      }
-    }
-  }, [availableRecipes, recipeQuery, selectedRecipeId]);
-
   const shiftMonth = (delta) => {
     setVisibleMonth((current) => new Date(current.getFullYear(), current.getMonth() + delta, 1));
   };
@@ -127,11 +112,9 @@ export default function CookCalendar({ recipes, cookRecords, cookRecordError, on
     setSelectedDate(todayKey());
   };
 
-  const handleAdd = async () => {
-    if (!selectedRecipeId) return;
+  const handleAddDirectly = async (recipeId) => {
     try {
-      await onAddRecord(selectedDate, selectedRecipeId);
-      setSelectedRecipeId('');
+      await onAddRecord(selectedDate, recipeId);
       setRecipeQuery('');
     } catch {
       // The shared error banner is updated by useRecipes.
@@ -191,33 +174,57 @@ export default function CookCalendar({ recipes, cookRecords, cookRecordError, on
             行事曆資料表還沒準備好。請先在 Supabase 執行 recipe-book 的料理紀錄 migration，完成後等約 30 秒再重新整理。
           </div>
         )}
-        <div style={{ marginBottom: 8 }}>
+        <div style={{ marginBottom: 12 }}>
           <input
             type="text"
             value={recipeQuery}
-            onChange={(e) => {
-              setRecipeQuery(e.target.value);
-              setSelectedRecipeId('');
-            }}
-            placeholder="🔍 輸入料理關鍵字搜尋..."
+            onChange={(e) => setRecipeQuery(e.target.value)}
+            placeholder="🔍 輸入關鍵字搜尋料理..."
             style={S.select}
           />
         </div>
-        <div style={S.formRow}>
-          <select
-            value={selectedRecipeId}
-            onChange={(event) => setSelectedRecipeId(event.target.value)}
-            style={S.select}
-          >
-            <option value="">選擇料理 ({availableRecipes.length} 個符合)</option>
-            {availableRecipes.map((recipe) => (
-              <option key={recipe.id} value={recipe.id}>{recipe.title}</option>
+
+        {availableRecipes.length > 0 ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 180, overflowY: 'auto', padding: '2px 0' }}>
+            {availableRecipes.slice(0, 8).map((recipe) => (
+              <button
+                key={recipe.id}
+                type="button"
+                onClick={() => handleAddDirectly(recipe.id)}
+                disabled={!!cookRecordError}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  width: '100%',
+                  border: 'none',
+                  background: '#FDF7F4',
+                  borderRadius: 12,
+                  padding: '10px 14px',
+                  fontSize: 14,
+                  fontWeight: 800,
+                  color: '#3D281E',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'background 0.2s',
+                  outline: 'none',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = '#FFF3EB'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = '#FDF7F4'; }}
+              >
+                <span>{recipe.title}</span>
+                <span style={{ fontSize: 12, color: '#E87A24', fontWeight: 900 }}>＋ 加入</span>
+              </button>
             ))}
-          </select>
-          <button type="button" onClick={handleAdd} disabled={!selectedRecipeId || !!cookRecordError} style={{ ...S.addBtn, opacity: selectedRecipeId && !cookRecordError ? 1 : 0.45 }}>
-            加入
-          </button>
-        </div>
+            {availableRecipes.length > 8 && (
+              <div style={{ fontSize: 11, color: '#8E7568', textAlign: 'center', marginTop: 4, fontWeight: 700 }}>
+                還有 {availableRecipes.length - 8} 道料理，輸入關鍵字以縮小範圍
+              </div>
+            )}
+          </div>
+        ) : (
+          <div style={S.empty}>沒有可選擇的料理</div>
+        )}
 
         <div style={{ marginTop: 10 }}>
           {selectedRecords.length === 0 ? (
