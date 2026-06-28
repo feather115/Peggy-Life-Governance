@@ -46,6 +46,24 @@ const S = {
   placeholder: { width: 42, height: 42, borderRadius: 12, background: '#FDF7F4', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   removeBtn: { border: 'none', background: '#FDF7F4', color: '#C5B4AC', width: 30, height: 30, borderRadius: 15, fontSize: 18, lineHeight: 1, cursor: 'pointer' },
   empty: { color: '#C5B4AC', fontSize: 14, fontWeight: 700, textAlign: 'center', padding: '18px 4px' },
+  addRecordBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    width: '100%',
+    border: '1px dashed #E87A24',
+    background: '#FFF3EB',
+    color: '#E87A24',
+    borderRadius: 14,
+    padding: '12px',
+    fontSize: 14,
+    fontWeight: 900,
+    cursor: 'pointer',
+    marginTop: 12,
+    boxSizing: 'border-box',
+    outline: 'none',
+  },
 };
 
 export default function CookCalendar({ recipes, cookRecords, cookRecordError, onAddRecord, onRemoveRecord }) {
@@ -53,6 +71,7 @@ export default function CookCalendar({ recipes, cookRecords, cookRecordError, on
   const [visibleMonth, setVisibleMonth] = useState(new Date(initialDate.getFullYear(), initialDate.getMonth(), 1));
   const [selectedDate, setSelectedDate] = useState(todayKey());
   const [recipeQuery, setRecipeQuery] = useState('');
+  const [isAdding, setIsAdding] = useState(false);
 
   const recipeById = useMemo(
     () => new Map(recipes.map((recipe) => [String(recipe.id), recipe])),
@@ -116,6 +135,7 @@ export default function CookCalendar({ recipes, cookRecords, cookRecordError, on
     try {
       await onAddRecord(selectedDate, recipeId);
       setRecipeQuery('');
+      setIsAdding(false);
     } catch {
       // The shared error banner is updated by useRecipes.
     }
@@ -174,59 +194,9 @@ export default function CookCalendar({ recipes, cookRecords, cookRecordError, on
             行事曆資料表還沒準備好。請先在 Supabase 執行 recipe-book 的料理紀錄 migration，完成後等約 30 秒再重新整理。
           </div>
         )}
-        <div style={{ marginBottom: 12 }}>
-          <input
-            type="text"
-            value={recipeQuery}
-            onChange={(e) => setRecipeQuery(e.target.value)}
-            placeholder="🔍 輸入關鍵字搜尋料理..."
-            style={S.select}
-          />
-        </div>
 
-        {availableRecipes.length > 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 180, overflowY: 'auto', padding: '2px 0' }}>
-            {availableRecipes.slice(0, 8).map((recipe) => (
-              <button
-                key={recipe.id}
-                type="button"
-                onClick={() => handleAddDirectly(recipe.id)}
-                disabled={!!cookRecordError}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  width: '100%',
-                  border: 'none',
-                  background: '#FDF7F4',
-                  borderRadius: 12,
-                  padding: '10px 14px',
-                  fontSize: 14,
-                  fontWeight: 800,
-                  color: '#3D281E',
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  transition: 'background 0.2s',
-                  outline: 'none',
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = '#FFF3EB'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = '#FDF7F4'; }}
-              >
-                <span>{recipe.title}</span>
-                <span style={{ fontSize: 12, color: '#E87A24', fontWeight: 900 }}>＋ 加入</span>
-              </button>
-            ))}
-            {availableRecipes.length > 8 && (
-              <div style={{ fontSize: 11, color: '#8E7568', textAlign: 'center', marginTop: 4, fontWeight: 700 }}>
-                還有 {availableRecipes.length - 8} 道料理，輸入關鍵字以縮小範圍
-              </div>
-            )}
-          </div>
-        ) : (
-          <div style={S.empty}>沒有可選擇的料理</div>
-        )}
-
-        <div style={{ marginTop: 10 }}>
+        {/* 1. 當日已做的料理清單 */}
+        <div>
           {selectedRecords.length === 0 ? (
             <div style={S.empty}>這天還沒有料理紀錄</div>
           ) : selectedRecords.map((record) => {
@@ -251,6 +221,87 @@ export default function CookCalendar({ recipes, cookRecords, cookRecordError, on
             );
           })}
         </div>
+
+        {/* 2. 新增料理紀錄按鈕與介面 */}
+        {!isAdding ? (
+          <button type="button" onClick={() => setIsAdding(true)} style={S.addRecordBtn}>
+            ＋ 記錄料理
+          </button>
+        ) : (
+          <div style={{ marginTop: 16, borderTop: '1px solid #F3DFD4', paddingTop: 14 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 8, marginBottom: 12 }}>
+              <input
+                type="text"
+                value={recipeQuery}
+                onChange={(e) => setRecipeQuery(e.target.value)}
+                placeholder="🔍 輸入關鍵字搜尋料理..."
+                style={S.select}
+                autoFocus
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  setIsAdding(false);
+                  setRecipeQuery('');
+                }}
+                style={{
+                  border: 'none',
+                  background: '#F0E7E1',
+                  color: '#8E7568',
+                  borderRadius: 14,
+                  padding: '0 16px',
+                  fontSize: 14,
+                  fontWeight: 800,
+                  cursor: 'pointer'
+                }}
+              >
+                收起
+              </button>
+            </div>
+
+            {availableRecipes.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 180, overflowY: 'auto', padding: '2px 0' }}>
+                {availableRecipes.slice(0, 8).map((recipe) => (
+                  <button
+                    key={recipe.id}
+                    type="button"
+                    onClick={() => handleAddDirectly(recipe.id)}
+                    disabled={!!cookRecordError}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      width: '100%',
+                      border: 'none',
+                      background: '#FDF7F4',
+                      borderRadius: 12,
+                      padding: '10px 14px',
+                      fontSize: 14,
+                      fontWeight: 800,
+                      color: '#3D281E',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      transition: 'background 0.2s',
+                      outline: 'none',
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = '#FFF3EB'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = '#FDF7F4'; }}
+                  >
+                    <span>{recipe.title}</span>
+                    <span style={{ fontSize: 12, color: '#E87A24', fontWeight: 900 }}>＋ 加入</span>
+                  </button>
+                ))}
+                {availableRecipes.length > 8 && (
+                  <div style={{ fontSize: 11, color: '#8E7568', textAlign: 'center', marginTop: 4, fontWeight: 700 }}>
+                    還有 {availableRecipes.length - 8} 道料理，輸入關鍵字以縮小範圍
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div style={S.empty}>沒有可選擇的料理</div>
+            )}
+          </div>
+        )}
       </section>
     </div>
   );
