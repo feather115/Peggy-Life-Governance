@@ -297,7 +297,7 @@ CASCADE 會把對應的成員關聯與體重紀錄一併清掉。`active` 的挑
 | `2026-06-26_line_links.sql` | 建立 `line_links` 對照表（LINE 帳號連結用），開 RLS 但不開 policy（只給伺服器端 `service_role` 用） |
 | `2026-06-28_food_usage.sql` | 建立 `food_usage` 表（食物庫排序用），已併入最新版 `schema.sql` |
 | `2026-06-28_tag_def_colors.sql` | 幫 `tag_defs` 加 `color` 欄位，讓記錄原因標籤可自訂顏色並顯示在報表月曆 |
-| `2026-06-28_schema_isolation.sql` | ⭐ 把 11 張表 + 2 個 RPC function 從 `public` 搬到 `calorie_tracker` schema；重建跨表 RLS policy；更新 `handle_new_user` trigger function。**跑這支前一定要先去 Settings → API → Exposed schemas 加 `calorie_tracker`** |
+| `2026-06-28_schema_isolation.sql` | ⭐ 把 11 張表 + 2 個 RPC function 從 public 搬到 calorie_tracker schema；重建跨表 RLS policy；更新 handle_new_user trigger function；並授權給 PostgREST 及 service_role。跑這支前一定要先去 Settings → API → Exposed schemas 加 calorie_tracker |
 
 > 全新環境直接照順序整段貼上跑一次即可；如果是延續舊環境，只需要補跑「還沒跑過」的那幾支（看 Supabase 有沒有對應欄位/function 判斷）。
 >
@@ -350,7 +350,8 @@ npx vite preview       # 預覽打包結果
 
 ---
 
-## 手機版面的兩個坑（已修好，記錄原因避免改回去）
+## 手機與版面問題解決記錄（已修好，記錄原因避免改回去）
 
 - **底部分頁列一進去就看不到，要滑到底才會固定**：原因是外層容器用 `minHeight: 100vh`，手機瀏覽器網址列還沒收起來時，可視高度比 `100vh` 矮，分頁列被擠到畫面外。`App.jsx` 改成 `height: 100vh` + `maxHeight: 100dvh`（動態視窗高度，會即時反映網址列收起/展開的實際可視範圍）+ `overflow: hidden`，只有中間內容區域會滾動，分頁列永遠固定在最下面。
 - **手機鍵盤打不出負號**：某些 Android 鍵盤的數字輸入模式沒有負號鍵。挑戰功能的體重輸入框（`ChallengeTab.jsx`）、自訂食物的卡路里/營養素輸入都改成文字框 + 額外的 `±` 切換按鈕，不依賴鍵盤本身能不能打負號。
+- **彈出面板在 LINE 內建瀏覽器或手機上被底部分頁列（TabBar）遮擋**：原本 Sheet 元件是直接作為分頁內部的子元素渲染，會繼承分頁滾動容器的堆疊上下文（Stacking Context），導致其 z-index 無法覆蓋同層級的靜態 `TabBar`。`Sheet.jsx` 已改用 React Portals (`createPortal`)，將所有底部彈出面板直接渲染至 `document.body` 頂層，徹底解決 z-index 穿透與遮擋問題。

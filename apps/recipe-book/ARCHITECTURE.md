@@ -119,7 +119,7 @@ Supabase ⇄ db.js ⇄ useRecipes.js ⇄ Root.jsx → App.jsx → components/*
 | 檔案 | 做什麼 |
 |---|---|
 | `schema.sql` | 建 `recipes` 表 + GIN 索引 + RLS + select policy（建在 `public`） |
-| `2026-06-28_schema_isolation.sql` | 把 `recipes` 從 `public` 搬到 `recipe_book` schema |
+| 2026-06-28_schema_isolation.sql | 把 `recipes` 從 `public` 搬到 `recipe_book` schema，並授權給 PostgREST 及 service_role |
 
 > 新環境：先跑 `schema.sql`，再跑 `2026-06-28_schema_isolation.sql`。跑 schema isolation 前要先在 Supabase Exposed schemas 加 `recipe_book`。
 
