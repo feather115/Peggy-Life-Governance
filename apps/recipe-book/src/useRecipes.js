@@ -252,6 +252,18 @@ export function useRecipes(userId) {
     }
   }, [userId, recipes, cookRecords]);
 
+  const updateCookRecordNotes = useCallback(async (recordId, notes) => {
+    try {
+      const updated = await db.updateCookRecordNotes(recordId, notes);
+      setCookRecords((prev) => prev.map((record) => record.id === recordId ? updated : record));
+      setCookRecordError('');
+      return updated;
+    } catch (e) {
+      setCookRecordError(e.message || '備註更新失敗');
+      throw e;
+    }
+  }, []);
+
   const recipesWithLastCooked = useMemo(() => {
     const latestByRecipe = {};
     cookRecords.forEach((record) => {
@@ -324,7 +336,7 @@ export function useRecipes(userId) {
     availableCategories, filteredRecipes,
     currentView, selectedRecipe,
     openRecipeDetail,
-    addCookRecord, removeCookRecord,
+    addCookRecord, removeCookRecord, updateCookRecordNotes,
     setRecipeShared,
     saveRecipe,
     deleteRecipeById,

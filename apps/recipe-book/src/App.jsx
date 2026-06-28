@@ -19,6 +19,7 @@ export default function App({ session, onSignOut, onExitGuest }) {
   const userId = session?.user?.id || null;
   const recipes = useRecipes(userId);
   const [tab, setTab] = useState('recipes');
+  const [backTab, setBackTab] = useState('recipes');
   // editing: null = not editing; { mode: 'create' } | { mode: 'edit', recipe }
   const [editing, setEditing] = useState(null);
 
@@ -26,12 +27,25 @@ export default function App({ session, onSignOut, onExitGuest }) {
   if (recipes.loadError) return <Centered color="#B91C1C">載入失敗：{recipes.loadError}</Centered>;
 
   const handleBack = () => {
-    if (window.history.state && window.history.state.view === 'detail') {
-      window.history.back();
-    } else {
+    if (backTab === 'calendar') {
+      setTab('calendar');
+      setBackTab('recipes');
       window.history.pushState({ view: 'home' }, '', '/');
       window.dispatchEvent(new Event('popstate'));
+    } else {
+      if (window.history.state && window.history.state.view === 'detail') {
+        window.history.back();
+      } else {
+        window.history.pushState({ view: 'home' }, '', '/');
+        window.dispatchEvent(new Event('popstate'));
+      }
     }
+  };
+
+  const handleOpenRecipe = (recipe) => {
+    setTab('recipes');
+    setBackTab('calendar');
+    recipes.openRecipeDetail(recipe);
   };
 
   const handleSaveRecipe = async (payload, existingId) => {
@@ -111,6 +125,8 @@ export default function App({ session, onSignOut, onExitGuest }) {
                 cookRecordError={recipes.cookRecordError}
                 onAddRecord={recipes.addCookRecord}
                 onRemoveRecord={recipes.removeCookRecord}
+                onUpdateNotes={recipes.updateCookRecordNotes}
+                onOpenRecipe={handleOpenRecipe}
               />
             )}
 

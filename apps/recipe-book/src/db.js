@@ -92,7 +92,7 @@ export async function unlikeRecipe(userId, recipeId) {
 export async function loadCookRecords(userId) {
   const { data, error } = await supabase
     .from('cooking_history')
-    .select('id, user_id, recipe_id, cooked_date, created_at')
+    .select('id, user_id, recipe_id, cooked_date, created_at, notes')
     .eq('user_id', userId)
     .order('cooked_date', { ascending: false })
     .order('created_at', { ascending: true });
@@ -107,7 +107,7 @@ export async function addCookRecord(userId, cookedOn, recipeId) {
       { user_id: userId, cooked_date: cookedOn, recipe_id: recipeId },
       { onConflict: 'user_id,cooked_date,recipe_id' },
     )
-    .select('id, user_id, recipe_id, cooked_date, created_at')
+    .select('id, user_id, recipe_id, cooked_date, created_at, notes')
     .single();
   if (error) throw error;
   return data;
@@ -119,4 +119,15 @@ export async function removeCookRecord(recordId) {
     .delete()
     .eq('id', recordId);
   if (error) throw error;
+}
+
+export async function updateCookRecordNotes(recordId, notes) {
+  const { data, error } = await supabase
+    .from('cooking_history')
+    .update({ notes })
+    .eq('id', recordId)
+    .select('id, user_id, recipe_id, cooked_date, created_at, notes')
+    .single();
+  if (error) throw error;
+  return data;
 }

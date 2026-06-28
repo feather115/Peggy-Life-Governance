@@ -66,12 +66,13 @@ const S = {
   },
 };
 
-export default function CookCalendar({ recipes, cookRecords, cookRecordError, onAddRecord, onRemoveRecord }) {
+export default function CookCalendar({ recipes, cookRecords, cookRecordError, onAddRecord, onRemoveRecord, onUpdateNotes, onOpenRecipe }) {
   const initialDate = useMemo(() => parseDateKey(todayKey()), []);
   const [visibleMonth, setVisibleMonth] = useState(new Date(initialDate.getFullYear(), initialDate.getMonth(), 1));
   const [selectedDate, setSelectedDate] = useState(todayKey());
   const [recipeQuery, setRecipeQuery] = useState('');
   const [isAdding, setIsAdding] = useState(false);
+  const [editingNotes, setEditingNotes] = useState({});
 
   const recipeById = useMemo(
     () => new Map(recipes.map((recipe) => [String(recipe.id), recipe])),
@@ -141,6 +142,20 @@ export default function CookCalendar({ recipes, cookRecords, cookRecordError, on
     }
   };
 
+  const handleSaveNotes = async (recordId, notesVal) => {
+    const record = cookRecords.find((r) => r.id === recordId);
+    if (!record) return;
+    const currentNotes = record.notes || '';
+    const newNotes = (notesVal || '').trim();
+    if (currentNotes === newNotes) return;
+
+    try {
+      await onUpdateNotes(recordId, newNotes || null);
+    } catch {
+      // Handled by useRecipes
+    }
+  };
+
   return (
     <div style={S.view}>
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 14 }}>
@@ -203,18 +218,62 @@ export default function CookCalendar({ recipes, cookRecords, cookRecordError, on
             const recipe = recipeById.get(String(record.recipe_id));
             return (
               <div key={record.id} style={S.recordRow}>
-                {recipe?.image_url
-                  ? <img src={recipe.image_url} alt={recipe.title} style={S.recordThumb} />
-                  : <div style={S.placeholder}>🍳</div>}
+                {recipe ? (
+                  <div onClick={() => onOpenRecipe(recipe)} style={{ cursor: 'pointer', flexShrink: 0 }}>
+                    {recipe.image_url
+                      ? <img src={recipe.image_url} alt={recipe.title} style={S.recordThumb} />
+                      : <div style={S.placeholder}>🍳</div>}
+                  </div>
+                ) : (
+                  <div style={S.placeholder}>🍳</div>
+                )}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 14, fontWeight: 900, color: '#3D281E', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <div
+                    onClick={() => recipe && onOpenRecipe(recipe)}
+                    style={{
+                      fontSize: 14,
+                      fontWeight: 900,
+                      color: '#3D281E',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      cursor: recipe ? 'pointer' : 'default',
+                    }}
+                  >
                     {recipe?.title || '已刪除的料理'}
                   </div>
                   {recipe?.category?.length > 0 && (
-                    <div style={{ fontSize: 12, color: '#8E7568', fontWeight: 800, marginTop: 2 }}>
+                    <div style={{ fontSize: 11, color: '#8E7568', fontWeight: 800, marginTop: 1 }}>
                       {recipe.category.join('、')}
                     </div>
                   )}
+                  <div style={{ marginTop: 5 }}>
+                    <input
+                      type="text"
+                      placeholder="📝 新增備註（如：微辣、偏甜）..."
+                      value={editingNotes[record.id] !== undefined ? editingNotes[record.id] : (record.notes || '')}
+                      onChange={(e) => setEditingNotes((prev) => ({ ...prev, [record.id]: e.target.value }))}
+                      onBlur={() => handleSaveNotes(record.id, editingNotes[record.id])}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          handleSaveNotes(record.id, editingNotes[record.id]);
+                          e.currentTarget.blur();
+                        }
+                      }}
+                      style={{
+                        width: '100%',
+                        border: 'none',
+                        background: 'transparent',
+                        borderBottom: '1px dashed #C5B4AC',
+                        padding: '2px 0',
+                        fontSize: 12,
+                        color: '#8E7568',
+                        fontWeight: 700,
+                        outline: 'none',
+                        boxSizing: 'border-box',
+                      }}
+                    />
+                  </div>
                 </div>
                 <button type="button" onClick={() => onRemoveRecord(record.id)} style={S.removeBtn} aria-label="刪除料理紀錄">×</button>
               </div>
