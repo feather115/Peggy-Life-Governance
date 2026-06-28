@@ -1,9 +1,10 @@
 // Shared bottom sheet wrapper (used by food library, JSON import, and advanced settings)
 // Fixed to window bottom, centered, max-width 520, with semi-transparent backdrop and top handle
 import React from 'react';
+import { createPortal } from 'react-dom';
 
 export default function Sheet({ onBackdrop, height, zIndex = 10, children }) {
-  return (
+  const content = (
     <div style={{ position: 'fixed', inset: 0, zIndex, display: 'flex', justifyContent: 'center' }}>
       <div onClick={onBackdrop} style={{ position: 'absolute', inset: 0, background: 'rgba(35,64,52,.42)' }} />
       <div style={{
@@ -18,4 +19,6 @@ export default function Sheet({ onBackdrop, height, zIndex = 10, children }) {
       </div>
     </div>
   );
+
+  return createPortal(content, document.body);
 }
