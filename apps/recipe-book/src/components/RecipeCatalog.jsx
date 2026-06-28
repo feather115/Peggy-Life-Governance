@@ -62,6 +62,7 @@ export default function RecipeCatalog({
   onOpenDetail,
   onSignOut,
   signOutLabel = '登出',
+  onCreate,
 }) {
   const subtitle = isGuest
     ? `● 訪客模式・共 ${recipes.length} 道分享食譜`
@@ -74,9 +75,14 @@ export default function RecipeCatalog({
             <h1 style={S.title}>TY Recipe Book</h1>
             <p style={S.status}>{subtitle}</p>
           </div>
-          {onSignOut && (
-            <button onClick={onSignOut} style={{ border: 'none', background: '#F0E7E1', color: '#8E7568', fontWeight: 800, fontSize: 13, padding: '8px 14px', borderRadius: 14, cursor: 'pointer' }}>{signOutLabel}</button>
-          )}
+          <div style={{ display: 'flex', gap: 6 }}>
+            {onCreate && (
+              <button onClick={onCreate} style={{ border: 'none', background: '#E87A24', color: '#fff', fontWeight: 900, fontSize: 13, padding: '8px 14px', borderRadius: 14, cursor: 'pointer' }}>＋ 新增</button>
+            )}
+            {onSignOut && (
+              <button onClick={onSignOut} style={{ border: 'none', background: '#F0E7E1', color: '#8E7568', fontWeight: 800, fontSize: 13, padding: '8px 14px', borderRadius: 14, cursor: 'pointer' }}>{signOutLabel}</button>
+            )}
+          </div>
         </div>
 
         <div>

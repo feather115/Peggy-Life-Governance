@@ -10,7 +10,7 @@ import {
   parseYieldInfo,
 } from '../utils.js';
 
-export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, onSetShared }) {
+export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, onSetShared, onEdit }) {
   const [currentWeight, setCurrentWeight] = useState('');
   const [completedItems, setCompletedItems] = useState({});
   const [shareBusy, setShareBusy] = useState(false);
@@ -345,7 +345,14 @@ export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, o
             ‹ 返回
           </button>
         )}
-        <div style={{ ...s.hintBadge, marginBottom: 0 }}>⏱️ 長按標記進度</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {isOwner && onEdit && (
+            <button onClick={onEdit} style={{ border: 'none', background: '#E87A24', color: '#fff', fontWeight: 900, fontSize: 13, padding: '8px 14px', borderRadius: 14, cursor: 'pointer' }}>
+              ✏️ 編輯
+            </button>
+          )}
+          <div style={{ ...s.hintBadge, marginBottom: 0 }}>⏱️ 長按標記進度</div>
+        </div>
       </header>
 
       <main>

@@ -35,6 +35,32 @@ export async function setRecipeShared(recipeId, isShared) {
   return normalizeRecipe(data);
 }
 
+export async function createRecipe(userId, payload) {
+  const { data, error } = await supabase
+    .from('recipes')
+    .insert({ ...payload, user_id: userId })
+    .select(RECIPE_SELECT_COLUMNS)
+    .single();
+  if (error) throw error;
+  return normalizeRecipe(data);
+}
+
+export async function updateRecipe(recipeId, patch) {
+  const { data, error } = await supabase
+    .from('recipes')
+    .update({ ...patch, updated_at: new Date().toISOString() })
+    .eq('id', recipeId)
+    .select(RECIPE_SELECT_COLUMNS)
+    .single();
+  if (error) throw error;
+  return normalizeRecipe(data);
+}
+
+export async function deleteRecipe(recipeId) {
+  const { error } = await supabase.from('recipes').delete().eq('id', recipeId);
+  if (error) throw error;
+}
+
 export async function loadCookRecords(userId) {
   const { data, error } = await supabase
     .from('cooking_history')

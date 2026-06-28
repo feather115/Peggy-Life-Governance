@@ -27,8 +27,10 @@ npm install
    （建 `recipe_book.cooking_history` 表，給「料理行事曆」分頁用）
 6. 再貼 [`supabase/2026-06-28_recipe_ownership.sql`](./supabase/2026-06-28_recipe_ownership.sql) → **Run**
    （加擁有者欄位 + 分享 flag + 重寫 RLS，把舊食譜歸到 `feather115@gmail.com`）
-7. 左側 **Settings → API**，複製 `Project URL` 和 `anon public` key
-8. 複製 `.env.example` 成 `.env`，填入：
+7. 再貼 [`supabase/2026-06-28_recipe_rls_hotfix.sql`](./supabase/2026-06-28_recipe_rls_hotfix.sql) → **Run**
+   （清掉殘留的 SELECT policy，確保訪客只看得到分享過的食譜）
+8. 左側 **Settings → API**，複製 `Project URL` 和 `anon public` key
+9. 複製 `.env.example` 成 `.env`，填入：
    ```
    VITE_SUPABASE_URL=https://你的專案.supabase.co
    VITE_SUPABASE_ANON_KEY=eyJ...

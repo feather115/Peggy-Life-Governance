@@ -147,6 +147,27 @@ export function useRecipes(userId) {
     return updated;
   }, []);
 
+  const saveRecipe = useCallback(async (payload, existingId) => {
+    if (existingId) {
+      const updated = await db.updateRecipe(existingId, payload);
+      setRecipes((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
+      return updated;
+    }
+    const created = await db.createRecipe(userId, payload);
+    setRecipes((prev) => [...prev, created]);
+    return created;
+  }, [userId]);
+
+  const deleteRecipeById = useCallback(async (recipeId) => {
+    await db.deleteRecipe(recipeId);
+    setRecipes((prev) => prev.filter((r) => r.id !== recipeId));
+    if (selectedRecipeId === recipeId) {
+      setSelectedRecipeId(null);
+      setCurrentView('home');
+      window.history.replaceState({ view: 'home' }, '', buildHomeUrl());
+    }
+  }, [selectedRecipeId]);
+
   const removeCookRecord = useCallback(async (recordId) => {
     try {
       await db.removeCookRecord(recordId);
@@ -177,6 +198,8 @@ export function useRecipes(userId) {
     openRecipeDetail,
     addCookRecord, removeCookRecord,
     setRecipeShared,
+    saveRecipe,
+    deleteRecipeById,
     isGuest,
   };
 }
