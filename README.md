@@ -37,6 +37,24 @@ npm run dev:recipe-book
 Vercel 會自動偵測 Root Directory 下的 `package.json` 並只建置該 app，互不影響。
 記得在各自的 Vercel 專案環境變數中設定對應的 `.env` 內容（不要 commit `.env`）。
 
+### 避免互相觸發部署（Ignored Build Step）
+
+兩個 Vercel 專案連同一個 repo，預設只要 push 到 main、**不管改哪個 app** 都會觸發兩邊重新部署。
+要讓它們只在自己的目錄有變動時才 build，到各專案的 **Settings → Git → Ignored Build Step** 貼上：
+
+calorie-tracker 專案：
+```bash
+git diff --quiet HEAD^ HEAD -- apps/calorie-tracker packages/shared
+```
+
+recipe-book 專案：
+```bash
+git diff --quiet HEAD^ HEAD -- apps/recipe-book packages/shared
+```
+
+行為跟直覺相反：這個指令對應目錄**沒有**改動時會 exit 0 → Vercel 視為「跳過這次 build」；
+**有**改動時 exit 非 0 → 正常部署。兩條都帶 `packages/shared`，因為改了共用套件兩個 app 都該重新部署。
+
 ## 共用套件
 
 - [`packages/shared`](./packages/shared) — `@peggy-life/shared`，提供 Supabase client factory (`createAppSupabase`) 和共用元件 (`ConfigMissing`)
