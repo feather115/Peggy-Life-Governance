@@ -45,11 +45,14 @@ export default function RecipeForm({ recipe, onSave, onCancel, onDelete }) {
     const existing = parseIngredients(recipe?.ingredients);
     return existing.length > 0 ? existing : [emptyIngredient(true)];
   });
-  const [stepsText, setStepsText] = useState(() => {
+  const [steps, setSteps] = useState(() => {
     const parsed = parseSteps(recipe?.steps);
-    return parsed.map((s) => s.text).join('\n');
+    return parsed.length > 0 ? parsed.map((s) => s.text) : [''];
   });
-  const [notesText, setNotesText] = useState(() => parseNotes(recipe?.notes).join('\n'));
+  const [notes, setNotes] = useState(() => {
+    const parsed = parseNotes(recipe?.notes);
+    return parsed.length > 0 ? parsed : [''];
+  });
   const [parameters, setParameters] = useState(() => {
     const existing = paramsToList(recipe?.parameters);
     return existing.length > 0 ? existing : [];
@@ -86,11 +89,12 @@ export default function RecipeForm({ recipe, onSave, onCancel, onDelete }) {
       setIngredients(ing.length > 0 ? ing : [emptyIngredient(true)]);
     }
     if (parsed.steps !== undefined) {
-      const st = parseSteps(parsed.steps);
-      setStepsText(st.map((s) => s.text).join('\n'));
+      const st = parseSteps(parsed.steps).map((s) => s.text);
+      setSteps(st.length > 0 ? st : ['']);
     }
     if (parsed.notes !== undefined) {
-      setNotesText(parseNotes(parsed.notes).join('\n'));
+      const ns = parseNotes(parsed.notes);
+      setNotes(ns.length > 0 ? ns : ['']);
     }
     if (parsed.parameters && typeof parsed.parameters === 'object') {
       setParameters(paramsToList(parsed.parameters));
@@ -111,6 +115,20 @@ export default function RecipeForm({ recipe, onSave, onCancel, onDelete }) {
   const addIngredient = () => {
     setIngredients((prev) => [...prev, emptyIngredient(prev.length === 0)]);
   };
+
+  const updateStep = (idx, text) => setSteps((prev) => prev.map((s, i) => (i === idx ? text : s)));
+  const removeStep = (idx) => setSteps((prev) => {
+    const next = prev.filter((_, i) => i !== idx);
+    return next.length > 0 ? next : [''];
+  });
+  const addStep = () => setSteps((prev) => [...prev, '']);
+
+  const updateNote = (idx, text) => setNotes((prev) => prev.map((n, i) => (i === idx ? text : n)));
+  const removeNote = (idx) => setNotes((prev) => {
+    const next = prev.filter((_, i) => i !== idx);
+    return next.length > 0 ? next : [''];
+  });
+  const addNote = () => setNotes((prev) => [...prev, '']);
 
   const updateParam = (idx, patch) => {
     setParameters((prev) => prev.map((row, i) => (i === idx ? { ...row, ...patch } : row)));
@@ -135,9 +153,9 @@ export default function RecipeForm({ recipe, onSave, onCancel, onDelete }) {
         type: row.type?.trim() || '',
         is_base: !!row.is_base,
       }));
-    const stepsArr = stepsText.split('\n').map((s) => s.trim()).filter(Boolean)
+    const stepsArr = steps.map((s) => s.trim()).filter(Boolean)
       .map((text, idx) => ({ text, type: '', sort: idx + 1 }));
-    const notesArr = notesText.split('\n').map((s) => s.trim()).filter(Boolean);
+    const notesArr = notes.map((n) => n.trim()).filter(Boolean);
     const paramsObj = {};
     parameters.forEach(({ key, value }) => {
       const k = key.trim();
@@ -247,10 +265,40 @@ export default function RecipeForm({ recipe, onSave, onCancel, onDelete }) {
         <button type="button" style={S.addBtn} onClick={addIngredient}>+ 新增一行食材</button>
 
         <label style={S.label}>步驟</label>
-        <textarea style={S.textarea} value={stepsText} onChange={(e) => setStepsText(e.target.value)} placeholder={'一行一個步驟\n例如：\n蛋打散加少許鹽\n番茄切塊下鍋'} />
+        {steps.map((text, idx) => (
+          <div key={idx} style={{ display: 'grid', gap: 6, gridTemplateColumns: '24px 1fr 28px', alignItems: 'start', marginBottom: 6 }}>
+            <div style={{ width: 24, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#E87A24', color: '#fff', borderRadius: '50%', fontSize: 12, fontWeight: 900 }}>
+              {idx + 1}
+            </div>
+            <textarea
+              value={text}
+              onChange={(e) => updateStep(idx, e.target.value)}
+              placeholder={`步驟 ${idx + 1}`}
+              rows={2}
+              style={{ ...S.smallInput, fontFamily: 'inherit', lineHeight: 1.5, resize: 'vertical', minHeight: 38 }}
+            />
+            <button type="button" style={S.rowBtn} onClick={() => removeStep(idx)} aria-label="刪除步驟">×</button>
+          </div>
+        ))}
+        <button type="button" style={S.addBtn} onClick={addStep}>+ 新增一個步驟</button>
 
         <label style={S.label}>心得備註（選填）</label>
-        <textarea style={S.textarea} value={notesText} onChange={(e) => setNotesText(e.target.value)} placeholder="一行一條備註" />
+        {notes.map((text, idx) => (
+          <div key={idx} style={{ display: 'grid', gap: 6, gridTemplateColumns: '24px 1fr 28px', alignItems: 'start', marginBottom: 6 }}>
+            <div style={{ width: 24, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#E87A24', fontSize: 16, fontWeight: 900 }}>
+              ●
+            </div>
+            <textarea
+              value={text}
+              onChange={(e) => updateNote(idx, e.target.value)}
+              placeholder="一條備註（例：小火慢炒避免焦黑）"
+              rows={2}
+              style={{ ...S.smallInput, fontFamily: 'inherit', lineHeight: 1.5, resize: 'vertical', minHeight: 38 }}
+            />
+            <button type="button" style={S.rowBtn} onClick={() => removeNote(idx)} aria-label="刪除備註">×</button>
+          </div>
+        ))}
+        <button type="button" style={S.addBtn} onClick={addNote}>+ 新增一條備註</button>
 
         <label style={S.label}>製作參數（選填）</label>
         {parameters.map((row, idx) => (
