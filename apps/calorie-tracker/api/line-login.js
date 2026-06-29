@@ -11,6 +11,7 @@ export default async function handler(req, res) {
     const result = await loginWithLine(idToken, process.env.LINE_CHANNEL_ID);
     res.status(200).json(result);
   } catch (e) {
-    res.status(400).json({ error: e.message || 'LINE 登入失敗' });
+    console.error('[POST /api/line-login] failed:', JSON.stringify({ message: e.message, code: e.code, details: e.details, hint: e.hint }));
+    res.status(400).json({ error: e.message || 'LINE 登入失敗', code: e.code, details: e.details, hint: e.hint });
   }
 }

@@ -30,7 +30,10 @@ export async function lineAutoLogin() {
       body: JSON.stringify({ idToken }),
     });
     const data = await res.json();
-    if (!res.ok) return { ok: false, reason: `/api/line-login 失敗：${data.error || '未知錯誤'}` };
+    if (!res.ok) {
+      const extra = [data.code, data.details, data.hint].filter(Boolean).join(' / ');
+      return { ok: false, reason: `/api/line-login 失敗：${data.error || '未知錯誤'}${extra ? `（${extra}）` : ''}` };
+    }
 
     const { error } = await supabase.auth.verifyOtp({ token_hash: data.tokenHash, type: 'magiclink' });
     if (error) return { ok: false, reason: `verifyOtp 失敗：${error.message}` };
@@ -62,5 +65,8 @@ export async function linkLineAccount() {
     body: JSON.stringify({ idToken, accessToken }),
   });
   const data = await res.json();
-  if (!res.ok) throw new Error(data.error || '連結失敗');
+  if (!res.ok) {
+    const extra = [data.code, data.details, data.hint].filter(Boolean).join(' / ');
+    throw new Error(extra ? `${data.error || '連結失敗'}（${extra}）` : (data.error || '連結失敗'));
+  }
 }
