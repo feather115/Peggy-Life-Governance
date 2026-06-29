@@ -52,13 +52,13 @@ export default function TodayTab({ app, selectedDate, setSelectedDate, onOpenShe
 
       {/* 日期切換列 */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
-        <button onClick={prevDay} style={{ border: 'none', background: '#fff', color: '#234034', width: 36, height: 36, borderRadius: '50%', cursor: 'pointer', fontSize: 20, fontWeight: 900, lineHeight: 1, boxShadow: '0 4px 12px -8px rgba(0,0,0,.2)' }}>‹</button>
+        <button onClick={prevDay} style={{ border: 'none', background: '#fff', color: '#234034', width: 36, height: 36, borderRadius: '50%', cursor: 'pointer', fontSize: 20, fontWeight: 900, lineHeight: 1, boxShadow: '0 4px 12px -8px rgba(0,0,0,.2)', outline: 'none' }}>‹</button>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: 20, fontWeight: 900, color: '#234034' }}>{dateLabel(selectedDate)}</div>
           {isTod && <div style={{ fontSize: 13, fontWeight: 800, color: '#2E8B5E', marginTop: 2 }}>今天</div>}
           {!isTod && <button onClick={() => setSelectedDate(todayKey())} style={{ border: 'none', background: '#2E8B5E', color: '#fff', fontSize: 12, fontWeight: 800, padding: '4px 12px', borderRadius: 12, cursor: 'pointer', marginTop: 3 }}>回到今天</button>}
         </div>
-        <button onClick={nextDay} style={{ border: 'none', background: '#fff', color: '#234034', width: 36, height: 36, borderRadius: '50%', cursor: 'pointer', fontSize: 20, fontWeight: 900, lineHeight: 1, opacity: isTod ? 0.3 : 1, boxShadow: '0 4px 12px -8px rgba(0,0,0,.2)' }}>›</button>
+        <button onClick={nextDay} style={{ border: 'none', background: '#fff', color: '#234034', width: 36, height: 36, borderRadius: '50%', cursor: 'pointer', fontSize: 20, fontWeight: 900, lineHeight: 1, opacity: isTod ? 0.3 : 1, boxShadow: '0 4px 12px -8px rgba(0,0,0,.2)', outline: 'none' }}>›</button>
       </div>
 
       {/* 卡路里環卡片 */}

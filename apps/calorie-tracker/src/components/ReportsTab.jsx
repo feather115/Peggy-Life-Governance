@@ -66,9 +66,9 @@ export default function ReportsTab({ app, onSelectDate }) {
       {/* 月份月曆 */}
       <div style={{ background: '#fff', borderRadius: 24, padding: '20px 14px 16px', marginTop: 12, boxShadow: '0 10px 24px -18px rgba(46,139,94,.5)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 12, padding: '0 4px' }}>
-          <button onClick={() => changeMonth(-1)} aria-label="上一個月" style={{ border: 'none', background: '#F6FAF7', color: '#234034', width: 34, height: 34, borderRadius: '50%', cursor: 'pointer', fontSize: 20, fontWeight: 900, lineHeight: 1 }}>‹</button>
+          <button onClick={() => changeMonth(-1)} aria-label="上一個月" style={{ border: 'none', background: '#F6FAF7', color: '#234034', width: 34, height: 34, borderRadius: '50%', cursor: 'pointer', fontSize: 20, fontWeight: 900, lineHeight: 1, outline: 'none' }}>‹</button>
           <div style={{ fontSize: 16, fontWeight: 900, color: '#234034', textAlign: 'center' }}>{mLabel}</div>
-          <button onClick={() => changeMonth(1)} aria-label="下一個月" style={{ border: 'none', background: '#F6FAF7', color: '#234034', width: 34, height: 34, borderRadius: '50%', cursor: 'pointer', fontSize: 20, fontWeight: 900, lineHeight: 1 }}>›</button>
+          <button onClick={() => changeMonth(1)} aria-label="下一個月" style={{ border: 'none', background: '#F6FAF7', color: '#234034', width: 34, height: 34, borderRadius: '50%', cursor: 'pointer', fontSize: 20, fontWeight: 900, lineHeight: 1, outline: 'none' }}>›</button>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 3, marginBottom: 6 }}>
           {['日', '一', '二', '三', '四', '五', '六'].map((d) => (
