@@ -15,7 +15,7 @@ const S = {
   title: { fontSize: 24, fontWeight: 900, color: '#3D281E', lineHeight: 1.2, margin: 0 },
   status: { fontSize: 13, color: '#E87A24', fontWeight: 700, marginTop: 4, margin: 0 },
   panel: { background: '#fff', borderRadius: 20, padding: 14, boxShadow: '0 6px 18px -12px rgba(232,122,36,.25)', marginBottom: 12 },
-  monthBtn: { border: 'none', background: '#FDF7F4', color: '#8E7568', width: 36, height: 36, borderRadius: 14, fontSize: 18, fontWeight: 900, cursor: 'pointer' },
+  monthBtn: { border: 'none', background: '#FDF7F4', color: '#8E7568', width: 36, height: 36, borderRadius: 14, fontSize: 18, fontWeight: 900, cursor: 'pointer', outline: 'none' },
   monthTitle: { fontSize: 18, fontWeight: 900, color: '#3D281E' },
   weekGrid: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 6, marginTop: 14 },
   dow: { textAlign: 'center', fontSize: 12, fontWeight: 900, color: '#C5B4AC' },
@@ -30,6 +30,7 @@ const S = {
     alignItems: 'center',
     gap: 4,
     cursor: 'pointer',
+    outline: 'none',
   },
   selectedDay: { borderColor: '#E87A24', background: '#FFF3EB' },
   todayDay: { boxShadow: 'inset 0 0 0 2px rgba(232,122,36,.16)' },
@@ -44,7 +45,7 @@ const S = {
   recordRow: { display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderTop: '1px solid #F3DFD4' },
   recordThumb: { width: 42, height: 42, borderRadius: 12, objectFit: 'cover', background: '#FDF7F4', flexShrink: 0 },
   placeholder: { width: 42, height: 42, borderRadius: 12, background: '#FDF7F4', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
-  removeBtn: { border: 'none', background: '#FDF7F4', color: '#C5B4AC', width: 30, height: 30, borderRadius: 15, fontSize: 18, lineHeight: 1, cursor: 'pointer' },
+  removeBtn: { border: 'none', background: '#FDF7F4', color: '#C5B4AC', width: 30, height: 30, borderRadius: 15, fontSize: 18, lineHeight: 1, cursor: 'pointer', outline: 'none' },
   empty: { color: '#C5B4AC', fontSize: 14, fontWeight: 700, textAlign: 'center', padding: '18px 4px' },
   addRecordBtn: {
     display: 'flex',
@@ -163,7 +164,7 @@ export default function CookCalendar({ recipes, cookRecords, cookRecordError, on
           <h1 style={S.title}>料理行事曆</h1>
           <p style={S.status}>● 已紀錄 {cookRecords.length} 次料理</p>
         </div>
-        <button type="button" onClick={selectToday} style={{ border: 'none', background: '#F0E7E1', color: '#8E7568', fontWeight: 800, fontSize: 13, padding: '8px 14px', borderRadius: 14, cursor: 'pointer' }}>
+        <button type="button" onClick={selectToday} style={{ border: 'none', background: '#F0E7E1', color: '#8E7568', fontWeight: 800, fontSize: 13, padding: '8px 14px', borderRadius: 14, cursor: 'pointer', outline: 'none' }}>
           今天
         </button>
       </header>
@@ -311,7 +312,8 @@ export default function CookCalendar({ recipes, cookRecords, cookRecordError, on
                   padding: '0 16px',
                   fontSize: 14,
                   fontWeight: 800,
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  outline: 'none',
                 }}
               >
                 收起
