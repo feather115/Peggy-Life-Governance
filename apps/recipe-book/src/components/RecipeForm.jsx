@@ -21,8 +21,46 @@ const S = {
   errorBox: { background: '#FEE2E2', color: '#B91C1C', padding: '10px 12px', borderRadius: 12, fontSize: 13, fontWeight: 800, marginTop: 12 },
 };
 
-function emptyIngredient(isBase = false) {
-  return { name: '', amount: '', brand: '', type: '', is_base: isBase };
+function emptyItem(isBase = false) {
+  return { name: '', amount: '', brand: '', is_base: isBase };
+}
+
+function emptySection(isBase = false) {
+  return { type: '', items: [emptyItem(isBase)] };
+}
+
+// flat ingredients → grouped sections（用 type 分組，沒 type 的併在第一區）
+function groupIngredientsToSections(ingredients) {
+  if (!ingredients?.length) return [emptySection(true)];
+  const byType = new Map();
+  ingredients.forEach((ing) => {
+    const t = ing.type || '';
+    if (!byType.has(t)) byType.set(t, []);
+    byType.get(t).push({
+      name: ing.name || '',
+      amount: ing.amount || '',
+      brand: ing.brand || '',
+      is_base: !!ing.is_base,
+    });
+  });
+  return Array.from(byType.entries()).map(([type, items]) => ({ type, items }));
+}
+
+function flattenSections(sections) {
+  const out = [];
+  sections.forEach((sec) => {
+    sec.items.forEach((it) => {
+      if (!it.name.trim() && !it.amount.trim()) return;
+      out.push({
+        name: it.name.trim(),
+        amount: it.amount.trim(),
+        brand: it.brand?.trim() || '',
+        type: sec.type?.trim() || '',
+        is_base: !!it.is_base,
+      });
+    });
+  });
+  return out;
 }
 
 function emptyParameter() {
@@ -41,9 +79,8 @@ export default function RecipeForm({ recipe, onSave, onCancel, onDelete }) {
   const [imageUrl, setImageUrl] = useState(recipe?.image_url || '');
   const [categoryText, setCategoryText] = useState((recipe?.category || []).join('、'));
   const [yieldText, setYieldText] = useState((parseYieldInfo(recipe?.yield_info) || []).join('、'));
-  const [ingredients, setIngredients] = useState(() => {
-    const existing = parseIngredients(recipe?.ingredients);
-    return existing.length > 0 ? existing : [emptyIngredient(true)];
+  const [ingredientSections, setIngredientSections] = useState(() => {
+    return groupIngredientsToSections(parseIngredients(recipe?.ingredients));
   });
   const [steps, setSteps] = useState(() => {
     const parsed = parseSteps(recipe?.steps);
@@ -85,8 +122,7 @@ export default function RecipeForm({ recipe, onSave, onCancel, onDelete }) {
     if (Array.isArray(parsed.yield_info)) setYieldText(parsed.yield_info.join('、'));
     else if (typeof parsed.yield_info === 'string') setYieldText(parsed.yield_info);
     if (parsed.ingredients !== undefined) {
-      const ing = parseIngredients(parsed.ingredients);
-      setIngredients(ing.length > 0 ? ing : [emptyIngredient(true)]);
+      setIngredientSections(groupIngredientsToSections(parseIngredients(parsed.ingredients)));
     }
     if (parsed.steps !== undefined) {
       const st = parseSteps(parsed.steps).map((s) => s.text);
@@ -103,17 +139,44 @@ export default function RecipeForm({ recipe, onSave, onCancel, onDelete }) {
     setImportText('');
   };
 
-  const updateIngredient = (idx, patch) => {
-    setIngredients((prev) => prev.map((row, i) => (i === idx ? { ...row, ...patch } : row)));
+  const updateSectionType = (secIdx, type) => {
+    setIngredientSections((prev) => prev.map((s, i) => (i === secIdx ? { ...s, type } : s)));
   };
-  const setBaseIngredient = (idx) => {
-    setIngredients((prev) => prev.map((row, i) => ({ ...row, is_base: i === idx })));
+  const addSection = () => {
+    setIngredientSections((prev) => [...prev, { type: '', items: [emptyItem(false)] }]);
   };
-  const removeIngredient = (idx) => {
-    setIngredients((prev) => prev.filter((_, i) => i !== idx));
+  const removeSection = (secIdx) => {
+    setIngredientSections((prev) => {
+      const next = prev.filter((_, i) => i !== secIdx);
+      return next.length > 0 ? next : [emptySection(true)];
+    });
   };
-  const addIngredient = () => {
-    setIngredients((prev) => [...prev, emptyIngredient(prev.length === 0)]);
+  const updateItem = (secIdx, itemIdx, patch) => {
+    setIngredientSections((prev) => prev.map((s, i) => i !== secIdx ? s : {
+      ...s,
+      items: s.items.map((it, j) => (j === itemIdx ? { ...it, ...patch } : it)),
+    }));
+  };
+  const addItem = (secIdx) => {
+    setIngredientSections((prev) => prev.map((s, i) => i !== secIdx ? s : {
+      ...s,
+      items: [...s.items, emptyItem(false)],
+    }));
+  };
+  const removeItem = (secIdx, itemIdx) => {
+    setIngredientSections((prev) => prev.map((s, i) => i !== secIdx ? s : {
+      ...s,
+      items: s.items.filter((_, j) => j !== itemIdx).length > 0
+        ? s.items.filter((_, j) => j !== itemIdx)
+        : [emptyItem(false)],
+    }));
+  };
+  // 是主食材：全域唯一，按下會清掉所有區的 is_base 再設這一個
+  const setBaseItem = (secIdx, itemIdx) => {
+    setIngredientSections((prev) => prev.map((s, i) => ({
+      ...s,
+      items: s.items.map((it, j) => ({ ...it, is_base: i === secIdx && j === itemIdx })),
+    })));
   };
 
   const updateStep = (idx, text) => setSteps((prev) => prev.map((s, i) => (i === idx ? text : s)));
@@ -144,15 +207,7 @@ export default function RecipeForm({ recipe, onSave, onCancel, onDelete }) {
 
     const categoryArr = categoryText.split(/[,、，]/).map((s) => s.trim()).filter(Boolean);
     const yieldArr = yieldText.split(/[,、，]/).map((s) => s.trim()).filter(Boolean);
-    const cleanIngredients = ingredients
-      .filter((row) => row.name.trim() || row.amount.trim())
-      .map((row) => ({
-        name: row.name.trim(),
-        amount: row.amount.trim(),
-        brand: row.brand?.trim() || '',
-        type: row.type?.trim() || '',
-        is_base: !!row.is_base,
-      }));
+    const cleanIngredients = flattenSections(ingredientSections);
     const stepsArr = steps.map((s) => s.trim()).filter(Boolean)
       .map((text, idx) => ({ text, type: '', sort: idx + 1 }));
     const notesArr = notes.map((n) => n.trim()).filter(Boolean);
@@ -246,23 +301,44 @@ export default function RecipeForm({ recipe, onSave, onCancel, onDelete }) {
         <div style={S.hint}>用逗號或頓號分隔多筆</div>
 
         <label style={S.label}>食材</label>
-        {ingredients.map((row, idx) => (
-          <div key={idx} style={{ padding: 10, background: '#FDF7F4', borderRadius: 14, marginBottom: 10, border: '1px solid #F3DFD4' }}>
-            <div style={{ display: 'grid', gap: 6, gridTemplateColumns: '1fr 110px 28px', alignItems: 'center' }}>
-              <input style={{ ...S.smallInput, background: '#fff' }} value={row.name} onChange={(e) => updateIngredient(idx, { name: e.target.value })} placeholder="食材名稱（如：雞肉）" />
-              <input style={{ ...S.smallInput, background: '#fff' }} value={row.amount} onChange={(e) => updateIngredient(idx, { amount: e.target.value })} placeholder="份量（如：200g）" />
-              <button type="button" style={S.rowBtn} onClick={() => removeIngredient(idx)} aria-label="刪除食材">×</button>
+        {ingredientSections.map((section, secIdx) => (
+          <div key={secIdx} style={{ background: '#FDF7F4', borderRadius: 14, padding: 12, marginBottom: 12, border: '1px solid #F3DFD4' }}>
+            <div style={{ display: 'grid', gap: 6, gridTemplateColumns: '1fr 28px', alignItems: 'center', marginBottom: 8 }}>
+              <input
+                style={{ ...S.smallInput, background: '#fff', fontWeight: 900, color: '#3D281E' }}
+                value={section.type}
+                onChange={(e) => updateSectionType(secIdx, e.target.value)}
+                placeholder="分區名稱（留空＝未分類，例：主料、醬料、配料）"
+              />
+              <button
+                type="button"
+                style={S.rowBtn}
+                onClick={() => removeSection(secIdx)}
+                aria-label="刪除分區"
+                title="刪除整個分區"
+              >×</button>
             </div>
-            <div style={{ display: 'grid', gap: 6, gridTemplateColumns: '1fr 1fr', marginTop: 6 }}>
-              <input style={{ ...S.smallInput, background: '#fff' }} value={row.type || ''} onChange={(e) => updateIngredient(idx, { type: e.target.value })} placeholder="類別/分區（如：主料、醬料）" />
-              <input style={{ ...S.smallInput, background: '#fff' }} value={row.brand || ''} onChange={(e) => updateIngredient(idx, { brand: e.target.value })} placeholder="品牌/備註（如：日式）" />
-            </div>
-            <label style={{ ...S.baseLabel, marginTop: 8 }}>
-              <input type="radio" checked={!!row.is_base} onChange={() => setBaseIngredient(idx)} /> 設為主食材（用來縮放配方）
-            </label>
+
+            {section.items.map((it, itemIdx) => (
+              <div key={itemIdx} style={{ marginBottom: 6 }}>
+                <div style={{ display: 'grid', gap: 6, gridTemplateColumns: '1fr 110px 28px', alignItems: 'center' }}>
+                  <input style={{ ...S.smallInput, background: '#fff' }} value={it.name} onChange={(e) => updateItem(secIdx, itemIdx, { name: e.target.value })} placeholder="食材名稱（如：雞肉）" />
+                  <input style={{ ...S.smallInput, background: '#fff' }} value={it.amount} onChange={(e) => updateItem(secIdx, itemIdx, { amount: e.target.value })} placeholder="份量（如：200g）" />
+                  <button type="button" style={S.rowBtn} onClick={() => removeItem(secIdx, itemIdx)} aria-label="刪除食材">×</button>
+                </div>
+                <div style={{ display: 'grid', gap: 6, gridTemplateColumns: '1fr auto', alignItems: 'center', marginTop: 4 }}>
+                  <input style={{ ...S.smallInput, background: '#fff' }} value={it.brand || ''} onChange={(e) => updateItem(secIdx, itemIdx, { brand: e.target.value })} placeholder="品牌/備註（選填，如：日式）" />
+                  <label style={{ ...S.baseLabel, marginTop: 0, whiteSpace: 'nowrap' }}>
+                    <input type="radio" checked={!!it.is_base} onChange={() => setBaseItem(secIdx, itemIdx)} /> 主食材
+                  </label>
+                </div>
+              </div>
+            ))}
+
+            <button type="button" style={{ ...S.addBtn, marginTop: 8 }} onClick={() => addItem(secIdx)}>+ 新增食材到「{section.type || '未分類'}」</button>
           </div>
         ))}
-        <button type="button" style={S.addBtn} onClick={addIngredient}>+ 新增一行食材</button>
+        <button type="button" style={{ ...S.addBtn, background: '#FFF3EB' }} onClick={addSection}>＋ 新增食材分區</button>
 
         <label style={S.label}>步驟</label>
         {steps.map((text, idx) => (
