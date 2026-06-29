@@ -66,7 +66,8 @@ git diff --quiet HEAD^ HEAD -- apps/recipe-book packages/shared
 | Schema | 用途 | 內容 |
 |---|---|---|
 | `calorie_tracker` | 飲食卡路里 | 11 張表 + 2 個 RPC (`is_challenge_member`, `find_challenge_by_code`) |
-| `recipe_book` | 食譜紀錄 | `recipes` 表 |
+| `recipe_book` | 食譜紀錄 | `recipes` / `recipe_likes` / `cooking_history` 表 |
+| `shared` | 兩個 app 共用 | `line_links`（LINE 身份 ↔ Supabase 帳號對照，只給 service_role 用） |
 | `auth` | 共用驗證 | Supabase 內建 `auth.users`，兩個 app 共用同一群使用者 |
 | `public` | trigger | `handle_new_user` trigger function（綁在 `auth.users` 上，所以留在 public） |
 
@@ -80,7 +81,8 @@ git diff --quiet HEAD^ HEAD -- apps/recipe-book packages/shared
    - 最後跑兩支 schema isolation migration：
      - `apps/calorie-tracker/supabase/2026-06-28_schema_isolation.sql`（把 11 張表從 public 搬到 `calorie_tracker` schema，並授權給 PostgREST 及 service_role）
      - `apps/recipe-book/supabase/2026-06-28_schema_isolation.sql`（把 recipes 從 public 搬到 `recipe_book` schema，並授權給 PostgREST 及 service_role）
-3. 到 **Integrations → Data API → Settings**，在 **Exposed schemas** 加入 `calorie_tracker` 和 `recipe_book`，按 Save
+3. 到 **Integrations → Data API → Settings**，在 **Exposed schemas** 加入 `calorie_tracker`、`recipe_book`、`shared`，按 Save
+   - 然後跑 [`packages/shared/supabase/2026-06-28_line_links_shared.sql`](./packages/shared/supabase/2026-06-28_line_links_shared.sql)（把 `line_links` 從 `calorie_tracker` 搬到 `shared`，順便清掉 recipe_book 裡那張沒在用的同名表）
 4. 等 30 秒讓 PostgREST 重新載入
 5. 到 **Settings → API** 複製 `Project URL` 和 `anon public` key，填入各 app 的 `.env`
 

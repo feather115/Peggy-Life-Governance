@@ -1,6 +1,6 @@
 // Maps a verified LINE user to a Supabase account and returns credentials that can be directly exchanged for a session on the frontend.
 import { verifyLineIdToken } from './_lineVerify.js';
-import { getSupabaseAdmin } from './_supabaseAdmin.js';
+import { getSupabaseAdmin, getSupabaseAdminForLine } from './_supabaseAdmin.js';
 
 // Formulates a stable email address from the LINE sub that will not conflict with real email addresses.
 function emailForLineSub(sub) {
@@ -10,9 +10,10 @@ function emailForLineSub(sub) {
 export async function loginWithLine(idToken, channelId) {
   const payload = await verifyLineIdToken(idToken, channelId);
   const admin = getSupabaseAdmin();
+  const adminForLine = getSupabaseAdminForLine();
 
   // Check if this LINE user is already linked to an existing account (the mapping stored in the "Link LINE Account" settings tab)
-  const { data: linkRow } = await admin.from('line_links').select('user_id').eq('line_sub', payload.sub).maybeSingle();
+  const { data: linkRow } = await adminForLine.from('line_links').select('user_id').eq('line_sub', payload.sub).maybeSingle();
   let email;
   if (linkRow) {
     const { data: userData, error: getErr } = await admin.auth.admin.getUserById(linkRow.user_id);

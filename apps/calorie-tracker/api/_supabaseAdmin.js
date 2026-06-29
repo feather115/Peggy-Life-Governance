@@ -2,12 +2,22 @@
 // NEVER prefix the service key with VITE_, and NEVER import this file in frontend code.
 import { createClient } from '@supabase/supabase-js';
 
-export function getSupabaseAdmin() {
+function adminClientForSchema(schema) {
   const url = process.env.VITE_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) throw new Error('伺服器未設定 SUPABASE_SERVICE_ROLE_KEY');
   return createClient(url, key, {
     auth: { autoRefreshToken: false, persistSession: false },
-    db: { schema: 'calorie_tracker' },
+    db: { schema },
   });
+}
+
+// Default admin client — points at this app's own schema (calorie_tracker)
+export function getSupabaseAdmin() {
+  return adminClientForSchema('calorie_tracker');
+}
+
+// Admin client for the shared schema (line_links lives here,共用 with recipe-book)
+export function getSupabaseAdminForLine() {
+  return adminClientForSchema('shared');
 }
