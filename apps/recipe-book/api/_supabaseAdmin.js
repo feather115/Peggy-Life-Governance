@@ -17,7 +17,11 @@ export function getSupabaseAdmin() {
   return adminClientForSchema('recipe_book');
 }
 
-// Admin client for the shared schema (line_links lives here, 共用 with calorie-tracker)
+// Admin client for line_links. TEMPORARY: should live in a `shared` schema,
+// but Supabase's Data API on this project won't expose `shared` (PGRST106
+// persists even with db_schema confirmed correct via Management API + restarts).
+// Reverted to calorie_tracker (already exposed, confirmed working) until that's resolved.
+// See packages/shared/supabase/2026-06-29_line_links_revert_to_calorie_tracker.sql
 export function getSupabaseAdminForLine() {
-  return adminClientForSchema('shared');
+  return adminClientForSchema('calorie_tracker');
 }
