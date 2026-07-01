@@ -9,7 +9,9 @@
   "scripts": {
     "dev:calorie-tracker": "npm run dev -w calorie-tracker",
     "dev:recipe-book": "npm run dev -w recipe-book",
+    "dev:calendar": "npm run dev -w calendar",
     "build:calorie-tracker": "npm run build -w calorie-tracker",
-    "build:recipe-book": "npm run build -w recipe-book"
+    "build:recipe-book": "npm run build -w recipe-book",
+    "build:calendar": "npm run build -w calendar"
   }
 }
