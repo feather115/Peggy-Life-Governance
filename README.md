@@ -81,7 +81,7 @@ git diff --quiet $VERCEL_GIT_PREVIOUS_SHA HEAD -- apps/calendar packages/shared
 | `calorie_tracker` | 飲食卡路里 | 11 張表 + 2 個 RPC (`is_challenge_member`, `find_challenge_by_code`) + `line_links`（三個 app 共用的 LINE 對照表，暫時也放這裡，見下方 shared 說明） |
 | `recipe_book` | 食譜紀錄 | `recipes` / `recipe_likes` / `cooking_history` 表 |
 | `calendar` | 個人行事曆 | `events` 表 |
-| `shared` | 跨 app 共用（暫停使用） | 本來打算放 `line_links`，但這個 Supabase 專案的 Data API 無法把 `shared` 加入 exposed schemas（持續 PGRST106，即使 Management API 確認 `db_schema` 設定正確、且重啟過 Data API 多次）。`line_links` 暫時放 `calorie_tracker`（見下） |
+| `shared` | 跨 app 共用（未使用） | 本來打算放 `line_links`。這個 schema 曾經卡在 PGRST106（Supabase 已知 bug：Dashboard/Management API 改的設定不保證同步到 PostgREST 實際讀的 Postgres `authenticator` 角色設定），已知正確修法是跑 `ALTER ROLE authenticator SET pgrst.db_schemas = '...'` + `NOTIFY pgrst, 'reload config'`（見 [`docs/new-app-sop.md`](./docs/new-app-sop.md) 第 3 節）。目前 `line_links` 仍放 `calorie_tracker`，之後有空可以照修法把它搬過來 |
 | `auth` | 共用驗證 | Supabase 內建 `auth.users`，三個 app 共用同一群使用者 |
 | `public` | trigger | `handle_new_user` trigger function（綁在 `auth.users` 上，所以留在 public） |
 

@@ -103,11 +103,27 @@ apps/<app-name>/
    擁有者+分享 三種模式參考現有兩個 app 的寫法）
 3. Supabase Dashboard → **Integrations → Data API → Settings → Exposed schemas** 加入
    `<app_schema>`，Save，等 30 秒
-4. **不要新建 schema 給「跨 app 共用資料」用**——這個專案曾經試過建 `shared` schema
-   給 LINE 帳號對照表用，Supabase 這個專案的 Data API 一直無法把新 schema 正確 expose
-   （Management API 確認設定對、重啟多次也沒用，判定是平台問題）。跨 app 共用資料目前
-   的做法是**放進某個既有 app 的 schema**（例如都放 calorie_tracker），不要冒險開新 schema。
-   如果之後要重試，先確認這個平台問題有沒有修好。
+4. 如果加完之後打 API 還是回 `PGRST106 Invalid schema`：**這是 Supabase 官方公開的已知
+   bug，不是你設定錯，也跟免費/付費方案無關**。Dashboard 的 Exposed schemas 改的是一層，
+   PostgREST 實際讀的是 Postgres `authenticator` 角色的 `pgrst.db_schemas` 設定，兩者有時候
+   不同步，光靠 Dashboard 存檔、Restart project、甚至 Management API PATCH `db_schema` 都
+   可能沒用。**正確修法**是直接在 SQL Editor 對 Postgres 角色下手：
+   ```sql
+   ALTER ROLE authenticator SET pgrst.db_schemas = 'public, calorie_tracker, recipe_book, <app_schema>, graphql_public';
+   NOTIFY pgrst, 'reload config';
+   ```
+   （schema 清單要包含所有現有 app 的 schema，不是只放新的這個，不然會把其他 app 擠掉）
+   跑完立刻生效，不用等待。參考：
+   [Supabase 官方文件 PGRST106](https://supabase.com/docs/guides/troubleshooting/pgrst106-the-schema-must-be-one-of-the-following-error-when-querying-an-exposed-schema)。
+   Debug 時可以直接 curl REST API 繞過瀏覽器/CDN cache 確認 PostgREST 真正的狀態：
+   ```bash
+   curl -s "https://<project-ref>.supabase.co/rest/v1/<table>?select=*&limit=1" \
+     -H "apikey: <anon key>" -H "Accept-Profile: <app_schema>"
+   ```
+5. 新建 schema 給「跨 app 共用資料」用本身是可行的（上面這個修法出來之前，這份 SOP 曾經
+   建議「不要冒險開新 schema」，那是繞開問題的暫時措施，不是正確答案）——只是要記得，
+   新 schema 第一次 expose 時大機率會撞到這個 bug，遇到了直接跑上面的 `ALTER ROLE`，
+   不用浪費時間在 Dashboard 反覆重新勾選。
 
 ---
 
@@ -251,8 +267,10 @@ export function getSupabaseAdmin() {
   確認真實欄位，不要照抄 `schema.sql` 文字
 - **新 schema 建了要記得去 Dashboard expose**，不然前端會收到
   `relation does not exist` 或 `PGRST106 invalid schema`
-- **不要在這個 Supabase 專案新開 schema 給跨 app 共用資料用**（見上方第 3 節），
-  已知這個專案的 Data API 沒辦法正常 expose 新 schema
+- **Dashboard expose 之後還是 `PGRST106`？跑 `ALTER ROLE authenticator SET pgrst.db_schemas = '...'`
+  + `NOTIFY pgrst, 'reload config'`**（見上方第 3 節第 4 點）——這是 Supabase 官方已知 bug，
+  Dashboard／Management API 改的設定不保證會同步到 PostgREST 實際讀的 Postgres 角色設定，
+  不要在 Dashboard 反覆重新勾選或一直 Restart project 硬試，浪費時間
 - **RLS policy 搬 schema 不會自動更新 policy body 裡寫死的 schema 前綴**——如果
   policy 裡有 `using (exists (select 1 from public.other_table ...))` 這種跨表
   reference，`alter table set schema` 之後要手動 `drop policy` + 重建，不然 policy
