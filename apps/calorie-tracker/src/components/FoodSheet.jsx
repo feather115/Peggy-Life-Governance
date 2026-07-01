@@ -45,19 +45,31 @@ export default function FoodSheet({ app, selectedDate, mealKey, onClose }) {
   const setField = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
   // Serving selection: e.g. recipe is "1 serving", but today consumed 2 servings, or only 0.3 servings; decimal numbers can be input directly.
-  const getQty = (id) => qtyMap[id] ?? 1;
-  const setQty = (id, v) => setQtyMap((q) => ({ ...q, [id]: Math.max(0.1, round1(v)) }));
+  // getQtyRaw can be '' while the user is clearing the field to retype a new value (e.g. going from 1 to 0.3).
+  const getQtyRaw = (id) => qtyMap[id] ?? 1;
+  const getQtyNum = (id) => {
+    const raw = getQtyRaw(id);
+    const n = parseFloat(raw);
+    return isNaN(n) ? NaN : n;
+  };
+  const setQtyRaw = (id, v) => setQtyMap((q) => ({ ...q, [id]: v }));
+  const nudgeQty = (id, delta) => {
+    const base = getQtyNum(id);
+    const next = Math.max(0.1, round1((isNaN(base) ? 1 : base) + delta));
+    setQtyRaw(id, next);
+  };
   const round1 = (n) => Math.round(n * 10) / 10;
 
   // Add existing food (multiplies nutritional values by current servings, builds a snapshot, and passes it to app.addMeal)
   const pick = (fo) => {
-    const qty = getQty(fo.id);
+    const qty = getQtyNum(fo.id);
+    if (isNaN(qty) || qty <= 0) return;
     addMeal(selectedDate, mealKey, {
       foodRef: fo.id, name: fo.name, brand: fo.brand || '',
       unit: qty === 1 ? fo.unit : `${qty} × ${fo.unit}`,
       cal: Math.round(fo.cal * qty), p: round1((fo.p || 0) * qty), c: round1((fo.c || 0) * qty), f: round1((fo.f || 0) * qty),
     });
-    setQty(fo.id, 1);
+    setQtyRaw(fo.id, 1);
     showToast(`已加入 ${fo.name}`);
   };
 
@@ -151,17 +163,20 @@ export default function FoodSheet({ app, selectedDate, mealKey, onClose }) {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 'none' }}>
                   {fo.custom && <button onClick={() => startEdit(fo)} style={{ border: 'none', background: '#fff', color: '#6E8B7C', width: 28, height: 28, borderRadius: '50%', cursor: 'pointer', fontSize: 13 }}>✏</button>}
                   {fo.custom && <button onClick={() => removeCustomFood(fo.id)} style={{ border: 'none', background: '#fff', color: '#bcccc2', width: 28, height: 28, borderRadius: '50%', cursor: 'pointer', fontSize: 14, lineHeight: 1 }}>×</button>}
-                  <button onClick={() => pick(fo)} style={{ border: 'none', background: '#2E8B5E', color: '#fff', width: 34, height: 34, borderRadius: '50%', cursor: 'pointer', fontSize: 18, lineHeight: 1, fontWeight: 700 }}>＋</button>
+                  <button onClick={() => pick(fo)} disabled={isNaN(getQtyNum(fo.id)) || getQtyNum(fo.id) <= 0}
+                    style={{ border: 'none', background: (isNaN(getQtyNum(fo.id)) || getQtyNum(fo.id) <= 0) ? '#bcccc2' : '#2E8B5E', color: '#fff', width: 34, height: 34, borderRadius: '50%', cursor: (isNaN(getQtyNum(fo.id)) || getQtyNum(fo.id) <= 0) ? 'not-allowed' : 'pointer', fontSize: 18, lineHeight: 1, fontWeight: 700 }}>＋</button>
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, paddingTop: 8, borderTop: '1px solid #EEF4F0' }}>
                 <span style={{ fontSize: 11, color: '#9bb0a3', fontWeight: 700 }}>份數</span>
-                <button onClick={() => setQty(fo.id, getQty(fo.id) - 0.5)} style={{ border: 'none', background: '#fff', color: '#6E8B7C', width: 24, height: 24, borderRadius: '50%', cursor: 'pointer', fontSize: 14, fontWeight: 800, lineHeight: 1 }}>−</button>
-                <input type="number" inputMode="decimal" step="0.1" min="0.1" value={getQty(fo.id)}
-                  onChange={(e) => { const v = parseFloat(e.target.value); if (!isNaN(v)) setQty(fo.id, v); }}
+                <button onClick={() => nudgeQty(fo.id, -0.5)} style={{ border: 'none', background: '#fff', color: '#6E8B7C', width: 24, height: 24, borderRadius: '50%', cursor: 'pointer', fontSize: 14, fontWeight: 800, lineHeight: 1 }}>−</button>
+                <input type="number" inputMode="decimal" step="0.1" min="0.1" value={getQtyRaw(fo.id)}
+                  onChange={(e) => setQtyRaw(fo.id, e.target.value)}
+                  onBlur={(e) => { if (e.target.value.trim() === '') return; const n = getQtyNum(fo.id); if (!isNaN(n)) setQtyRaw(fo.id, Math.max(0.1, round1(n))); }}
                   style={{ width: 48, textAlign: 'center', border: 'none', background: '#fff', borderRadius: 8, padding: '4px 2px', fontSize: 14, fontWeight: 900, color: '#234034' }} />
-                <button onClick={() => setQty(fo.id, getQty(fo.id) + 0.5)} style={{ border: 'none', background: '#fff', color: '#6E8B7C', width: 24, height: 24, borderRadius: '50%', cursor: 'pointer', fontSize: 14, fontWeight: 800, lineHeight: 1 }}>＋</button>
-                {getQty(fo.id) !== 1 && <span style={{ fontSize: 11, color: '#2E8B5E', fontWeight: 700 }}>＝ {Math.round(fo.cal * getQty(fo.id))} kcal</span>}
+                <button onClick={() => nudgeQty(fo.id, 0.5)} style={{ border: 'none', background: '#fff', color: '#6E8B7C', width: 24, height: 24, borderRadius: '50%', cursor: 'pointer', fontSize: 14, fontWeight: 800, lineHeight: 1 }}>＋</button>
+                {!isNaN(getQtyNum(fo.id)) && getQtyNum(fo.id) > 0 && getQtyNum(fo.id) !== 1 && <span style={{ fontSize: 11, color: '#2E8B5E', fontWeight: 700 }}>＝ {Math.round(fo.cal * getQtyNum(fo.id))} kcal</span>}
+                {(isNaN(getQtyNum(fo.id)) || getQtyNum(fo.id) <= 0) && <span style={{ fontSize: 11, color: '#C97B3D', fontWeight: 700 }}>請輸入份數</span>}
               </div>
             </div>
           ))}
