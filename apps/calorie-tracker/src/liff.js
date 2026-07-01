@@ -70,3 +70,24 @@ export async function linkLineAccount() {
     throw new Error(extra ? `${data.error || '連結失敗'}（${extra}）` : (data.error || '連結失敗'));
   }
 }
+
+// Checks whether the currently logged-in account already has a LINE identity linked.
+// Works regardless of whether opened inside the LINE App or a regular browser
+// (this is just reading a DB row, not doing LIFF auth).
+export async function checkLineLinked() {
+  const { data: sessionData } = await supabase.auth.getSession();
+  const accessToken = sessionData.session?.access_token;
+  if (!accessToken) return false;
+  try {
+    const res = await fetch('/api/line-link-status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accessToken }),
+    });
+    const data = await res.json();
+    if (!res.ok) return false;
+    return !!data.linked;
+  } catch {
+    return false;
+  }
+}

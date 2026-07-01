@@ -1,9 +1,9 @@
 // Settings tab: account/sign out, profile (nickname + change password), daily goal, tags management, data clearing
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FOODS } from '../constants.js';
 import { totalRecordedDays } from '../selectors.js';
 import { supabase } from '../supabase.js';
-import { canLinkLine, linkLineAccount } from '../liff.js';
+import { canLinkLine, checkLineLinked, linkLineAccount } from '../liff.js';
 
 const TAG_COLORS = ['#E8A13C', '#D9544F', '#EC4899', '#8B5CF6', '#4361EE', '#5FA8D3', '#14B8A6', '#2E8B5E'];
 
@@ -176,17 +176,24 @@ function ColorSwatches({ current, onPick, compact = false }) {
   );
 }
 
-// Link LINE Account: Only shown when opened within the LINE App. Once linked, opening from LINE will log in to this account directly.
+// Link LINE Account: shows current link status (checked on mount, works in any browser),
+// and offers the "connect" button only when opened within the LINE App and not yet linked.
 function LineLinker() {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
+  const [linked, setLinked] = useState(null); // null = 還在查詢中
 
-  if (!canLinkLine()) return null;
+  useEffect(() => {
+    let cancel = false;
+    checkLineLinked().then((result) => { if (!cancel) setLinked(result); });
+    return () => { cancel = true; };
+  }, []);
 
   const link = async () => {
     setBusy(true); setMsg('');
     try {
       await linkLineAccount();
+      setLinked(true);
       setMsg('success');
     } catch (e) {
       setMsg(e.message || '連結失敗');
@@ -194,6 +201,16 @@ function LineLinker() {
       setBusy(false);
     }
   };
+
+  if (linked) {
+    return (
+      <div style={{ border: 'none', background: '#DCFCE7', color: '#15803D', fontWeight: 800, fontSize: 13, padding: '10px 16px', borderRadius: 12 }}>
+        ✅ 已連結 LINE 帳號
+      </div>
+    );
+  }
+
+  if (!canLinkLine()) return null;
 
   return (
     <>
