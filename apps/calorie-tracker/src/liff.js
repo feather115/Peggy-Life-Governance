@@ -74,10 +74,12 @@ export async function linkLineAccount() {
 // Checks whether the currently logged-in account already has a LINE identity linked.
 // Works regardless of whether opened inside the LINE App or a regular browser
 // (this is just reading a DB row, not doing LIFF auth).
+// Returns null on "unknown" (no session yet, network error, backend error) so callers
+// don't mistake a transient failure for "definitely not linked" and clobber a cached true.
 export async function checkLineLinked() {
   const { data: sessionData } = await supabase.auth.getSession();
   const accessToken = sessionData.session?.access_token;
-  if (!accessToken) return false;
+  if (!accessToken) return null;
   try {
     const res = await fetch('/api/line-link-status', {
       method: 'POST',
@@ -85,9 +87,9 @@ export async function checkLineLinked() {
       body: JSON.stringify({ accessToken }),
     });
     const data = await res.json();
-    if (!res.ok) return false;
+    if (!res.ok) return null;
     return !!data.linked;
   } catch {
-    return false;
+    return null;
   }
 }
