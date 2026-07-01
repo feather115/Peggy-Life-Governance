@@ -78,10 +78,10 @@ git diff --quiet $VERCEL_GIT_PREVIOUS_SHA HEAD -- apps/calendar packages/shared
 
 | Schema | 用途 | 內容 |
 |---|---|---|
-| `calorie_tracker` | 飲食卡路里 | 11 張表 + 2 個 RPC (`is_challenge_member`, `find_challenge_by_code`) + `line_links`（三個 app 共用的 LINE 對照表，暫時也放這裡，見下方 shared 說明） |
+| `calorie_tracker` | 飲食卡路里 | 11 張表 + 2 個 RPC (`is_challenge_member`, `find_challenge_by_code`) |
 | `recipe_book` | 食譜紀錄 | `recipes` / `recipe_likes` / `cooking_history` 表 |
 | `calendar` | 個人行事曆 | `events` 表 |
-| `shared` | 跨 app 共用（未使用） | 本來打算放 `line_links`。這個 schema 曾經卡在 PGRST106（Supabase 已知 bug：Dashboard/Management API 改的設定不保證同步到 PostgREST 實際讀的 Postgres `authenticator` 角色設定），已知正確修法是跑 `ALTER ROLE authenticator SET pgrst.db_schemas = '...'` + `NOTIFY pgrst, 'reload config'`（見 [`docs/new-app-sop.md`](./docs/new-app-sop.md) 第 3 節）。目前 `line_links` 仍放 `calorie_tracker`，之後有空可以照修法把它搬過來 |
+| `shared` | 三個 app 共用 | `line_links`（LINE 身份 ↔ Supabase 帳號對照）。第一次 expose 時卡過 `PGRST106`（Supabase 已知 bug：Dashboard/Management API 改的設定不保證同步到 PostgREST 實際讀的 Postgres `authenticator` 角色設定），正確修法是跑 `ALTER ROLE authenticator SET pgrst.db_schemas = '...'` + `NOTIFY pgrst, 'reload config'`（見 [`docs/new-app-sop.md`](./docs/new-app-sop.md) 第 3 節） |
 | `auth` | 共用驗證 | Supabase 內建 `auth.users`，三個 app 共用同一群使用者 |
 | `public` | trigger | `handle_new_user` trigger function（綁在 `auth.users` 上，所以留在 public） |
 
@@ -96,9 +96,15 @@ git diff --quiet $VERCEL_GIT_PREVIOUS_SHA HEAD -- apps/calendar packages/shared
    - 最後跑兩支 schema isolation migration：
      - `apps/calorie-tracker/supabase/2026-06-28_schema_isolation.sql`（把 11 張表從 public 搬到 `calorie_tracker` schema，並授權給 PostgREST 及 service_role）
      - `apps/recipe-book/supabase/2026-06-28_schema_isolation.sql`（把 recipes 從 public 搬到 `recipe_book` schema，並授權給 PostgREST 及 service_role）
-3. 到 **Integrations → Data API → Settings**，在 **Exposed schemas** 加入 `calorie_tracker`、`recipe_book`、`calendar`，按 Save
-   - `line_links`（LINE 帳號對照表）目前放在 `calorie_tracker` schema，三個 app 都讀寫這張表。本來想拆到獨立的 `shared` schema 給大家共用，但這個專案的 Data API 持續無法 expose `shared`（見下方說明），暫時擱置
-4. 等 30 秒讓 PostgREST 重新載入
+   - `packages/shared/supabase/2026-07-01_line_links_to_shared.sql`（建立 `shared` schema + `line_links` 表，三個 app 共用）
+3. 到 **Integrations → Data API → Settings**，在 **Exposed schemas** 加入 `calorie_tracker`、`recipe_book`、`calendar`、`shared`，按 Save
+4. 如果加完之後前端還是回 `Invalid schema` / `PGRST106`，這是 Supabase 平台已知 bug，Dashboard
+   設定不保證同步到 PostgREST。在 SQL Editor 跑：
+   ```sql
+   ALTER ROLE authenticator SET pgrst.db_schemas = 'public, calorie_tracker, recipe_book, calendar, shared, graphql_public';
+   NOTIFY pgrst, 'reload config';
+   ```
+   跑完立刻生效，詳見 [`docs/new-app-sop.md`](./docs/new-app-sop.md) 第 3 節。
 5. 到 **Settings → API** 複製 `Project URL` 和 `anon public` key，填入各 app 的 `.env`
 
 > **注意**：schema isolation migration 會搬移表並重建 RLS policy，跑之前確認 `schema.sql` 和其他 migration 都已執行完畢。

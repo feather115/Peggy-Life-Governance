@@ -92,17 +92,18 @@ Supabase ⇄ db.js ⇄ useEvents.js ⇄ Root.jsx / App.jsx ⇄ components/*
 | Schema | 屬於哪個 app | 內容 |
 |---|---|---|
 | `calendar` | calendar（本 app） | `events` 表 |
-| `calorie_tracker` | calorie-tracker | 11 張表 + `line_links`（LINE 身份對照表，本 app 也讀寫這張） |
+| `calorie_tracker` | calorie-tracker | 11 張表（`user_settings`、`day_records`、`challenges` …） |
 | `recipe_book` | recipe-book | `recipes` / `recipe_likes` / `cooking_history` |
+| `shared` | 三個 app 共用 | `line_links`（LINE 身份對照表，本 app 也讀寫這張） |
 | `auth` | 三個 app 共用 | Supabase 內建的使用者表 |
 
-**LINE 登入為什麼要讀寫 `calorie_tracker` schema，不是自己的 `calendar` schema？**
-`line_links`（LINE 身份 ↔ Supabase 帳號對照）是跨 app 共用的資料，理論上該放獨立的
-`shared` schema，但這個 Supabase 專案的 Data API 一直沒辦法正確 expose 新建的 schema
-（PGRST106，即使 Management API 確認設定對、重啟過也沒用，判定是平台問題，詳見
-根目錄 [`docs/new-app-sop.md`](../../docs/new-app-sop.md) 的坑清單）。目前的權宜做法是
-所有 app 都共用 `calorie_tracker.line_links`，本 app 的 `api/_supabaseAdmin.js` 提供
-`getSupabaseAdminForLine()` 指向那個 schema。
+**LINE 登入為什麼要讀寫 `shared` schema，不是自己的 `calendar` schema？**
+`line_links`（LINE 身份 ↔ Supabase 帳號對照）是跨 app 共用的資料，放獨立的 `shared` schema，
+本 app 的 `api/_supabaseAdmin.js` 提供 `getSupabaseAdminForLine()` 指向那裡。這個 schema
+第一次 expose 時卡過 `PGRST106`（Supabase 平台已知 bug：Dashboard 的 Exposed schemas 設定
+跟 PostgREST 實際讀的 Postgres `authenticator` 角色設定會不同步），正確修法是跑
+`ALTER ROLE authenticator SET pgrst.db_schemas = '...'` + `NOTIFY pgrst, 'reload config'`，
+詳見根目錄 [`docs/new-app-sop.md`](../../docs/new-app-sop.md) 第 3 節。
 
 **前端 supabase client 怎麼指向 `calendar` schema**：
 ```js

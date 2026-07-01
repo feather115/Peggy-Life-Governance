@@ -17,9 +17,7 @@ export function getSupabaseAdmin() {
   return adminClientForSchema('calendar');
 }
 
-// Admin client for line_links (LINE 身份 ↔ Supabase 帳號對照，跨 app 共用）。
-// 目前這個 Supabase 專案沒辦法 expose 新的 shared schema（見 docs/new-app-sop.md 的坑清單），
-// 所以沿用其他 app 的做法：line_links 實際存在 calorie_tracker schema。
+// Admin client for the shared schema (line_links lives here, shared with calorie-tracker + recipe-book)
 export function getSupabaseAdminForLine() {
-  return adminClientForSchema('calorie_tracker');
+  return adminClientForSchema('shared');
 }

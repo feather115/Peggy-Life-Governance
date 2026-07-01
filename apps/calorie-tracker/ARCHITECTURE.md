@@ -111,13 +111,16 @@ Supabase ⇄ db.js ⇄ useAppData.js ⇄ App.jsx ⇄ components/*
 
 ## Schema 隔離
 
-兩個 app 共用同一個 Supabase 專案、共用使用者池（`auth.users`），但資料表分別在獨立的 schema：
+三個 app（calorie-tracker、recipe-book、calendar）共用同一個 Supabase 專案、共用使用者池
+（`auth.users`），但資料表分別在獨立的 schema：
 
 | Schema | 屬於哪個 app | 內容 |
 |---|---|---|
 | `calorie_tracker` | calorie-tracker | 11 張表（`user_settings`、`day_records`、`meal_items`、`challenges` …）+ 2 個 RPC function（`is_challenge_member`、`find_challenge_by_code`） |
 | `recipe_book` | recipe-book | `recipes` 表 |
-| `auth` | 兩個 app 共用 | Supabase 內建的使用者表 |
+| `calendar` | calendar | `events` 表 |
+| `shared` | 三個 app 共用 | `line_links`（LINE 身份 ↔ Supabase 帳號對照），見下方「跨 app 共用資料」 |
+| `auth` | 三個 app 共用 | Supabase 內建的使用者表 |
 | `public` | （已搬空） | 只剩 `handle_new_user()` trigger function（trigger 在 `auth.users` 上，無法移動） |
 
 **前端 supabase client 怎麼指向新 schema**：在建立 client 時傳 `db.schema`：
@@ -128,8 +131,17 @@ createClient(url, key, { db: { schema: 'calorie_tracker' } })
 本專案的 client 由 `@peggy-life/shared` 的 `createAppSupabase({ schema })` 工廠建立
 （前端見 `src/supabase.js`，伺服器端 admin client 見 `api/_supabaseAdmin.js`）。
 
-**Supabase Settings → API → Exposed schemas 必須包含** `calorie_tracker`（和 `recipe_book`，給另一個 app 用）；
-PostgREST 沒 expose 的 schema 即使有 grant 也讀不到，會回 schema not found / 404。
+**Supabase Settings → API → Exposed schemas 必須包含** `calorie_tracker`（和 `recipe_book`、
+`calendar`、`shared`，給其他 app 用）；PostgREST 沒 expose 的 schema 即使有 grant 也讀不到，
+會回 schema not found / 404。
+
+**跨 app 共用資料（`line_links`）**：LINE 身份對照表放獨立的 `shared` schema，`api/_supabaseAdmin.js`
+的 `getSupabaseAdminForLine()` 指向那裡。這張表歷經兩次搬遷：2026-06-28 從 `calorie_tracker`
+搬到新建的 `shared` schema → 卡到 `PGRST106`（Supabase 平台已知 bug：Dashboard 的 Exposed
+schemas 設定跟 PostgREST 實際讀的 Postgres `authenticator` 角色設定會不同步）→ 2026-06-29
+先回退回 `calorie_tracker` 恢復功能 → 2026-07-01 找到正確修法（`ALTER ROLE authenticator
+SET pgrst.db_schemas = '...'` + `NOTIFY pgrst, 'reload config'`，見根目錄
+[`docs/new-app-sop.md`](../../docs/new-app-sop.md) 第 3 節）後重新搬回 `shared`。
 
 **Schema 隔離 migration**：[`2026-06-28_schema_isolation.sql`](./supabase/2026-06-28_schema_isolation.sql)
 做了下面這幾件事，了解原理對未來 troubleshooting 很重要：
@@ -157,7 +169,7 @@ PostgREST 沒 expose 的 schema 即使有 grant 也讀不到，會回 schema not
 | `challenge_members` | 誰加入了哪場挑戰（多對多） | 用 RLS function `is_challenge_member` 控管成員可見性；`color` 欄位存成員自訂顏色 |
 | `weight_entries` | 每週體重差值記錄 | `(challenge_id, user_id, week_label)` 唯一；同週再登記會 upsert |
 | `food_usage` | 每個食物上次被選用/新增/編輯的時間 | `(user_id, food_ref)` 主鍵；`food_ref` 是內建食物的 id（如 `'egg'`）或 `custom_foods.id` |
-| `line_links` | LINE 使用者 ↔ 既有帳號的對照 | 只有伺服器端（`service_role`）會碰，前端完全不能直接存取 |
+| ~~`line_links`~~ | ~~LINE 使用者 ↔ 既有帳號的對照~~ | **已搬到 `shared` schema**（見上方「Schema 隔離」），跟 recipe-book、calendar 共用；不再是這個 app 專屬的表 |
 
 **設計重點：**
 - **快照式 `meal_items`** — 加入餐點時把食物的數值「複製一份」存起來，不是存外鍵。所以刪自訂食物、改目標都不會動到過去的記錄。

@@ -153,7 +153,14 @@ RLS：每個人只能 select/insert/update/delete 自己 `user_id` 的列。
 > **重要**：`recipe_id` 是 `bigint`，必須跟 `recipes.id` 型別一致，FK 才建得起來。
 
 #### LINE 綁定共享機制
-為了避免使用者在 `calorie-tracker` 與 `recipe-book` 二個專案間面臨重疊的 LINE 帳號連結動作，`recipe-book` 後端 API 改為共同指向與讀寫 `calorie_tracker.line_links` 資料表。這使得兩者共用同一個 LINE 使用者對照清單。只要在其中一個 App 連結過 LINE，另一個 App 便能即時識別並支援 LINE 自動免密密碼登入。
+為了避免使用者在 calorie-tracker、recipe-book、calendar 三個 app 之間面臨重複的 LINE 帳號連結動作，
+`recipe-book` 後端 API（`api/_supabaseAdmin.js` 的 `getSupabaseAdminForLine()`）指向獨立的
+`shared.line_links` 表，跟另外兩個 app 共用同一份 LINE 使用者對照清單。只要在任一個 app 連結過
+LINE，其他 app 就能即時識別並支援 LINE 自動免密碼登入。
+
+`line_links` 曾經放在 `calorie_tracker` schema（2026-06-29 回退），2026-07-01 找到 Supabase
+的 `PGRST106` exposed-schema bug 正確修法後搬回 `shared`，詳見根目錄
+[`docs/new-app-sop.md`](../../docs/new-app-sop.md) 第 3 節。
 
 ---
 
