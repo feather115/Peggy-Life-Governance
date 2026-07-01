@@ -2,6 +2,23 @@
 import React, { useState } from 'react';
 import { parseIngredients, parseNotes, parseSteps, parseYieldInfo } from '../utils.js';
 
+// 可編輯清單（步驟／心得／製作參數共用）。
+// value 可以是字串（steps/notes）或物件（parameters），用 set() 換整筆、用 patch() 改物件的部分欄位。
+// minOne=true（步驟/心得）：刪到只剩最後一行時自動補一個空行，UI 不會整段消失。
+// minOne=false（製作參數，選填欄位）：允許完全空白，跟原本「新食譜預設 0 行」的行為一致。
+function useEditableList(initialItems, makeEmpty, { minOne = true } = {}) {
+  const [items, setItems] = useState(() => (initialItems.length > 0 || !minOne ? initialItems : [makeEmpty()]));
+  const set = (idx, value) => setItems((prev) => prev.map((it, i) => (i === idx ? value : it)));
+  const patch = (idx, patchObj) => setItems((prev) => prev.map((it, i) => (i === idx ? { ...it, ...patchObj } : it)));
+  const add = () => setItems((prev) => [...prev, makeEmpty()]);
+  const remove = (idx) => setItems((prev) => {
+    const next = prev.filter((_, i) => i !== idx);
+    return next.length > 0 || !minOne ? next : [makeEmpty()];
+  });
+  const reset = (newItems) => setItems(newItems.length > 0 || !minOne ? newItems : [makeEmpty()]);
+  return { items, set, patch, add, remove, reset };
+}
+
 const S = {
   view: { padding: '6px 18px 24px' },
   title: { fontSize: 22, fontWeight: 900, color: '#3D281E', margin: 0 },
@@ -82,18 +99,12 @@ export default function RecipeForm({ recipe, onSave, onCancel, onDelete }) {
   const [ingredientSections, setIngredientSections] = useState(() => {
     return groupIngredientsToSections(parseIngredients(recipe?.ingredients));
   });
-  const [steps, setSteps] = useState(() => {
-    const parsed = parseSteps(recipe?.steps);
-    return parsed.length > 0 ? parsed.map((s) => s.text) : [''];
-  });
-  const [notes, setNotes] = useState(() => {
-    const parsed = parseNotes(recipe?.notes);
-    return parsed.length > 0 ? parsed : [''];
-  });
-  const [parameters, setParameters] = useState(() => {
-    const existing = paramsToList(recipe?.parameters);
-    return existing.length > 0 ? existing : [];
-  });
+  const stepsList = useEditableList(
+    parseSteps(recipe?.steps).map((s) => s.text),
+    () => '',
+  );
+  const notesList = useEditableList(parseNotes(recipe?.notes), () => '');
+  const paramsList = useEditableList(paramsToList(recipe?.parameters), emptyParameter, { minOne: false });
   const [isShared, setIsShared] = useState(!!recipe?.is_shared);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -125,15 +136,13 @@ export default function RecipeForm({ recipe, onSave, onCancel, onDelete }) {
       setIngredientSections(groupIngredientsToSections(parseIngredients(parsed.ingredients)));
     }
     if (parsed.steps !== undefined) {
-      const st = parseSteps(parsed.steps).map((s) => s.text);
-      setSteps(st.length > 0 ? st : ['']);
+      stepsList.reset(parseSteps(parsed.steps).map((s) => s.text));
     }
     if (parsed.notes !== undefined) {
-      const ns = parseNotes(parsed.notes);
-      setNotes(ns.length > 0 ? ns : ['']);
+      notesList.reset(parseNotes(parsed.notes));
     }
     if (parsed.parameters && typeof parsed.parameters === 'object') {
-      setParameters(paramsToList(parsed.parameters));
+      paramsList.reset(paramsToList(parsed.parameters));
     }
     setImportOpen(false);
     setImportText('');
@@ -179,28 +188,6 @@ export default function RecipeForm({ recipe, onSave, onCancel, onDelete }) {
     })));
   };
 
-  const updateStep = (idx, text) => setSteps((prev) => prev.map((s, i) => (i === idx ? text : s)));
-  const removeStep = (idx) => setSteps((prev) => {
-    const next = prev.filter((_, i) => i !== idx);
-    return next.length > 0 ? next : [''];
-  });
-  const addStep = () => setSteps((prev) => [...prev, '']);
-
-  const updateNote = (idx, text) => setNotes((prev) => prev.map((n, i) => (i === idx ? text : n)));
-  const removeNote = (idx) => setNotes((prev) => {
-    const next = prev.filter((_, i) => i !== idx);
-    return next.length > 0 ? next : [''];
-  });
-  const addNote = () => setNotes((prev) => [...prev, '']);
-
-  const updateParam = (idx, patch) => {
-    setParameters((prev) => prev.map((row, i) => (i === idx ? { ...row, ...patch } : row)));
-  };
-  const removeParam = (idx) => {
-    setParameters((prev) => prev.filter((_, i) => i !== idx));
-  };
-  const addParam = () => setParameters((prev) => [...prev, emptyParameter()]);
-
   const handleSave = async () => {
     setError('');
     if (!title.trim()) { setError('請輸入食譜名稱'); return; }
@@ -208,11 +195,11 @@ export default function RecipeForm({ recipe, onSave, onCancel, onDelete }) {
     const categoryArr = categoryText.split(/[,、，]/).map((s) => s.trim()).filter(Boolean);
     const yieldArr = yieldText.split(/[,、，]/).map((s) => s.trim()).filter(Boolean);
     const cleanIngredients = flattenSections(ingredientSections);
-    const stepsArr = steps.map((s) => s.trim()).filter(Boolean)
+    const stepsArr = stepsList.items.map((s) => s.trim()).filter(Boolean)
       .map((text, idx) => ({ text, type: '', sort: idx + 1 }));
-    const notesArr = notes.map((n) => n.trim()).filter(Boolean);
+    const notesArr = notesList.items.map((n) => n.trim()).filter(Boolean);
     const paramsObj = {};
-    parameters.forEach(({ key, value }) => {
+    paramsList.items.forEach(({ key, value }) => {
       const k = key.trim();
       if (k) paramsObj[k] = value;
     });
@@ -341,50 +328,50 @@ export default function RecipeForm({ recipe, onSave, onCancel, onDelete }) {
         <button type="button" style={{ ...S.addBtn, background: '#FFF3EB' }} onClick={addSection}>＋ 新增食材分區</button>
 
         <label style={S.label}>步驟</label>
-        {steps.map((text, idx) => (
+        {stepsList.items.map((text, idx) => (
           <div key={idx} style={{ display: 'grid', gap: 6, gridTemplateColumns: '24px 1fr 28px', alignItems: 'start', marginBottom: 6 }}>
             <div style={{ width: 24, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#E87A24', color: '#fff', borderRadius: '50%', fontSize: 12, fontWeight: 900 }}>
               {idx + 1}
             </div>
             <textarea
               value={text}
-              onChange={(e) => updateStep(idx, e.target.value)}
+              onChange={(e) => stepsList.set(idx, e.target.value)}
               placeholder={`步驟 ${idx + 1}`}
               rows={2}
               style={{ ...S.smallInput, fontFamily: 'inherit', lineHeight: 1.5, resize: 'vertical', minHeight: 38 }}
             />
-            <button type="button" style={S.rowBtn} onClick={() => removeStep(idx)} aria-label="刪除步驟">×</button>
+            <button type="button" style={S.rowBtn} onClick={() => stepsList.remove(idx)} aria-label="刪除步驟">×</button>
           </div>
         ))}
-        <button type="button" style={S.addBtn} onClick={addStep}>+ 新增一個步驟</button>
+        <button type="button" style={S.addBtn} onClick={stepsList.add}>+ 新增一個步驟</button>
 
         <label style={S.label}>心得備註（選填）</label>
-        {notes.map((text, idx) => (
+        {notesList.items.map((text, idx) => (
           <div key={idx} style={{ display: 'grid', gap: 6, gridTemplateColumns: '24px 1fr 28px', alignItems: 'start', marginBottom: 6 }}>
             <div style={{ width: 24, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#E87A24', fontSize: 16, fontWeight: 900 }}>
               ●
             </div>
             <textarea
               value={text}
-              onChange={(e) => updateNote(idx, e.target.value)}
+              onChange={(e) => notesList.set(idx, e.target.value)}
               placeholder="一條備註（例：小火慢炒避免焦黑）"
               rows={2}
               style={{ ...S.smallInput, fontFamily: 'inherit', lineHeight: 1.5, resize: 'vertical', minHeight: 38 }}
             />
-            <button type="button" style={S.rowBtn} onClick={() => removeNote(idx)} aria-label="刪除備註">×</button>
+            <button type="button" style={S.rowBtn} onClick={() => notesList.remove(idx)} aria-label="刪除備註">×</button>
           </div>
         ))}
-        <button type="button" style={S.addBtn} onClick={addNote}>+ 新增一條備註</button>
+        <button type="button" style={S.addBtn} onClick={notesList.add}>+ 新增一條備註</button>
 
         <label style={S.label}>製作參數（選填）</label>
-        {parameters.map((row, idx) => (
+        {paramsList.items.map((row, idx) => (
           <div key={idx} style={S.kvRow}>
-            <input style={S.smallInput} value={row.key} onChange={(e) => updateParam(idx, { key: e.target.value })} placeholder="名稱（例：烤箱溫度）" />
-            <input style={S.smallInput} value={row.value} onChange={(e) => updateParam(idx, { value: e.target.value })} placeholder="值（例：180°C）" />
-            <button type="button" style={S.rowBtn} onClick={() => removeParam(idx)} aria-label="刪除參數">×</button>
+            <input style={S.smallInput} value={row.key} onChange={(e) => paramsList.patch(idx, { key: e.target.value })} placeholder="名稱（例：烤箱溫度）" />
+            <input style={S.smallInput} value={row.value} onChange={(e) => paramsList.patch(idx, { value: e.target.value })} placeholder="值（例：180°C）" />
+            <button type="button" style={S.rowBtn} onClick={() => paramsList.remove(idx)} aria-label="刪除參數">×</button>
           </div>
         ))}
-        <button type="button" style={S.addBtn} onClick={addParam}>+ 新增一筆參數</button>
+        <button type="button" style={S.addBtn} onClick={paramsList.add}>+ 新增一筆參數</button>
 
         <label style={{ ...S.label, display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
           <input type="checkbox" checked={isShared} onChange={(e) => setIsShared(e.target.checked)} />

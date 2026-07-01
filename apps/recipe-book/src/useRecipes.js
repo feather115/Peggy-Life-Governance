@@ -149,6 +149,26 @@ export function useRecipes(userId) {
     window.history.pushState({ view: 'detail', recipeId: recipe.id }, '', buildUrl(recipe.id));
   }, []);
 
+  // 某道食譜的 cooking_history 有增減後，重新算出最新的 cooked_date 並同步回 recipes.last_cooked_at
+  // （只有自己的食譜才會寫回 DB；別人分享的食譜沒有寫入權限）
+  const syncLastCookedAt = useCallback((recipeId, nextRecords) => {
+    const recipe = recipes.find((r) => String(r.id) === String(recipeId));
+    if (!recipe || !userId || recipe.user_id !== userId) return;
+
+    const recipeRecords = nextRecords.filter((r) => String(r.recipe_id) === String(recipeId));
+    const latestDate = recipeRecords.length > 0
+      ? recipeRecords.reduce((max, r) => r.cooked_date.localeCompare(max) > 0 ? r.cooked_date : max, recipeRecords[0].cooked_date)
+      : null;
+
+    db.updateRecipe(recipeId, { last_cooked_at: latestDate })
+      .then((updated) => {
+        setRecipes((prevRecipes) => prevRecipes.map((r) => r.id === updated.id ? updated : r));
+      })
+      .catch((err) => {
+        console.warn('Failed to update last_cooked_at in DB:', err);
+      });
+  }, [userId, recipes]);
+
   const addCookRecord = useCallback(async (cookedOn, recipeId) => {
     let saved;
     try {
@@ -166,32 +186,10 @@ export function useRecipes(userId) {
         if (a.cooked_date !== b.cooked_date) return b.cooked_date.localeCompare(a.cooked_date);
         return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
       });
-
-      const recipe = recipes.find((r) => String(r.id) === String(recipeId));
-      if (recipe && userId && recipe.user_id === userId) {
-        const recipeRecords = nextRecords.filter((r) => String(r.recipe_id) === String(recipeId));
-        const latestDate = recipeRecords.length > 0
-          ? recipeRecords.reduce((max, r) => r.cooked_date.localeCompare(max) > 0 ? r.cooked_date : max, recipeRecords[0].cooked_date)
-          : null;
-
-        db.updateRecipe(recipeId, { last_cooked_at: latestDate })
-          .then((updated) => {
-            setRecipes((prevRecipes) => prevRecipes.map((r) => r.id === updated.id ? updated : r));
-          })
-          .catch((err) => {
-            console.warn('Failed to update last_cooked_at in DB:', err);
-          });
-      }
-
+      syncLastCookedAt(recipeId, nextRecords);
       return nextRecords;
     });
-  }, [userId, recipes]);
-
-  const setRecipeShared = useCallback(async (recipeId, isShared) => {
-    const updated = await db.setRecipeShared(recipeId, isShared);
-    setRecipes((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
-    return updated;
-  }, []);
+  }, [userId, syncLastCookedAt]);
 
   const saveRecipe = useCallback(async (payload, existingId) => {
     if (existingId) {
@@ -228,29 +226,13 @@ export function useRecipes(userId) {
       const recipeId = recordToRemove.recipe_id;
       setCookRecords((prev) => {
         const nextRecords = prev.filter((record) => record.id !== recordId);
-
-        const recipe = recipes.find((r) => String(r.id) === String(recipeId));
-        if (recipe && userId && recipe.user_id === userId) {
-          const recipeRecords = nextRecords.filter((r) => String(r.recipe_id) === String(recipeId));
-          const latestDate = recipeRecords.length > 0
-            ? recipeRecords.reduce((max, r) => r.cooked_date.localeCompare(max) > 0 ? r.cooked_date : max, recipeRecords[0].cooked_date)
-            : null;
-
-          db.updateRecipe(recipeId, { last_cooked_at: latestDate })
-            .then((updated) => {
-              setRecipes((prevRecipes) => prevRecipes.map((r) => r.id === updated.id ? updated : r));
-            })
-            .catch((err) => {
-              console.warn('Failed to update last_cooked_at in DB on delete:', err);
-            });
-        }
-
+        syncLastCookedAt(recipeId, nextRecords);
         return nextRecords;
       });
     } else {
       setCookRecords((prev) => prev.filter((record) => record.id !== recordId));
     }
-  }, [userId, recipes, cookRecords]);
+  }, [cookRecords, syncLastCookedAt]);
 
   const updateCookRecordNotes = useCallback(async (recordId, notes) => {
     try {
@@ -337,7 +319,6 @@ export function useRecipes(userId) {
     currentView, selectedRecipe,
     openRecipeDetail,
     addCookRecord, removeCookRecord, updateCookRecordNotes,
-    setRecipeShared,
     saveRecipe,
     deleteRecipeById,
     ownershipFilter, toggleOwnership,

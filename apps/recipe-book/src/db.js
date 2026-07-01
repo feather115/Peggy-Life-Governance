@@ -26,17 +26,6 @@ export async function loadRecipes() {
   return data.map(normalizeRecipe);
 }
 
-export async function setRecipeShared(recipeId, isShared) {
-  const { data, error } = await supabase
-    .from('recipes')
-    .update({ is_shared: isShared })
-    .eq('id', recipeId)
-    .select(RECIPE_SELECT_COLUMNS)
-    .single();
-  if (error) throw error;
-  return normalizeRecipe(data);
-}
-
 export async function createRecipe(userId, payload) {
   const { data, error } = await supabase
     .from('recipes')
