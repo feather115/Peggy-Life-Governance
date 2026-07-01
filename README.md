@@ -9,6 +9,9 @@ Monorepo，包含兩個獨立的 app，各自部署到不同的 Vercel 專案。
 
 每個 app 的設定、開發、部署細節請看各自資料夾裡的 README。
 
+> 想加第三個 app？照 [`docs/new-app-sop.md`](./docs/new-app-sop.md) 的 SOP 做，
+> 會自動跟現有兩個 app 風格一致（目錄結構、Supabase schema 隔離、狀態中樞模式、部署設定）。
+
 ## 安裝
 
 ```bash
