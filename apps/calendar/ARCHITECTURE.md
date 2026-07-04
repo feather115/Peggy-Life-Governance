@@ -185,7 +185,8 @@ createAppSupabase({ schema: 'calendar' })
 
 三張表，都在 `calendar` schema：
 
-### `events`（完整 SQL 見 `supabase/schema.sql` + `2026-07-02_event_color_tags.sql`）
+### `events`（完整 SQL 見 `supabase/schema.sql` + `2026-07-02_event_color_tags.sql` +
+`2026-07-04_event_location.sql`）
 
 | 欄位 | 型別 | 用途 |
 |---|---|---|
@@ -193,6 +194,7 @@ createAppSupabase({ schema: 'calendar' })
 | `user_id` | uuid → `auth.users(id)` | 事件擁有者（CASCADE） |
 | `title` | text | 事件標題 |
 | `description` | text | 備註（選填） |
+| `location` | text | 地點（選填，Day 檢視顯示在描述上方，帶 📍） |
 | `start_at` | timestamptz | 開始時間 |
 | `end_at` | timestamptz | 結束時間（選填） |
 | `all_day` | boolean | 是否為全天事件 |
@@ -279,9 +281,10 @@ createAppSupabase({ schema: 'calendar' })
 | `2026-07-02_event_color_tags.sql` | `events` 加 `color`、`tags` 欄位（Phase 1 視覺改版） |
 | `2026-07-02_diary.sql` | 建 `diary_entries` + `tag_categories` 表 + RLS（Phase 2 日記功能） |
 | `2026-07-02_tasks.sql` | 建 `tasks` 表 + RLS（Phase 3 週期性任務） |
+| `2026-07-04_event_location.sql` | `events` 加 `location` 欄位 |
 
 > 新環境依序跑：`schema.sql` → `2026-07-02_event_color_tags.sql` → `2026-07-02_diary.sql`
-> → `2026-07-02_tasks.sql`。之後有新欄位/新表再依日期新增檔案，格式跟其他 app 一致：
+> → `2026-07-02_tasks.sql` → `2026-07-04_event_location.sql`。之後有新欄位/新表再依日期新增檔案，格式跟其他 app 一致：
 > `YYYY-MM-DD_描述.sql`。
 
 ---

@@ -53,6 +53,7 @@ export default function EventForm({ event, defaultDateKey, allEvents = [], onSav
   const [tags, setTags] = useState(event?.tags || []);
   const [tagDraft, setTagDraft] = useState('');
   const [description, setDescription] = useState(event?.description || '');
+  const [location, setLocation] = useState(event?.location || '');
   const [allDay, setAllDay] = useState(!!event?.all_day);
   const [startValue, setStartValue] = useState(
     event ? toDatetimeLocalValue(event.start_at) : defaultStartValue(defaultDateKey),
@@ -109,6 +110,7 @@ export default function EventForm({ event, defaultDateKey, allEvents = [], onSav
     const payload = {
       title: title.trim(),
       description: description.trim() || null,
+      location: location.trim() || null,
       all_day: allDay,
       start_at: fromDatetimeLocalValue(allDay ? `${startValue.slice(0, 10)}T00:00` : startValue),
       end_at: endValue ? fromDatetimeLocalValue(allDay ? `${endValue.slice(0, 10)}T00:00` : endValue) : null,
@@ -206,6 +208,11 @@ export default function EventForm({ event, defaultDateKey, allEvents = [], onSav
           />
           {endValue && <button type="button" style={S.clearBtn} onClick={() => setEndValue('')}>清除</button>}
         </div>
+      </div>
+
+      <div style={S.field}>
+        <div style={S.label}>地點 <span style={{ color: THEME.textFaint }}>(選填)</span></div>
+        <input style={S.input} value={location} onChange={(e) => setLocation(e.target.value)} placeholder="例如：台大醫院" />
       </div>
 
       <div style={S.field}>

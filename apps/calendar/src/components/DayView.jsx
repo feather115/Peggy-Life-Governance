@@ -61,6 +61,7 @@ export default function DayView({ dateKey, onShiftDay, eventsByDate, entriesByDa
                   <span style={S.time}>{ev.all_day ? '全天' : formatTime(ev.start_at)}</span>
                   <span style={S.eventTitle}>{ev.title}</span>
                 </div>
+                {ev.location && <div style={S.desc}>📍 {ev.location}</div>}
                 {ev.description && <div style={S.desc}>{ev.description}</div>}
                 {tags.length > 0 && (
                   <div style={S.tagsRow}>

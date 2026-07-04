@@ -6,6 +6,7 @@ const EVENT_COLUMNS = [
   'user_id',
   'title',
   'description',
+  'location',
   'start_at',
   'end_at',
   'all_day',
