@@ -313,6 +313,19 @@ export function useRecipes(userId) {
     [recipesWithLastCooked, selectedCategory, searchQuery, ownershipFilter, userId, myLikedSet],
   );
 
+  const myDisplayName = displayNamesMap.get(userId)?.display_name || '';
+
+  const setMyDisplayName = useCallback(async (name) => {
+    if (!userId) throw new Error('要登入才能設定暱稱');
+    const trimmed = name.trim();
+    const updated = await db.updateDisplayName(userId, trimmed || null);
+    setDisplayNameRows((prev) => {
+      const exists = prev.some((r) => r.user_id === updated.user_id);
+      return exists ? prev.map((r) => (r.user_id === updated.user_id ? updated : r)) : [...prev, updated];
+    });
+    return updated;
+  }, [userId]);
+
   const toggleLike = useCallback(async (recipeId) => {
     if (!userId) throw new Error('要登入才能按讚');
     const alreadyLiked = myLikedSet.has(recipeId);
@@ -348,6 +361,7 @@ export function useRecipes(userId) {
     deleteRecipeById,
     ownershipFilter, toggleOwnership,
     likeCounts, myLikedSet, toggleLike, likerNamesByRecipe,
+    myDisplayName, setMyDisplayName,
     isGuest,
   };
 }

@@ -78,13 +78,17 @@ src/
 ├── App.jsx                        # 520px 行動外殼 + 載入 recipes 與 view 導覽切換
 ├── supabase.js                    # re-export 共用 supabase client
 ├── liff.js                        # LINE LIFF 初始化與自動登入/帳號綁定邏輯
-├── db.js                          # Supabase 查詢（loadRecipes）
-├── utils.js                       # normalize / filter / parse / formatDate
-├── useRecipes.js                  # 狀態中樞（清單、搜尋、分類、URL 同步等）
+├── db.js                          # Supabase 查詢（食譜/按讚/料理紀錄/使用者暱稱 CRUD）
+├── utils.js                       # normalize / filter / parse / formatDate / displayNameFor
+├── useRecipes.js                  # 狀態中樞（清單、搜尋、分類、URL 同步、按讚、暱稱等）
 └── components/
     ├── Auth.jsx                   # Email / 密碼與 LINE 快速登入頁面
+    ├── TabBar.jsx                 # 底部導覽（食譜 / 行事曆 / 設定）
     ├── RecipeCatalog.jsx          # 食譜清單、搜尋、分類 tab（全 inline styles）
-    └── RecipeDetail.jsx           # 單一食譜的食材、步驟、參數頁，含返回按鈕（全 inline styles）
+    ├── RecipeDetail.jsx           # 單一食譜的食材、步驟、參數、按讚、誰按讚（全 inline styles）
+    ├── RecipeForm.jsx             # 新增/編輯食譜表單
+    ├── CookCalendar.jsx           # 料理行事曆分頁
+    └── SettingsTab.jsx            # 設定分頁：帳號、暱稱、LINE 連結、登出
 ```
 
 ---

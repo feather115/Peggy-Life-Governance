@@ -42,6 +42,7 @@ Supabase ⇄ db.js ⇄ useRecipes.js ⇄ App.jsx ⇄ Root.jsx (Auth gate / LIFF)
 | **LINE LIFF 初始化與登入** | `src/liff.js` |
 | **Email/密碼與 LINE 自動登入閘口** | `src/Root.jsx` |
 | **Email 登入/註冊/重設密碼頁面** | `src/components/Auth.jsx` |
+| **設定頁（暱稱、LINE 帳號連結、登出）** | `src/components/SettingsTab.jsx` |
 | **URL 同步（?recipe=xxx 支援直連）** | `src/useRecipes.js` → `syncViewWithUrl()` / `openRecipeDetail()` |
 | **主頁外殼與載入中畫面** | `src/App.jsx` |
 
@@ -55,7 +56,8 @@ Supabase ⇄ db.js ⇄ useRecipes.js ⇄ App.jsx ⇄ Root.jsx (Auth gate / LIFF)
 - **`src/App.jsx`** — 行動載具外殼（`maxWidth: 520`），載入 `useRecipes()` 並切換 `RecipeCatalog` / `RecipeDetail`。
 - **`src/useRecipes.js`** — ⭐ **狀態中樞**。載入食譜、搜尋/分類篩選、catalog ↔ detail 導覽（含 URL 同步 `?recipe=xxx`）、
   按讚 `likeCounts`/`myLikedSet`/`likerNamesByRecipe`（誰按讚的名字清單，見下方設計重點）。
-- **`src/liff.js`** — LINE LIFF 初始化、LINE 自動登入及帳號綁定。
+- **`src/liff.js`** — LINE LIFF 初始化、LINE 自動登入及帳號綁定、`checkLineLinked()`
+  （查詢目前帳號是否已綁定 LINE，給 `SettingsTab.jsx` 的 `LineLinker` 用）。
 - **`src/db.js`** — Supabase 的純查詢函式（`loadRecipes`、按讚 CRUD、`loadDisplayNames`/`updateDisplayName`）。
 - **`src/supabase.js`** — re-export `@peggy-life/shared` 的 supabase client（`schema: 'recipe_book'`）。
 
@@ -63,6 +65,12 @@ Supabase ⇄ db.js ⇄ useRecipes.js ⇄ App.jsx ⇄ Root.jsx (Auth gate / LIFF)
 - **`RecipeCatalog.jsx`** — 食譜清單：頂部 header（Peggy logo + 登出按鈕 + 食譜數）、搜尋欄、分類 tab、雙欄食譜網格。全 inline styles。
 - **`RecipeDetail.jsx`** — 食譜詳情：返回按鈕、食材、工序、心得、重點參數。全 inline styles。
 - **`Auth.jsx`** — 登入介面：Email + 密碼登入、註冊、忘記密碼。與 calorie-tracker 風格一致。
+- **`SettingsTab.jsx`** — 設定分頁（`TabBar` 第三個 tab，訪客模式隱藏）：帳號 email（LINE
+  登入的假 email 遮罩成 `LINE: U1234...wxyz`）、暱稱輸入框+儲存（呼叫 `useRecipes.js` 的
+  `setMyDisplayName`，寫入 `recipe_book.user_settings.display_name`）、`LineLinker`
+  （內部元件，跟 calorie-tracker/calendar 的 `LineLinker` 同一套設計：`checkLineLinked()`
+  查到已連結會快取進 `localStorage`，避免畫面閃爍；「連結 LINE 帳號」按鈕只有
+  `canLinkLine()` 為 true 才顯示）、登出按鈕。
 
 ---
 
@@ -186,6 +194,12 @@ RLS：每個人只能 select/insert/update/delete 自己 `user_id` 的列。
 `recipe-book` 後端 API（`api/_supabaseAdmin.js` 的 `getSupabaseAdminForLine()`）指向獨立的
 `shared.line_links` 表，跟另外兩個 app 共用同一份 LINE 使用者對照清單。只要在任一個 app 連結過
 LINE，其他 app 就能即時識別並支援 LINE 自動免密碼登入。
+
+`api/` 底下跟 LINE 有關的檔案：`_lineLogin.js`/`line-login.js`（LIFF 自動登入）、
+`_lineLink.js`/`line-link.js`（把目前登入的帳號綁定到這個 LINE 身份）、
+`_lineLinkStatus.js`/`line-link-status.js`（查詢目前帳號是否已綁定，給
+`SettingsTab.jsx` 的 `LineLinker` 顯示「已連結」狀態用）、`_lineVerify.js`
+（驗證 LINE ID token）、`_supabaseAdmin.js`（admin client 工廠）。
 
 `line_links` 曾經放在 `calorie_tracker` schema（2026-06-29 回退），2026-07-01 找到 Supabase
 的 `PGRST106` exposed-schema bug 正確修法後搬回 `shared`，詳見根目錄

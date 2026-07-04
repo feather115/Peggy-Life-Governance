@@ -5,6 +5,7 @@ import CookCalendar from './components/CookCalendar.jsx';
 import RecipeCatalog from './components/RecipeCatalog.jsx';
 import RecipeDetail from './components/RecipeDetail.jsx';
 import RecipeForm from './components/RecipeForm.jsx';
+import SettingsTab from './components/SettingsTab.jsx';
 import TabBar from './components/TabBar.jsx';
 
 function Centered({ children, color = '#6E8B7C' }) {
@@ -134,12 +135,21 @@ export default function App({ session, onSignOut, onExitGuest }) {
             {tab === 'calendar' && recipes.isGuest && (
               <Centered color="#8E7568">登入後才能使用料理行事曆</Centered>
             )}
+
+            {tab === 'settings' && !recipes.isGuest && (
+              <SettingsTab
+                session={session}
+                myDisplayName={recipes.myDisplayName}
+                onSetDisplayName={recipes.setMyDisplayName}
+                onSignOut={onSignOut}
+              />
+            )}
           </>
         )}
       </div>
 
       {!editing && (
-        <TabBar tab={tab} onTab={setTab} hideTabs={recipes.isGuest ? ['calendar'] : []} />
+        <TabBar tab={tab} onTab={setTab} hideTabs={recipes.isGuest ? ['calendar', 'settings'] : []} />
       )}
     </div>
   );

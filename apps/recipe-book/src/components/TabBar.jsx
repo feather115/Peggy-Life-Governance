@@ -4,6 +4,7 @@ import React from 'react';
 const TABS = [
   { key: 'recipes', label: '食譜' },
   { key: 'calendar', label: '行事曆' },
+  { key: 'settings', label: '設定' },
 ];
 
 export default function TabBar({ tab, onTab, hideTabs = [] }) {
