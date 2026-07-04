@@ -13,8 +13,8 @@ export function useEvents(userId) {
   const [loaded, setLoaded] = useState(false);
   const [loadError, setLoadError] = useState('');
 
-  // 檢視模式（月/週/日）
-  const [view, setView] = useState('month');
+  // 檢視模式（月/週/日）——預設開日檢視，開啟 app 直接看「今天要幹嘛」比看整個月曆有用
+  const [view, setView] = useState('day');
   // anchorKey：目前檢視「翻頁翻到哪」（月檢視=哪個月、週檢視=哪一週、日檢視=哪一天）
   const [anchorKey, setAnchorKey] = useState(todayKey());
   // selectedDateKey：目前「選中/聚焦」的單一天——月檢視點日期只會改這個（不會離開月檢視），

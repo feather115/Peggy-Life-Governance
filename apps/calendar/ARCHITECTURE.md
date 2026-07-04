@@ -76,7 +76,8 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
   對應表單；header 有一顆 ⚙ 齒輪按鈕開 `showSettings`，`showSettings` 底下再依
   `managingTags` 切換 `Settings.jsx`（清單）或 `ManageTags.jsx`（實際管理畫面）。
 - **`src/useEvents.js`** — ⭐ **事件狀態中樞**。載入事件、`eventsByDate`（依日期分組）、
-  `view`（月/週/日/任務）、`anchorKey`（目前翻頁翻到哪個月/週/天）、`selectedDateKey`
+  `view`（月/週/日/任務，**預設 `'day'`**——開 app 直接看「今天要幹嘛」，不是先看整個
+  月曆）、`anchorKey`（目前翻頁翻到哪個月/週/天）、`selectedDateKey`
   （月檢視裡選中的單一天，跟 `anchorKey` 分開存，翻月曆不會弄丟選中的日期）、
   `openDay(dateKey)`（月/週檢視點下去統一走這條：對齊 anchor + selected + 切到日檢視）、
   新增/編輯/刪除 action。
@@ -111,9 +112,12 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
 - **`MonthView.jsx`** — 格線月曆，日期下方顯示事件顏色圓點（最多 3 個不同色）+ 日記圓點
   （固定用 `theme.primaryDark`）+ 任務小方點（`theme.textMuted`），圖例列說明三種點
   代表什麼。點日期只會「選中」（`onSelectDay`），不離開月檢視；下方的「選中日摘要卡」
-  顯示該天的合併時間軸，點摘要卡標題才會呼叫 `onOpenDay` 跳去日檢視。
+  顯示該天的合併時間軸，每個事件/日記項目下方如果有地點/同伴會多一行 `metaLine()`
+  （📍 地點 · 👤 同伴，事件只有地點沒有同伴），點摘要卡標題才會呼叫 `onOpenDay`
+  跳去日檢視。
 - **`WeekView.jsx`** — 一週 7 天直向列表，每天顯示事件+日記+到期任務合併時間軸，
-  點某一天呼叫 `onOpenDay` 跳去日檢視。
+  同樣用 `metaLine()` 在每個項目下方補一行地點/同伴，點某一天呼叫 `onOpenDay`
+  跳去日檢視。
 - **`DayView.jsx`** — 單日事件+日記+任務合併時間軸（`buildDayTimeline`），事件卡片顯示
   顏色點/時間/標題/描述/標籤，日記卡片顯示時間/標籤（依分類上色）/地點/同伴/心情筆記，
   任務卡片顯示虛線邊框+核取方塊圖示（點擊呼叫 `onGoToTasks` 切到任務檢視，不能直接在

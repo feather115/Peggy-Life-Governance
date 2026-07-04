@@ -31,13 +31,22 @@ const DetailCardStyle = {
   cardHeaderTitle: { fontSize: 14, fontWeight: 700, color: THEME.textDark },
   todayBadge: { fontSize: 11, fontWeight: 700, color: '#fff', background: THEME.primary, padding: '2px 7px', borderRadius: 999 },
   cardHeaderLink: { fontSize: 13, color: THEME.primary, fontWeight: 600 },
-  cardBody: { padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 6 },
+  cardBody: { padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 4 },
   empty: { fontSize: 13, color: THEME.textFaint, padding: '8px 0' },
-  itemRow: { display: 'flex', gap: 8, fontSize: 13, padding: '2px 0', alignItems: 'center' },
+  item: { padding: '2px 0' },
+  itemRow: { display: 'flex', gap: 8, fontSize: 13, alignItems: 'center' },
   itemDot: { width: 8, height: 8, borderRadius: '50%', flexShrink: 0 },
   itemTime: { color: THEME.textMuted, minWidth: 36 },
   itemTitle: { color: THEME.textDark },
+  itemMeta: { fontSize: 11, color: THEME.textMuted, marginLeft: 44 },
 };
+
+function metaLine(location, people) {
+  const parts = [];
+  if (location) parts.push(`📍 ${location}`);
+  if (people && people.length > 0) parts.push(`👤 ${people.join('、')}`);
+  return parts.length > 0 ? parts.join(' · ') : null;
+}
 
 export default function MonthView({ anchorKey, onAnchorChange, selectedDateKey, onSelectDay, onOpenDay, eventsByDate, entriesByDate, tasksByDueDate }) {
   const anchor = parseDateKey(anchorKey);
@@ -138,30 +147,40 @@ export default function MonthView({ anchorKey, onAnchorChange, selectedDateKey, 
           ) : selectedTimeline.map((item) => {
             if (item.kind === 'event') {
               const ev = item.data;
+              const meta = metaLine(ev.location, null);
               return (
-                <div key={`ev-${ev.id}`} style={DetailCardStyle.itemRow}>
-                  <span style={{ ...DetailCardStyle.itemDot, background: ev.color || THEME.primary }} />
-                  <span style={DetailCardStyle.itemTime}>{ev.all_day ? '全天' : formatTime(ev.start_at)}</span>
-                  <span style={DetailCardStyle.itemTitle}>{ev.title}</span>
+                <div key={`ev-${ev.id}`} style={DetailCardStyle.item}>
+                  <div style={DetailCardStyle.itemRow}>
+                    <span style={{ ...DetailCardStyle.itemDot, background: ev.color || THEME.primary }} />
+                    <span style={DetailCardStyle.itemTime}>{ev.all_day ? '全天' : formatTime(ev.start_at)}</span>
+                    <span style={DetailCardStyle.itemTitle}>{ev.title}</span>
+                  </div>
+                  {meta && <div style={DetailCardStyle.itemMeta}>{meta}</div>}
                 </div>
               );
             }
             if (item.kind === 'diary') {
               const entry = item.data;
+              const meta = metaLine(entry.location, entry.people);
               return (
-                <div key={`di-${entry.id}`} style={DetailCardStyle.itemRow}>
-                  <span style={{ ...DetailCardStyle.itemDot, background: THEME.primaryDark }} />
-                  <span style={DetailCardStyle.itemTime}>{formatDiaryTime(entry)}</span>
-                  <span style={DetailCardStyle.itemTitle}>{(entry.tags || []).join('、') || '日記'}</span>
+                <div key={`di-${entry.id}`} style={DetailCardStyle.item}>
+                  <div style={DetailCardStyle.itemRow}>
+                    <span style={{ ...DetailCardStyle.itemDot, background: THEME.primaryDark }} />
+                    <span style={DetailCardStyle.itemTime}>{formatDiaryTime(entry)}</span>
+                    <span style={DetailCardStyle.itemTitle}>{(entry.tags || []).join('、') || '日記'}</span>
+                  </div>
+                  {meta && <div style={DetailCardStyle.itemMeta}>{meta}</div>}
                 </div>
               );
             }
             const t = item.data;
             return (
-              <div key={`task-${t.id}`} style={DetailCardStyle.itemRow}>
-                <span style={{ width: 8, height: 8, borderRadius: 1, background: THEME.textMuted, flexShrink: 0 }} />
-                <span style={DetailCardStyle.itemTime}>☐</span>
-                <span style={DetailCardStyle.itemTitle}>{t.title}</span>
+              <div key={`task-${t.id}`} style={DetailCardStyle.item}>
+                <div style={DetailCardStyle.itemRow}>
+                  <span style={{ width: 8, height: 8, borderRadius: 1, background: THEME.textMuted, flexShrink: 0 }} />
+                  <span style={DetailCardStyle.itemTime}>☐</span>
+                  <span style={DetailCardStyle.itemTitle}>{t.title}</span>
+                </div>
               </div>
             );
           })}
