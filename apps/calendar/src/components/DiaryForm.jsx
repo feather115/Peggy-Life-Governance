@@ -42,7 +42,8 @@ export default function DiaryForm({ entry, dateKey, categories, onSave, onDelete
   const [allDay, setAllDay] = useState(!!entry?.all_day);
   const [time, setTime] = useState(entry?.time || (() => {
     const now = new Date();
-    return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    const roundedMinutes = now.getMinutes() < 30 ? 0 : 30;
+    return `${String(now.getHours()).padStart(2, '0')}:${String(roundedMinutes).padStart(2, '0')}`;
   })());
   const [endTime, setEndTime] = useState(entry?.end_time || '');
   const [location, setLocation] = useState(entry?.location || '');
