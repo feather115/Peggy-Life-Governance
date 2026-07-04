@@ -48,6 +48,7 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
 | **月/週/日/任務切換 tab、回到今天** | `src/components/ViewTabs.jsx` |
 | **新增/編輯事件表單（標題、顏色、標籤、標題建議、全天、時間、備註、刪除）** | `src/components/EventForm.jsx` |
 | **新增/編輯日記表單（分類標籤選擇、時間、地點、和誰在一起、心情筆記）** | `src/components/DiaryForm.jsx` |
+| **設定頁入口（清單，目前只有一項）** | `src/components/Settings.jsx` |
 | **管理分類與標籤（改名/刪除分類、新增/刪除標籤）** | `src/components/ManageTags.jsx` |
 | **任務列表（狀態顯示、標記完成、歷史紀錄、刪除）** | `src/components/TasksView.jsx` |
 | **新增/編輯任務表單（標題、重複間隔、到期日、是否顯示在行事曆）** | `src/components/TaskForm.jsx` |
@@ -60,7 +61,7 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
 | **事件狀態中樞（事件清單、檢視模式、月/週/日/任務翻頁與選中日）** | `src/useEvents.js` |
 | **日記狀態中樞（日記清單、分類標籤、預設分類種子）** | `src/useDiary.js` |
 | **任務狀態中樞（任務清單、標記完成與下次到期日運算）** | `src/useTasks.js` |
-| **主外殼、editing/editingDiary/managingTags/editingTask state** | `src/App.jsx` |
+| **主外殼、editing/editingDiary/showSettings/managingTags/editingTask state** | `src/App.jsx` |
 
 ---
 
@@ -70,7 +71,9 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
 - **`src/main.jsx`** — 進入點，呼叫 `initLiff()` 完成後掛載 `<Root/>`。
 - **`src/Root.jsx`** — 檢查 `.env` → 執行 LINE 自動登入 / Email 登入驗證 → 已登入則載入 `<App/>`。
 - **`src/App.jsx`** — 520px 置中外殼，同時載入 `useEvents()` + `useDiary()` + `useTasks()`，
-  依四個 editing state（互斥）切換「月/週/日/任務檢視」或對應表單。
+  依 editing/editingDiary/showSettings/editingTask（互斥）切換「月/週/日/任務檢視」或
+  對應表單；header 有一顆 ⚙ 齒輪按鈕開 `showSettings`，`showSettings` 底下再依
+  `managingTags` 切換 `Settings.jsx`（清單）或 `ManageTags.jsx`（實際管理畫面）。
 - **`src/useEvents.js`** — ⭐ **事件狀態中樞**。載入事件、`eventsByDate`（依日期分組）、
   `view`（月/週/日/任務）、`anchorKey`（目前翻頁翻到哪個月/週/天）、`selectedDateKey`
   （月檢視裡選中的單一天，跟 `anchorKey` 分開存，翻月曆不會弄丟選中的日期）、
@@ -121,10 +124,15 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
   全天開關（切換 `date`/`datetime-local`）、開始/結束時間、描述、刪除（兩段確認）。
 - **`DiaryForm.jsx`** — 新增/編輯單筆日記：已選標籤即時預覽、全天切換、時間/結束時間、
   地點、和誰在一起（逗號/頓號分隔的文字輸入，存入前轉成陣列）、心情筆記、依分類分組的
-  標籤選擇卡片（點擊 toggle 選取狀態）、「管理分類與標籤」連結、刪除（兩段確認）。
+  標籤選擇卡片（點擊 toggle 選取狀態）、刪除（兩段確認）。**不含**「管理分類與標籤」
+  入口——那個入口移到設定頁了（見下）。
+- **`Settings.jsx`** — 設定頁清單，從 header ⚙ 按鈕進入，目前只有一列「管理分類與標籤」，
+  點下去切到 `ManageTags.jsx`；之後有新設定項目直接加在這個清單裡。
 - **`ManageTags.jsx`** — 管理分類與標籤：點分類名稱進入改名模式（Enter/失焦確認）、
   刪除分類（兩段確認，會連動清掉既有日記裡用到這些標籤的紀錄，見 `useDiary.js`
-  的 `deleteCategory`）、每個分類卡片內新增/刪除標籤、底部新增分類。
+  的 `deleteCategory`）、每個分類卡片內新增/刪除標籤、底部新增分類。原本是從日記表單
+  裡的連結進入，現在改成設定頁底下的子頁（`App.jsx` 的 `showSettings` + `managingTags`
+  兩層 state），因為塞在日記表單流程裡不容易發現、也跟「寫日記」這個當下動作無關。
 - **`TasksView.jsx`** — 任務列表，依到期日排序，狀態文字依 `diffDays` 顯示「已逾期 N 天」
   （紅）/「今天到期」（主色）/「N 天後到期」（灰）。每筆有「標記完成」（點開會出現日期
   選擇器，預設今天，確認後呼叫 `onConfirmComplete`）、「歷史紀錄 (N)」（有完成過才顯示，

@@ -31,12 +31,11 @@ const S = {
   tagWrap: { display: 'flex', flexWrap: 'wrap', gap: 8 },
   tagChip: (selected) => ({ cursor: 'pointer', padding: '9px 15px', borderRadius: 999, background: selected ? THEME.primary : THEME.surfaceAlt, color: selected ? '#fff' : THEME.textDark, fontSize: 13, fontWeight: selected ? 700 : 500, boxShadow: selected ? '0 4px 10px rgba(61,90,128,.28)' : 'none' }),
   emptyCategory: { fontSize: 12, color: THEME.textFaint },
-  manageLink: { marginTop: 24, textAlign: 'center', fontSize: 13, fontWeight: 600, color: THEME.primary, cursor: 'pointer' },
-  deleteLink: (confirming) => ({ marginTop: 16, textAlign: 'center', fontSize: 13, fontWeight: 600, color: confirming ? THEME.error : THEME.textMuted, cursor: 'pointer' }),
+  deleteLink: (confirming) => ({ marginTop: 24, textAlign: 'center', fontSize: 13, fontWeight: 600, color: confirming ? THEME.error : THEME.textMuted, cursor: 'pointer' }),
   errorBox: { background: THEME.errorBg, color: THEME.error, padding: '10px 12px', borderRadius: THEME.radiusSm, fontSize: 13, fontWeight: 600, marginBottom: 16 },
 };
 
-export default function DiaryForm({ entry, dateKey, categories, onSave, onDelete, onCancel, onManageTags }) {
+export default function DiaryForm({ entry, dateKey, categories, onSave, onDelete, onCancel }) {
   const isEdit = !!entry;
 
   const [allDay, setAllDay] = useState(!!entry?.all_day);
@@ -168,8 +167,6 @@ export default function DiaryForm({ entry, dateKey, categories, onSave, onDelete
             </div>
           ))}
         </div>
-
-        <div style={S.manageLink} onClick={onManageTags}>✎ 管理分類與標籤</div>
 
         {isEdit && onDelete && (
           <div style={S.deleteLink(confirmDelete)} onClick={handleDelete}>

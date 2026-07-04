@@ -13,6 +13,7 @@ import TasksView from './components/TasksView.jsx';
 import EventForm from './components/EventForm.jsx';
 import DiaryForm from './components/DiaryForm.jsx';
 import ManageTags from './components/ManageTags.jsx';
+import Settings from './components/Settings.jsx';
 import TaskForm from './components/TaskForm.jsx';
 
 function Centered({ children, color = THEME.primary }) {
@@ -33,6 +34,7 @@ export default function App({ session, onSignOut }) {
   const [editing, setEditing] = useState(null);
   // editingDiary: null | { mode: 'create', dateKey } | { mode: 'edit', entry }
   const [editingDiary, setEditingDiary] = useState(null);
+  const [showSettings, setShowSettings] = useState(false);
   const [managingTags, setManagingTags] = useState(false);
   // editingTask: null | { mode: 'create' } | { mode: 'edit', task }
   const [editingTask, setEditingTask] = useState(null);
@@ -98,20 +100,28 @@ export default function App({ session, onSignOut }) {
         onSave={handleSaveDiary}
         onDelete={editingDiary.mode === 'edit' ? handleDeleteDiary : null}
         onCancel={() => setEditingDiary(null)}
-        onManageTags={() => setManagingTags(true)}
       />
     )
-    : managingTags
+    : showSettings
     ? (
-      <ManageTags
-        categories={diary.categories}
-        onRenameCategory={diary.renameCategory}
-        onDeleteCategory={diary.deleteCategory}
-        onAddTag={diary.addTagToCategory}
-        onRemoveTag={diary.removeTagFromCategory}
-        onAddCategory={diary.addCategory}
-        onClose={() => setManagingTags(false)}
-      />
+      managingTags
+        ? (
+          <ManageTags
+            categories={diary.categories}
+            onRenameCategory={diary.renameCategory}
+            onDeleteCategory={diary.deleteCategory}
+            onAddTag={diary.addTagToCategory}
+            onRemoveTag={diary.removeTagFromCategory}
+            onAddCategory={diary.addCategory}
+            onClose={() => setManagingTags(false)}
+          />
+        )
+        : (
+          <Settings
+            onClose={() => setShowSettings(false)}
+            onManageTags={() => setManagingTags(true)}
+          />
+        )
     )
     : editingTask
     ? (
@@ -145,7 +155,10 @@ export default function App({ session, onSignOut }) {
         <>
           <header style={{ padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: THEME.surface }}>
             <h1 style={{ fontSize: 18, fontWeight: 700, color: THEME.textDark, margin: 0 }}>TY Calendar</h1>
-            <button onClick={onSignOut} style={{ border: 'none', background: 'none', color: THEME.textMuted, fontWeight: 600, fontSize: 13, cursor: 'pointer', outline: 'none' }}>登出</button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              <button onClick={() => setShowSettings(true)} aria-label="設定" style={{ border: 'none', background: 'none', color: THEME.textMuted, fontSize: 18, cursor: 'pointer', outline: 'none', lineHeight: 1 }}>⚙</button>
+              <button onClick={onSignOut} style={{ border: 'none', background: 'none', color: THEME.textMuted, fontWeight: 600, fontSize: 13, cursor: 'pointer', outline: 'none' }}>登出</button>
+            </div>
           </header>
 
           <ViewTabs view={cal.view} onChange={cal.setView} onToday={cal.goToday} />
