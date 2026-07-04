@@ -1,4 +1,4 @@
-// 月/週/日檢視切換 + 回到今天。
+// 月/週/日/任務切換 + 回到今天（任務檢視沒有「今天」的概念，不顯示該按鈕）。
 import React from 'react';
 import { THEME } from '../theme.js';
 
@@ -6,6 +6,7 @@ const TABS = [
   { key: 'month', label: '月' },
   { key: 'week', label: '週' },
   { key: 'day', label: '日' },
+  { key: 'tasks', label: '任務' },
 ];
 
 const S = {
@@ -36,7 +37,7 @@ export default function ViewTabs({ view, onChange, onToday }) {
           </button>
         ))}
       </div>
-      <button type="button" onClick={onToday} style={S.todayBtn}>今天</button>
+      {view !== 'tasks' && <button type="button" onClick={onToday} style={S.todayBtn}>今天</button>}
     </div>
   );
 }

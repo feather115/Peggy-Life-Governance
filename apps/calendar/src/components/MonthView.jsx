@@ -4,6 +4,8 @@ import React, { useMemo } from 'react';
 import { DOW, buildDayTimeline, dateKeyFrom, formatDiaryTime, formatTime, getMonthDays, monthLabel, parseDateKey, todayKey } from '../utils.js';
 import { THEME } from '../theme.js';
 
+const taskDotStyle = { width: 6, height: 6, borderRadius: 1, background: THEME.textMuted };
+
 const S = {
   panel: { background: THEME.surface, borderRadius: THEME.radius, padding: 14, margin: '6px 20px 0', boxShadow: THEME.shadow },
   header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
@@ -37,7 +39,7 @@ const DetailCardStyle = {
   itemTitle: { color: THEME.textDark },
 };
 
-export default function MonthView({ anchorKey, onAnchorChange, selectedDateKey, onSelectDay, onOpenDay, eventsByDate, entriesByDate }) {
+export default function MonthView({ anchorKey, onAnchorChange, selectedDateKey, onSelectDay, onOpenDay, eventsByDate, entriesByDate, tasksByDueDate }) {
   const anchor = parseDateKey(anchorKey);
   const monthDays = useMemo(() => getMonthDays(anchor.getFullYear(), anchor.getMonth()), [anchor]);
 
@@ -48,7 +50,7 @@ export default function MonthView({ anchorKey, onAnchorChange, selectedDateKey, 
 
   const today = todayKey();
   const selectedDate = parseDateKey(selectedDateKey);
-  const selectedTimeline = buildDayTimeline(eventsByDate[selectedDateKey], entriesByDate?.[selectedDateKey]);
+  const selectedTimeline = buildDayTimeline(eventsByDate[selectedDateKey], entriesByDate?.[selectedDateKey], tasksByDueDate?.[selectedDateKey]);
   const isSelectedToday = selectedDateKey === today;
 
   return (
@@ -69,6 +71,10 @@ export default function MonthView({ anchorKey, onAnchorChange, selectedDateKey, 
             <span style={{ ...S.legendDot, background: THEME.primaryDark }} />
             <span style={S.legendLabel}>日記</span>
           </div>
+          <div style={S.legendItem}>
+            <span style={taskDotStyle} />
+            <span style={S.legendLabel}>任務</span>
+          </div>
         </div>
 
         <div style={S.dowRow}>
@@ -81,6 +87,7 @@ export default function MonthView({ anchorKey, onAnchorChange, selectedDateKey, 
             const date = parseDateKey(dateKey);
             const dayEvents = eventsByDate[dateKey] || [];
             const hasDiary = ((entriesByDate && entriesByDate[dateKey]) || []).length > 0;
+            const hasTaskDue = ((tasksByDueDate && tasksByDueDate[dateKey]) || []).length > 0;
             const isToday = dateKey === today;
             const isSelected = dateKey === selectedDateKey;
 
@@ -109,6 +116,7 @@ export default function MonthView({ anchorKey, onAnchorChange, selectedDateKey, 
                     <span key={c} style={{ ...S.dot, background: c }} />
                   ))}
                   {hasDiary && <span style={{ ...S.dot, background: THEME.primaryDark }} />}
+                  {hasTaskDue && <span style={taskDotStyle} />}
                 </div>
               </div>
             );
@@ -138,12 +146,22 @@ export default function MonthView({ anchorKey, onAnchorChange, selectedDateKey, 
                 </div>
               );
             }
-            const entry = item.data;
+            if (item.kind === 'diary') {
+              const entry = item.data;
+              return (
+                <div key={`di-${entry.id}`} style={DetailCardStyle.itemRow}>
+                  <span style={{ ...DetailCardStyle.itemDot, background: THEME.primaryDark }} />
+                  <span style={DetailCardStyle.itemTime}>{formatDiaryTime(entry)}</span>
+                  <span style={DetailCardStyle.itemTitle}>{(entry.tags || []).join('、') || '日記'}</span>
+                </div>
+              );
+            }
+            const t = item.data;
             return (
-              <div key={`di-${entry.id}`} style={DetailCardStyle.itemRow}>
-                <span style={{ ...DetailCardStyle.itemDot, background: THEME.primaryDark }} />
-                <span style={DetailCardStyle.itemTime}>{formatDiaryTime(entry)}</span>
-                <span style={DetailCardStyle.itemTitle}>{(entry.tags || []).join('、') || '日記'}</span>
+              <div key={`task-${t.id}`} style={DetailCardStyle.itemRow}>
+                <span style={{ width: 8, height: 8, borderRadius: 1, background: THEME.textMuted, flexShrink: 0 }} />
+                <span style={DetailCardStyle.itemTime}>☐</span>
+                <span style={DetailCardStyle.itemTitle}>{t.title}</span>
               </div>
             );
           })}

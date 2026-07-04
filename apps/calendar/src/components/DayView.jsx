@@ -1,6 +1,6 @@
 // 日檢視：單日事件 + 日記合併時間軸，可切換前一天/後一天，底部有「新增事件」「新增日記」按鈕。
 import React from 'react';
-import { buildDayTimeline, dayLabel, formatDiaryTime, formatTime } from '../utils.js';
+import { INTERVAL_UNIT_LABEL, buildDayTimeline, dayLabel, formatDiaryTime, formatTime } from '../utils.js';
 import { THEME, categoryAccentForTag } from '../theme.js';
 
 const S = {
@@ -23,16 +23,21 @@ const S = {
   diaryEmpty: { fontSize: 13, color: THEME.textFaint },
   diaryMeta: { display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 6, marginLeft: 80, fontSize: 12, color: THEME.textMuted },
   diaryNote: { fontSize: 13, color: THEME.textMuted, lineHeight: 1.5, fontStyle: 'italic', marginTop: 6, marginLeft: 80 },
+  taskCard: { cursor: 'pointer', display: 'flex', gap: 10, alignItems: 'center', padding: 14, background: THEME.surfaceAlt, borderRadius: THEME.radiusSm, border: `1px dashed ${THEME.border}` },
+  taskCheck: { fontSize: 15 },
+  taskTitle: { fontSize: 15, fontWeight: 600, color: THEME.textDark },
+  taskMeta: { fontSize: 12, color: THEME.textMuted, marginTop: 2 },
   empty: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '60px 0', fontSize: 14, color: THEME.textFaint },
   footer: { position: 'sticky', bottom: 0, padding: '14px 20px calc(14px + env(safe-area-inset-bottom))', background: THEME.bg, display: 'flex', gap: 10 },
   addEventBtn: { flex: 1, border: 'none', cursor: 'pointer', padding: 13, borderRadius: THEME.radiusSm, background: THEME.primary, color: '#fff', fontSize: 15, fontWeight: 700, outline: 'none' },
   addDiaryBtn: { flex: 1, border: `1px solid ${THEME.primary}`, cursor: 'pointer', padding: 13, borderRadius: THEME.radiusSm, background: THEME.surface, color: THEME.primary, fontSize: 15, fontWeight: 700, outline: 'none' },
 };
 
-export default function DayView({ dateKey, onShiftDay, eventsByDate, entriesByDate, categories, onEdit, onCreate, onEditDiary, onCreateDiary }) {
+export default function DayView({ dateKey, onShiftDay, eventsByDate, entriesByDate, categories, tasksByDueDate, onEdit, onCreate, onEditDiary, onCreateDiary, onGoToTasks }) {
   const dayEvents = eventsByDate[dateKey] || [];
   const dayEntries = (entriesByDate && entriesByDate[dateKey]) || [];
-  const timeline = buildDayTimeline(dayEvents, dayEntries);
+  const dayTasks = (tasksByDueDate && tasksByDueDate[dateKey]) || [];
+  const timeline = buildDayTimeline(dayEvents, dayEntries, dayTasks);
 
   return (
     <div style={S.wrap}>
@@ -62,6 +67,18 @@ export default function DayView({ dateKey, onShiftDay, eventsByDate, entriesByDa
                     {tags.map((t) => <span key={t} style={S.tagChip}>{t}</span>)}
                   </div>
                 )}
+              </div>
+            );
+          }
+          if (item.kind === 'task') {
+            const t = item.data;
+            return (
+              <div key={`task-${t.id}`} style={S.taskCard} onClick={onGoToTasks}>
+                <span style={S.taskCheck}>☐</span>
+                <div>
+                  <div style={S.taskTitle}>{t.title}</div>
+                  <div style={S.taskMeta}>任務 · 每 {t.interval_value}{INTERVAL_UNIT_LABEL[t.interval_unit]}一次</div>
+                </div>
               </div>
             );
           }

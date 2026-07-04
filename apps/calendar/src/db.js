@@ -132,3 +132,46 @@ export async function deleteCategory(categoryId) {
   const { error } = await supabase.from('tag_categories').delete().eq('id', categoryId);
   if (error) throw error;
 }
+
+// ---- 週期性任務 ----
+
+const TASK_COLUMNS = [
+  'id', 'user_id', 'title', 'interval_value', 'interval_unit',
+  'next_due', 'last_done', 'show_on_calendar', 'history', 'created_at',
+].join(', ');
+
+export async function loadTasks(userId) {
+  const { data, error } = await supabase
+    .from('tasks')
+    .select(TASK_COLUMNS)
+    .eq('user_id', userId)
+    .order('next_due', { ascending: true });
+  if (error) throw error;
+  return data || [];
+}
+
+export async function createTask(userId, payload) {
+  const { data, error } = await supabase
+    .from('tasks')
+    .insert({ ...payload, user_id: userId })
+    .select(TASK_COLUMNS)
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function updateTask(taskId, patch) {
+  const { data, error } = await supabase
+    .from('tasks')
+    .update(patch)
+    .eq('id', taskId)
+    .select(TASK_COLUMNS)
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteTask(taskId) {
+  const { error } = await supabase.from('tasks').delete().eq('id', taskId);
+  if (error) throw error;
+}

@@ -19,7 +19,7 @@ const S = {
   empty: { fontSize: 13, color: THEME.textFaint },
 };
 
-export default function WeekView({ anchorKey, onAnchorChange, selectedDateKey, onOpenDay, eventsByDate, entriesByDate }) {
+export default function WeekView({ anchorKey, onAnchorChange, selectedDateKey, onOpenDay, eventsByDate, entriesByDate, tasksByDueDate }) {
   const anchor = parseDateKey(anchorKey);
   const weekDays = useMemo(() => getWeekDays(anchor), [anchor]);
   const today = todayKey();
@@ -40,7 +40,7 @@ export default function WeekView({ anchorKey, onAnchorChange, selectedDateKey, o
 
       {weekDays.map((dateKey) => {
         const date = parseDateKey(dateKey);
-        const timeline = buildDayTimeline(eventsByDate[dateKey], entriesByDate?.[dateKey]);
+        const timeline = buildDayTimeline(eventsByDate[dateKey], entriesByDate?.[dateKey], tasksByDueDate?.[dateKey]);
         const isToday = dateKey === today;
         const isSelected = dateKey === selectedDateKey;
         return (
@@ -62,12 +62,22 @@ export default function WeekView({ anchorKey, onAnchorChange, selectedDateKey, o
                     </div>
                   );
                 }
-                const entry = item.data;
+                if (item.kind === 'diary') {
+                  const entry = item.data;
+                  return (
+                    <div key={`di-${entry.id}`} style={S.itemRow}>
+                      <span style={{ ...S.itemDot, background: THEME.primaryDark }} />
+                      <span style={S.itemTime}>{formatDiaryTime(entry)}</span>
+                      <span style={S.itemTitle}>{(entry.tags || []).join('、') || '日記'}</span>
+                    </div>
+                  );
+                }
+                const t = item.data;
                 return (
-                  <div key={`di-${entry.id}`} style={S.itemRow}>
-                    <span style={{ ...S.itemDot, background: THEME.primaryDark }} />
-                    <span style={S.itemTime}>{formatDiaryTime(entry)}</span>
-                    <span style={S.itemTitle}>{(entry.tags || []).join('、') || '日記'}</span>
+                  <div key={`task-${t.id}`} style={S.itemRow}>
+                    <span style={{ width: 8, height: 8, borderRadius: 1, background: THEME.textMuted, flexShrink: 0 }} />
+                    <span style={S.itemTime}>☐</span>
+                    <span style={S.itemTitle}>{t.title}</span>
                   </div>
                 );
               })}

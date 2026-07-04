@@ -110,8 +110,8 @@ export function formatDiaryTime(entry) {
   return entry.time || '--:--';
 }
 
-// 合併事件 + 日記成一條時間軸（全天事件/日記在前，其餘依時間排序），Day/Week 檢視共用
-export function buildDayTimeline(dateEvents, dateDiaryEntries) {
+// 合併事件 + 日記 + 當天到期任務成一條時間軸（全天/任務在前，其餘依時間排序），Day/Week/Month 共用
+export function buildDayTimeline(dateEvents, dateDiaryEntries, dateTasks) {
   const eventItems = (dateEvents || []).map((ev) => ({
     kind: 'event', id: ev.id, data: ev,
     isAllDay: !!ev.all_day,
@@ -122,7 +122,37 @@ export function buildDayTimeline(dateEvents, dateDiaryEntries) {
     isAllDay: !!entry.all_day,
     sortKey: entry.all_day ? '' : (entry.time || '00:00'),
   }));
-  const allDay = [...eventItems, ...diaryItems].filter((it) => it.isAllDay);
-  const timed = [...eventItems, ...diaryItems].filter((it) => !it.isAllDay).sort((a, b) => a.sortKey.localeCompare(b.sortKey));
+  const taskItems = (dateTasks || []).map((t) => ({
+    kind: 'task', id: t.id, data: t,
+    isAllDay: true, // 任務沒有時間概念，一律當全天項目排最前面
+    sortKey: '',
+  }));
+  const all = [...taskItems, ...eventItems, ...diaryItems];
+  const allDay = all.filter((it) => it.isAllDay);
+  const timed = all.filter((it) => !it.isAllDay).sort((a, b) => a.sortKey.localeCompare(b.sortKey));
   return [...allDay, ...timed];
+}
+
+// ---- 週期性任務用的日期運算 ----
+
+export const INTERVAL_UNIT_LABEL = { day: '天', week: '週', month: '個月' };
+
+function addDaysToKey(dateKey, n) {
+  const d = parseDateKey(dateKey);
+  d.setDate(d.getDate() + n);
+  return dateKeyFrom(d);
+}
+
+// 依間隔單位把 dateKey 往後推 value 個單位，算出下次到期日
+export function addInterval(dateKey, value, unit) {
+  if (unit === 'day') return addDaysToKey(dateKey, value);
+  if (unit === 'week') return addDaysToKey(dateKey, value * 7);
+  const d = parseDateKey(dateKey);
+  d.setMonth(d.getMonth() + value);
+  return dateKeyFrom(d);
+}
+
+// a - b 的天數差（a 比 b 晚幾天，可能是負數）
+export function diffDays(a, b) {
+  return Math.round((parseDateKey(a) - parseDateKey(b)) / 86400000);
 }

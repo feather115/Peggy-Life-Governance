@@ -1,16 +1,19 @@
-// App 外殼：520px 置中容器，載入 useEvents + useDiary，依 view 切換月/週/日檢視或各種表單。
+// App 外殼：520px 置中容器，載入 useEvents + useDiary + useTasks，依 view 切換月/週/日/任務或各種表單。
 import React, { useState } from 'react';
 import { useEvents } from './useEvents.js';
 import { useDiary } from './useDiary.js';
+import { useTasks } from './useTasks.js';
 import { THEME } from './theme.js';
 import { dateKeyFrom, parseDateKey } from './utils.js';
 import ViewTabs from './components/ViewTabs.jsx';
 import MonthView from './components/MonthView.jsx';
 import WeekView from './components/WeekView.jsx';
 import DayView from './components/DayView.jsx';
+import TasksView from './components/TasksView.jsx';
 import EventForm from './components/EventForm.jsx';
 import DiaryForm from './components/DiaryForm.jsx';
 import ManageTags from './components/ManageTags.jsx';
+import TaskForm from './components/TaskForm.jsx';
 
 function Centered({ children, color = THEME.primary }) {
   return (
@@ -24,15 +27,20 @@ export default function App({ session, onSignOut }) {
   const userId = session.user.id;
   const cal = useEvents(userId);
   const diary = useDiary(userId);
+  const tasksHub = useTasks(userId);
+
   // editing: null | { mode: 'create', dateKey } | { mode: 'edit', event }
   const [editing, setEditing] = useState(null);
   // editingDiary: null | { mode: 'create', dateKey } | { mode: 'edit', entry }
   const [editingDiary, setEditingDiary] = useState(null);
   const [managingTags, setManagingTags] = useState(false);
+  // editingTask: null | { mode: 'create' } | { mode: 'edit', task }
+  const [editingTask, setEditingTask] = useState(null);
 
-  if (!cal.loaded || !diary.loaded) return <Centered>載入中…</Centered>;
+  if (!cal.loaded || !diary.loaded || !tasksHub.loaded) return <Centered>載入中…</Centered>;
   if (cal.loadError) return <Centered color={THEME.error}>載入失敗：{cal.loadError}</Centered>;
   if (diary.loadError) return <Centered color={THEME.error}>載入失敗：{diary.loadError}</Centered>;
+  if (tasksHub.loadError) return <Centered color={THEME.error}>載入失敗：{tasksHub.loadError}</Centered>;
 
   const shiftSelectedDay = (delta) => {
     const next = new Date(parseDateKey(cal.selectedDateKey));
@@ -62,6 +70,12 @@ export default function App({ session, onSignOut }) {
   const handleDeleteDiary = async (entryId) => {
     await diary.deleteEntry(entryId);
     setEditingDiary(null);
+  };
+
+  const handleSaveTask = async (payload, existingId) => {
+    if (existingId) await tasksHub.updateTask(existingId, payload);
+    else await tasksHub.createTask(payload);
+    setEditingTask(null);
   };
 
   const overlay = editing
@@ -97,6 +111,14 @@ export default function App({ session, onSignOut }) {
         onRemoveTag={diary.removeTagFromCategory}
         onAddCategory={diary.addCategory}
         onClose={() => setManagingTags(false)}
+      />
+    )
+    : editingTask
+    ? (
+      <TaskForm
+        task={editingTask.mode === 'edit' ? editingTask.task : null}
+        onSave={handleSaveTask}
+        onCancel={() => setEditingTask(null)}
       />
     )
     : null;
@@ -138,6 +160,7 @@ export default function App({ session, onSignOut }) {
                 onOpenDay={cal.openDay}
                 eventsByDate={cal.eventsByDate}
                 entriesByDate={diary.entriesByDate}
+                tasksByDueDate={tasksHub.tasksByDueDate}
               />
             )}
             {cal.view === 'week' && (
@@ -148,6 +171,7 @@ export default function App({ session, onSignOut }) {
                 onOpenDay={cal.openDay}
                 eventsByDate={cal.eventsByDate}
                 entriesByDate={diary.entriesByDate}
+                tasksByDueDate={tasksHub.tasksByDueDate}
               />
             )}
             {cal.view === 'day' && (
@@ -157,10 +181,21 @@ export default function App({ session, onSignOut }) {
                 eventsByDate={cal.eventsByDate}
                 entriesByDate={diary.entriesByDate}
                 categories={diary.categories}
+                tasksByDueDate={tasksHub.tasksByDueDate}
                 onEdit={(event) => setEditing({ mode: 'edit', event })}
                 onCreate={(dateKey) => setEditing({ mode: 'create', dateKey })}
                 onEditDiary={(entry) => setEditingDiary({ mode: 'edit', entry })}
                 onCreateDiary={(dateKey) => setEditingDiary({ mode: 'create', dateKey })}
+                onGoToTasks={() => cal.setView('tasks')}
+              />
+            )}
+            {cal.view === 'tasks' && (
+              <TasksView
+                tasks={tasksHub.tasks}
+                onEdit={(task) => setEditingTask({ mode: 'edit', task })}
+                onCreate={() => setEditingTask({ mode: 'create' })}
+                onDelete={tasksHub.deleteTask}
+                onConfirmComplete={tasksHub.confirmComplete}
               />
             )}
           </div>
