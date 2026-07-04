@@ -67,10 +67,11 @@ Supabase ⇄ db.js ⇄ useRecipes.js ⇄ App.jsx ⇄ Root.jsx (Auth gate / LIFF)
 - **`Auth.jsx`** — 登入介面：Email + 密碼登入、註冊、忘記密碼。與 calorie-tracker 風格一致。
 - **`SettingsTab.jsx`** — 設定分頁（`TabBar` 第三個 tab，訪客模式隱藏）：帳號 email（LINE
   登入的假 email 遮罩成 `LINE: U1234...wxyz`）、暱稱輸入框+儲存（呼叫 `useRecipes.js` 的
-  `setMyDisplayName`，寫入 `recipe_book.user_settings.display_name`）、`LineLinker`
-  （內部元件，跟 calorie-tracker/calendar 的 `LineLinker` 同一套設計：`checkLineLinked()`
-  查到已連結會快取進 `localStorage`，避免畫面閃爍；「連結 LINE 帳號」按鈕只有
-  `canLinkLine()` 為 true 才顯示）、登出按鈕。
+  `setMyDisplayName`，寫入 `shared.user_profiles.display_name`——**跨 app 共用**，在
+  calorie-tracker 設過的暱稱這裡看得到，反過來也一樣，見下方「暱稱跨 app 共用」）、
+  `LineLinker`（內部元件，跟 calorie-tracker/calendar 的 `LineLinker` 同一套設計：
+  `checkLineLinked()` 查到已連結會快取進 `localStorage`，避免畫面閃爍；「連結 LINE
+  帳號」按鈕只有 `canLinkLine()` 為 true 才顯示）、登出按鈕。
 
 ---
 
@@ -125,13 +126,19 @@ Supabase ⇄ db.js ⇄ useRecipes.js ⇄ App.jsx ⇄ Root.jsx (Auth gate / LIFF)
 - **分享狀態**：`is_shared` 由 `RecipeForm.jsx` 編輯頁面的 checkbox 控制（用 `saveRecipe` 一起 update）。
 - **Catalog 分組**：登入者看 3 個分頁 `我的私房 / 我已分享 / 大家分享`（`useRecipes.ownershipTab`，`filterRecipes` 用 `ownershipTab + currentUserId` 過濾），訪客自動鎖在 `others_shared` 不顯示分頁列。
 - **按讚與喜愛排序**：`recipe_likes` 表存按讚紀錄，`useRecipes` 算出 `likeCounts` / `myLikedSet`。RecipeDetail 顯示按讚數＋按讚按鈕（擁有者只見數字、訪客只見數字、登入者可 toggle）；catalog 卡片右上角顯示 ❤️ N 計數；`filterRecipes` 把我喜愛的食譜排在每個分頁的最前面。
-- **「誰按讚」顯示名字**：`recipe_book.user_settings`（`display_name`/`email`）搭配 `useRecipes` 的
-  `likerNamesByRecipe`（`Map<recipeId, string[]>`），在 RecipeDetail 的按讚區塊下方列出
-  「小明、小華 按讚」。名字解析邏輯在 `utils.js` 的 `displayNameFor()`：有自訂暱稱就用暱稱，
-  沒有就退回 email 本地部分，LINE 登入的假 email（`line-<sub>@line.invalid`）一律顯示
-  「LINE 使用者」（沒有暱稱系統就沒辦法個人化，這是刻意的簡化）。目前沒有讓使用者自己改
-  暱稱的 UI，`display_name` 都是 `null`，全部退回 email 顯示——如果之後要加「設定暱稱」
-  功能，`db.js` 已經有 `updateDisplayName(userId, name)` 可以直接用，只差一個表單。
+- **「誰按讚」顯示名字**：`shared.user_profiles`（`display_name`/`email`，見下方「暱稱跨
+  app 共用」）搭配 `useRecipes` 的 `likerNamesByRecipe`（`Map<recipeId, string[]>`），在
+  RecipeDetail 的按讚區塊下方列出「小明、小華 按讚」。名字解析邏輯在 `utils.js` 的
+  `displayNameFor()`：有自訂暱稱就用暱稱，沒有就退回 email 本地部分，LINE 登入的假
+  email（`line-<sub>@line.invalid`）一律顯示「LINE 使用者」。暱稱可以在 `SettingsTab.jsx`
+  自己設定（`setMyDisplayName` → `db.updateDisplayName`）。
+- **暱稱跨 app 共用**：`shared.user_profiles` 是 calorie-tracker / recipe-book / calendar
+  共用的暱稱表（跟 `shared.line_links` 同一個概念），在任一個 app 改暱稱，其他 app 立刻
+  看到同一個名字。這個 app 自己的 `recipe_book.user_settings` 表（`2026-07-04_recipe_book_user_settings.sql`
+  建的）**已經不再使用**，是被 `shared.user_profiles` 取代前的第一版做法，留著沒刪
+  純粹因為刪一張空表不值得為此再寫一支 migration，之後如果要徹底清乾淨可以連表一起砍。
+  詳細設計見 `apps/calorie-tracker/ARCHITECTURE.md` 的「暱稱跨 app 共用」章節（權威說明
+  放在那邊，因為 calorie-tracker 的挑戰賽排行榜是第一個依賴這張表的功能）。
 - **`ingredients` 支援兩種格式**：新格式是物件陣列 `[{ name, amount, ... }]`，舊格式是 `{ name: amount }` 物件。`utils.js` 的 `parseIngredients()` 統一處理。
 - **`steps` 支援三種格式**：物件陣列、字串陣列、單一字串（換行分隔）。`parseSteps()` 統一處理。
 - **`is_base` 標記主食材**——配方縮放用。輸入主食材的新重量後，其他食材依比例換算。
@@ -149,26 +156,13 @@ UNIQUE `(user_id, recipe_id)` — 同一人對同一食譜只能按一次。
 RLS：select 對任何人（含 anon）開放，讓按讚總數所有人都看得到；insert/delete 只能對自己的列。
 前端 `loadAllLikes()` 一次抓全部，client 端 group 出 `likeCounts: Map<recipeId, number>` 和 `myLikedSet: Set<recipeId>`。資料小、量不會爆，不值得加 RPC。
 
-### `user_settings`（`supabase/2026-07-04_recipe_book_user_settings.sql`）
+### `user_settings`（`supabase/2026-07-04_recipe_book_user_settings.sql`）— **已停用，不要再用**
 
-| 欄位 | 型別 | 用途 |
-|---|---|---|
-| `user_id` | uuid (PK) → `auth.users(id)` | 擁有者（CASCADE） |
-| `display_name` | text | 自訂暱稱（選填，目前沒有編輯 UI，都是 null） |
-| `email` | text | 註冊 email 的快照，暱稱沒設時的顯示後備 |
-| `created_at` | timestamptz | 建立時間 |
-
-RLS 跟 calorie-tracker 的 `user_settings` **不一樣**：這裡的 select policy 是
-`to authenticated using (true)`——對所有登入使用者開放讀取全部人的資料，不是只有
-「同挑戰成員」。原因是 recipe-book 是全家共用同一本食譜，按讚名單本來就是所有登入者
-互相可見（`loadAllLikes()` 撈的是全部 rows），沒有 calorie-tracker 那種「挑戰分組」
-需要隔離的場景。insert/update 仍然限定 `auth.uid() = user_id`，不能改別人的暱稱。
-
-新使用者註冊會自動建一列（`public.handle_new_user_recipe_book()` trigger），
-**這是獨立於 calorie-tracker 的 `on_auth_user_created` / `public.handle_new_user()`
-的另一個 trigger + function**——`auth.users` 上可以同時掛多個 trigger，但兩邊
-故意取了不同名字（`on_auth_user_created_recipe_book` / `handle_new_user_recipe_book`），
-避免哪天有人改 migration 時同名覆蓋掉對方的 trigger。
+這張表是暱稱功能的第一版，只在 recipe-book 自己的 schema 裡，跟 calorie-tracker 的暱稱
+是兩份互不相通的資料。上線沒多久就改成跨 app 共用的 `shared.user_profiles`（見上方「暱稱
+跨 app 共用」），現在 `db.js` 已經不會再讀寫這張表了。表本身、它的 `on_auth_user_created_recipe_book`
+trigger、`public.handle_new_user_recipe_book()` function 都還留著（刪一張空表不值得
+再寫一支 migration），如果之後要徹底清乾淨可以連 trigger 一起砍。
 
 ### `cooking_history`（`supabase/2026-06-28_recipe_cook_records.sql`）
 
@@ -217,9 +211,10 @@ LINE，其他 app 就能即時識別並支援 LINE 自動免密碼登入。
 | `2026-06-28_recipe_ownership.sql` | 加 `user_id` / `is_shared` 欄位、backfill 舊食譜給 feather115、重寫 RLS（讀: 分享或擁有；寫: 只有擁有者） |
 | `2026-06-28_recipe_rls_hotfix.sql` | 動態 drop 掉 recipe_book.recipes 上所有殘留的 SELECT policy 再重建 — 跑 ownership migration 後若訪客還是看得到全部食譜就跑這支 |
 | `2026-06-28_recipe_likes.sql` | 建 `recipe_book.recipe_likes` 表（按讚 / 喜愛排序用）+ RLS（select 公開、寫入只能對自己） |
-| `2026-07-04_recipe_book_user_settings.sql` | 建 `recipe_book.user_settings` 表（暱稱/email，「誰按讚」顯示名字用）+ RLS + 獨立的新使用者註冊 trigger |
+| `2026-07-04_recipe_book_user_settings.sql` | 建 `recipe_book.user_settings` 表（暱稱/email 第一版，**現已停用**，見上方說明） |
+| `packages/shared/supabase/2026-07-06_shared_user_profiles.sql` | 建 `shared.user_profiles`（跨 app 共用暱稱，取代上一支），這個 app 的「誰按讚」跟 `SettingsTab.jsx` 的暱稱都改讀寫這張表 |
 
-> 新環境順序：`schema.sql` → 在 Supabase Exposed schemas 加 `recipe_book` → `2026-06-28_schema_isolation.sql` → `2026-06-28_recipe_cook_records.sql` → `2026-06-28_recipe_ownership.sql` → `2026-06-28_recipe_rls_hotfix.sql` → `2026-06-28_recipe_likes.sql` → `2026-07-04_recipe_book_user_settings.sql`。
+> 新環境順序：`schema.sql` → 在 Supabase Exposed schemas 加 `recipe_book` → `2026-06-28_schema_isolation.sql` → `2026-06-28_recipe_cook_records.sql` → `2026-06-28_recipe_ownership.sql` → `2026-06-28_recipe_rls_hotfix.sql` → `2026-06-28_recipe_likes.sql` → `2026-07-04_recipe_book_user_settings.sql`（可省略，已停用，但為了 `shared_user_profiles` 的 backfill 邏輯還是建議跑）→ `packages/shared/supabase/2026-07-06_shared_user_profiles.sql`。
 
 ---
 

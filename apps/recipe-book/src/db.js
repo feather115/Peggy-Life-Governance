@@ -78,11 +78,18 @@ export async function unlikeRecipe(userId, recipeId) {
   if (error) throw error;
 }
 
+// 暱稱是跨 app 共用的（見 packages/shared/supabase/2026-07-06_shared_user_profiles.sql），
+// 存在 shared schema，不是這個 app 自己的 recipe_book.user_settings（那張表已經沒在用了，
+// 留著純粹是歷史遺跡，不值得為了刪一張空表寫 migration）。
+// `.schema('shared')` 是同一個 supabase client 換個 schema 查，不會多開一個 client
+// （不會有 supabase-js 的 Multiple GoTrueClient 警告）。
+
 // 給「顯示誰按讚」用：一次抓全部使用者的暱稱/email（不是只有自己）。
 // RLS 開放給所有登入使用者讀取，量小，理由同 loadAllLikes()。
 export async function loadDisplayNames() {
   const { data, error } = await supabase
-    .from('user_settings')
+    .schema('shared')
+    .from('user_profiles')
     .select('user_id, display_name, email');
   if (error) throw error;
   return data || [];
@@ -90,7 +97,8 @@ export async function loadDisplayNames() {
 
 export async function updateDisplayName(userId, displayName) {
   const { data, error } = await supabase
-    .from('user_settings')
+    .schema('shared')
+    .from('user_profiles')
     .update({ display_name: displayName })
     .eq('user_id', userId)
     .select('user_id, display_name, email')

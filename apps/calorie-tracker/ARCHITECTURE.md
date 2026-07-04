@@ -159,7 +159,7 @@ SET pgrst.db_schemas = '...'` + `NOTIFY pgrst, 'reload config'`，見根目錄
 
 | 表 | 用途 | 重點 |
 |---|---|---|
-| `user_settings` | 每人的卡路里/營養素目標 | 一人一列 |
+| `user_settings` | 每人的卡路里/營養素目標 | 一人一列；`display_name` 欄位**已停用**，暱稱改存 `shared.user_profiles`（見下方「暱稱跨 app 共用」） |
 | `tag_defs` | 標籤定義（斷食 / 記錄原因） | `type` 區分兩類；`color` 給記錄原因標籤在月曆上畫彩色點 |
 | `custom_foods` | 使用者自訂食物 | `brand`/`note` 為選填欄位 |
 | `day_records` | 每天一筆主記錄 | `(user_id, date)` 唯一 |
@@ -177,8 +177,33 @@ SET pgrst.db_schemas = '...'` + `NOTIFY pgrst, 'reload config'`，見根目錄
 - **註冊 trigger** — 新使用者註冊時自動建好 `user_settings`（含 `email` 欄位備援名稱用）和預設標籤（168 / 輕斷食）。
 - **挑戰用邀請碼分群** — 建挑戰時自動生 6 碼邀請碼（避開易混淆字元 0/O/1/I/L），分享給朋友才能加入；非成員看不到該挑戰任何資料。RLS 用 `SECURITY DEFINER` 的 helper function `is_challenge_member()` 避免 policy 遞迴。
 - **邀請碼查詢繞過 RLS** — `find_challenge_by_code(p_code)` 也是 `SECURITY DEFINER` function。原因：`challenges` 的 select policy 只允許「建立者」或「已經是成員」讀取，所以還沒加入的人直接 `select ... where invite_code = ...` 會被 RLS 擋成空結果，誤判成「邀請碼不存在」。這個函式繞過限制，只回傳 `id`/`name` 給任何登入者查詢，加入流程（`db.js` 的 `joinChallengeByCode`）改用這個 RPC。
-- **co-member 暱稱可見** — `user_settings` 多開一條 policy，讓「同一個挑戰成員之間」可以互相看到 `display_name` 與 `email`。
-- **暱稱顯示後備** — 排行榜顯示名稱優先用 `display_name`，沒設就用 `email` 的 `@` 前綴（例如 `@feather115`），兩者都沒有才顯示「未命名」。邏輯在 `db.js` 的 `loadMyChallenges()` 裡的 `resolveName()`。
+- **暱稱跨 app 共用** ⭐ — 暱稱（`display_name`）存在 `shared.user_profiles`
+  （`packages/shared/supabase/2026-07-06_shared_user_profiles.sql`），不是這個 app 自己的
+  `calorie_tracker.user_settings`。在這裡的「設定」分頁改暱稱，recipe-book 的「設定」
+  分頁會立刻看到同一個名字，反過來也一樣——跟 `shared.line_links`（LINE 帳號連結）是
+  同一個「三個 app 共用一份使用者資料」的設計思路。
+  - **讀寫路徑**：`db.js` 的 `loadAll()` 用 `supabase.schema('shared').from('user_profiles')`
+    讀自己的暱稱、`saveSettings()` 寫回去（跟卡路里/營養素目標分開兩次 upsert，因為
+    目標留在 `calorie_tracker.user_settings`，只有暱稱搬家了）；`loadMyChallenges()` 查
+    所有挑戰成員的暱稱時也是查 `shared.user_profiles`，不是 `calorie_tracker.user_settings`。
+  - **`.schema('shared')` 不是開一個新的 client** —— 用同一個 `supabase` client 的
+    `.schema()` 方法切換查詢目標 schema，只是同一個連線換一下 PostgREST 的 schema
+    header，不會像另外建一個 `createAppSupabase({schema:'shared'})` client 那樣觸發
+    supabase-js 的「Multiple GoTrueClient instances」警告（同一個 project 開兩個
+    client 都各自 persist session 到同一個 storage key 才會有那個警告）。
+  - **RLS 比舊版更寬** — 舊的 `calorie_tracker.user_settings` 有一條「只有同挑戰成員
+    互相看得到 `display_name`」的 policy；`shared.user_profiles` 直接開放給所有登入
+    使用者互相讀取（`to authenticated using (true)`），因為 recipe-book 的「誰按讚」
+    功能沒有 calorie-tracker 這種「分組」概念，暱稱本身也不是敏感資料，統一開放比較
+    簡單。舊 policy 沒有主動刪，但已經沒有查詢會用到（`user_settings.display_name`
+    這個欄位本身還在，只是不會再被讀寫，等哪天要徹底清乾淨可以連欄位一起砍）。
+  - **暱稱顯示後備** — 排行榜顯示名稱優先用 `display_name`，沒設就用 `email` 的 `@` 前綴（例如 `@feather115`），兩者都沒有才顯示「未命名」。邏輯在 `db.js` 的 `loadMyChallenges()` 裡的 `resolveName()`。
+  - **新使用者的 `shared.user_profiles` 種子列** — 由獨立的 `public.handle_new_user_shared_profile()`
+    trigger 負責（`on_auth_user_created_shared_profile`），跟這個 app 自己的
+    `on_auth_user_created` / `public.handle_new_user()`、recipe-book 的
+    `on_auth_user_created_recipe_book` 是三個完全獨立、故意取不同名字的 trigger +
+    function，`auth.users` 上可以同時掛好幾個，但絕對不能同名，否則 create/drop
+    trigger 會互相覆蓋掉對方。
 - **自訂食物的品牌/備註** — `custom_foods.brand`、`custom_foods.note` 都是選填欄位，純粹給使用者自己標記用（例如「全家」「去冰半糖」），不影響任何計算邏輯。因為 `meal_items` 是快照，**改自訂食物的品牌/備註/數值都不會動到已經記錄過的歷史餐點**——這點對話中問過好幾次，是這個 App 的核心設計原則，改任何 `custom_foods` 欄位都要記住這個前提。
 - **`meal_items` 也有 `brand`** — 加入餐點時把當時食物的品牌也一起快照進去，今日頁才能顯示「名稱 · 品牌」。
 - **食物庫排序用 `food_usage`，不是排序 `custom_foods`/`FOODS` 本身** — 選用/新增/編輯食物時都會 `upsert` 一筆 `food_usage`（`useAppData.js` 的 `touchFood()`），`FoodSheet.jsx` 顯示清單時依這張表的時間排序，最近用過的排最上面；宵夜餐別仍維持原本「依熱量低到高」排序，不套用這個邏輯。

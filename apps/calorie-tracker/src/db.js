@@ -17,8 +17,10 @@ async function ensureDayRecord(userId, date) {
 
 // ── full load ──────────────────────────────────────────────────
 export async function loadAll(userId) {
-  const [settingsRes, tagsRes, foodsRes, daysRes, usageRes] = await Promise.all([
+  const [settingsRes, profileRes, tagsRes, foodsRes, daysRes, usageRes] = await Promise.all([
     supabase.from('user_settings').select('*').eq('user_id', userId).maybeSingle(),
+    // 暱稱是跨 app 共用的（shared.user_profiles），不是這裡的 user_settings.display_name
+    supabase.schema('shared').from('user_profiles').select('display_name').eq('user_id', userId).maybeSingle(),
     supabase.from('tag_defs').select('*').eq('user_id', userId).order('sort_order'),
     supabase.from('custom_foods').select('*').eq('user_id', userId).order('created_at'),
     supabase.from('day_records').select('id,date,day_note,day_tags(tag_def_id),meal_items(*)')
@@ -53,7 +55,7 @@ export async function loadAll(userId) {
   }
 
   return {
-    displayName: settings.display_name || '',
+    displayName: profileRes.data?.display_name || '',
     goalCal: settings.goal_cal, goalP: settings.goal_p, goalC: settings.goal_c, goalF: settings.goal_f,
     fastingTagDefs: tagDefs.filter(t => t.type === 'fasting').map(mapTag),
     otherTagDefs:   tagDefs.filter(t => t.type === 'other').map(mapTag),
@@ -75,8 +77,11 @@ export async function saveSettings(userId, { goalCal, goalP, goalC, goalF, displ
     user_id: userId, goal_cal: goalCal, goal_p: goalP, goal_c: goalC, goal_f: goalF,
     updated_at: new Date().toISOString(),
   };
-  if (displayName !== undefined) row.display_name = displayName || null;
   await supabase.from('user_settings').upsert(row);
+  // 暱稱是跨 app 共用的，寫進 shared.user_profiles，不是這裡的 user_settings
+  if (displayName !== undefined) {
+    await supabase.schema('shared').from('user_profiles').upsert({ user_id: userId, display_name: displayName || null });
+  }
 }
 
 // ── tag defs ──────────────────────────────────────────────────
@@ -210,14 +215,15 @@ export async function loadMyChallenges(userId) {
   if (error) throw error;
 
   // Extract all member user_ids and query display_name + email in one go (used for fallback names)
+  // 暱稱是跨 app 共用的，來源是 shared.user_profiles，不是這個 app 自己的 user_settings
   const allUserIds = new Set();
   rows.forEach(c => (c.challenge_members || []).forEach(m => allUserIds.add(m.user_id)));
   let infoByUser = {};
   if (allUserIds.size > 0) {
-    const { data: settings, error: settingsErr } = await supabase
-      .from('user_settings').select('user_id,display_name,email').in('user_id', [...allUserIds]);
-    if (settingsErr) console.warn('loadMyChallenges: Failed to fetch member names', settingsErr.message);
-    (settings || []).forEach(s => {
+    const { data: profiles, error: profilesErr } = await supabase
+      .schema('shared').from('user_profiles').select('user_id,display_name,email').in('user_id', [...allUserIds]);
+    if (profilesErr) console.warn('loadMyChallenges: Failed to fetch member names', profilesErr.message);
+    (profiles || []).forEach(s => {
       infoByUser[s.user_id] = { displayName: s.display_name || '', email: s.email || '' };
     });
   }

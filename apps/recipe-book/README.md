@@ -32,9 +32,13 @@ npm install
 8. 再貼 [`supabase/2026-06-28_recipe_likes.sql`](./supabase/2026-06-28_recipe_likes.sql) → **Run**
    （建按讚表，給 detail 頁按讚 / catalog 喜愛排序用）
 9. 再貼 [`supabase/2026-07-04_recipe_book_user_settings.sql`](./supabase/2026-07-04_recipe_book_user_settings.sql) → **Run**
-   （建暱稱/email 對照表，給 detail 頁「誰按讚」顯示名字用）
-10. 左側 **Settings → API**，複製 `Project URL` 和 `anon public` key
-11. 複製 `.env.example` 成 `.env`，填入：
+   （這支已經停用，暱稱改用下面第 10 步的跨 app 共用表，但為了 backfill 邏輯還是建議跑）
+10. 再貼 [`packages/shared/supabase/2026-07-06_shared_user_profiles.sql`](../../packages/shared/supabase/2026-07-06_shared_user_profiles.sql) → **Run**
+   （建跨 app 共用的暱稱表，給 detail 頁「誰按讚」和「設定」分頁的暱稱功能用；
+   要在 calorie-tracker、recipe-book 各自的 migration 都跑完之後才能跑，
+   backfill 要 join 兩邊的表）
+11. 左側 **Settings → API**，複製 `Project URL` 和 `anon public` key
+12. 複製 `.env.example` 成 `.env`，填入：
    ```
    VITE_SUPABASE_URL=https://你的專案.supabase.co
    VITE_SUPABASE_ANON_KEY=eyJ...
