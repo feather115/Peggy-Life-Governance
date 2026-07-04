@@ -51,7 +51,7 @@ const S = {
   lastCooked: { fontSize: 12, color: '#C5B4AC', fontWeight: 700, textAlign: 'center', marginTop: 16 },
 };
 
-export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, onEdit, likeCount = 0, isLiked = false, onToggleLike }) {
+export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, onEdit, likeCount = 0, isLiked = false, onToggleLike, likerNames = [] }) {
   const [currentWeight, setCurrentWeight] = useState('');
   const [completedItems, setCompletedItems] = useState({});
   const [likeBusy, setLikeBusy] = useState(false);
@@ -204,6 +204,11 @@ export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, o
               )}
               {likeError && (
                 <div style={{ fontSize: 12, color: '#B91C1C', fontWeight: 800 }}>{likeError}</div>
+              )}
+              {likerNames.length > 0 && (
+                <div style={{ width: '100%', fontSize: 12, color: '#8E7568', fontWeight: 700 }}>
+                  {likerNames.join('、')} 按讚
+                </div>
               )}
             </div>
           </div>

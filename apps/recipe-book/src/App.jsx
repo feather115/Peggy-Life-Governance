@@ -115,6 +115,7 @@ export default function App({ session, onSignOut, onExitGuest }) {
                 likeCount={recipes.likeCounts.get(recipes.selectedRecipe.id) || 0}
                 isLiked={recipes.myLikedSet.has(recipes.selectedRecipe.id)}
                 onToggleLike={recipes.toggleLike}
+                likerNames={recipes.likerNamesByRecipe.get(recipes.selectedRecipe.id) || []}
               />
             )}
 

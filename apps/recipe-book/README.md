@@ -31,8 +31,10 @@ npm install
    （清掉殘留的 SELECT policy，確保訪客只看得到分享過的食譜）
 8. 再貼 [`supabase/2026-06-28_recipe_likes.sql`](./supabase/2026-06-28_recipe_likes.sql) → **Run**
    （建按讚表，給 detail 頁按讚 / catalog 喜愛排序用）
-9. 左側 **Settings → API**，複製 `Project URL` 和 `anon public` key
-10. 複製 `.env.example` 成 `.env`，填入：
+9. 再貼 [`supabase/2026-07-04_recipe_book_user_settings.sql`](./supabase/2026-07-04_recipe_book_user_settings.sql) → **Run**
+   （建暱稱/email 對照表，給 detail 頁「誰按讚」顯示名字用）
+10. 左側 **Settings → API**，複製 `Project URL` 和 `anon public` key
+11. 複製 `.env.example` 成 `.env`，填入：
    ```
    VITE_SUPABASE_URL=https://你的專案.supabase.co
    VITE_SUPABASE_ANON_KEY=eyJ...

@@ -8,6 +8,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import * as db from './db.js';
 import {
   ALL_CATEGORY,
+  displayNameFor,
   filterRecipes,
   getAvailableCategories,
 } from './utils.js';
@@ -48,6 +49,7 @@ export function useRecipes(userId) {
   const [recipes, setRecipes] = useState([]);
   const [cookRecords, setCookRecords] = useState([]);
   const [likes, setLikes] = useState([]); // [{ recipe_id, user_id }]
+  const [displayNameRows, setDisplayNameRows] = useState([]); // [{ user_id, display_name, email }]
   const [loaded, setLoaded] = useState(false);
   const [loadError, setLoadError] = useState('');
   const [cookRecordError, setCookRecordError] = useState('');
@@ -83,6 +85,12 @@ export function useRecipes(userId) {
           if (!cancel) setLikes(likeRows);
         } catch (e) {
           if (!cancel) console.warn('按讚資料載入失敗：', e.message);
+        }
+        try {
+          const nameRows = await db.loadDisplayNames();
+          if (!cancel) setDisplayNameRows(nameRows);
+        } catch (e) {
+          if (!cancel) console.warn('使用者暱稱載入失敗：', e.message);
         }
         if (isGuest) {
           setCookRecords([]);
@@ -283,6 +291,23 @@ export function useRecipes(userId) {
     return s;
   }, [likes, userId]);
 
+  const displayNamesMap = useMemo(() => {
+    const m = new Map();
+    displayNameRows.forEach((row) => m.set(row.user_id, row));
+    return m;
+  }, [displayNameRows]);
+
+  // recipe_id → [顯示名稱, ...]，給 RecipeDetail 的「誰按讚」用
+  const likerNamesByRecipe = useMemo(() => {
+    const m = new Map();
+    likes.forEach((l) => {
+      const name = displayNameFor(l.user_id, displayNamesMap);
+      if (!m.has(l.recipe_id)) m.set(l.recipe_id, []);
+      m.get(l.recipe_id).push(name);
+    });
+    return m;
+  }, [likes, displayNamesMap]);
+
   const filteredRecipes = useMemo(
     () => filterRecipes(recipesWithLastCooked, { category: selectedCategory, search: searchQuery, ownershipSet: ownershipFilter, currentUserId: userId, myLikedSet }),
     [recipesWithLastCooked, selectedCategory, searchQuery, ownershipFilter, userId, myLikedSet],
@@ -322,7 +347,7 @@ export function useRecipes(userId) {
     saveRecipe,
     deleteRecipeById,
     ownershipFilter, toggleOwnership,
-    likeCounts, myLikedSet, toggleLike,
+    likeCounts, myLikedSet, toggleLike, likerNamesByRecipe,
     isGuest,
   };
 }

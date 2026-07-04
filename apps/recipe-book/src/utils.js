@@ -17,6 +17,17 @@ export function normalizeRecipe(recipe) {
   };
 }
 
+// user_id → 人看得懂的名字：優先用自訂暱稱，沒設就退回 email 本地部分；
+// LINE 登入的 email 是 line-<sub>@line.invalid 這種假 email，不好看，統一顯示「LINE 使用者」。
+export function displayNameFor(userId, namesMap) {
+  const row = namesMap?.get(userId);
+  if (!row) return '某人';
+  if (row.display_name) return row.display_name;
+  const email = row.email || '';
+  if (email.endsWith('@line.invalid')) return 'LINE 使用者';
+  return email.split('@')[0] || '某人';
+}
+
 export function getAvailableCategories(recipes) {
   const allTags = recipes.flatMap((r) => (Array.isArray(r.category) ? r.category : []));
   const cleanTags = allTags.map((t) => (t ? t.trim() : '')).filter(Boolean);

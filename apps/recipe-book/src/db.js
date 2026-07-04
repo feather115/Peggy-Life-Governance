@@ -78,6 +78,27 @@ export async function unlikeRecipe(userId, recipeId) {
   if (error) throw error;
 }
 
+// 給「顯示誰按讚」用：一次抓全部使用者的暱稱/email（不是只有自己）。
+// RLS 開放給所有登入使用者讀取，量小，理由同 loadAllLikes()。
+export async function loadDisplayNames() {
+  const { data, error } = await supabase
+    .from('user_settings')
+    .select('user_id, display_name, email');
+  if (error) throw error;
+  return data || [];
+}
+
+export async function updateDisplayName(userId, displayName) {
+  const { data, error } = await supabase
+    .from('user_settings')
+    .update({ display_name: displayName })
+    .eq('user_id', userId)
+    .select('user_id, display_name, email')
+    .single();
+  if (error) throw error;
+  return data;
+}
+
 export async function loadCookRecords(userId) {
   const { data, error } = await supabase
     .from('cooking_history')

@@ -98,6 +98,9 @@ git diff --quiet $VERCEL_GIT_PREVIOUS_SHA HEAD -- apps/calendar packages/shared
    - 最後跑兩支 schema isolation migration：
      - `apps/calorie-tracker/supabase/2026-06-28_schema_isolation.sql`（把 11 張表從 public 搬到 `calorie_tracker` schema，並授權給 PostgREST 及 service_role）
      - `apps/recipe-book/supabase/2026-06-28_schema_isolation.sql`（把 recipes 從 public 搬到 `recipe_book` schema，並授權給 PostgREST 及 service_role）
+   - `apps/recipe-book/supabase/` 下其餘的 migration SQL，接在上面 schema isolation 之後、
+     按日期順序（料理紀錄、擁有者/分享、RLS hotfix、按讚、使用者暱稱，完整清單見
+     [`apps/recipe-book/README.md`](./apps/recipe-book/README.md)）
    - `packages/shared/supabase/2026-07-01_line_links_to_shared.sql`（建立 `shared` schema + `line_links` 表，三個 app 共用）
 3. 到 **Integrations → Data API → Settings**，在 **Exposed schemas** 加入 `calorie_tracker`、`recipe_book`、`calendar`、`shared`，按 Save
 4. 如果加完之後前端還是回 `Invalid schema` / `PGRST106`，這是 Supabase 平台已知 bug，Dashboard
