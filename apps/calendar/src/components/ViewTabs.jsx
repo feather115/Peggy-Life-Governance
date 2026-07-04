@@ -1,5 +1,6 @@
 // 月/週/日檢視切換 + 回到今天。
 import React from 'react';
+import { THEME } from '../theme.js';
 
 const TABS = [
   { key: 'month', label: '月' },
@@ -7,39 +8,35 @@ const TABS = [
   { key: 'day', label: '日' },
 ];
 
+const S = {
+  wrap: { display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', background: THEME.bg },
+  segment: { flex: 1, display: 'flex', background: THEME.surfaceAlt, borderRadius: THEME.radiusSm, padding: 3, gap: 2 },
+  tab: (active) => ({
+    flex: 1,
+    border: 'none',
+    cursor: 'pointer',
+    padding: '8px 0',
+    borderRadius: THEME.radiusSmInner,
+    fontSize: 14,
+    fontWeight: 600,
+    background: active ? THEME.primary : 'transparent',
+    color: active ? '#fff' : THEME.textMuted,
+    outline: 'none',
+  }),
+  todayBtn: { border: `1px solid ${THEME.border}`, background: THEME.surface, cursor: 'pointer', padding: '9px 14px', borderRadius: THEME.radiusSm, fontSize: 13, fontWeight: 600, color: THEME.primary, whiteSpace: 'nowrap', outline: 'none' },
+};
+
 export default function ViewTabs({ view, onChange, onToday }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 18px 0' }}>
-      <div style={{ display: 'flex', gap: 6, flex: 1 }}>
+    <div style={S.wrap}>
+      <div style={S.segment}>
         {TABS.map((t) => (
-          <button
-            key={t.key}
-            type="button"
-            onClick={() => onChange(t.key)}
-            style={{
-              flex: 1,
-              border: 'none',
-              background: view === t.key ? '#4A6FA5' : '#E9EEF6',
-              color: view === t.key ? '#fff' : '#4A6FA5',
-              padding: '9px 8px',
-              borderRadius: 12,
-              fontSize: 13,
-              fontWeight: 900,
-              cursor: 'pointer',
-              outline: 'none',
-            }}
-          >
+          <button key={t.key} type="button" onClick={() => onChange(t.key)} style={S.tab(view === t.key)}>
             {t.label}
           </button>
         ))}
       </div>
-      <button
-        type="button"
-        onClick={onToday}
-        style={{ border: 'none', background: '#E9EEF6', color: '#4A6FA5', fontWeight: 800, fontSize: 12, padding: '9px 12px', borderRadius: 12, cursor: 'pointer', outline: 'none' }}
-      >
-        今天
-      </button>
+      <button type="button" onClick={onToday} style={S.todayBtn}>今天</button>
     </div>
   );
 }

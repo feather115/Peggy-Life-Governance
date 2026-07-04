@@ -1,23 +1,28 @@
-// 週檢視：一週 7 天直向列表，每天下面列出當天事件，點某一天跳去日檢視。
+// 週檢視：一週 7 天直向列表，每天下面列出當天事件，點某一天跳去日檢視（openDay）。
 import React, { useMemo } from 'react';
 import { DOW, dateKeyFrom, formatTime, getWeekDays, parseDateKey, todayKey, weekRangeLabel } from '../utils.js';
+import { THEME } from '../theme.js';
 
 const S = {
-  panel: { background: '#fff', borderRadius: 20, padding: 14, marginTop: 6, boxShadow: '0 6px 18px -12px rgba(74,111,165,.25)' },
+  panel: { background: THEME.surface, borderRadius: THEME.radius, padding: 14, margin: '6px 20px 20px', boxShadow: THEME.shadow },
   header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
-  navBtn: { border: 'none', background: '#F5F7FA', color: '#4A6FA5', width: 34, height: 34, borderRadius: '50%', cursor: 'pointer', fontSize: 18, fontWeight: 900, outline: 'none' },
-  title: { fontSize: 15, fontWeight: 900, color: '#233A5E' },
-  dayRow: { borderTop: '1px solid #EEF1F6', padding: '10px 4px', cursor: 'pointer' },
-  dayHeader: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 },
-  dayLabel: { fontSize: 13, fontWeight: 900, color: '#233A5E' },
-  todayBadge: { fontSize: 10, fontWeight: 900, color: '#4A6FA5', background: '#EFF3FA', padding: '2px 6px', borderRadius: 8 },
-  eventChip: { fontSize: 12, color: '#4A6FA5', fontWeight: 700, marginTop: 2 },
-  empty: { fontSize: 12, color: '#C3CAD8', fontWeight: 700 },
+  navBtn: { border: 'none', background: 'none', cursor: 'pointer', fontSize: 18, color: THEME.textMuted, padding: '4px 10px', outline: 'none' },
+  title: { fontSize: 15, fontWeight: 700, color: THEME.textDark },
+  dayRow: (selected) => ({ cursor: 'pointer', padding: '12px 12px', marginTop: 8, background: selected ? THEME.primarySoft : THEME.surfaceAlt2, borderRadius: THEME.radiusSm }),
+  dayHeader: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 },
+  dayLabel: { fontSize: 14, fontWeight: 700, color: THEME.textDark },
+  todayBadge: { fontSize: 11, fontWeight: 700, color: '#fff', background: THEME.primary, padding: '2px 7px', borderRadius: 999 },
+  itemRow: { display: 'flex', gap: 8, fontSize: 13, padding: '2px 0', alignItems: 'center' },
+  itemDot: { width: 8, height: 8, borderRadius: '50%', flexShrink: 0 },
+  itemTime: { color: THEME.textMuted, minWidth: 36 },
+  itemTitle: { color: THEME.textDark },
+  empty: { fontSize: 13, color: THEME.textFaint },
 };
 
-export default function WeekView({ anchorKey, onAnchorChange, eventsByDate, onSelectDay }) {
+export default function WeekView({ anchorKey, onAnchorChange, selectedDateKey, onOpenDay, eventsByDate }) {
   const anchor = parseDateKey(anchorKey);
   const weekDays = useMemo(() => getWeekDays(anchor), [anchor]);
+  const today = todayKey();
 
   const shiftWeek = (delta) => {
     const next = new Date(anchor);
@@ -36,18 +41,21 @@ export default function WeekView({ anchorKey, onAnchorChange, eventsByDate, onSe
       {weekDays.map((dateKey) => {
         const date = parseDateKey(dateKey);
         const dayEvents = eventsByDate[dateKey] || [];
-        const isToday = dateKey === todayKey();
+        const isToday = dateKey === today;
+        const isSelected = dateKey === selectedDateKey;
         return (
-          <div key={dateKey} style={S.dayRow} onClick={() => onSelectDay(dateKey)}>
+          <div key={dateKey} style={S.dayRow(isSelected)} onClick={() => onOpenDay(dateKey)}>
             <div style={S.dayHeader}>
-              <span style={S.dayLabel}>{date.getMonth() + 1}/{date.getDate()}（{DOW[date.getDay()]}）</span>
+              <span style={S.dayLabel}>{date.getMonth() + 1}/{date.getDate()} 週{DOW[date.getDay()]}</span>
               {isToday && <span style={S.todayBadge}>今天</span>}
             </div>
             {dayEvents.length === 0
               ? <div style={S.empty}>沒有事件</div>
               : dayEvents.map((ev) => (
-                <div key={ev.id} style={S.eventChip}>
-                  {ev.all_day ? '全天' : formatTime(ev.start_at)} · {ev.title}
+                <div key={ev.id} style={S.itemRow}>
+                  <span style={{ ...S.itemDot, background: ev.color || THEME.primary }} />
+                  <span style={S.itemTime}>{ev.all_day ? '全天' : formatTime(ev.start_at)}</span>
+                  <span style={S.itemTitle}>{ev.title}</span>
                 </div>
               ))}
           </div>

@@ -1,21 +1,43 @@
-// 月檢視：格線月曆，有事件的日期顯示小圓點，點日期跳去日檢視。
+// 月檢視：格線月曆（有事件的日期顯示顏色小圓點）+ 下方選中日期的摘要卡。
+// 點日期只會「選中」該天並更新摘要卡，不會離開月檢視；點摘要卡標題才會跳去日檢視（onOpenDay）。
 import React, { useMemo } from 'react';
-import { DOW, dateKeyFrom, getMonthDays, monthLabel, parseDateKey, todayKey } from '../utils.js';
+import { DOW, dateKeyFrom, formatTime, getMonthDays, monthLabel, parseDateKey, todayKey } from '../utils.js';
+import { THEME } from '../theme.js';
 
 const S = {
-  panel: { background: '#fff', borderRadius: 20, padding: 14, marginTop: 6, boxShadow: '0 6px 18px -12px rgba(74,111,165,.25)' },
+  panel: { background: THEME.surface, borderRadius: THEME.radius, padding: 14, margin: '6px 20px 0', boxShadow: THEME.shadow },
   header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
-  navBtn: { border: 'none', background: '#F5F7FA', color: '#4A6FA5', width: 34, height: 34, borderRadius: '50%', cursor: 'pointer', fontSize: 18, fontWeight: 900, outline: 'none' },
-  title: { fontSize: 16, fontWeight: 900, color: '#233A5E' },
-  grid: { display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 4, marginTop: 12 },
-  dow: { textAlign: 'center', fontSize: 11, fontWeight: 900, color: '#A9B4C6' },
-  dayCell: { minHeight: 54, border: '1px solid #EEF1F6', borderRadius: 10, padding: '5px 4px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, cursor: 'pointer', background: '#fff' },
-  todayCell: { boxShadow: 'inset 0 0 0 2px rgba(74,111,165,.35)' },
-  dayNum: { fontSize: 12, fontWeight: 800, color: '#233A5E' },
-  dot: { width: 5, height: 5, borderRadius: '50%', background: '#4A6FA5' },
+  navBtn: { border: 'none', background: 'none', cursor: 'pointer', fontSize: 18, color: THEME.textMuted, padding: '4px 10px', outline: 'none' },
+  title: { fontSize: 16, fontWeight: 700, color: THEME.textDark },
+  legend: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, padding: '0 4px 8px' },
+  legendItem: { display: 'flex', alignItems: 'center', gap: 5 },
+  legendDot: { width: 6, height: 6, borderRadius: '50%', background: THEME.primary },
+  legendLabel: { fontSize: 11, color: THEME.textMuted },
+  dowRow: { display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', padding: '8px 2px 2px', textAlign: 'center' },
+  dow: { fontSize: 12, color: THEME.textFaint, fontWeight: 600, paddingBottom: 6 },
+  grid: { display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 2, paddingBottom: 4 },
+  dayCell: { cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, minHeight: 46, borderRadius: THEME.radiusSm, padding: '4px 0' },
+  badge: { width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 },
+  dotsRow: { display: 'flex', gap: 3, alignItems: 'center', height: 6 },
+  dot: { width: 6, height: 6, borderRadius: '50%' },
 };
 
-export default function MonthView({ anchorKey, onAnchorChange, eventsByDate, onSelectDay }) {
+const DetailCardStyle = {
+  card: { margin: '16px 20px 20px', background: THEME.surface, borderRadius: THEME.radius, boxShadow: THEME.shadow, overflow: 'hidden' },
+  cardHeader: { cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderBottom: `1px solid ${THEME.border}` },
+  cardHeaderLeft: { display: 'flex', alignItems: 'center', gap: 8 },
+  cardHeaderTitle: { fontSize: 14, fontWeight: 700, color: THEME.textDark },
+  todayBadge: { fontSize: 11, fontWeight: 700, color: '#fff', background: THEME.primary, padding: '2px 7px', borderRadius: 999 },
+  cardHeaderLink: { fontSize: 13, color: THEME.primary, fontWeight: 600 },
+  cardBody: { padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 6 },
+  empty: { fontSize: 13, color: THEME.textFaint, padding: '8px 0' },
+  itemRow: { display: 'flex', gap: 8, fontSize: 13, padding: '2px 0', alignItems: 'center' },
+  itemDot: { width: 8, height: 8, borderRadius: '50%', flexShrink: 0 },
+  itemTime: { color: THEME.textMuted, minWidth: 36 },
+  itemTitle: { color: THEME.textDark },
+};
+
+export default function MonthView({ anchorKey, onAnchorChange, selectedDateKey, onSelectDay, onOpenDay, eventsByDate }) {
   const anchor = parseDateKey(anchorKey);
   const monthDays = useMemo(() => getMonthDays(anchor.getFullYear(), anchor.getMonth()), [anchor]);
 
@@ -24,33 +46,90 @@ export default function MonthView({ anchorKey, onAnchorChange, eventsByDate, onS
     onAnchorChange(dateKeyFrom(next));
   };
 
+  const today = todayKey();
+  const selectedDate = parseDateKey(selectedDateKey);
+  const selectedEvents = eventsByDate[selectedDateKey] || [];
+  const isSelectedToday = selectedDateKey === today;
+
   return (
-    <div style={S.panel}>
-      <div style={S.header}>
-        <button type="button" onClick={() => shiftMonth(-1)} style={S.navBtn} aria-label="上一個月">‹</button>
-        <div style={S.title}>{monthLabel(anchor.getFullYear(), anchor.getMonth())}</div>
-        <button type="button" onClick={() => shiftMonth(1)} style={S.navBtn} aria-label="下一個月">›</button>
+    <>
+      <div style={S.panel}>
+        <div style={S.header}>
+          <button type="button" onClick={() => shiftMonth(-1)} style={S.navBtn} aria-label="上一個月">‹</button>
+          <div style={S.title}>{monthLabel(anchor.getFullYear(), anchor.getMonth())}</div>
+          <button type="button" onClick={() => shiftMonth(1)} style={S.navBtn} aria-label="下一個月">›</button>
+        </div>
+
+        <div style={S.legend}>
+          <div style={S.legendItem}>
+            <span style={S.legendDot} />
+            <span style={S.legendLabel}>事件</span>
+          </div>
+        </div>
+
+        <div style={S.dowRow}>
+          {DOW.map((d) => <div key={d} style={S.dow}>{d}</div>)}
+        </div>
+
+        <div style={S.grid}>
+          {monthDays.map((dateKey, idx) => {
+            if (!dateKey) return <div key={`empty-${idx}`} />;
+            const date = parseDateKey(dateKey);
+            const dayEvents = eventsByDate[dateKey] || [];
+            const isToday = dateKey === today;
+            const isSelected = dateKey === selectedDateKey;
+
+            const dotColors = [];
+            dayEvents.forEach((ev) => {
+              const c = ev.color || THEME.primary;
+              if (!dotColors.includes(c)) dotColors.push(c);
+            });
+
+            return (
+              <div
+                key={dateKey}
+                style={{ ...S.dayCell, background: isSelected && !isToday ? THEME.primarySoft : 'transparent' }}
+                onClick={() => onSelectDay(dateKey)}
+              >
+                <div style={{
+                  ...S.badge,
+                  fontWeight: isToday ? 700 : 500,
+                  background: isToday ? THEME.primary : 'transparent',
+                  color: isToday ? '#fff' : THEME.textDark,
+                }}>
+                  {date.getDate()}
+                </div>
+                <div style={S.dotsRow}>
+                  {dotColors.slice(0, 3).map((c) => (
+                    <span key={c} style={{ ...S.dot, background: c }} />
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
-      <div style={S.grid}>
-        {DOW.map((d) => <div key={d} style={S.dow}>{d}</div>)}
-        {monthDays.map((dateKey, idx) => {
-          if (!dateKey) return <div key={`empty-${idx}`} />;
-          const date = parseDateKey(dateKey);
-          const dayEvents = eventsByDate[dateKey] || [];
-          const isToday = dateKey === todayKey();
-          return (
-            <div
-              key={dateKey}
-              style={{ ...S.dayCell, ...(isToday ? S.todayCell : {}) }}
-              onClick={() => onSelectDay(dateKey)}
-            >
-              <span style={S.dayNum}>{date.getDate()}</span>
-              {dayEvents.length > 0 && <span style={S.dot} />}
+      <div style={DetailCardStyle.card}>
+        <div style={DetailCardStyle.cardHeader} onClick={() => onOpenDay(selectedDateKey)}>
+          <div style={DetailCardStyle.cardHeaderLeft}>
+            <div style={DetailCardStyle.cardHeaderTitle}>{selectedDate.getMonth() + 1}月{selectedDate.getDate()}日 週{DOW[selectedDate.getDay()]}</div>
+            {isSelectedToday && <span style={DetailCardStyle.todayBadge}>今天</span>}
+          </div>
+          <div style={DetailCardStyle.cardHeaderLink}>完整檢視 ›</div>
+        </div>
+        <div style={DetailCardStyle.cardBody}>
+          {selectedEvents.length === 0 ? (
+            <div style={DetailCardStyle.empty}>這天還沒有記錄</div>
+          ) : selectedEvents.map((ev) => (
+            <div key={ev.id} style={DetailCardStyle.itemRow}>
+              <span style={{ ...DetailCardStyle.itemDot, background: ev.color || THEME.primary }} />
+              <span style={DetailCardStyle.itemTime}>{ev.all_day ? '全天' : formatTime(ev.start_at)}</span>
+              <span style={DetailCardStyle.itemTitle}>{ev.title}</span>
             </div>
-          );
-        })}
+          ))}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -9,6 +9,8 @@ const EVENT_COLUMNS = [
   'start_at',
   'end_at',
   'all_day',
+  'color',
+  'tags',
   'created_at',
 ].join(', ');
 

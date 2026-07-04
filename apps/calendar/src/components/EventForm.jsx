@@ -1,22 +1,41 @@
 // 新增 / 編輯事件的表單。event = null 為新增模式。
-import React, { useState } from 'react';
+// allEvents：目前所有事件（給標題自動完成建議用，只在新增模式才出現）。
+import React, { useMemo, useState } from 'react';
 import { fromDatetimeLocalValue, toDatetimeLocalValue } from '../utils.js';
+import { EVENT_COLORS, THEME } from '../theme.js';
 
 const S = {
-  view: { padding: '6px 18px 24px' },
-  header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 },
-  backBtn: { border: 'none', background: '#fff', color: '#4A6FA5', fontWeight: 900, fontSize: 14, padding: '8px 16px', borderRadius: 14, cursor: 'pointer', boxShadow: '0 4px 12px -8px rgba(0,0,0,.2)', outline: 'none' },
-  title: { fontSize: 20, fontWeight: 900, color: '#233A5E', margin: 0 },
-  card: { background: '#fff', borderRadius: 20, padding: 18, boxShadow: '0 10px 24px -18px rgba(74,111,165,.3)' },
-  label: { display: 'block', fontSize: 13, fontWeight: 900, color: '#233A5E', marginBottom: 6, marginTop: 14 },
-  checkboxRow: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 14, cursor: 'pointer' },
-  input: { width: '100%', boxSizing: 'border-box', border: 'none', background: '#F5F7FA', borderRadius: 14, padding: '11px 14px', fontSize: 14, fontWeight: 700, color: '#233A5E', outline: 'none' },
-  textarea: { width: '100%', boxSizing: 'border-box', border: 'none', background: '#F5F7FA', borderRadius: 14, padding: '11px 14px', fontSize: 14, fontWeight: 700, color: '#233A5E', outline: 'none', minHeight: 80, lineHeight: 1.6, fontFamily: 'inherit' },
-  actions: { display: 'flex', gap: 10, marginTop: 24 },
-  saveBtn: { flex: 1, border: 'none', background: '#4A6FA5', color: '#fff', borderRadius: 14, padding: '12px 14px', fontSize: 15, fontWeight: 900, cursor: 'pointer', outline: 'none' },
-  cancelBtn: { border: 'none', background: '#E9EEF6', color: '#4A6FA5', borderRadius: 14, padding: '12px 18px', fontSize: 15, fontWeight: 900, cursor: 'pointer', outline: 'none' },
-  errorBox: { background: '#FEE2E2', color: '#B91C1C', padding: '10px 12px', borderRadius: 12, fontSize: 13, fontWeight: 800, marginTop: 12 },
-  deleteBtn: { width: '100%', border: 'none', borderRadius: 14, padding: '12px 14px', fontSize: 13, fontWeight: 900, cursor: 'pointer', outline: 'none' },
+  view: { padding: '6px 20px 24px' },
+  header: { display: 'flex', alignItems: 'center', gap: 12, padding: '16px 0', marginBottom: 4 },
+  backBtn: { border: 'none', background: 'none', cursor: 'pointer', fontSize: 20, color: THEME.textMuted, padding: '2px 6px', outline: 'none' },
+  title: { fontSize: 17, fontWeight: 700, color: THEME.textDark, margin: 0 },
+  field: { marginBottom: 18 },
+  label: { fontSize: 13, color: THEME.textMuted, marginBottom: 6 },
+  required: { color: THEME.error },
+  input: { width: '100%', boxSizing: 'border-box', border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSm, padding: '11px 12px', fontSize: 15, color: THEME.textDark, background: THEME.surface, outline: 'none' },
+  inputError: { borderColor: THEME.error },
+  textarea: { width: '100%', boxSizing: 'border-box', border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSm, padding: '11px 12px', fontSize: 15, color: THEME.textDark, background: THEME.surface, outline: 'none', minHeight: 76, lineHeight: 1.6, fontFamily: 'inherit', resize: 'vertical' },
+  errorText: { fontSize: 12, color: THEME.error, marginTop: 5 },
+  suggestions: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 },
+  suggestionChip: { cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, background: THEME.surfaceAlt, padding: '5px 10px 5px 8px', borderRadius: 999, fontSize: 12, color: THEME.textDark },
+  suggestionDot: { width: 8, height: 8, borderRadius: '50%', flexShrink: 0 },
+  colorsRow: { display: 'flex', gap: 8 },
+  colorDot: (selected) => ({ cursor: 'pointer', width: 28, height: 28, borderRadius: '50%', border: selected ? `2px solid ${THEME.textDark}` : '2px solid transparent' }),
+  toggleRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 },
+  toggleLabel: { fontSize: 14, color: THEME.textDark, fontWeight: 600 },
+  toggleTrack: (on) => ({ width: 44, height: 26, borderRadius: 13, background: on ? THEME.primary : THEME.textFaint, position: 'relative', cursor: 'pointer' }),
+  toggleKnob: (on) => ({ width: 20, height: 20, borderRadius: '50%', background: '#fff', position: 'absolute', top: 3, left: on ? 21 : 3, boxShadow: '0 1px 3px rgba(0,0,0,.25)' }),
+  endRow: { display: 'flex', gap: 8 },
+  clearBtn: { border: `1px solid ${THEME.border}`, background: THEME.surface, cursor: 'pointer', padding: '0 14px', borderRadius: THEME.radiusSm, fontSize: 13, color: THEME.textMuted, fontWeight: 600 },
+  tagsWrap: { display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' },
+  tagChip: { display: 'flex', alignItems: 'center', gap: 4, background: THEME.primarySoft, color: THEME.primary, fontSize: 12, fontWeight: 600, padding: '5px 8px 5px 10px', borderRadius: 999 },
+  tagRemove: { cursor: 'pointer', fontSize: 13, lineHeight: 1 },
+  tagInput: { border: `1px dashed ${THEME.textFaint}`, background: 'transparent', fontSize: 12, padding: '6px 10px', borderRadius: 999, color: THEME.textMuted, outline: 'none', width: 120 },
+  actions: { display: 'flex', flexDirection: 'column', gap: 10, marginTop: 8 },
+  saveBtn: { width: '100%', border: 'none', cursor: 'pointer', padding: 13, borderRadius: THEME.radiusSm, background: THEME.primary, color: '#fff', fontSize: 15, fontWeight: 700, outline: 'none' },
+  cancelBtn: { width: '100%', border: 'none', cursor: 'pointer', padding: 12, borderRadius: THEME.radiusSm, background: THEME.surfaceAlt, color: THEME.textMuted, fontSize: 14, fontWeight: 600, outline: 'none' },
+  errorBox: { background: THEME.errorBg, color: THEME.error, padding: '10px 12px', borderRadius: THEME.radiusSm, fontSize: 13, fontWeight: 600, marginBottom: 12 },
+  deleteBtn: (confirming) => ({ width: '100%', border: `1px solid ${confirming ? THEME.error : THEME.error}`, borderRadius: THEME.radiusSm, padding: 12, fontSize: 13, fontWeight: 600, cursor: 'pointer', background: confirming ? THEME.error : THEME.surface, color: confirming ? '#fff' : THEME.error, marginTop: 10 }),
 };
 
 // 新增事件時預設開始時間：選定日期的早上 9 點
@@ -26,10 +45,13 @@ function defaultStartValue(dateKey) {
   return toDatetimeLocalValue(d.toISOString());
 }
 
-export default function EventForm({ event, defaultDateKey, onSave, onDelete, onCancel }) {
+export default function EventForm({ event, defaultDateKey, allEvents = [], onSave, onDelete, onCancel }) {
   const isEdit = !!event;
 
   const [title, setTitle] = useState(event?.title || '');
+  const [color, setColor] = useState(event?.color || EVENT_COLORS[0]);
+  const [tags, setTags] = useState(event?.tags || []);
+  const [tagDraft, setTagDraft] = useState('');
   const [description, setDescription] = useState(event?.description || '');
   const [allDay, setAllDay] = useState(!!event?.all_day);
   const [startValue, setStartValue] = useState(
@@ -39,18 +61,59 @@ export default function EventForm({ event, defaultDateKey, onSave, onDelete, onC
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [titleTouched, setTitleTouched] = useState(false);
+
+  // 過去用過的標題（新增模式才顯示，輸入時比對片段），點了直接帶入標題 + 顏色
+  const titleSuggestions = useMemo(() => {
+    if (isEdit) return [];
+    const query = title.trim().toLowerCase();
+    if (!query) return [];
+    const seen = new Map();
+    allEvents.forEach((ev) => {
+      const t = ev.title;
+      if (!t || t.toLowerCase() === query) return;
+      if (!t.toLowerCase().includes(query)) return;
+      if (!seen.has(t)) seen.set(t, ev);
+    });
+    return Array.from(seen.entries()).slice(0, 5);
+  }, [allEvents, title, isEdit]);
+
+  const addTagFromDraft = (e) => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    const val = tagDraft.trim();
+    if (!val) return;
+    if (!tags.includes(val)) setTags((prev) => [...prev, val]);
+    setTagDraft('');
+  };
+  const removeTag = (tag) => setTags((prev) => prev.filter((t) => t !== tag));
+
+  const toggleAllDay = () => {
+    const nowAllDay = !allDay;
+    setAllDay(nowAllDay);
+    if (nowAllDay) {
+      if (startValue.length > 10) setStartValue(startValue.slice(0, 10));
+      if (endValue.length > 10) setEndValue(endValue.slice(0, 10));
+    } else {
+      if (startValue.length === 10) setStartValue(`${startValue}T09:00`);
+      if (endValue.length === 10) setEndValue(`${endValue}T09:00`);
+    }
+  };
 
   const handleSave = async () => {
     setError('');
-    if (!title.trim()) { setError('請輸入事件標題'); return; }
+    setTitleTouched(true);
+    if (!title.trim()) return;
     if (!startValue) { setError('請選擇開始時間'); return; }
 
     const payload = {
       title: title.trim(),
       description: description.trim() || null,
       all_day: allDay,
-      start_at: fromDatetimeLocalValue(startValue),
-      end_at: !allDay && endValue ? fromDatetimeLocalValue(endValue) : null,
+      start_at: fromDatetimeLocalValue(allDay ? `${startValue.slice(0, 10)}T00:00` : startValue),
+      end_at: endValue ? fromDatetimeLocalValue(allDay ? `${endValue.slice(0, 10)}T00:00` : endValue) : null,
+      color,
+      tags,
     };
 
     setBusy(true);
@@ -74,62 +137,114 @@ export default function EventForm({ event, defaultDateKey, onSave, onDelete, onC
     }
   };
 
+  const titleInvalid = titleTouched && !title.trim();
+
   return (
     <div style={S.view}>
       <header style={S.header}>
-        <button type="button" onClick={onCancel} disabled={busy} style={S.backBtn}>‹ 取消</button>
+        <button type="button" onClick={onCancel} disabled={busy} style={S.backBtn} aria-label="返回">←</button>
         <h1 style={S.title}>{isEdit ? '編輯事件' : '新增事件'}</h1>
-        <div style={{ width: 64 }} />
       </header>
 
-      <div style={S.card}>
-        <label style={{ ...S.label, marginTop: 0 }}>標題 *</label>
-        <input style={S.input} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="例：跟牙醫預約" />
+      {error && <div style={S.errorBox}>{error}</div>}
 
-        <label style={S.checkboxRow}>
-          <input type="checkbox" checked={allDay} onChange={(e) => setAllDay(e.target.checked)} /> 全天事件
-        </label>
+      <div style={S.field}>
+        <div style={S.label}>標題 <span style={S.required}>＊</span></div>
+        <input
+          style={{ ...S.input, ...(titleInvalid ? S.inputError : {}) }}
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="例如：牙醫回診"
+        />
+        {titleInvalid && <div style={S.errorText}>請輸入標題</div>}
+        {titleSuggestions.length > 0 && (
+          <div style={S.suggestions}>
+            {titleSuggestions.map(([t, ev]) => (
+              <div key={t} style={S.suggestionChip} onClick={() => { setTitle(t); setColor(ev.color || EVENT_COLORS[0]); }}>
+                <span style={{ ...S.suggestionDot, background: ev.color || THEME.primary }} />
+                <span>{t}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
-        <label style={S.label}>開始時間 *</label>
+      <div style={S.field}>
+        <div style={S.label}>顏色</div>
+        <div style={S.colorsRow}>
+          {EVENT_COLORS.map((c) => (
+            <div key={c} style={{ ...S.colorDot(color === c), background: c }} onClick={() => setColor(c)} />
+          ))}
+        </div>
+      </div>
+
+      <div style={S.toggleRow}>
+        <div style={S.toggleLabel}>全天事件</div>
+        <div style={S.toggleTrack(allDay)} onClick={toggleAllDay}>
+          <div style={S.toggleKnob(allDay)} />
+        </div>
+      </div>
+
+      <div style={S.field}>
+        <div style={S.label}>開始時間 <span style={S.required}>＊</span></div>
         <input
           type={allDay ? 'date' : 'datetime-local'}
           style={S.input}
           value={allDay ? startValue.slice(0, 10) : startValue}
-          onChange={(e) => setStartValue(allDay ? `${e.target.value}T00:00` : e.target.value)}
+          onChange={(e) => setStartValue(allDay ? e.target.value : e.target.value)}
         />
-
-        {!allDay && (
-          <>
-            <label style={S.label}>結束時間（選填）</label>
-            <input type="datetime-local" style={S.input} value={endValue} onChange={(e) => setEndValue(e.target.value)} />
-          </>
-        )}
-
-        <label style={S.label}>備註（選填）</label>
-        <textarea style={S.textarea} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="地點、細節..." />
-
-        {error && <div style={S.errorBox}>{error}</div>}
-
-        <div style={S.actions}>
-          <button type="button" style={S.saveBtn} onClick={handleSave} disabled={busy}>
-            {busy ? '儲存中…' : (isEdit ? '儲存變更' : '建立事件')}
-          </button>
-          <button type="button" style={S.cancelBtn} onClick={onCancel} disabled={busy}>取消</button>
-        </div>
-
-        {isEdit && onDelete && (
-          <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid #EEF1F6' }}>
-            <button
-              type="button"
-              onClick={handleDelete}
-              disabled={busy}
-              style={{ ...S.deleteBtn, background: confirmDelete ? '#FEE2E2' : '#F5F7FA', color: confirmDelete ? '#B91C1C' : '#8792A6' }}
-            >
-              {confirmDelete ? '⚠️ 確認刪除（無法復原，再按一次）' : '🗑️ 刪除這個事件'}
-            </button>
-          </div>
-        )}
       </div>
+
+      <div style={S.field}>
+        <div style={S.label}>結束時間 <span style={{ color: THEME.textFaint }}>(選填)</span></div>
+        <div style={S.endRow}>
+          <input
+            type={allDay ? 'date' : 'datetime-local'}
+            style={S.input}
+            value={allDay ? endValue.slice(0, 10) : endValue}
+            onChange={(e) => setEndValue(e.target.value)}
+          />
+          {endValue && <button type="button" style={S.clearBtn} onClick={() => setEndValue('')}>清除</button>}
+        </div>
+      </div>
+
+      <div style={S.field}>
+        <div style={S.label}>描述 <span style={{ color: THEME.textFaint }}>(選填)</span></div>
+        <textarea style={S.textarea} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="備註…" />
+      </div>
+
+      <div style={S.field}>
+        <div style={S.label}>標籤 <span style={{ color: THEME.textFaint }}>(選填)</span></div>
+        <div style={S.tagsWrap}>
+          {tags.map((tag) => (
+            <div key={tag} style={S.tagChip}>
+              <span>{tag}</span>
+              <span style={S.tagRemove} onClick={() => removeTag(tag)}>×</span>
+            </div>
+          ))}
+          <input
+            type="text"
+            value={tagDraft}
+            onChange={(e) => setTagDraft(e.target.value)}
+            onKeyDown={addTagFromDraft}
+            placeholder="輸入後按 Enter"
+            style={S.tagInput}
+          />
+        </div>
+      </div>
+
+      <div style={S.actions}>
+        <button type="button" style={S.saveBtn} onClick={handleSave} disabled={busy}>
+          {busy ? '儲存中…' : '儲存'}
+        </button>
+        <button type="button" style={S.cancelBtn} onClick={onCancel} disabled={busy}>取消</button>
+      </div>
+
+      {isEdit && onDelete && (
+        <button type="button" style={S.deleteBtn(confirmDelete)} onClick={handleDelete} disabled={busy}>
+          {confirmDelete ? '確定要刪除嗎？' : '刪除事件'}
+        </button>
+      )}
     </div>
   );
 }
