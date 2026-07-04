@@ -1,6 +1,7 @@
-// App 外殼：520px 置中容器，載入 useEvents，依 view 切換月/週/日檢視或事件表單。
+// App 外殼：520px 置中容器，載入 useEvents + useDiary，依 view 切換月/週/日檢視或各種表單。
 import React, { useState } from 'react';
 import { useEvents } from './useEvents.js';
+import { useDiary } from './useDiary.js';
 import { THEME } from './theme.js';
 import { dateKeyFrom, parseDateKey } from './utils.js';
 import ViewTabs from './components/ViewTabs.jsx';
@@ -8,6 +9,8 @@ import MonthView from './components/MonthView.jsx';
 import WeekView from './components/WeekView.jsx';
 import DayView from './components/DayView.jsx';
 import EventForm from './components/EventForm.jsx';
+import DiaryForm from './components/DiaryForm.jsx';
+import ManageTags from './components/ManageTags.jsx';
 
 function Centered({ children, color = THEME.primary }) {
   return (
@@ -20,11 +23,16 @@ function Centered({ children, color = THEME.primary }) {
 export default function App({ session, onSignOut }) {
   const userId = session.user.id;
   const cal = useEvents(userId);
+  const diary = useDiary(userId);
   // editing: null | { mode: 'create', dateKey } | { mode: 'edit', event }
   const [editing, setEditing] = useState(null);
+  // editingDiary: null | { mode: 'create', dateKey } | { mode: 'edit', entry }
+  const [editingDiary, setEditingDiary] = useState(null);
+  const [managingTags, setManagingTags] = useState(false);
 
-  if (!cal.loaded) return <Centered>載入中…</Centered>;
+  if (!cal.loaded || !diary.loaded) return <Centered>載入中…</Centered>;
   if (cal.loadError) return <Centered color={THEME.error}>載入失敗：{cal.loadError}</Centered>;
+  if (diary.loadError) return <Centered color={THEME.error}>載入失敗：{diary.loadError}</Centered>;
 
   const shiftSelectedDay = (delta) => {
     const next = new Date(parseDateKey(cal.selectedDateKey));
@@ -34,16 +42,64 @@ export default function App({ session, onSignOut }) {
     cal.setSelectedDateKey(nextKey);
   };
 
-  const handleSave = async (payload, existingId) => {
+  const handleSaveEvent = async (payload, existingId) => {
     if (existingId) await cal.updateEvent(existingId, payload);
     else await cal.createEvent(payload);
     setEditing(null);
   };
 
-  const handleDelete = async (eventId) => {
+  const handleDeleteEvent = async (eventId) => {
     await cal.deleteEvent(eventId);
     setEditing(null);
   };
+
+  const handleSaveDiary = async (payload, existingId) => {
+    if (existingId) await diary.updateEntry(existingId, payload);
+    else await diary.createEntry(payload);
+    setEditingDiary(null);
+  };
+
+  const handleDeleteDiary = async (entryId) => {
+    await diary.deleteEntry(entryId);
+    setEditingDiary(null);
+  };
+
+  const overlay = editing
+    ? (
+      <EventForm
+        event={editing.mode === 'edit' ? editing.event : null}
+        defaultDateKey={editing.mode === 'create' ? editing.dateKey : undefined}
+        allEvents={cal.events}
+        onSave={handleSaveEvent}
+        onDelete={editing.mode === 'edit' ? handleDeleteEvent : null}
+        onCancel={() => setEditing(null)}
+      />
+    )
+    : editingDiary
+    ? (
+      <DiaryForm
+        entry={editingDiary.mode === 'edit' ? editingDiary.entry : null}
+        dateKey={editingDiary.mode === 'edit' ? editingDiary.entry.entry_date : editingDiary.dateKey}
+        categories={diary.categories}
+        onSave={handleSaveDiary}
+        onDelete={editingDiary.mode === 'edit' ? handleDeleteDiary : null}
+        onCancel={() => setEditingDiary(null)}
+        onManageTags={() => setManagingTags(true)}
+      />
+    )
+    : managingTags
+    ? (
+      <ManageTags
+        categories={diary.categories}
+        onRenameCategory={diary.renameCategory}
+        onDeleteCategory={diary.deleteCategory}
+        onAddTag={diary.addTagToCategory}
+        onRemoveTag={diary.removeTagFromCategory}
+        onAddCategory={diary.addCategory}
+        onClose={() => setManagingTags(false)}
+      />
+    )
+    : null;
 
   return (
     <div style={{
@@ -59,16 +115,9 @@ export default function App({ session, onSignOut }) {
       boxShadow: '0 0 60px -20px rgba(0,0,0,.12)',
       overflow: 'hidden',
     }}>
-      {editing ? (
+      {overlay ? (
         <div className="ps" style={{ flex: 1, overflowY: 'auto' }}>
-          <EventForm
-            event={editing.mode === 'edit' ? editing.event : null}
-            defaultDateKey={editing.mode === 'create' ? editing.dateKey : undefined}
-            allEvents={cal.events}
-            onSave={handleSave}
-            onDelete={editing.mode === 'edit' ? handleDelete : null}
-            onCancel={() => setEditing(null)}
-          />
+          {overlay}
         </div>
       ) : (
         <>
@@ -88,6 +137,7 @@ export default function App({ session, onSignOut }) {
                 onSelectDay={cal.setSelectedDateKey}
                 onOpenDay={cal.openDay}
                 eventsByDate={cal.eventsByDate}
+                entriesByDate={diary.entriesByDate}
               />
             )}
             {cal.view === 'week' && (
@@ -97,6 +147,7 @@ export default function App({ session, onSignOut }) {
                 selectedDateKey={cal.selectedDateKey}
                 onOpenDay={cal.openDay}
                 eventsByDate={cal.eventsByDate}
+                entriesByDate={diary.entriesByDate}
               />
             )}
             {cal.view === 'day' && (
@@ -104,8 +155,12 @@ export default function App({ session, onSignOut }) {
                 dateKey={cal.selectedDateKey}
                 onShiftDay={shiftSelectedDay}
                 eventsByDate={cal.eventsByDate}
+                entriesByDate={diary.entriesByDate}
+                categories={diary.categories}
                 onEdit={(event) => setEditing({ mode: 'edit', event })}
                 onCreate={(dateKey) => setEditing({ mode: 'create', dateKey })}
+                onEditDiary={(entry) => setEditingDiary({ mode: 'edit', entry })}
+                onCreateDiary={(dateKey) => setEditingDiary({ mode: 'create', dateKey })}
               />
             )}
           </div>

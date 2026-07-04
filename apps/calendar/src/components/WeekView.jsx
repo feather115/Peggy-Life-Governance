@@ -1,6 +1,6 @@
-// 週檢視：一週 7 天直向列表，每天下面列出當天事件，點某一天跳去日檢視（openDay）。
+// 週檢視：一週 7 天直向列表，每天下面列出當天事件+日記，點某一天跳去日檢視（openDay）。
 import React, { useMemo } from 'react';
-import { DOW, dateKeyFrom, formatTime, getWeekDays, parseDateKey, todayKey, weekRangeLabel } from '../utils.js';
+import { DOW, buildDayTimeline, dateKeyFrom, formatDiaryTime, formatTime, getWeekDays, parseDateKey, todayKey, weekRangeLabel } from '../utils.js';
 import { THEME } from '../theme.js';
 
 const S = {
@@ -19,7 +19,7 @@ const S = {
   empty: { fontSize: 13, color: THEME.textFaint },
 };
 
-export default function WeekView({ anchorKey, onAnchorChange, selectedDateKey, onOpenDay, eventsByDate }) {
+export default function WeekView({ anchorKey, onAnchorChange, selectedDateKey, onOpenDay, eventsByDate, entriesByDate }) {
   const anchor = parseDateKey(anchorKey);
   const weekDays = useMemo(() => getWeekDays(anchor), [anchor]);
   const today = todayKey();
@@ -40,7 +40,7 @@ export default function WeekView({ anchorKey, onAnchorChange, selectedDateKey, o
 
       {weekDays.map((dateKey) => {
         const date = parseDateKey(dateKey);
-        const dayEvents = eventsByDate[dateKey] || [];
+        const timeline = buildDayTimeline(eventsByDate[dateKey], entriesByDate?.[dateKey]);
         const isToday = dateKey === today;
         const isSelected = dateKey === selectedDateKey;
         return (
@@ -49,15 +49,28 @@ export default function WeekView({ anchorKey, onAnchorChange, selectedDateKey, o
               <span style={S.dayLabel}>{date.getMonth() + 1}/{date.getDate()} 週{DOW[date.getDay()]}</span>
               {isToday && <span style={S.todayBadge}>今天</span>}
             </div>
-            {dayEvents.length === 0
+            {timeline.length === 0
               ? <div style={S.empty}>沒有事件</div>
-              : dayEvents.map((ev) => (
-                <div key={ev.id} style={S.itemRow}>
-                  <span style={{ ...S.itemDot, background: ev.color || THEME.primary }} />
-                  <span style={S.itemTime}>{ev.all_day ? '全天' : formatTime(ev.start_at)}</span>
-                  <span style={S.itemTitle}>{ev.title}</span>
-                </div>
-              ))}
+              : timeline.map((item) => {
+                if (item.kind === 'event') {
+                  const ev = item.data;
+                  return (
+                    <div key={`ev-${ev.id}`} style={S.itemRow}>
+                      <span style={{ ...S.itemDot, background: ev.color || THEME.primary }} />
+                      <span style={S.itemTime}>{ev.all_day ? '全天' : formatTime(ev.start_at)}</span>
+                      <span style={S.itemTitle}>{ev.title}</span>
+                    </div>
+                  );
+                }
+                const entry = item.data;
+                return (
+                  <div key={`di-${entry.id}`} style={S.itemRow}>
+                    <span style={{ ...S.itemDot, background: THEME.primaryDark }} />
+                    <span style={S.itemTime}>{formatDiaryTime(entry)}</span>
+                    <span style={S.itemTitle}>{(entry.tags || []).join('、') || '日記'}</span>
+                  </div>
+                );
+              })}
           </div>
         );
       })}

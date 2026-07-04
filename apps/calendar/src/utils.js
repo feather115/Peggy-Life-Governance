@@ -89,3 +89,40 @@ export function fromDatetimeLocalValue(value) {
   if (!value) return null;
   return new Date(value).toISOString();
 }
+
+// 把日記依 entry_date 分組成 { dateKey: [entries...] }，組內全天優先、其餘依時間排序
+export function groupDiaryByDate(entries) {
+  const map = {};
+  entries.forEach((e) => {
+    if (!map[e.entry_date]) map[e.entry_date] = [];
+    map[e.entry_date].push(e);
+  });
+  Object.values(map).forEach((list) => list.sort((a, b) => {
+    if (!!a.all_day !== !!b.all_day) return a.all_day ? -1 : 1;
+    return (a.time || '').localeCompare(b.time || '');
+  }));
+  return map;
+}
+
+export function formatDiaryTime(entry) {
+  if (entry.all_day) return '全天';
+  if (entry.end_time) return `${entry.time || '--:--'}–${entry.end_time}`;
+  return entry.time || '--:--';
+}
+
+// 合併事件 + 日記成一條時間軸（全天事件/日記在前，其餘依時間排序），Day/Week 檢視共用
+export function buildDayTimeline(dateEvents, dateDiaryEntries) {
+  const eventItems = (dateEvents || []).map((ev) => ({
+    kind: 'event', id: ev.id, data: ev,
+    isAllDay: !!ev.all_day,
+    sortKey: ev.all_day ? '' : ev.start_at.slice(11, 16),
+  }));
+  const diaryItems = (dateDiaryEntries || []).map((entry) => ({
+    kind: 'diary', id: entry.id, data: entry,
+    isAllDay: !!entry.all_day,
+    sortKey: entry.all_day ? '' : (entry.time || '00:00'),
+  }));
+  const allDay = [...eventItems, ...diaryItems].filter((it) => it.isAllDay);
+  const timed = [...eventItems, ...diaryItems].filter((it) => !it.isAllDay).sort((a, b) => a.sortKey.localeCompare(b.sortKey));
+  return [...allDay, ...timed];
+}

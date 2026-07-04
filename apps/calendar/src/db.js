@@ -49,3 +49,86 @@ export async function deleteEvent(eventId) {
   const { error } = await supabase.from('events').delete().eq('id', eventId);
   if (error) throw error;
 }
+
+// ---- 日記 ----
+
+const DIARY_COLUMNS = [
+  'id', 'user_id', 'entry_date', 'all_day', 'time', 'end_time',
+  'location', 'people', 'tags', 'note', 'created_at',
+].join(', ');
+
+export async function loadDiaryEntries(userId) {
+  const { data, error } = await supabase
+    .from('diary_entries')
+    .select(DIARY_COLUMNS)
+    .eq('user_id', userId)
+    .order('entry_date', { ascending: true });
+  if (error) throw error;
+  return data || [];
+}
+
+export async function createDiaryEntry(userId, payload) {
+  const { data, error } = await supabase
+    .from('diary_entries')
+    .insert({ ...payload, user_id: userId })
+    .select(DIARY_COLUMNS)
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function updateDiaryEntry(entryId, patch) {
+  const { data, error } = await supabase
+    .from('diary_entries')
+    .update(patch)
+    .eq('id', entryId)
+    .select(DIARY_COLUMNS)
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteDiaryEntry(entryId) {
+  const { error } = await supabase.from('diary_entries').delete().eq('id', entryId);
+  if (error) throw error;
+}
+
+// ---- 標籤分類 ----
+
+const CATEGORY_COLUMNS = ['id', 'user_id', 'name', 'tags', 'created_at'].join(', ');
+
+export async function loadCategories(userId) {
+  const { data, error } = await supabase
+    .from('tag_categories')
+    .select(CATEGORY_COLUMNS)
+    .eq('user_id', userId)
+    .order('created_at', { ascending: true });
+  if (error) throw error;
+  return data || [];
+}
+
+export async function createCategories(userId, categories) {
+  // categories: [{ name, tags }] — 用來一次建立預設分類（新使用者首次使用時）
+  const { data, error } = await supabase
+    .from('tag_categories')
+    .insert(categories.map((c) => ({ ...c, user_id: userId })))
+    .select(CATEGORY_COLUMNS);
+  if (error) throw error;
+  return data || [];
+}
+
+export async function updateCategory(categoryId, patch) {
+  const { data, error } = await supabase
+    .from('tag_categories')
+    .update(patch)
+    .eq('id', categoryId)
+    .select(CATEGORY_COLUMNS)
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteCategory(categoryId) {
+  const { error } = await supabase.from('tag_categories').delete().eq('id', categoryId);
+  if (error) throw error;
+}

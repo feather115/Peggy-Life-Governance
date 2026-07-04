@@ -1,7 +1,7 @@
-// 月檢視：格線月曆（有事件的日期顯示顏色小圓點）+ 下方選中日期的摘要卡。
+// 月檢視：格線月曆（有事件/日記的日期顯示顏色小圓點）+ 下方選中日期的摘要卡。
 // 點日期只會「選中」該天並更新摘要卡，不會離開月檢視；點摘要卡標題才會跳去日檢視（onOpenDay）。
 import React, { useMemo } from 'react';
-import { DOW, dateKeyFrom, formatTime, getMonthDays, monthLabel, parseDateKey, todayKey } from '../utils.js';
+import { DOW, buildDayTimeline, dateKeyFrom, formatDiaryTime, formatTime, getMonthDays, monthLabel, parseDateKey, todayKey } from '../utils.js';
 import { THEME } from '../theme.js';
 
 const S = {
@@ -11,7 +11,7 @@ const S = {
   title: { fontSize: 16, fontWeight: 700, color: THEME.textDark },
   legend: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, padding: '0 4px 8px' },
   legendItem: { display: 'flex', alignItems: 'center', gap: 5 },
-  legendDot: { width: 6, height: 6, borderRadius: '50%', background: THEME.primary },
+  legendDot: { width: 6, height: 6, borderRadius: '50%' },
   legendLabel: { fontSize: 11, color: THEME.textMuted },
   dowRow: { display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', padding: '8px 2px 2px', textAlign: 'center' },
   dow: { fontSize: 12, color: THEME.textFaint, fontWeight: 600, paddingBottom: 6 },
@@ -37,7 +37,7 @@ const DetailCardStyle = {
   itemTitle: { color: THEME.textDark },
 };
 
-export default function MonthView({ anchorKey, onAnchorChange, selectedDateKey, onSelectDay, onOpenDay, eventsByDate }) {
+export default function MonthView({ anchorKey, onAnchorChange, selectedDateKey, onSelectDay, onOpenDay, eventsByDate, entriesByDate }) {
   const anchor = parseDateKey(anchorKey);
   const monthDays = useMemo(() => getMonthDays(anchor.getFullYear(), anchor.getMonth()), [anchor]);
 
@@ -48,7 +48,7 @@ export default function MonthView({ anchorKey, onAnchorChange, selectedDateKey, 
 
   const today = todayKey();
   const selectedDate = parseDateKey(selectedDateKey);
-  const selectedEvents = eventsByDate[selectedDateKey] || [];
+  const selectedTimeline = buildDayTimeline(eventsByDate[selectedDateKey], entriesByDate?.[selectedDateKey]);
   const isSelectedToday = selectedDateKey === today;
 
   return (
@@ -62,8 +62,12 @@ export default function MonthView({ anchorKey, onAnchorChange, selectedDateKey, 
 
         <div style={S.legend}>
           <div style={S.legendItem}>
-            <span style={S.legendDot} />
+            <span style={{ ...S.legendDot, background: THEME.primary }} />
             <span style={S.legendLabel}>事件</span>
+          </div>
+          <div style={S.legendItem}>
+            <span style={{ ...S.legendDot, background: THEME.primaryDark }} />
+            <span style={S.legendLabel}>日記</span>
           </div>
         </div>
 
@@ -76,6 +80,7 @@ export default function MonthView({ anchorKey, onAnchorChange, selectedDateKey, 
             if (!dateKey) return <div key={`empty-${idx}`} />;
             const date = parseDateKey(dateKey);
             const dayEvents = eventsByDate[dateKey] || [];
+            const hasDiary = ((entriesByDate && entriesByDate[dateKey]) || []).length > 0;
             const isToday = dateKey === today;
             const isSelected = dateKey === selectedDateKey;
 
@@ -103,6 +108,7 @@ export default function MonthView({ anchorKey, onAnchorChange, selectedDateKey, 
                   {dotColors.slice(0, 3).map((c) => (
                     <span key={c} style={{ ...S.dot, background: c }} />
                   ))}
+                  {hasDiary && <span style={{ ...S.dot, background: THEME.primaryDark }} />}
                 </div>
               </div>
             );
@@ -119,15 +125,28 @@ export default function MonthView({ anchorKey, onAnchorChange, selectedDateKey, 
           <div style={DetailCardStyle.cardHeaderLink}>完整檢視 ›</div>
         </div>
         <div style={DetailCardStyle.cardBody}>
-          {selectedEvents.length === 0 ? (
+          {selectedTimeline.length === 0 ? (
             <div style={DetailCardStyle.empty}>這天還沒有記錄</div>
-          ) : selectedEvents.map((ev) => (
-            <div key={ev.id} style={DetailCardStyle.itemRow}>
-              <span style={{ ...DetailCardStyle.itemDot, background: ev.color || THEME.primary }} />
-              <span style={DetailCardStyle.itemTime}>{ev.all_day ? '全天' : formatTime(ev.start_at)}</span>
-              <span style={DetailCardStyle.itemTitle}>{ev.title}</span>
-            </div>
-          ))}
+          ) : selectedTimeline.map((item) => {
+            if (item.kind === 'event') {
+              const ev = item.data;
+              return (
+                <div key={`ev-${ev.id}`} style={DetailCardStyle.itemRow}>
+                  <span style={{ ...DetailCardStyle.itemDot, background: ev.color || THEME.primary }} />
+                  <span style={DetailCardStyle.itemTime}>{ev.all_day ? '全天' : formatTime(ev.start_at)}</span>
+                  <span style={DetailCardStyle.itemTitle}>{ev.title}</span>
+                </div>
+              );
+            }
+            const entry = item.data;
+            return (
+              <div key={`di-${entry.id}`} style={DetailCardStyle.itemRow}>
+                <span style={{ ...DetailCardStyle.itemDot, background: THEME.primaryDark }} />
+                <span style={DetailCardStyle.itemTime}>{formatDiaryTime(entry)}</span>
+                <span style={DetailCardStyle.itemTitle}>{(entry.tags || []).join('、') || '日記'}</span>
+              </div>
+            );
+          })}
         </div>
       </div>
     </>

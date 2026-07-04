@@ -25,3 +25,11 @@ export const THEME = {
 
 // 事件顏色選項（事件表單的顏色選擇器、月/週/日檢視的顏色圓點都用這組）
 export const EVENT_COLORS = ['#3D5A80', '#3D8073', '#4F8052', '#8C7A3D', '#8C5A3D', '#6B3D80', '#803D5A'];
+
+// 日記標籤依所屬分類上色（分類本身沒有存顏色，用分類在清單裡的順序固定分配）
+const CATEGORY_ACCENTS = ['#3D5A80', '#6B7FA8', '#8B6F9E', '#4A8B8C', '#A0785A'];
+export function categoryAccentForTag(tag, categories) {
+  const idx = categories.findIndex((c) => c.tags.includes(tag));
+  if (idx === -1) return THEME.textMuted;
+  return CATEGORY_ACCENTS[idx % CATEGORY_ACCENTS.length];
+}

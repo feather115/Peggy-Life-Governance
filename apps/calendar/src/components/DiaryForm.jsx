@@ -1,0 +1,182 @@
+// 新增 / 編輯單筆日記。entry = null 為新增模式。
+import React, { useState } from 'react';
+import { THEME } from '../theme.js';
+import { dayLabel } from '../utils.js';
+
+const S = {
+  header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', background: THEME.surface, borderBottom: `1px solid ${THEME.border}` },
+  backBtn: { border: 'none', background: 'none', cursor: 'pointer', fontSize: 20, color: THEME.textMuted, padding: '2px 6px', outline: 'none' },
+  confirmBtn: { border: 'none', cursor: 'pointer', padding: '9px 18px', borderRadius: 999, background: THEME.primary, color: '#fff', fontSize: 14, fontWeight: 700, outline: 'none', boxShadow: '0 4px 12px rgba(61,90,128,.28)' },
+  body: { padding: '24px 20px 40px' },
+  heading: { textAlign: 'center', marginBottom: 22 },
+  headingEyebrow: { fontSize: 12, letterSpacing: '0.06em', color: THEME.textFaint, fontWeight: 600, marginBottom: 6 },
+  headingTitle: { fontSize: 18, fontWeight: 700, color: THEME.textDark },
+  selectedChips: { minHeight: 30, display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', marginBottom: 20 },
+  selectedChip: { fontSize: 12, fontWeight: 700, color: '#fff', background: THEME.primary, padding: '5px 12px', borderRadius: 999 },
+  noSelection: { fontSize: 13, color: THEME.textFaint },
+  toggleRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 },
+  toggleLabel: { fontSize: 14, color: THEME.textDark, fontWeight: 600 },
+  toggleTrack: (on) => ({ width: 44, height: 26, borderRadius: 13, background: on ? THEME.primary : THEME.textFaint, position: 'relative', cursor: 'pointer' }),
+  toggleKnob: (on) => ({ width: 20, height: 20, borderRadius: '50%', background: '#fff', position: 'absolute', top: 3, left: on ? 21 : 3, boxShadow: '0 1px 3px rgba(0,0,0,.25)' }),
+  timeRow: { display: 'flex', gap: 12, marginBottom: 14 },
+  fieldLabel: { fontSize: 13, fontWeight: 700, color: THEME.textMuted, marginBottom: 8 },
+  input: { width: '100%', boxSizing: 'border-box', border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSm, padding: '10px 12px', fontSize: 14, color: THEME.textDark, background: THEME.surface, outline: 'none' },
+  endRow: { display: 'flex', gap: 8 },
+  clearBtn: { border: `1px solid ${THEME.border}`, background: THEME.surface, cursor: 'pointer', padding: '0 12px', borderRadius: THEME.radiusSm, fontSize: 13, color: THEME.textMuted, fontWeight: 600 },
+  field: { marginBottom: 20 },
+  textarea: { width: '100%', boxSizing: 'border-box', border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSm, padding: '12px 14px', fontSize: 14, lineHeight: 1.6, color: THEME.textDark, background: THEME.surface, outline: 'none', fontFamily: 'inherit', resize: 'vertical' },
+  categoryList: { display: 'flex', flexDirection: 'column', gap: 16 },
+  categoryCard: { background: THEME.surface, borderRadius: THEME.radius, padding: '16px 18px', boxShadow: THEME.shadow },
+  categoryName: { fontSize: 13, fontWeight: 700, color: THEME.textMuted, marginBottom: 12 },
+  tagWrap: { display: 'flex', flexWrap: 'wrap', gap: 8 },
+  tagChip: (selected) => ({ cursor: 'pointer', padding: '9px 15px', borderRadius: 999, background: selected ? THEME.primary : THEME.surfaceAlt, color: selected ? '#fff' : THEME.textDark, fontSize: 13, fontWeight: selected ? 700 : 500, boxShadow: selected ? '0 4px 10px rgba(61,90,128,.28)' : 'none' }),
+  emptyCategory: { fontSize: 12, color: THEME.textFaint },
+  manageLink: { marginTop: 24, textAlign: 'center', fontSize: 13, fontWeight: 600, color: THEME.primary, cursor: 'pointer' },
+  deleteLink: (confirming) => ({ marginTop: 16, textAlign: 'center', fontSize: 13, fontWeight: 600, color: confirming ? THEME.error : THEME.textMuted, cursor: 'pointer' }),
+  errorBox: { background: THEME.errorBg, color: THEME.error, padding: '10px 12px', borderRadius: THEME.radiusSm, fontSize: 13, fontWeight: 600, marginBottom: 16 },
+};
+
+export default function DiaryForm({ entry, dateKey, categories, onSave, onDelete, onCancel, onManageTags }) {
+  const isEdit = !!entry;
+
+  const [allDay, setAllDay] = useState(!!entry?.all_day);
+  const [time, setTime] = useState(entry?.time || (() => {
+    const now = new Date();
+    return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  })());
+  const [endTime, setEndTime] = useState(entry?.end_time || '');
+  const [location, setLocation] = useState(entry?.location || '');
+  const [peopleText, setPeopleText] = useState((entry?.people || []).join('、'));
+  const [note, setNote] = useState(entry?.note || '');
+  const [tags, setTags] = useState(entry?.tags || []);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  const toggleTag = (tag) => {
+    setTags((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]));
+  };
+
+  const handleSave = async () => {
+    setError('');
+    const people = peopleText.split(/[,、]/).map((p) => p.trim()).filter(Boolean);
+    const payload = {
+      entry_date: dateKey,
+      all_day: allDay,
+      time: allDay ? null : (time || null),
+      end_time: allDay ? null : (endTime || null),
+      location: location.trim() || null,
+      people,
+      tags,
+      note: note.trim() || null,
+    };
+    setBusy(true);
+    try {
+      await onSave(payload, entry?.id);
+    } catch (e) {
+      setError(e.message || '儲存失敗');
+      setBusy(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirmDelete) { setConfirmDelete(true); return; }
+    setBusy(true);
+    try {
+      await onDelete(entry.id);
+    } catch (e) {
+      setError(e.message || '刪除失敗');
+      setBusy(false);
+      setConfirmDelete(false);
+    }
+  };
+
+  const label = dayLabel(dateKey);
+
+  return (
+    <div>
+      <div style={S.header}>
+        <button type="button" onClick={onCancel} disabled={busy} style={S.backBtn} aria-label="返回">←</button>
+        <button type="button" onClick={handleSave} disabled={busy} style={S.confirmBtn}>{busy ? '儲存中…' : '完成記錄'}</button>
+      </div>
+
+      <div style={S.body}>
+        {error && <div style={S.errorBox}>{error}</div>}
+
+        <div style={S.heading}>
+          <div style={S.headingEyebrow}>今日日記</div>
+          <div style={S.headingTitle}>{isEdit ? '編輯日記' : `${label} 做了什麼？`}</div>
+        </div>
+
+        <div style={S.selectedChips}>
+          {tags.length > 0
+            ? tags.map((t) => <span key={t} style={S.selectedChip}>{t}</span>)
+            : <span style={S.noSelection}>還沒有選擇標籤</span>}
+        </div>
+
+        <div style={S.toggleRow}>
+          <div style={S.toggleLabel}>全天日記</div>
+          <div style={S.toggleTrack(allDay)} onClick={() => setAllDay((v) => !v)}>
+            <div style={S.toggleKnob(allDay)} />
+          </div>
+        </div>
+
+        {!allDay && (
+          <div style={S.timeRow}>
+            <div style={{ flex: 1 }}>
+              <div style={S.fieldLabel}>時間</div>
+              <input type="time" style={S.input} value={time} onChange={(e) => setTime(e.target.value)} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={S.fieldLabel}>結束時間 <span style={{ color: THEME.textFaint, fontWeight: 500 }}>(選填)</span></div>
+              <div style={S.endRow}>
+                <input type="time" style={S.input} value={endTime} onChange={(e) => setEndTime(e.target.value)} />
+                {endTime && <button type="button" style={S.clearBtn} onClick={() => setEndTime('')}>清除</button>}
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div style={S.field}>
+          <div style={S.fieldLabel}>地點</div>
+          <input type="text" style={S.input} value={location} onChange={(e) => setLocation(e.target.value)} placeholder="例如：家裡" />
+        </div>
+
+        <div style={S.field}>
+          <div style={S.fieldLabel}>和誰在一起</div>
+          <input type="text" style={S.input} value={peopleText} onChange={(e) => setPeopleText(e.target.value)} placeholder="例如：阿華、媽媽" />
+        </div>
+
+        <div style={S.field}>
+          <div style={S.fieldLabel}>今天的感覺</div>
+          <textarea style={{ ...S.textarea, minHeight: 76 }} value={note} onChange={(e) => setNote(e.target.value)} rows={3} placeholder="寫下今天的一些想法…" />
+        </div>
+
+        <div style={S.categoryList}>
+          {categories.map((cat) => (
+            <div key={cat.id} style={S.categoryCard}>
+              <div style={S.categoryName}>{cat.name}</div>
+              {cat.tags.length === 0 ? (
+                <div style={S.emptyCategory}>這個分類還沒有標籤</div>
+              ) : (
+                <div style={S.tagWrap}>
+                  {cat.tags.map((tag) => (
+                    <div key={tag} style={S.tagChip(tags.includes(tag))} onClick={() => toggleTag(tag)}>{tag}</div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div style={S.manageLink} onClick={onManageTags}>✎ 管理分類與標籤</div>
+
+        {isEdit && onDelete && (
+          <div style={S.deleteLink(confirmDelete)} onClick={handleDelete}>
+            {confirmDelete ? '確定要刪除嗎？' : '刪除這則日記'}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

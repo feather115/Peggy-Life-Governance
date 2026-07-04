@@ -1,7 +1,8 @@
 # TY Calendar
 
-個人行程管理：月/週/日三種檢視、新增/編輯/刪除事件。跟 calorie-tracker、recipe-book
-共用同一個 Supabase 專案的使用者（`auth.users`），可以在 LINE App 裡直接開啟並自動登入。
+個人行程管理：月/週/日三種檢視、事件（含顏色/標籤）、日記（多筆/天，標籤依分類管理）。
+跟 calorie-tracker、recipe-book 共用同一個 Supabase 專案的使用者（`auth.users`），
+可以在 LINE App 裡直接開啟並自動登入。
 
 ---
 
@@ -19,10 +20,16 @@ npm install
 
 1. 沿用 calorie-tracker / recipe-book 用的同一個 Supabase 專案（三個 app 共用使用者池，
    資料表在各自獨立的 schema）
-2. 左側 **SQL Editor** → 貼上 [`supabase/schema.sql`](./supabase/schema.sql) → **Run**
-   （建立 `calendar` schema + `events` 表 + RLS）
+2. 左側 **SQL Editor**，依序貼上並執行：
+   - [`supabase/schema.sql`](./supabase/schema.sql)（建立 `calendar` schema + `events` 表 + RLS）
+   - [`supabase/2026-07-02_event_color_tags.sql`](./supabase/2026-07-02_event_color_tags.sql)
+     （`events` 加顏色/標籤欄位）
+   - [`supabase/2026-07-02_diary.sql`](./supabase/2026-07-02_diary.sql)
+     （建日記 + 標籤分類的表）
 3. **Integrations → Data API → Settings → Exposed schemas** 加上 `calendar`（如果還沒加），
-   儲存後等 30 秒
+   儲存後等 30 秒。如果加完還是回 `PGRST106`/`Invalid schema`，這是 Supabase 平台已知
+   問題，去 SQL Editor 跑 `ALTER ROLE authenticator SET pgrst.db_schemas = '...'` +
+   `NOTIFY pgrst, 'reload config'`（見根目錄 [`docs/new-app-sop.md`](../../docs/new-app-sop.md) 第 3 節）
 4. 左側 **Settings → API**，複製 `Project URL` 和 `anon public` key
 5. 複製 `.env.example` 成 `.env`，填入：
    ```
@@ -70,5 +77,6 @@ Vercel 會用本資料夾的 `package.json` 自動偵測 Vite，不影響其他 
 ## 程式結構
 
 對齊 calorie-tracker / recipe-book 的慣例：`main.jsx → Root.jsx → App.jsx → components/`，
-狀態集中在 `useEvents.js`，純函式在 `utils.js`，Supabase 查詢在 `db.js`，
-Supabase client 走共用 `@peggy-life/shared`。詳細檔案地圖見 [`ARCHITECTURE.md`](./ARCHITECTURE.md)。
+事件狀態集中在 `useEvents.js`，日記與標籤分類狀態集中在 `useDiary.js`，純函式在
+`utils.js`，配色常數在 `theme.js`，Supabase 查詢在 `db.js`，Supabase client 走共用
+`@peggy-life/shared`。詳細檔案地圖見 [`ARCHITECTURE.md`](./ARCHITECTURE.md)。
