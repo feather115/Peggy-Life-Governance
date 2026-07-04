@@ -45,6 +45,22 @@ export function canLinkLine() {
   return !!import.meta.env.VITE_LIFF_ID && liff.isInClient() && liff.isLoggedIn();
 }
 
+// Re-prompts the user for the LINE profile/openid consent screen (e.g. after they previously
+// dismissed it, causing liff.getIDToken() to return null). Only meaningful inside the LINE App.
+// Requires LIFF SDK v2.13+ (liff.permission API); throws if not in a state where this makes sense.
+export async function retryLineAuthorization() {
+  if (!liff.isInClient() || !liff.isLoggedIn()) {
+    throw new Error('請在 LINE App 裡開啟這個頁面才能重新申請授權');
+  }
+  const status = await liff.permission.query('profile');
+  if (status.state === 'granted') {
+    // 已經同意過了，不用再跳同意畫面（requestAll 在全部已同意時會 reject）
+    return { alreadyGranted: true };
+  }
+  await liff.permission.requestAll();
+  return { alreadyGranted: false };
+}
+
 // Binds the currently logged-in account to this LINE identity. Afterwards, opening from LINE will directly log in to this account (without creating a new account).
 export async function linkLineAccount() {
   if (!canLinkLine()) throw new Error('請在 LINE App 裡開啟這個頁面才能連結');

@@ -1,6 +1,7 @@
 // Login / Sign Up / Forgot Password page (shown when not logged in). Supabase Email + Password.
 import React, { useState } from 'react';
 import { supabase } from '../supabase.js';
+import { canLinkLine, retryLineAuthorization } from '../liff.js';
 
 export default function Auth({ lineDebug, onGuest }) {
   const [mode, setMode] = useState('signin'); // 'signin' | 'signup' | 'forgot'
@@ -9,6 +10,8 @@ export default function Auth({ lineDebug, onGuest }) {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
   const [msgKind, setMsgKind] = useState('info'); // info | error | success
+  const [authRetryBusy, setAuthRetryBusy] = useState(false);
+  const [authRetryMsg, setAuthRetryMsg] = useState('');
 
   const setError = (m) => { setMsg(m); setMsgKind('error'); };
   const setSuccess = (m) => { setMsg(m); setMsgKind('success'); };
@@ -58,13 +61,31 @@ export default function Auth({ lineDebug, onGuest }) {
 
   // 把技術性的 lineDebug 原因轉成一般使用者看得懂的提示。
   // isInClient=false 只代表「不是在 LINE App 裡開的」，這是正常情況（純網頁瀏覽），不用特別提示。
+  const isPermissionIssue = !!lineDebug && (lineDebug.includes('getIDToken') || lineDebug.includes('isLoggedIn'));
   const lineHint = (() => {
     if (!lineDebug || lineDebug.includes('isInClient=false')) return null;
-    if (lineDebug.includes('getIDToken') || lineDebug.includes('isLoggedIn')) {
-      return '這次沒辦法用 LINE 自動登入，可能是還沒同意 LINE 的登入權限。請先用下面的 Email 登入，或關閉重新開啟一次，並在 LINE 詢問時同意授權。';
+    if (isPermissionIssue) {
+      return '這次沒辦法用 LINE 自動登入，可能是還沒同意 LINE 的登入權限。可以點下面的按鈕重新申請授權，或改用 Email 登入。';
     }
     return 'LINE 自動登入暫時失敗了，請改用下面的 Email 登入，或稍後再試一次。';
   })();
+
+  const handleRetryAuthorization = async () => {
+    setAuthRetryBusy(true); setAuthRetryMsg('');
+    try {
+      const result = await retryLineAuthorization();
+      if (result.alreadyGranted) {
+        setAuthRetryMsg('已經是同意狀態了，如果還是無法登入請改用 Email，或聯絡我們協助排查。');
+        setAuthRetryBusy(false);
+        return;
+      }
+      // requestAll 同意後，LIFF 頁面必須重新整理才會拿到新的 idToken 並重新嘗試自動登入
+      window.location.reload();
+    } catch (e) {
+      setAuthRetryMsg(e.message || '重新申請授權失敗，請改用 Email 登入');
+      setAuthRetryBusy(false);
+    }
+  };
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
@@ -76,6 +97,19 @@ export default function Auth({ lineDebug, onGuest }) {
         {lineHint && (
           <div style={{ marginBottom: 16, fontSize: 13, color: '#8B5A00', background: '#FFF6E6', padding: '10px 12px', borderRadius: 12, fontWeight: 700, lineHeight: 1.6 }}>
             💬 {lineHint}
+            {isPermissionIssue && canLinkLine() && (
+              <button
+                type="button"
+                onClick={handleRetryAuthorization}
+                disabled={authRetryBusy}
+                style={{ display: 'block', width: '100%', marginTop: 10, border: 'none', background: '#06C755', color: '#fff', fontWeight: 900, fontSize: 13, padding: '10px 12px', borderRadius: 10, cursor: 'pointer' }}
+              >
+                {authRetryBusy ? '處理中…' : '🔄 重新申請 LINE 授權'}
+              </button>
+            )}
+            {authRetryMsg && (
+              <div style={{ marginTop: 8, fontSize: 12, fontWeight: 700, color: '#8B5A00' }}>{authRetryMsg}</div>
+            )}
           </div>
         )}
         <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
