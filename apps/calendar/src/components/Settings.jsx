@@ -1,7 +1,8 @@
-// 設定頁：帳號資訊（含 LINE 連結）+ 「管理分類與標籤」入口，之後有新設定選項可以加在這個清單裡。
+// 設定頁：帳號資訊（暱稱 + LINE 連結）+ 「管理分類與標籤」入口，之後有新設定選項可以加在這個清單裡。
 import React, { useEffect, useState } from 'react';
 import { THEME } from '../theme.js';
 import { canLinkLine, checkLineLinked, linkLineAccount } from '../liff.js';
+import { loadMyDisplayName, updateDisplayName } from '../db.js';
 
 const S = {
   header: { display: 'flex', alignItems: 'center', gap: 12, padding: 16, background: THEME.surface, borderBottom: `1px solid ${THEME.border}` },
@@ -19,6 +20,11 @@ const S = {
   linkHint: { fontSize: 11, color: THEME.textFaint, marginTop: 8 },
   msgSuccess: { marginTop: 8, fontSize: 13, fontWeight: 700, color: THEME.success, background: THEME.successBg, padding: '8px 12px', borderRadius: THEME.radiusSmInner },
   msgError: { marginTop: 8, fontSize: 13, fontWeight: 700, color: THEME.error, background: THEME.errorBg, padding: '8px 12px', borderRadius: THEME.radiusSmInner },
+  fieldLabel: { fontSize: 12, color: THEME.textMuted, marginTop: 14, marginBottom: 6 },
+  nameRow: { display: 'flex', gap: 8 },
+  nameInput: { flex: 1, boxSizing: 'border-box', border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSmInner, padding: '10px 12px', fontSize: 14, color: THEME.textDark, background: THEME.surface, outline: 'none' },
+  nameSaveBtn: { border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700, color: '#fff', background: THEME.primary, padding: '0 16px', borderRadius: THEME.radiusSmInner },
+  nameHint: { fontSize: 11, color: THEME.textFaint, marginTop: 6 },
 };
 
 const LINE_LINKED_CACHE_KEY = 'calendar:line-linked';
@@ -82,6 +88,60 @@ function LineLinker() {
   );
 }
 
+// 暱稱是跨 app 共用的（shared.user_profiles），在這裡改完 calorie-tracker/recipe-book
+// 的設定頁會立刻看到同一個名字，反過來也一樣。
+function NicknameEditor({ userId }) {
+  const [value, setValue] = useState('');
+  const [saved, setSaved] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState('');
+
+  useEffect(() => {
+    let cancel = false;
+    loadMyDisplayName(userId).then((name) => {
+      if (cancel) return;
+      setValue(name);
+      setSaved(name);
+    }).catch(() => {});
+    return () => { cancel = true; };
+  }, [userId]);
+
+  const save = async () => {
+    setBusy(true); setMsg('');
+    try {
+      await updateDisplayName(userId, value.trim());
+      setSaved(value.trim());
+      setMsg('success');
+    } catch (e) {
+      setMsg(e.message || '儲存失敗');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <>
+      <div style={S.fieldLabel}>暱稱</div>
+      <div style={S.nameRow}>
+        <input
+          type="text"
+          style={S.nameInput}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder="例如：小明"
+          maxLength={20}
+        />
+        <button type="button" style={S.nameSaveBtn} onClick={save} disabled={busy || value.trim() === saved}>
+          {busy ? '儲存中…' : '儲存'}
+        </button>
+      </div>
+      <div style={S.nameHint}>跟 calorie-tracker、recipe-book 共用同一個暱稱</div>
+      {msg === 'success' && <div style={S.msgSuccess}>已儲存</div>}
+      {msg && msg !== 'success' && <div style={S.msgError}>{msg}</div>}
+    </>
+  );
+}
+
 export default function Settings({ session, onClose, onManageTags }) {
   const displayEmail = (() => {
     const email = session?.user?.email || '';
@@ -103,7 +163,10 @@ export default function Settings({ session, onClose, onManageTags }) {
         <div style={S.accountCard}>
           <div style={S.accountLabel}>帳號</div>
           <div style={S.accountEmail}>{displayEmail}</div>
-          <LineLinker />
+          <NicknameEditor userId={session?.user?.id} />
+          <div style={{ marginTop: 14 }}>
+            <LineLinker />
+          </div>
         </div>
 
         <div style={S.row} onClick={onManageTags}>

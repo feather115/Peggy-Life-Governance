@@ -91,7 +91,9 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
 - **`src/db.js`** — Supabase 的純查詢函式：events（`loadEvents`/`createEvent`/…）、
   diary_entries（`loadDiaryEntries`/`createDiaryEntry`/…）、tag_categories
   （`loadCategories`/`createCategories`/`updateCategory`/`deleteCategory`）、tasks
-  （`loadTasks`/`createTask`/`updateTask`/`deleteTask`）。
+  （`loadTasks`/`createTask`/`updateTask`/`deleteTask`）、使用者暱稱
+  （`loadMyDisplayName`/`updateDisplayName`，查的是跨 app 共用的 `shared.user_profiles`，
+  用 `.schema('shared')` 切換查詢目標，不是另開一個 client）。
 - **`src/supabase.js`** — re-export `@peggy-life/shared` 的 supabase client（`schema: 'calendar'`）。
 - **`src/liff.js`** — LINE LIFF 初始化、LINE 自動登入及帳號綁定（跟其他 app 共用同一套邏輯）、
   `checkLineLinked()`（查詢目前帳號是否已綁定 LINE，給 `Settings.jsx` 的 `LineLinker`
@@ -144,8 +146,12 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
 - **`Settings.jsx`** — 設定頁，從 header ⚙ 按鈕進入。最上面是帳號卡片：顯示目前登入的
   email（LINE 登入的帳號是 `line-<sub>@line.invalid` 這種假 email，會轉成
   `LINE: U1234...wxyz` 遮罩顯示，邏輯跟 calorie-tracker/recipe-book 的 `Auth.jsx`/
-  `SettingsTab.jsx` 一致）+ `LineLinker`（內部元件，見下）；下面是「管理分類與標籤」
-  一列，點下去切到 `ManageTags.jsx`，之後有新設定項目直接加在清單裡。
+  `SettingsTab.jsx` 一致）+ `NicknameEditor`（內部元件：輸入框+儲存，讀寫
+  `db.js` 的 `loadMyDisplayName`/`updateDisplayName`，也就是跨 app 共用的
+  `shared.user_profiles.display_name`——在這裡改暱稱，calorie-tracker、recipe-book
+  的設定頁會立刻看到同一個名字，反過來也一樣）+ `LineLinker`（內部元件，見下）；
+  下面是「管理分類與標籤」一列，點下去切到 `ManageTags.jsx`，之後有新設定項目直接
+  加在清單裡。
   **`LineLinker`** 的連結狀態邏輯（跟其他兩個 app 共用同一套設計）：`checkLineLinked()`
   查到 `true` 就寫進 `localStorage`（key `calendar:line-linked`），下次開 app 先用快取
   顯示「已連結」，查詢還沒回來或暫時失敗（回傳 `null`）都不會覆蓋掉快取，避免畫面

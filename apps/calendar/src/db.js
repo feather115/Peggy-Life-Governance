@@ -176,3 +176,30 @@ export async function deleteTask(taskId) {
   const { error } = await supabase.from('tasks').delete().eq('id', taskId);
   if (error) throw error;
 }
+
+// ---- 使用者暱稱（跨 app 共用，見 packages/shared/supabase/2026-07-06_shared_user_profiles.sql）----
+// `.schema('shared')` 是同一個 client 換個查詢目標 schema，不是另開一個 client，
+// 不會有 supabase-js 的 Multiple GoTrueClient 警告。
+
+export async function loadMyDisplayName(userId) {
+  const { data, error } = await supabase
+    .schema('shared')
+    .from('user_profiles')
+    .select('display_name')
+    .eq('user_id', userId)
+    .maybeSingle();
+  if (error) throw error;
+  return data?.display_name || '';
+}
+
+export async function updateDisplayName(userId, displayName) {
+  const { data, error } = await supabase
+    .schema('shared')
+    .from('user_profiles')
+    .update({ display_name: displayName || null })
+    .eq('user_id', userId)
+    .select('display_name')
+    .single();
+  if (error) throw error;
+  return data;
+}
