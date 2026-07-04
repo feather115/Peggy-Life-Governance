@@ -70,10 +70,11 @@ export function useDiary(userId) {
   }, []);
 
   const addCategory = useCallback(async (name) => {
-    const [created] = await db.createCategories(userId, [{ name, tags: [] }]);
+    const nextOrder = categories.length ? Math.max(...categories.map((c) => c.sort_order ?? 0)) + 1 : 0;
+    const [created] = await db.createCategories(userId, [{ name, tags: [] }], nextOrder);
     setCategories((prev) => [...prev, created]);
     return created;
-  }, [userId]);
+  }, [userId, categories]);
 
   const renameCategory = useCallback(async (categoryId, name) => {
     const updated = await db.updateCategory(categoryId, { name });
@@ -89,6 +90,26 @@ export function useDiary(userId) {
     if (removedTags.size > 0) {
       setEntries((prev) => prev.map((e) => ({ ...e, tags: (e.tags || []).filter((t) => !removedTags.has(t)) })));
     }
+  }, [categories]);
+
+  const moveCategory = useCallback(async (categoryId, direction) => {
+    const idx = categories.findIndex((c) => c.id === categoryId);
+    const targetIdx = idx + direction;
+    if (idx === -1 || targetIdx < 0 || targetIdx >= categories.length) return;
+    const a = categories[idx];
+    const b = categories[targetIdx];
+    const [updatedA, updatedB] = await Promise.all([
+      db.updateCategory(a.id, { sort_order: b.sort_order }),
+      db.updateCategory(b.id, { sort_order: a.sort_order }),
+    ]);
+    setCategories((prev) => {
+      const next = prev.map((c) => {
+        if (c.id === updatedA.id) return updatedA;
+        if (c.id === updatedB.id) return updatedB;
+        return c;
+      });
+      return next.slice().sort((x, y) => x.sort_order - y.sort_order);
+    });
   }, [categories]);
 
   const addTagToCategory = useCallback(async (categoryId, tag) => {
@@ -110,7 +131,7 @@ export function useDiary(userId) {
   return {
     loaded, loadError, entries, entriesByDate, categories,
     createEntry, updateEntry, deleteEntry,
-    addCategory, renameCategory, deleteCategory,
+    addCategory, renameCategory, deleteCategory, moveCategory,
     addTagToCategory, removeTagFromCategory,
   };
 }

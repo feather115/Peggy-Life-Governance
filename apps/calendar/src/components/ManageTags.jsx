@@ -9,7 +9,10 @@ const S = {
   body: { padding: 20, display: 'flex', flexDirection: 'column', gap: 14 },
   card: { background: THEME.surface, borderRadius: THEME.radius, padding: '16px 18px', boxShadow: THEME.shadow },
   cardTop: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 12 },
-  nameText: { cursor: 'pointer', fontSize: 15, fontWeight: 700, color: THEME.textDark },
+  cardTopLeft: { display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 },
+  reorderCol: { display: 'flex', flexDirection: 'column', gap: 2, flexShrink: 0 },
+  reorderBtn: (disabled) => ({ border: 'none', background: 'none', cursor: disabled ? 'default' : 'pointer', color: disabled ? THEME.textFaint : THEME.textMuted, fontSize: 12, lineHeight: 1, padding: 2, outline: 'none' }),
+  nameText: { cursor: 'pointer', fontSize: 15, fontWeight: 700, color: THEME.textDark, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
   nameEditIcon: { fontSize: 12, color: THEME.textFaint, fontWeight: 500 },
   renameInput: { flex: 1, boxSizing: 'border-box', padding: '6px 10px', borderRadius: 8, border: `1px solid ${THEME.primary}`, fontSize: 15, fontWeight: 700, color: THEME.textDark, background: THEME.surface, outline: 'none' },
   deleteLabel: (confirming) => ({ cursor: 'pointer', fontSize: 12, fontWeight: 600, color: confirming ? THEME.error : THEME.textMuted, whiteSpace: 'nowrap' }),
@@ -25,7 +28,7 @@ const S = {
   addCategoryBtn: { border: 'none', cursor: 'pointer', padding: '0 18px', borderRadius: THEME.radiusSm, background: THEME.primary, color: '#fff', fontSize: 14, fontWeight: 700 },
 };
 
-function CategoryCard({ category, onRename, onDelete, onAddTag, onRemoveTag }) {
+function CategoryCard({ category, onRename, onDelete, onAddTag, onRemoveTag, onMoveUp, onMoveDown, canMoveUp, canMoveDown }) {
   const [renaming, setRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState(category.name);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -52,20 +55,26 @@ function CategoryCard({ category, onRename, onDelete, onAddTag, onRemoveTag }) {
   return (
     <div style={S.card}>
       <div style={S.cardTop}>
-        {renaming ? (
-          <input
-            style={S.renameInput}
-            value={renameValue}
-            autoFocus
-            onChange={(e) => setRenameValue(e.target.value)}
-            onBlur={commitRename}
-            onKeyDown={(e) => { if (e.key === 'Enter') commitRename(); }}
-          />
-        ) : (
-          <div style={S.nameText} onClick={() => { setRenameValue(category.name); setRenaming(true); }}>
-            {category.name} <span style={S.nameEditIcon}>✎</span>
+        <div style={S.cardTopLeft}>
+          <div style={S.reorderCol}>
+            <button type="button" style={S.reorderBtn(!canMoveUp)} disabled={!canMoveUp} onClick={onMoveUp} aria-label="上移">▲</button>
+            <button type="button" style={S.reorderBtn(!canMoveDown)} disabled={!canMoveDown} onClick={onMoveDown} aria-label="下移">▼</button>
           </div>
-        )}
+          {renaming ? (
+            <input
+              style={S.renameInput}
+              value={renameValue}
+              autoFocus
+              onChange={(e) => setRenameValue(e.target.value)}
+              onBlur={commitRename}
+              onKeyDown={(e) => { if (e.key === 'Enter') commitRename(); }}
+            />
+          ) : (
+            <div style={S.nameText} onClick={() => { setRenameValue(category.name); setRenaming(true); }}>
+              {category.name} <span style={S.nameEditIcon}>✎</span>
+            </div>
+          )}
+        </div>
         <div style={S.deleteLabel(confirmDelete)} onClick={handleDeleteClick}>
           {confirmDelete ? '確定？' : '刪除分類'}
         </div>
@@ -94,7 +103,7 @@ function CategoryCard({ category, onRename, onDelete, onAddTag, onRemoveTag }) {
   );
 }
 
-export default function ManageTags({ categories, onRenameCategory, onDeleteCategory, onAddTag, onRemoveTag, onAddCategory, onClose }) {
+export default function ManageTags({ categories, onRenameCategory, onDeleteCategory, onAddTag, onRemoveTag, onAddCategory, onMoveCategory, onClose }) {
   const [newCategoryInput, setNewCategoryInput] = useState('');
 
   const submitNewCategory = () => {
@@ -112,7 +121,7 @@ export default function ManageTags({ categories, onRenameCategory, onDeleteCateg
       </div>
 
       <div style={S.body}>
-        {categories.map((cat) => (
+        {categories.map((cat, i) => (
           <CategoryCard
             key={cat.id}
             category={cat}
@@ -120,6 +129,10 @@ export default function ManageTags({ categories, onRenameCategory, onDeleteCateg
             onDelete={() => onDeleteCategory(cat.id)}
             onAddTag={(tag) => onAddTag(cat.id, tag)}
             onRemoveTag={(tag) => onRemoveTag(cat.id, tag)}
+            onMoveUp={() => onMoveCategory(cat.id, -1)}
+            onMoveDown={() => onMoveCategory(cat.id, 1)}
+            canMoveUp={i > 0}
+            canMoveDown={i < categories.length - 1}
           />
         ))}
 

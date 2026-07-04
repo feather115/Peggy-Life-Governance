@@ -30,6 +30,8 @@ npm install
      （建週期性任務的表）
    - [`supabase/2026-07-04_event_location.sql`](./supabase/2026-07-04_event_location.sql)
      （`events` 加地點欄位）
+   - [`supabase/2026-07-05_category_sort_order.sql`](./supabase/2026-07-05_category_sort_order.sql)
+     （分類加自訂排序欄位）
 3. **Integrations → Data API → Settings → Exposed schemas** 加上 `calendar`（如果還沒加），
    儲存後等 30 秒。如果加完還是回 `PGRST106`/`Invalid schema`，這是 Supabase 平台已知
    問題，去 SQL Editor 跑 `ALTER ROLE authenticator SET pgrst.db_schemas = '...'` +

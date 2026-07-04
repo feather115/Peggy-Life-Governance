@@ -130,8 +130,10 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
   點下去切到 `ManageTags.jsx`；之後有新設定項目直接加在這個清單裡。
 - **`ManageTags.jsx`** — 管理分類與標籤：點分類名稱進入改名模式（Enter/失焦確認）、
   刪除分類（兩段確認，會連動清掉既有日記裡用到這些標籤的紀錄，見 `useDiary.js`
-  的 `deleteCategory`）、每個分類卡片內新增/刪除標籤、底部新增分類。原本是從日記表單
-  裡的連結進入，現在改成設定頁底下的子頁（`App.jsx` 的 `showSettings` + `managingTags`
+  的 `deleteCategory`）、每個分類卡片內新增/刪除標籤、底部新增分類、卡片左上角
+  ▲▼ 按鈕調整分類順序（呼叫 `useDiary.js` 的 `moveCategory`，跟相鄰分類互換
+  `sort_order` 後在前端重新排序，邊界按鈕會 disable）。原本是從日記表單裡的連結
+  進入，現在改成設定頁底下的子頁（`App.jsx` 的 `showSettings` + `managingTags`
   兩層 state），因為塞在日記表單流程裡不容易發現、也跟「寫日記」這個當下動作無關。
 - **`TasksView.jsx`** — 任務列表，依到期日排序，狀態文字依 `diffDays` 顯示「已逾期 N 天」
   （紅）/「今天到期」（主色）/「N 天後到期」（灰）。每筆有「標記完成」（點開會出現日期
@@ -226,7 +228,7 @@ createAppSupabase({ schema: 'calendar' })
 | `note` | text | 心情筆記（選填） |
 | `created_at` | timestamptz | 建立時間 |
 
-### `tag_categories`（完整 SQL 見 `supabase/2026-07-02_diary.sql`）
+### `tag_categories`（完整 SQL 見 `supabase/2026-07-02_diary.sql` + `2026-07-05_category_sort_order.sql`）
 
 | 欄位 | 型別 | 用途 |
 |---|---|---|
@@ -234,6 +236,8 @@ createAppSupabase({ schema: 'calendar' })
 | `user_id` | uuid → `auth.users(id)` | 擁有者（CASCADE），每人的分類/標籤互不相通 |
 | `name` | text | 分類名稱（工作/社交/心情/健康…） |
 | `tags` | text[] | 這個分類底下的標籤，**不是獨立一張表**，直接存陣列 |
+| `sort_order` | int | 使用者自訂的顯示順序（`ManageTags.jsx` 的 ▲▼ 按鈕調整），`loadCategories`
+  依此排序，不是 `created_at` |
 | `created_at` | timestamptz | 建立時間 |
 
 ### `tasks`（完整 SQL 見 `supabase/2026-07-02_tasks.sql`）
@@ -290,9 +294,11 @@ createAppSupabase({ schema: 'calendar' })
 | `2026-07-02_diary.sql` | 建 `diary_entries` + `tag_categories` 表 + RLS（Phase 2 日記功能） |
 | `2026-07-02_tasks.sql` | 建 `tasks` 表 + RLS（Phase 3 週期性任務） |
 | `2026-07-04_event_location.sql` | `events` 加 `location` 欄位 |
+| `2026-07-05_category_sort_order.sql` | `tag_categories` 加 `sort_order` 欄位並依 `created_at` backfill 既有資料 |
 
 > 新環境依序跑：`schema.sql` → `2026-07-02_event_color_tags.sql` → `2026-07-02_diary.sql`
-> → `2026-07-02_tasks.sql` → `2026-07-04_event_location.sql`。之後有新欄位/新表再依日期新增檔案，格式跟其他 app 一致：
+> → `2026-07-02_tasks.sql` → `2026-07-04_event_location.sql` → `2026-07-05_category_sort_order.sql`。
+> 之後有新欄位/新表再依日期新增檔案，格式跟其他 app 一致：
 > `YYYY-MM-DD_描述.sql`。
 
 ---

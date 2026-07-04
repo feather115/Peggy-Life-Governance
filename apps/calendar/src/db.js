@@ -96,23 +96,23 @@ export async function deleteDiaryEntry(entryId) {
 
 // ---- 標籤分類 ----
 
-const CATEGORY_COLUMNS = ['id', 'user_id', 'name', 'tags', 'created_at'].join(', ');
+const CATEGORY_COLUMNS = ['id', 'user_id', 'name', 'tags', 'sort_order', 'created_at'].join(', ');
 
 export async function loadCategories(userId) {
   const { data, error } = await supabase
     .from('tag_categories')
     .select(CATEGORY_COLUMNS)
     .eq('user_id', userId)
-    .order('created_at', { ascending: true });
+    .order('sort_order', { ascending: true });
   if (error) throw error;
   return data || [];
 }
 
-export async function createCategories(userId, categories) {
-  // categories: [{ name, tags }] — 用來一次建立預設分類（新使用者首次使用時）
+export async function createCategories(userId, categories, startSortOrder = 0) {
+  // categories: [{ name, tags }] — 用來一次建立預設分類（新使用者首次使用時）或新增單一分類
   const { data, error } = await supabase
     .from('tag_categories')
-    .insert(categories.map((c) => ({ ...c, user_id: userId })))
+    .insert(categories.map((c, i) => ({ ...c, user_id: userId, sort_order: startSortOrder + i })))
     .select(CATEGORY_COLUMNS);
   if (error) throw error;
   return data || [];
