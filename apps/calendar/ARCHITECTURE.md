@@ -48,6 +48,7 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
 | **月/週/日/任務切換 tab、回到今天** | `src/components/ViewTabs.jsx` |
 | **新增/編輯事件表單（標題、顏色、標籤、標題建議、全天、時間、備註、刪除）** | `src/components/EventForm.jsx` |
 | **新增/編輯日記表單（分類標籤選擇、時間、地點、和誰在一起、心情筆記）** | `src/components/DiaryForm.jsx` |
+| **時間選擇（預設 30 分鐘一格下拉選單，可切換手動輸入）** | `src/components/TimeSelect.jsx` |
 | **設定頁入口（清單，目前只有一項）** | `src/components/Settings.jsx` |
 | **管理分類與標籤（改名/刪除分類、新增/刪除標籤）** | `src/components/ManageTags.jsx` |
 | **任務列表（狀態顯示、標記完成、歷史紀錄、刪除）** | `src/components/TasksView.jsx` |
@@ -121,11 +122,19 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
   導覽——見下方原因說明）。
 - **`EventForm.jsx`** — 新增/編輯事件表單：標題（新增模式下輸入時會列出過去用過的相同
   標題建議，點擊帶入標題+顏色）、7 色顏色選擇器、標籤（Enter 加入的 chip 輸入）、
-  全天開關（切換 `date`/`datetime-local`）、開始/結束時間、描述、刪除（兩段確認）。
-- **`DiaryForm.jsx`** — 新增/編輯單筆日記：已選標籤即時預覽、全天切換、時間/結束時間、
-  地點、和誰在一起（逗號/頓號分隔的文字輸入，存入前轉成陣列）、心情筆記、依分類分組的
-  標籤選擇卡片（點擊 toggle 選取狀態）、刪除（兩段確認）。**不含**「管理分類與標籤」
-  入口——那個入口移到設定頁了（見下）。
+  全天開關（切換是否顯示時間欄位）、開始/結束時間（日期 `<input type="date">` +
+  `TimeSelect`）、描述、刪除（兩段確認）。
+- **`DiaryForm.jsx`** — 新增/編輯單筆日記：已選標籤即時預覽、全天切換、時間/結束時間
+  （`TimeSelect`）、地點、和誰在一起（逗號/頓號分隔的文字輸入，存入前轉成陣列）、
+  心情筆記、依分類分組的標籤選擇卡片（點擊 toggle 選取狀態）、刪除（兩段確認）。
+  **不含**「管理分類與標籤」入口——那個入口移到設定頁了（見下）。
+- **`TimeSelect.jsx`** — 時間選擇元件，`EventForm.jsx`/`DiaryForm.jsx` 共用：預設是
+  0:00～23:30、每 30 分鐘一格的 `<select>`（原生 `<input type="time" step="1800">` 在
+  多數瀏覽器裡點按鈕還是以 1 分鐘為單位滾動，`step` 屬性對 UI 不生效，所以改用真正的
+  下拉選單）；選單最後一項「自訂時間…」會切換成原生 `<input type="time">`，可以輸入
+  任意分鐘，切回去按「整點/半點」；如果傳入的 `value` 本來就不是 30 分鐘的倍數（例如
+  舊資料或手動輸入過），下拉選單會自動多出一個「HH:MM（自訂）」的選項顯示目前值，
+  不會憑空把值改掉。
 - **`Settings.jsx`** — 設定頁清單，從 header ⚙ 按鈕進入，目前只有一列「管理分類與標籤」，
   點下去切到 `ManageTags.jsx`；之後有新設定項目直接加在這個清單裡。
 - **`ManageTags.jsx`** — 管理分類與標籤：點分類名稱進入改名模式（Enter/失焦確認）、

@@ -3,6 +3,7 @@
 import React, { useMemo, useState } from 'react';
 import { fromDatetimeLocalValue, toDatetimeLocalValue } from '../utils.js';
 import { EVENT_COLORS, THEME } from '../theme.js';
+import TimeSelect from './TimeSelect.jsx';
 
 const S = {
   view: { padding: '6px 20px 24px' },
@@ -26,6 +27,9 @@ const S = {
   toggleTrack: (on) => ({ width: 44, height: 26, borderRadius: 13, background: on ? THEME.primary : THEME.textFaint, position: 'relative', cursor: 'pointer' }),
   toggleKnob: (on) => ({ width: 20, height: 20, borderRadius: '50%', background: '#fff', position: 'absolute', top: 3, left: on ? 21 : 3, boxShadow: '0 1px 3px rgba(0,0,0,.25)' }),
   endRow: { display: 'flex', gap: 8 },
+  dateTimeRow: { display: 'flex', gap: 8 },
+  dateInput: { flex: 3, boxSizing: 'border-box', border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSm, padding: '11px 12px', fontSize: 15, color: THEME.textDark, background: THEME.surface, outline: 'none' },
+  timeInputWrap: { flex: 2 },
   clearBtn: { border: `1px solid ${THEME.border}`, background: THEME.surface, cursor: 'pointer', padding: '0 14px', borderRadius: THEME.radiusSm, fontSize: 13, color: THEME.textMuted, fontWeight: 600 },
   tagsWrap: { display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' },
   tagChip: { display: 'flex', alignItems: 'center', gap: 4, background: THEME.primarySoft, color: THEME.primary, fontSize: 12, fontWeight: 600, padding: '5px 8px 5px 10px', borderRadius: 999 },
@@ -189,27 +193,60 @@ export default function EventForm({ event, defaultDateKey, allEvents = [], onSav
 
       <div style={S.field}>
         <div style={S.label}>開始時間 <span style={S.required}>＊</span></div>
-        <input
-          type={allDay ? 'date' : 'datetime-local'}
-          step={allDay ? undefined : 1800}
-          style={S.input}
-          value={allDay ? startValue.slice(0, 10) : startValue}
-          onChange={(e) => setStartValue(allDay ? e.target.value : e.target.value)}
-        />
+        {allDay ? (
+          <input
+            type="date"
+            style={S.input}
+            value={startValue.slice(0, 10)}
+            onChange={(e) => setStartValue(e.target.value)}
+          />
+        ) : (
+          <div style={S.dateTimeRow}>
+            <input
+              type="date"
+              style={S.dateInput}
+              value={startValue.slice(0, 10)}
+              onChange={(e) => setStartValue(`${e.target.value}T${startValue.slice(11, 16)}`)}
+            />
+            <div style={S.timeInputWrap}>
+              <TimeSelect
+                value={startValue.slice(11, 16)}
+                onChange={(t) => setStartValue(`${startValue.slice(0, 10)}T${t}`)}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       <div style={S.field}>
         <div style={S.label}>結束時間 <span style={{ color: THEME.textFaint }}>(選填)</span></div>
-        <div style={S.endRow}>
-          <input
-            type={allDay ? 'date' : 'datetime-local'}
-            step={allDay ? undefined : 1800}
-            style={S.input}
-            value={allDay ? endValue.slice(0, 10) : endValue}
-            onChange={(e) => setEndValue(e.target.value)}
-          />
-          {endValue && <button type="button" style={S.clearBtn} onClick={() => setEndValue('')}>清除</button>}
-        </div>
+        {allDay ? (
+          <div style={S.endRow}>
+            <input
+              type="date"
+              style={S.input}
+              value={endValue.slice(0, 10)}
+              onChange={(e) => setEndValue(e.target.value)}
+            />
+            {endValue && <button type="button" style={S.clearBtn} onClick={() => setEndValue('')}>清除</button>}
+          </div>
+        ) : (
+          <div style={S.dateTimeRow}>
+            <input
+              type="date"
+              style={S.dateInput}
+              value={endValue.slice(0, 10)}
+              onChange={(e) => setEndValue(`${e.target.value}T${endValue.slice(11, 16) || '09:00'}`)}
+            />
+            <div style={S.timeInputWrap}>
+              <TimeSelect
+                value={endValue.slice(11, 16)}
+                onChange={(t) => setEndValue(`${endValue.slice(0, 10) || startValue.slice(0, 10)}T${t}`)}
+              />
+            </div>
+            {endValue && <button type="button" style={S.clearBtn} onClick={() => setEndValue('')}>清除</button>}
+          </div>
+        )}
       </div>
 
       <div style={S.field}>
