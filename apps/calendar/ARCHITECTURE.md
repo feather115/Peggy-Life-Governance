@@ -93,7 +93,9 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
   （`loadCategories`/`createCategories`/`updateCategory`/`deleteCategory`）、tasks
   （`loadTasks`/`createTask`/`updateTask`/`deleteTask`）。
 - **`src/supabase.js`** — re-export `@peggy-life/shared` 的 supabase client（`schema: 'calendar'`）。
-- **`src/liff.js`** — LINE LIFF 初始化、LINE 自動登入及帳號綁定（跟其他 app 共用同一套邏輯）。
+- **`src/liff.js`** — LINE LIFF 初始化、LINE 自動登入及帳號綁定（跟其他 app 共用同一套邏輯）、
+  `checkLineLinked()`（查詢目前帳號是否已綁定 LINE，給 `Settings.jsx` 的 `LineLinker`
+  用，任何瀏覽器都能查，不需要在 LINE App 裡開）。
 
 ### 無狀態工具
 - **`src/theme.js`** — 視覺常數集中地：`THEME`（配色/圓角/陰影）、`EVENT_COLORS`
@@ -139,8 +141,16 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
   任意分鐘，切回去按「整點/半點」；如果傳入的 `value` 本來就不是 30 分鐘的倍數（例如
   舊資料或手動輸入過），下拉選單會自動多出一個「HH:MM（自訂）」的選項顯示目前值，
   不會憑空把值改掉。
-- **`Settings.jsx`** — 設定頁清單，從 header ⚙ 按鈕進入，目前只有一列「管理分類與標籤」，
-  點下去切到 `ManageTags.jsx`；之後有新設定項目直接加在這個清單裡。
+- **`Settings.jsx`** — 設定頁，從 header ⚙ 按鈕進入。最上面是帳號卡片：顯示目前登入的
+  email（LINE 登入的帳號是 `line-<sub>@line.invalid` 這種假 email，會轉成
+  `LINE: U1234...wxyz` 遮罩顯示，邏輯跟 calorie-tracker/recipe-book 的 `Auth.jsx`/
+  `SettingsTab.jsx` 一致）+ `LineLinker`（內部元件，見下）；下面是「管理分類與標籤」
+  一列，點下去切到 `ManageTags.jsx`，之後有新設定項目直接加在清單裡。
+  **`LineLinker`** 的連結狀態邏輯（跟其他兩個 app 共用同一套設計）：`checkLineLinked()`
+  查到 `true` 就寫進 `localStorage`（key `calendar:line-linked`），下次開 app 先用快取
+  顯示「已連結」，查詢還沒回來或暫時失敗（回傳 `null`）都不會覆蓋掉快取，避免畫面
+  閃一下「未連結」又跳回「已連結」；「連結 LINE 帳號」按鈕只有 `canLinkLine()` 為
+  true（在 LINE App 裡開啟且 LIFF 已登入）才會顯示，一般瀏覽器打開看不到這顆按鈕。
 - **`ManageTags.jsx`** — 管理分類與標籤：點分類名稱進入改名模式（Enter/失焦確認）、
   刪除分類（兩段確認，會連動清掉既有日記裡用到這些標籤的紀錄，見 `useDiary.js`
   的 `deleteCategory`）、每個分類卡片內新增/刪除標籤、底部新增分類、卡片左上角
@@ -332,7 +342,15 @@ createAppSupabase({ schema: 'calendar' })
 跟 calorie-tracker / recipe-book 完全相同的實作（`src/liff.js` + `api/`），差異只有：
 - `_lineLogin.js` 沒有「回填暱稱到 user_settings」那段——本 app 沒有 `user_settings` 表，
   不需要顯示暱稱
-- `getSupabaseAdminForLine()` 指向 `calorie_tracker` schema（見上方「跨 app 共用 LINE 登入」）
+- `getSupabaseAdminForLine()` 指向共用的 `shared` schema（`line_links` 表實際所在的地方，
+  見上方「跨 app 共用 LINE 登入」），不是本 app 自己的 `calendar` schema
+
+`api/` 底下跟 LINE 有關的檔案：`_lineLogin.js`/`line-login.js`（LIFF 自動登入）、
+`_lineLink.js`/`line-link.js`（把目前登入的帳號綁定到這個 LINE 身份）、
+`_lineLinkStatus.js`/`line-link-status.js`（查詢目前帳號是否已綁定，給 `Settings.jsx`
+的 `LineLinker` 顯示「已連結」狀態用）、`_lineVerify.js`（驗證 LINE ID token）、
+`_supabaseAdmin.js`（`getSupabaseAdmin()`/`getSupabaseAdminForLine()` 兩個 admin
+client 工廠）。
 
 環境變數、LIFF 設定流程完全比照其他兩個 app，見根目錄 [`docs/new-app-sop.md`](../../docs/new-app-sop.md)
 的「需要 LINE LIFF」章節。

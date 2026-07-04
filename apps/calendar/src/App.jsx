@@ -120,6 +120,7 @@ export default function App({ session, onSignOut }) {
         )
         : (
           <Settings
+            session={session}
             onClose={() => setShowSettings(false)}
             onManageTags={() => setManagingTags(true)}
           />
