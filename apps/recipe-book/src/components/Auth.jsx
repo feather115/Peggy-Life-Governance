@@ -56,6 +56,16 @@ export default function Auth({ lineDebug, onGuest }) {
   };
   const ms = msgStyles[msgKind];
 
+  // 把技術性的 lineDebug 原因轉成一般使用者看得懂的提示。
+  // isInClient=false 只代表「不是在 LINE App 裡開的」，這是正常情況（純網頁瀏覽），不用特別提示。
+  const lineHint = (() => {
+    if (!lineDebug || lineDebug.includes('isInClient=false')) return null;
+    if (lineDebug.includes('getIDToken') || lineDebug.includes('isLoggedIn')) {
+      return '這次沒辦法用 LINE 自動登入，可能是還沒同意 LINE 的登入權限。請先用下面的 Email 登入，或關閉重新開啟一次，並在 LINE 詢問時同意授權。';
+    }
+    return 'LINE 自動登入暫時失敗了，請改用下面的 Email 登入，或稍後再試一次。';
+  })();
+
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
       <div style={{ background: '#fff', borderRadius: 28, padding: 28, width: '100%', maxWidth: 380, boxShadow: '0 20px 50px -20px rgba(232,122,36,.25)' }}>
@@ -63,6 +73,11 @@ export default function Auth({ lineDebug, onGuest }) {
         <div style={{ fontSize: 14, color: '#8E7568', fontWeight: 700, textAlign: 'center', marginTop: 4, marginBottom: 20 }}>
           {titles[mode]}
         </div>
+        {lineHint && (
+          <div style={{ marginBottom: 16, fontSize: 13, color: '#8B5A00', background: '#FFF6E6', padding: '10px 12px', borderRadius: 12, fontWeight: 700, lineHeight: 1.6 }}>
+            💬 {lineHint}
+          </div>
+        )}
         <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required
             style={{ border: 'none', background: '#FDF7F4', borderRadius: 14, padding: '14px 16px', fontSize: 16, fontWeight: 700, color: '#3D281E' }} />
