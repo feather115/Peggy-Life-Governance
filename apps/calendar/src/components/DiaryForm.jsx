@@ -124,12 +124,12 @@ export default function DiaryForm({ entry, dateKey, categories, onSave, onDelete
           <div style={S.timeRow}>
             <div style={{ flex: 1 }}>
               <div style={S.fieldLabel}>時間</div>
-              <input type="time" style={S.input} value={time} onChange={(e) => setTime(e.target.value)} />
+              <input type="time" step={1800} style={S.input} value={time} onChange={(e) => setTime(e.target.value)} />
             </div>
             <div style={{ flex: 1 }}>
               <div style={S.fieldLabel}>結束時間 <span style={{ color: THEME.textFaint, fontWeight: 500 }}>(選填)</span></div>
               <div style={S.endRow}>
-                <input type="time" style={S.input} value={endTime} onChange={(e) => setEndTime(e.target.value)} />
+                <input type="time" step={1800} style={S.input} value={endTime} onChange={(e) => setEndTime(e.target.value)} />
                 {endTime && <button type="button" style={S.clearBtn} onClick={() => setEndTime('')}>清除</button>}
               </div>
             </div>

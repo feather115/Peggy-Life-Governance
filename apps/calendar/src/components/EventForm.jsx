@@ -191,6 +191,7 @@ export default function EventForm({ event, defaultDateKey, allEvents = [], onSav
         <div style={S.label}>開始時間 <span style={S.required}>＊</span></div>
         <input
           type={allDay ? 'date' : 'datetime-local'}
+          step={allDay ? undefined : 1800}
           style={S.input}
           value={allDay ? startValue.slice(0, 10) : startValue}
           onChange={(e) => setStartValue(allDay ? e.target.value : e.target.value)}
@@ -202,6 +203,7 @@ export default function EventForm({ event, defaultDateKey, allEvents = [], onSav
         <div style={S.endRow}>
           <input
             type={allDay ? 'date' : 'datetime-local'}
+            step={allDay ? undefined : 1800}
             style={S.input}
             value={allDay ? endValue.slice(0, 10) : endValue}
             onChange={(e) => setEndValue(e.target.value)}
