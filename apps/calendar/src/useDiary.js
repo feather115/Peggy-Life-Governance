@@ -119,6 +119,21 @@ export function useDiary(userId) {
     setCategories((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
   }, [categories]);
 
+  const moveTagToCategory = useCallback(async (tag, fromCategoryId, toCategoryId) => {
+    const from = categories.find((c) => c.id === fromCategoryId);
+    const to = categories.find((c) => c.id === toCategoryId);
+    if (!from || !to || to.tags.includes(tag)) return;
+    const [updatedFrom, updatedTo] = await Promise.all([
+      db.updateCategory(fromCategoryId, { tags: from.tags.filter((t) => t !== tag) }),
+      db.updateCategory(toCategoryId, { tags: [...to.tags, tag] }),
+    ]);
+    setCategories((prev) => prev.map((c) => {
+      if (c.id === updatedFrom.id) return updatedFrom;
+      if (c.id === updatedTo.id) return updatedTo;
+      return c;
+    }));
+  }, [categories]);
+
   const removeTagFromCategory = useCallback(async (categoryId, tag) => {
     const cat = categories.find((c) => c.id === categoryId);
     if (!cat) return;
@@ -132,6 +147,6 @@ export function useDiary(userId) {
     loaded, loadError, entries, entriesByDate, categories,
     createEntry, updateEntry, deleteEntry,
     addCategory, renameCategory, deleteCategory, moveCategory,
-    addTagToCategory, removeTagFromCategory,
+    addTagToCategory, removeTagFromCategory, moveTagToCategory,
   };
 }

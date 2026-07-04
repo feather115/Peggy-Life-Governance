@@ -23,16 +23,22 @@ const S = {
   addRow: { display: 'flex', gap: 8 },
   tagInput: { flex: 1, boxSizing: 'border-box', padding: '8px 10px', borderRadius: 8, border: `1px dashed ${THEME.textFaint}`, fontSize: 13, color: THEME.textDark, background: 'transparent', outline: 'none' },
   addTagBtn: { border: 'none', cursor: 'pointer', padding: '0 14px', borderRadius: 8, background: THEME.primarySoft, color: THEME.primary, fontSize: 13, fontWeight: 700 },
+  moveConfirm: { marginTop: 10, background: THEME.surfaceAlt, borderRadius: 10, padding: '10px 12px' },
+  moveConfirmText: { fontSize: 12, color: THEME.textDark, marginBottom: 8, lineHeight: 1.5 },
+  moveConfirmActions: { display: 'flex', gap: 8 },
+  moveConfirmBtn: { border: 'none', cursor: 'pointer', padding: '6px 14px', borderRadius: 8, background: THEME.primary, color: '#fff', fontSize: 12, fontWeight: 700 },
+  moveCancelBtn: { border: 'none', cursor: 'pointer', padding: '6px 14px', borderRadius: 8, background: THEME.surface, color: THEME.textMuted, fontSize: 12, fontWeight: 600 },
   newCategoryCard: { background: THEME.surface, borderRadius: THEME.radius, padding: '16px 18px', boxShadow: THEME.shadow, display: 'flex', gap: 8 },
   newCategoryInput: { flex: 1, boxSizing: 'border-box', padding: '10px 12px', borderRadius: THEME.radiusSm, border: `1px solid ${THEME.border}`, fontSize: 14, color: THEME.textDark, background: THEME.surface, outline: 'none' },
   addCategoryBtn: { border: 'none', cursor: 'pointer', padding: '0 18px', borderRadius: THEME.radiusSm, background: THEME.primary, color: '#fff', fontSize: 14, fontWeight: 700 },
 };
 
-function CategoryCard({ category, onRename, onDelete, onAddTag, onRemoveTag, onMoveUp, onMoveDown, canMoveUp, canMoveDown }) {
+function CategoryCard({ category, allCategories, onRename, onDelete, onAddTag, onRemoveTag, onMoveTagHere, onMoveUp, onMoveDown, canMoveUp, canMoveDown }) {
   const [renaming, setRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState(category.name);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [tagDraft, setTagDraft] = useState('');
+  const [pendingMove, setPendingMove] = useState(null); // { tag, fromCategoryId, fromName }
 
   const commitRename = () => {
     const val = renameValue.trim();
@@ -48,7 +54,23 @@ function CategoryCard({ category, onRename, onDelete, onAddTag, onRemoveTag, onM
   const addTag = () => {
     const val = tagDraft.trim();
     if (!val || category.tags.includes(val)) { setTagDraft(''); return; }
+    const owner = allCategories.find((c) => c.id !== category.id && c.tags.includes(val));
+    if (owner) {
+      setPendingMove({ tag: val, fromCategoryId: owner.id, fromName: owner.name });
+      return;
+    }
     onAddTag(val);
+    setTagDraft('');
+  };
+
+  const confirmMove = () => {
+    onMoveTagHere(pendingMove.tag, pendingMove.fromCategoryId);
+    setPendingMove(null);
+    setTagDraft('');
+  };
+
+  const cancelMove = () => {
+    setPendingMove(null);
     setTagDraft('');
   };
 
@@ -99,11 +121,23 @@ function CategoryCard({ category, onRename, onDelete, onAddTag, onRemoveTag, onM
         />
         <button type="button" style={S.addTagBtn} onClick={addTag}>加入</button>
       </div>
+
+      {pendingMove && (
+        <div style={S.moveConfirm}>
+          <div style={S.moveConfirmText}>
+            「{pendingMove.tag}」已經在「{pendingMove.fromName}」分類，要移到「{category.name}」嗎？
+          </div>
+          <div style={S.moveConfirmActions}>
+            <button type="button" style={S.moveConfirmBtn} onClick={confirmMove}>移過來</button>
+            <button type="button" style={S.moveCancelBtn} onClick={cancelMove}>取消</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-export default function ManageTags({ categories, onRenameCategory, onDeleteCategory, onAddTag, onRemoveTag, onAddCategory, onMoveCategory, onClose }) {
+export default function ManageTags({ categories, onRenameCategory, onDeleteCategory, onAddTag, onRemoveTag, onMoveTag, onAddCategory, onMoveCategory, onClose }) {
   const [newCategoryInput, setNewCategoryInput] = useState('');
 
   const submitNewCategory = () => {
@@ -125,10 +159,12 @@ export default function ManageTags({ categories, onRenameCategory, onDeleteCateg
           <CategoryCard
             key={cat.id}
             category={cat}
+            allCategories={categories}
             onRename={(name) => onRenameCategory(cat.id, name)}
             onDelete={() => onDeleteCategory(cat.id)}
             onAddTag={(tag) => onAddTag(cat.id, tag)}
             onRemoveTag={(tag) => onRemoveTag(cat.id, tag)}
+            onMoveTagHere={(tag, fromCategoryId) => onMoveTag(tag, fromCategoryId, cat.id)}
             onMoveUp={() => onMoveCategory(cat.id, -1)}
             onMoveDown={() => onMoveCategory(cat.id, 1)}
             canMoveUp={i > 0}

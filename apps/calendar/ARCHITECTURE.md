@@ -144,6 +144,12 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
   `sort_order` 後在前端重新排序，邊界按鈕會 disable）。原本是從日記表單裡的連結
   進入，現在改成設定頁底下的子頁（`App.jsx` 的 `showSettings` + `managingTags`
   兩層 state），因為塞在日記表單流程裡不容易發現、也跟「寫日記」這個當下動作無關。
+  **標籤名稱跨分類不能重複**：在某分類輸入一個「其他分類已經在用」的標籤名稱時，
+  不會直接新增，而是彈出「「X」已經在「Y」分類，要移到「Z」嗎？」的確認卡片（
+  移過來/取消），確認後呼叫 `useDiary.js` 的 `moveTagToCategory(tag, fromId, toId)`
+  把標籤從舊分類移除、加進新分類（不影響既有日記的 `tags` 陣列，因為存的是標籤
+  字串本身，換分類不會改變字串）。沒有做長按拖曳移動——在手機版 LINE LIFF 的
+  webview 裡長按手勢不夠可靠，確認卡片在各種裝置上都能穩定運作。
 - **`TasksView.jsx`** — 任務列表，依到期日排序，狀態文字依 `diffDays` 顯示「已逾期 N 天」
   （紅）/「今天到期」（主色）/「N 天後到期」（灰）。每筆有「標記完成」（點開會出現日期
   選擇器，預設今天，確認後呼叫 `onConfirmComplete`）、「歷史紀錄 (N)」（有完成過才顯示，
@@ -280,6 +286,11 @@ createAppSupabase({ schema: 'calendar' })
   地方都變成新字串，跟舊字串的日記對不上」——目前沒有改標籤名稱的 UI（只有新增/刪除），
   所以還沒踩到這個限制，但以後如果要加「重新命名標籤」功能，要一併更新所有引用該標籤的
   `diary_entries.tags`，不能只改 `tag_categories.tags`。
+- **標籤名稱在同一使用者底下全域唯一，不是只在單一分類內唯一** — 沒有資料庫層級的
+  唯一約束，是 `ManageTags.jsx` 在新增時前端擋掉（`allCategories.find(...)`）；
+  這樣設計是因為 `diary_entries.tags` 存的是標籤字串本身、不帶分類資訊，如果同一個
+  字串在兩個分類都存在，`categoryAccentForTag`（`theme.js`）沒辦法判斷這個標籤該用
+  哪個分類的強調色，日記卡片上的顏色會不穩定。
 - **時間一律存 `timestamptz`（UTC，events 表）**，前端用瀏覽器/裝置的本地時區顯示，靠
   `toDatetimeLocalValue`/`fromDatetimeLocalValue`（`utils.js`）轉換，沒有额外的時區欄位。
   日記的 `entry_date`/`time` 則是分開存日期跟時間字串（見上方 diary_entries 說明）。
