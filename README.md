@@ -93,6 +93,8 @@ git diff --quiet $VERCEL_GIT_PREVIOUS_SHA HEAD -- apps/calendar packages/shared
    - `apps/calorie-tracker/supabase/` 下的各 migration SQL（按日期順序）
    - `apps/recipe-book/supabase/schema.sql`
    - `apps/calendar/supabase/schema.sql`（建立 `calendar` schema + `events` 表）
+   - `apps/calendar/supabase/` 下其餘的 migration SQL（按日期順序：事件顏色/標籤、
+     日記、任務、事件地點、分類排序，完整清單見 [`apps/calendar/README.md`](./apps/calendar/README.md)）
    - 最後跑兩支 schema isolation migration：
      - `apps/calorie-tracker/supabase/2026-06-28_schema_isolation.sql`（把 11 張表從 public 搬到 `calorie_tracker` schema，並授權給 PostgREST 及 service_role）
      - `apps/recipe-book/supabase/2026-06-28_schema_isolation.sql`（把 recipes 從 public 搬到 `recipe_book` schema，並授權給 PostgREST 及 service_role）
