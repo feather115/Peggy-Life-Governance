@@ -1,7 +1,7 @@
 // 週檢視：一週 7 天直向列表，每天下面列出當天事件+日記，點某一天跳去日檢視（openDay）。
 import React, { useMemo } from 'react';
 import { DOW, buildDayTimeline, dateKeyFrom, formatDiaryTime, formatTime, getWeekDays, parseDateKey, todayKey, weekRangeLabel } from '../utils.js';
-import { THEME } from '../theme.js';
+import { THEME, categoryAccentForTag } from '../theme.js';
 
 const S = {
   panel: { background: THEME.surface, borderRadius: THEME.radius, padding: 14, margin: '6px 20px 20px', boxShadow: THEME.shadow },
@@ -13,11 +13,13 @@ const S = {
   dayLabel: { fontSize: 14, fontWeight: 700, color: THEME.textDark },
   todayBadge: { fontSize: 11, fontWeight: 700, color: '#fff', background: THEME.primary, padding: '2px 7px', borderRadius: 999 },
   item: { padding: '3px 0' },
-  itemRow: { display: 'flex', gap: 8, fontSize: 13, alignItems: 'center' },
-  itemDot: { width: 8, height: 8, borderRadius: '50%', flexShrink: 0 },
-  itemTime: { color: THEME.textMuted, width: 78, flexShrink: 0, whiteSpace: 'nowrap' },
-  itemTitle: { color: THEME.textDark },
+  itemRow: { display: 'flex', gap: 8, fontSize: 13, alignItems: 'flex-start' },
+  itemDot: { width: 8, height: 8, borderRadius: '50%', flexShrink: 0, alignSelf: 'center' },
+  itemTime: { color: THEME.textMuted, width: 78, flexShrink: 0, whiteSpace: 'nowrap', alignSelf: 'center' },
+  itemTitle: { color: THEME.textDark, alignSelf: 'center' },
   itemMeta: (indent = 102) => ({ fontSize: 11, color: THEME.textMuted, marginLeft: indent }),
+  tagChipWrap: { display: 'flex', flexWrap: 'wrap', gap: 6 },
+  diaryTagChip: (accent) => ({ fontSize: 11, fontWeight: 600, color: accent, background: THEME.primarySoft, padding: '3px 8px', borderRadius: 999 }),
   empty: { fontSize: 13, color: THEME.textFaint },
 };
 
@@ -28,13 +30,22 @@ function metaLine(location, people) {
   return parts.length > 0 ? parts.join(' · ') : null;
 }
 
-function tagsWithDetails(entry) {
+// 日記標籤用框框（chip）顯示，跟 DayView 一致，不是純文字用頓號接起來
+function DiaryTags({ entry, categories }) {
   const tags = entry.tags || [];
-  if (tags.length === 0) return '日記';
-  return tags.map((t) => (entry.tag_details?.[t] ? `${t}：${entry.tag_details[t]}` : t)).join('、');
+  if (tags.length === 0) return <span style={S.itemTitle}>日記</span>;
+  return (
+    <div style={S.tagChipWrap}>
+      {tags.map((t) => (
+        <span key={t} style={S.diaryTagChip(categoryAccentForTag(t, categories || []))}>
+          {t}{entry.tag_details?.[t] ? `：${entry.tag_details[t]}` : ''}
+        </span>
+      ))}
+    </div>
+  );
 }
 
-export default function WeekView({ anchorKey, onAnchorChange, selectedDateKey, onOpenDay, eventsByDate, entriesByDate, tasksByDueDate }) {
+export default function WeekView({ anchorKey, onAnchorChange, selectedDateKey, onOpenDay, eventsByDate, entriesByDate, categories, tasksByDueDate }) {
   const anchor = parseDateKey(anchorKey);
   const weekDays = useMemo(() => getWeekDays(anchor), [anchor]);
   const today = todayKey();
@@ -93,7 +104,7 @@ export default function WeekView({ anchorKey, onAnchorChange, selectedDateKey, o
                             <span style={S.itemTime}>{formatDiaryTime(entry)}</span>
                           </>
                         )}
-                        <span style={S.itemTitle}>{tagsWithDetails(entry)}</span>
+                        <DiaryTags entry={entry} categories={categories} />
                       </div>
                       {meta && <div style={S.itemMeta(entry.all_day ? 0 : 102)}>{meta}</div>}
                     </div>

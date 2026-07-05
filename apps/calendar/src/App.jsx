@@ -179,6 +179,7 @@ export default function App({ session, onSignOut }) {
                 onOpenDay={cal.openDay}
                 eventsByDate={cal.eventsByDate}
                 entriesByDate={diary.entriesByDate}
+                categories={diary.categories}
                 tasksByDueDate={tasksHub.tasksByDueDate}
               />
             )}
@@ -190,6 +191,7 @@ export default function App({ session, onSignOut }) {
                 onOpenDay={cal.openDay}
                 eventsByDate={cal.eventsByDate}
                 entriesByDate={diary.entriesByDate}
+                categories={diary.categories}
                 tasksByDueDate={tasksHub.tasksByDueDate}
               />
             )}

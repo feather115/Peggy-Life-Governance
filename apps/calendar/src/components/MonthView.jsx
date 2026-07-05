@@ -2,7 +2,7 @@
 // 點日期只會「選中」該天並更新摘要卡，不會離開月檢視；點摘要卡標題才會跳去日檢視（onOpenDay）。
 import React, { useMemo } from 'react';
 import { DOW, buildDayTimeline, dateKeyFrom, formatDiaryTime, formatTime, getMonthDays, monthLabel, parseDateKey, todayKey } from '../utils.js';
-import { THEME } from '../theme.js';
+import { THEME, categoryAccentForTag } from '../theme.js';
 
 const taskDotStyle = { width: 6, height: 6, borderRadius: 1, background: THEME.textMuted };
 
@@ -34,11 +34,13 @@ const DetailCardStyle = {
   cardBody: { padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 4 },
   empty: { fontSize: 13, color: THEME.textFaint, padding: '8px 0' },
   item: { padding: '2px 0' },
-  itemRow: { display: 'flex', gap: 8, fontSize: 13, alignItems: 'center' },
-  itemDot: { width: 8, height: 8, borderRadius: '50%', flexShrink: 0 },
-  itemTime: { color: THEME.textMuted, width: 78, flexShrink: 0, whiteSpace: 'nowrap' },
-  itemTitle: { color: THEME.textDark },
+  itemRow: { display: 'flex', gap: 8, fontSize: 13, alignItems: 'flex-start' },
+  itemDot: { width: 8, height: 8, borderRadius: '50%', flexShrink: 0, alignSelf: 'center' },
+  itemTime: { color: THEME.textMuted, width: 78, flexShrink: 0, whiteSpace: 'nowrap', alignSelf: 'center' },
+  itemTitle: { color: THEME.textDark, alignSelf: 'center' },
   itemMeta: (indent = 102) => ({ fontSize: 11, color: THEME.textMuted, marginLeft: indent }),
+  tagChipWrap: { display: 'flex', flexWrap: 'wrap', gap: 6 },
+  diaryTagChip: (accent) => ({ fontSize: 11, fontWeight: 600, color: accent, background: THEME.primarySoft, padding: '3px 8px', borderRadius: 999 }),
 };
 
 function metaLine(location, people) {
@@ -48,13 +50,22 @@ function metaLine(location, people) {
   return parts.length > 0 ? parts.join(' · ') : null;
 }
 
-function tagsWithDetails(entry) {
+// 日記標籤用框框（chip）顯示，跟 DayView 一致，不是純文字用頓號接起來
+function DiaryTags({ entry, categories }) {
   const tags = entry.tags || [];
-  if (tags.length === 0) return '日記';
-  return tags.map((t) => (entry.tag_details?.[t] ? `${t}：${entry.tag_details[t]}` : t)).join('、');
+  if (tags.length === 0) return <span style={DetailCardStyle.itemTitle}>日記</span>;
+  return (
+    <div style={DetailCardStyle.tagChipWrap}>
+      {tags.map((t) => (
+        <span key={t} style={DetailCardStyle.diaryTagChip(categoryAccentForTag(t, categories || []))}>
+          {t}{entry.tag_details?.[t] ? `：${entry.tag_details[t]}` : ''}
+        </span>
+      ))}
+    </div>
+  );
 }
 
-export default function MonthView({ anchorKey, onAnchorChange, selectedDateKey, onSelectDay, onOpenDay, eventsByDate, entriesByDate, tasksByDueDate }) {
+export default function MonthView({ anchorKey, onAnchorChange, selectedDateKey, onSelectDay, onOpenDay, eventsByDate, entriesByDate, categories, tasksByDueDate }) {
   const anchor = parseDateKey(anchorKey);
   const monthDays = useMemo(() => getMonthDays(anchor.getFullYear(), anchor.getMonth()), [anchor]);
 
@@ -177,7 +188,7 @@ export default function MonthView({ anchorKey, onAnchorChange, selectedDateKey, 
                         <span style={DetailCardStyle.itemTime}>{formatDiaryTime(entry)}</span>
                       </>
                     )}
-                    <span style={DetailCardStyle.itemTitle}>{tagsWithDetails(entry)}</span>
+                    <DiaryTags entry={entry} categories={categories} />
                   </div>
                   {meta && <div style={DetailCardStyle.itemMeta(entry.all_day ? 0 : 102)}>{meta}</div>}
                 </div>
