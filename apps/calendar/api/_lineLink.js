@@ -13,7 +13,10 @@ export async function linkLineAccount(idToken, channelId, accessToken) {
 
   const adminForLine = getSupabaseAdminForLine();
   const { error } = await adminForLine.from('line_links').upsert({ line_sub: payload.sub, user_id: userData.user.id });
-  if (error) throw error;
+  if (error) {
+    console.error('[linkLineAccount] upsert line_links failed:', JSON.stringify(error));
+    throw error;
+  }
 
   return { ok: true };
 }

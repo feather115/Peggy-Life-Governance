@@ -11,6 +11,6 @@ export default async function handler(req, res) {
     const result = await checkLineLinkStatus(accessToken);
     res.status(200).json(result);
   } catch (e) {
-    res.status(400).json({ error: e.message || '查詢失敗' });
+    res.status(e.statusCode || 400).json({ error: e.message || '查詢失敗' });
   }
 }

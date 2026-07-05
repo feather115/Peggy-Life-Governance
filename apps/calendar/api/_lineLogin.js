@@ -12,7 +12,7 @@ export async function loginWithLine(idToken, channelId) {
   const admin = getSupabaseAdmin();
   const adminForLine = getSupabaseAdminForLine();
 
-  // Check if this LINE user is already linked to an existing account (the mapping stored in the "Link LINE Account" settings tab of another app)
+  // Check if this LINE user is already linked to an existing account (the mapping stored in the "Link LINE Account" settings tab)
   const { data: linkRow } = await adminForLine.from('line_links').select('user_id').eq('line_sub', payload.sub).maybeSingle();
   let email;
   if (linkRow) {
@@ -35,6 +35,16 @@ export async function loginWithLine(idToken, channelId) {
   // Generates a one-time login link (which also returns the user object corresponding to this email); the frontend will exchange the token_hash for an actual session
   const { data: linkData, error: linkErr } = await admin.auth.admin.generateLink({ type: 'magiclink', email });
   if (linkErr) throw linkErr;
+
+  // If the user hasn't set their own nickname yet, populate it with the LINE display name (only if blank; do not overwrite a user-defined nickname).
+  // Nicknames live in shared.user_profiles (cross-app), NOT in calorie_tracker.user_settings.display_name (deprecated).
+  const userId = linkData.user?.id;
+  if (payload.name && userId) {
+    const { data: profile } = await adminForLine.from('user_profiles').select('display_name').eq('user_id', userId).maybeSingle();
+    if (!profile?.display_name) {
+      await adminForLine.from('user_profiles').upsert({ user_id: userId, display_name: payload.name });
+    }
+  }
 
   return { email, tokenHash: linkData.properties.hashed_token };
 }
