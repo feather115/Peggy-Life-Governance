@@ -6,8 +6,11 @@
 
 ## 一句話總覽
 
-Vite + React 19 單頁 App，唯讀瀏覽 Peggy 的食譜（搜尋、分類、食材配方縮放、長按標記完成）。
-資料存在 Supabase（`recipe_book.recipes` 表），前端用 `anon` key 唯讀存取，寫入靠 SQL Editor 或 service_role 手動匯入。
+Vite + React 19 單頁 App：瀏覽與**管理**食譜（搜尋、分類、擁有者/分享篩選、按讚、
+新增/編輯/刪除食譜、料理行事曆、配方縮放、長按標記完成），支援訪客模式（只能看分享的食譜）。
+畫面分三個分頁（食譜 / 行事曆 / 設定）＋ 食譜編輯表單。
+資料存在 Supabase（`recipe_book` schema，4 張表，見下方「資料庫結構」），RLS 控管
+「訪客只看分享的、登入者多看自己的、只能改自己的」。
 Supabase client 由 `@peggy-life/shared` 的 `createAppSupabase({ schema: 'recipe_book' })` 建立。
 
 ---
@@ -15,13 +18,14 @@ Supabase client 由 `@peggy-life/shared` 的 `createAppSupabase({ schema: 'recip
 ## 資料流
 
 ```
-Supabase ⇄ db.js ⇄ useRecipes.js ⇄ App.jsx ⇄ Root.jsx (Auth gate / LIFF)
-                                              └── Auth.jsx
+Supabase ⇄ db.js ⇄ useRecipes.js ⇄ App.jsx ⇄ components/*
+           (純 API)  (狀態+動作)     (協調)     (畫面)
 ```
 
-- 元件**不會**直接呼叫 `db.js`。`useRecipes()` 一次提供所有 state 和 action。
-- `Root.jsx` 負責：LINE LIFF 初始化、LINE 自動登入與 Supabase Auth 登入閘口。
-- `App.jsx` 負責裝載行動版的外殼（maxWidth 520px），並依 `currentView` 控制 `RecipeCatalog` / `RecipeDetail` 兩個 view 的切換與返回。
+- 元件**不會**直接呼叫 `db.js`。`useRecipes()` 一次提供所有 state 和 action（跟 calorie-tracker 的 `useAppData`、calendar 的 `useEvents`/`useDiary`/`useTasks` 同一套模式）。
+- `Root.jsx` 負責：LINE 自動登入與 Supabase Auth 登入閘口、訪客模式切換。
+- `App.jsx` 負責行動版外殼（maxWidth 520px）、三個分頁（食譜/行事曆/設定）切換、
+  `RecipeCatalog` ↔ `RecipeDetail` 的 view 導覽與返回、`RecipeForm` 的開關。
 
 ---
 
@@ -37,9 +41,12 @@ Supabase ⇄ db.js ⇄ useRecipes.js ⇄ App.jsx ⇄ Root.jsx (Auth gate / LIFF)
 | **食譜欄位正規化（ingredients/steps/notes/parameters 的各種格式）** | `src/utils.js` → `normalizeRecipe()` / `parseIngredients()` / `parseSteps()` / `parseNotes()` |
 | **食材 / 步驟依 type 分組** | `src/utils.js` → `groupItemsByType()` / `groupStepsByType()` |
 | **日期格式** | `src/utils.js` → `formatDate()` |
-| **Supabase 查詢（目前只有 loadRecipes）** | `src/db.js` |
+| **Supabase 查詢（食譜 CRUD、按讚、料理紀錄、暱稱）** | `src/db.js` |
 | **Supabase client 連線** | `src/supabase.js`（re-export `@peggy-life/shared`） |
-| **LINE LIFF 初始化與登入** | `src/liff.js` |
+| **LINE LIFF 初始化與登入** | `src/liff.js`（薄殼，邏輯在 `packages/shared/src/lineAuth.js`，三 app 共用） |
+| **新增/編輯食譜表單**（食材分區、步驟、參數、分享 checkbox） | `src/components/RecipeForm.jsx` |
+| **料理行事曆**（月曆、記錄料理、備註） | `src/components/CookCalendar.jsx` |
+| **底部分頁列**（訪客模式會隱藏行事曆/設定） | `src/components/TabBar.jsx` |
 | **Email/密碼與 LINE 自動登入閘口** | `src/Root.jsx` |
 | **Email 登入/註冊/重設密碼頁面** | `src/components/Auth.jsx` |
 | **設定頁（暱稱、LINE 帳號連結、登出）** | `src/components/SettingsTab.jsx` |
@@ -56,14 +63,22 @@ Supabase ⇄ db.js ⇄ useRecipes.js ⇄ App.jsx ⇄ Root.jsx (Auth gate / LIFF)
 - **`src/App.jsx`** — 行動載具外殼（`maxWidth: 520`），載入 `useRecipes()` 並切換 `RecipeCatalog` / `RecipeDetail`。
 - **`src/useRecipes.js`** — ⭐ **狀態中樞**。載入食譜、搜尋/分類篩選、catalog ↔ detail 導覽（含 URL 同步 `?recipe=xxx`）、
   按讚 `likeCounts`/`myLikedSet`/`likerNamesByRecipe`（誰按讚的名字清單，見下方設計重點）。
-- **`src/liff.js`** — LINE LIFF 初始化、LINE 自動登入及帳號綁定、`checkLineLinked()`
-  （查詢目前帳號是否已綁定 LINE，給 `SettingsTab.jsx` 的 `LineLinker` 用）。
-- **`src/db.js`** — Supabase 的純查詢函式（`loadRecipes`、按讚 CRUD、`loadDisplayNames`/`updateDisplayName`）。
+- **`src/liff.js`** — 薄殼：把本 app 的 supabase client 綁進 `@peggy-life/shared/lineAuth`
+  的 `createLineAuth()`（三個 app 共用同一份 LINE 邏輯，要改行為去 `packages/shared/src/lineAuth.js`
+  改）。提供 `initLiff()`、`lineAutoLogin()`、`canLinkLine()`、`retryLineAuthorization()`
+  （重新跳 LINE 授權同意畫面，`Auth.jsx` 用）、`linkLineAccount()`、`checkLineLinked()`
+  （給 `SettingsTab.jsx` 的 `LineLinker` 用）。**`@line/liff` 是動態 import**：只有「有設
+  `VITE_LIFF_ID` 且 user agent 含 `Line/`」才會下載 liff SDK，一般瀏覽器完全不載入。
+- **`src/db.js`** — Supabase 的純 CRUD 函式（食譜 CRUD、按讚、料理紀錄、`loadDisplayNames`/`updateDisplayName`）。
+  **所有寫入都會檢查 `error` 並 throw**，由呼叫端（`useRecipes`）決定怎麼處理（跟 calorie-tracker 的 db.js 同一條規則）。
 - **`src/supabase.js`** — re-export `@peggy-life/shared` 的 supabase client（`schema: 'recipe_book'`）。
 
 ### 畫面與組件（`src/components/`）
 - **`RecipeCatalog.jsx`** — 食譜清單：頂部 header（Peggy logo + 登出按鈕 + 食譜數）、搜尋欄、分類 tab、雙欄食譜網格。全 inline styles。
-- **`RecipeDetail.jsx`** — 食譜詳情：返回按鈕、食材、工序、心得、重點參數。全 inline styles。
+- **`RecipeDetail.jsx`** — 食譜詳情：返回按鈕、食材、工序、心得、重點參數、按讚/誰按讚。全 inline styles。
+- **`RecipeForm.jsx`** — 新增/編輯食譜表單：標題、分類、食材（含分區/品牌）、步驟、心得、參數、`is_shared` checkbox、刪除。
+- **`CookCalendar.jsx`** — 料理行事曆分頁：月曆格、點日期記錄「今天做了哪道菜」（可加備註）、點紀錄跳食譜詳情。
+- **`TabBar.jsx`** — 底部分頁列（食譜/行事曆/設定），訪客模式隱藏後兩個。
 - **`Auth.jsx`** — 登入介面：Email + 密碼登入、註冊、忘記密碼。與 calorie-tracker 風格一致。
 - **`SettingsTab.jsx`** — 設定分頁（`TabBar` 第三個 tab，訪客模式隱藏）：帳號 email（LINE
   登入的假 email 遮罩成 `LINE: U1234...wxyz`）、暱稱輸入框+儲存（呼叫 `useRecipes.js` 的
@@ -81,8 +96,9 @@ Supabase ⇄ db.js ⇄ useRecipes.js ⇄ App.jsx ⇄ Root.jsx (Auth gate / LIFF)
 
 | Schema | 內容 |
 |---|---|
-| `recipe_book` | `recipes` 表 |
-| `auth` | 共用 `auth.users`（兩個 app 同一個 Supabase 專案） |
+| `recipe_book` | `recipes`、`recipe_likes`、`cooking_history`、`user_settings`（已停用）共 4 張表 |
+| `shared` | 三個 app 共用：`line_links`（LINE 帳號對照）、`user_profiles`（暱稱） |
+| `auth` | 共用 `auth.users`（三個 app 同一個 Supabase 專案） |
 
 前端 supabase client 透過 `db.schema = 'recipe_book'` 自動路由，`from('recipes')` 會指向 `recipe_book.recipes`。
 
@@ -97,7 +113,7 @@ Supabase ⇄ db.js ⇄ useRecipes.js ⇄ App.jsx ⇄ Root.jsx (Auth gate / LIFF)
 
 ## 資料庫結構（Supabase）
 
-兩張表：`recipes`（食譜本身，公開可讀）+ `cooking_history`（每個使用者的料理行事曆紀錄）。
+4 張表：`recipes`（食譜本身）+ `recipe_likes`（按讚）+ `cooking_history`（料理行事曆紀錄）+ `user_settings`（**已停用**）。
 
 ### `recipes`（`supabase/schema.sql`）
 
@@ -124,7 +140,7 @@ Supabase ⇄ db.js ⇄ useRecipes.js ⇄ App.jsx ⇄ Root.jsx (Auth gate / LIFF)
   - INSERT / UPDATE / DELETE（只給 `authenticated`）：`auth.uid() = user_id` ——只能改自己的食譜。
 - **訪客模式**：`Root.jsx` 提供「以訪客身分瀏覽」按鈕（不登入），App.jsx 把 `userId = null` 傳給 `useRecipes`，hook 跳過 `loadCookRecords`、`TabBar` 隱藏「行事曆」分頁。
 - **分享狀態**：`is_shared` 由 `RecipeForm.jsx` 編輯頁面的 checkbox 控制（用 `saveRecipe` 一起 update）。
-- **Catalog 分組**：登入者看 3 個分頁 `我的私房 / 我已分享 / 大家分享`（`useRecipes.ownershipTab`，`filterRecipes` 用 `ownershipTab + currentUserId` 過濾），訪客自動鎖在 `others_shared` 不顯示分頁列。
+- **Catalog 擁有權篩選**：登入者可勾選 `我的私房 / 我已分享 / 大家分享` 三種類別（**多選**，`useRecipes.ownershipFilter` 是 `Set`，`toggleOwnership()` 切換並存進 `localStorage` 記住偏好），`filterRecipes` 用 `ownershipSet + currentUserId` 過濾；訪客因 RLS 天生只拿得到 `others_shared`。
 - **按讚與喜愛排序**：`recipe_likes` 表存按讚紀錄，`useRecipes` 算出 `likeCounts` / `myLikedSet`。RecipeDetail 顯示按讚數＋按讚按鈕（擁有者只見數字、訪客只見數字、登入者可 toggle）；catalog 卡片右上角顯示 ❤️ N 計數；`filterRecipes` 把我喜愛的食譜排在每個分頁的最前面。
 - **「誰按讚」顯示名字**：`shared.user_profiles`（`display_name`/`email`，見下方「暱稱跨
   app 共用」）搭配 `useRecipes` 的 `likerNamesByRecipe`（`Map<recipeId, string[]>`），在
@@ -195,6 +211,12 @@ LINE，其他 app 就能即時識別並支援 LINE 自動免密碼登入。
 `SettingsTab.jsx` 的 `LineLinker` 顯示「已連結」狀態用）、`_lineVerify.js`
 （驗證 LINE ID token）、`_supabaseAdmin.js`（admin client 工廠）。
 
+> **跨 app 一致性**：這些檔案三個 app **逐字相同**（Vercel serverless 必須每個 app 各放
+> 一份，改任何一份要同步另外兩份），唯一因 app 而異的是 `_supabaseAdmin.js` 的
+> `getSupabaseAdmin()` schema（這裡是 `recipe_book`）。`_lineLogin.js` 首次 LINE 登入
+> 會把 LINE 顯示名稱 seed 進 `shared.user_profiles`（僅暱稱空白時），「誰按讚」跟設定頁
+> 的暱稱直接受惠。
+
 `line_links` 曾經放在 `calorie_tracker` schema（2026-06-29 回退），2026-07-01 找到 Supabase
 的 `PGRST106` exposed-schema bug 正確修法後搬回 `shared`，詳見根目錄
 [`docs/new-app-sop.md`](../../docs/new-app-sop.md) 第 3 節。
@@ -213,6 +235,7 @@ LINE，其他 app 就能即時識別並支援 LINE 自動免密碼登入。
 | `2026-06-28_recipe_likes.sql` | 建 `recipe_book.recipe_likes` 表（按讚 / 喜愛排序用）+ RLS（select 公開、寫入只能對自己） |
 | `2026-07-04_recipe_book_user_settings.sql` | 建 `recipe_book.user_settings` 表（暱稱/email 第一版，**現已停用**，見上方說明） |
 | `packages/shared/supabase/2026-07-06_shared_user_profiles.sql` | 建 `shared.user_profiles`（跨 app 共用暱稱，取代上一支），這個 app 的「誰按讚」跟 `SettingsTab.jsx` 的暱稱都改讀寫這張表 |
+| `packages/shared/supabase/2026-07-06_user_profiles_service_role_grant.sql` | 補 `shared.user_profiles` 對 `service_role` 的表權限（LINE 首次登入的暱稱 seed 需要） |
 
 > 新環境順序：`schema.sql` → 在 Supabase Exposed schemas 加 `recipe_book` → `2026-06-28_schema_isolation.sql` → `2026-06-28_recipe_cook_records.sql` → `2026-06-28_recipe_ownership.sql` → `2026-06-28_recipe_rls_hotfix.sql` → `2026-06-28_recipe_likes.sql` → `2026-07-04_recipe_book_user_settings.sql`（可省略，已停用，但為了 `shared_user_profiles` 的 backfill 邏輯還是建議跑）→ `packages/shared/supabase/2026-07-06_shared_user_profiles.sql`。
 

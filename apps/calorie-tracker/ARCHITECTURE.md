@@ -61,7 +61,7 @@ Supabase ⇄ db.js ⇄ useAppData.js ⇄ App.jsx ⇄ components/*
 | **登入/註冊頁** | `src/components/Auth.jsx` |
 | **登入判斷 / 設定缺失提示 / LINE 自動登入觸發點** | `src/Root.jsx` |
 | **分頁切換 / 哪個面板開著 / App 外層高度（影響分頁列是否固定）** | `src/App.jsx` |
-| **LIFF 初始化、LINE 自動登入、帳號連結** | `src/liff.js` |
+| **LIFF 初始化、LINE 自動登入、帳號連結** | `src/liff.js`（薄殼，邏輯在 `packages/shared/src/lineAuth.js`，三 app 共用） |
 | **設定頁「連結 LINE 帳號」按鈕** | `src/components/SettingsTab.jsx` → `LineLinker` |
 | **AI 食物搜尋 / AI 當日摘要 / LINE 登入驗證的伺服器端邏輯** | `api/*.js`（見下方「AI 功能」「LINE 整合」） |
 | **Supabase 連線金鑰 / AI / LINE 相關環境變數** | `.env`（複製 `.env.example`） |
@@ -98,7 +98,11 @@ Supabase ⇄ db.js ⇄ useAppData.js ⇄ App.jsx ⇄ components/*
 - `Auth` — 登入 / 註冊 / 忘記密碼頁，LINE 自動登入失敗時會在最下面顯示除錯文字（`lineDebug` prop）
 
 ### LINE 整合 + AI 功能（`src/liff.js` + `api/`）
-- **`src/liff.js`** — 初始化 LIFF（`initLiff()`）、在 LINE App 內自動登入（`lineAutoLogin()`）、把目前帳號連結到 LINE 身份（`linkLineAccount()` / `canLinkLine()`）。
+- **`src/liff.js`** — 薄殼：把本 app 的 supabase client 綁進 `@peggy-life/shared/lineAuth`
+  的 `createLineAuth()`（三個 app 共用同一份 LINE 邏輯，要改行為去 `packages/shared/src/lineAuth.js` 改）。
+  提供 `initLiff()`、`lineAutoLogin()`、`canLinkLine()`、`linkLineAccount()`、`checkLineLinked()`。
+  **`@line/liff` 是動態 import**：只有「有設 `VITE_LIFF_ID` 且 user agent 含 `Line/`」才會下載
+  liff SDK（獨立 chunk 約 116kB），一般瀏覽器完全不載入，主 bundle 變小。
 - **`api/_groq.js`** — 呼叫 Groq Chat Completions 的最底層共用函式。
 - **`api/food-search.js`** + `_groqFoodSearch.js` — AI 食物搜尋（FoodSheet 的「✨ AI 搜尋」）。
 - **`api/day-summary.js`** + `_groqDaySummary.js` — AI 當日摘要（AdvancedSheet 的「✨ AI 幫我寫」），會把今天吃的東西、總營養素、目標值、當天標籤一起送給 AI。
@@ -241,6 +245,12 @@ SET pgrst.db_schemas = '...'` + `NOTIFY pgrst, 'reload config'`，見根目錄
 ---
 
 ## LINE 整合細節
+
+> **跨 app 一致性**：前端 `src/liff.js` 是 `@peggy-life/shared/lineAuth` 的薄殼；`api/` 的
+> `_lineVerify.js`/`_lineLogin.js`/`_lineLink.js`/`_lineLinkStatus.js`/`line-login.js`/
+> `line-link.js`/`line-link-status.js` 三個 app **逐字相同**（Vercel serverless 必須每個
+> app 各放一份，改任何一份要同步另外兩份）；唯一因 app 而異的是 `_supabaseAdmin.js`
+> 的 `getSupabaseAdmin()` schema。
 
 ### 在 LINE 裡開、不跳出外部瀏覽器
 靠 **LIFF（LINE Front-end Framework）**：在 LINE Developers Console 建一個 LIFF app，Endpoint URL 指向部署的網址，拿到一個 LIFF ID。之後在 LINE 裡分享 `https://liff.line.me/<LIFF_ID>` 這種格式的連結，LINE 認得自己的網域，會用內建瀏覽器直接開，不會丟給系統瀏覽器。`VITE_LIFF_ID` 設定了才會跑 `liff.init()`（`src/liff.js`），沒設定就完全跳過，當一般網頁用。

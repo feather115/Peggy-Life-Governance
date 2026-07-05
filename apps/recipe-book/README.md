@@ -37,8 +37,10 @@ npm install
    （建跨 app 共用的暱稱表，給 detail 頁「誰按讚」和「設定」分頁的暱稱功能用；
    要在 calorie-tracker、recipe-book 各自的 migration 都跑完之後才能跑，
    backfill 要 join 兩邊的表）
-11. 左側 **Settings → API**，複製 `Project URL` 和 `anon public` key
-12. 複製 `.env.example` 成 `.env`，填入：
+11. 再貼 [`packages/shared/supabase/2026-07-06_user_profiles_service_role_grant.sql`](../../packages/shared/supabase/2026-07-06_user_profiles_service_role_grant.sql) → **Run**
+   （補 `shared.user_profiles` 對 `service_role` 的權限，LINE 首次登入自動帶入暱稱需要）
+12. 左側 **Settings → API**，複製 `Project URL` 和 `anon public` key
+13. 複製 `.env.example` 成 `.env`，填入：
    ```
    VITE_SUPABASE_URL=https://你的專案.supabase.co
    VITE_SUPABASE_ANON_KEY=eyJ...
@@ -81,7 +83,7 @@ src/
 ├── Root.jsx                       # config check + LIFF / Auth 登入閘口，登入後交給 App
 ├── App.jsx                        # 520px 行動外殼 + 載入 recipes 與 view 導覽切換
 ├── supabase.js                    # re-export 共用 supabase client
-├── liff.js                        # LINE LIFF 初始化與自動登入/帳號綁定邏輯
+├── liff.js                        # LINE LIFF 薄殼（邏輯在 packages/shared/src/lineAuth.js，三 app 共用）
 ├── db.js                          # Supabase 查詢（食譜/按讚/料理紀錄/使用者暱稱 CRUD）
 ├── utils.js                       # normalize / filter / parse / formatDate / displayNameFor
 ├── useRecipes.js                  # 狀態中樞（清單、搜尋、分類、URL 同步、按讚、暱稱等）

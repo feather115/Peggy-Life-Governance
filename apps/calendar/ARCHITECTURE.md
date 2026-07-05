@@ -101,13 +101,14 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
   （`loadMyDisplayName`/`updateDisplayName`，查的是跨 app 共用的 `shared.user_profiles`，
   用 `.schema('shared')` 切換查詢目標，不是另開一個 client）。
 - **`src/supabase.js`** — re-export `@peggy-life/shared` 的 supabase client（`schema: 'calendar'`）。
-- **`src/liff.js`** — LINE LIFF 初始化、LINE 自動登入及帳號綁定（跟其他 app 共用同一套邏輯）、
-  `checkLineLinked()`（查詢目前帳號是否已綁定 LINE，給 `Settings.jsx` 的 `LineLinker`
-  用，任何瀏覽器都能查，不需要在 LINE App 裡開）。**`@line/liff` 是動態 import**：只有
-  「有設 `VITE_LIFF_ID` 且 user agent 含 `Line/`（LINE in-app browser）」才會下載 liff
-  SDK（獨立 chunk 約 119kB），一般瀏覽器完全不載入，主 bundle 從 ~600kB 降到 ~480kB。
-  行為跟舊版等價——舊版就算載了 liff，`isInClient()` 為 false 時所有 LINE 功能本來就
-  不會啟動，所以 UA 不是 LINE 時跳過載入不會少任何功能。
+- **`src/liff.js`** — 薄殼：把本 app 的 supabase client 綁進
+  `@peggy-life/shared/lineAuth` 的 `createLineAuth()`（三個 app 共用同一份 LINE 邏輯，
+  要改行為去 `packages/shared/src/lineAuth.js` 改）。提供 `initLiff()`、`lineAutoLogin()`、
+  `canLinkLine()`、`linkLineAccount()`、`checkLineLinked()`（給 `Settings.jsx` 的
+  `LineLinker` 用，任何瀏覽器都能查）。**`@line/liff` 是動態 import**：只有「有設
+  `VITE_LIFF_ID` 且 user agent 含 `Line/`（LINE in-app browser）」才會下載 liff SDK
+  （獨立 chunk 約 119kB），一般瀏覽器完全不載入，主 bundle 變小。行為跟載入後再檢查
+  等價——`isInClient()` 為 false 時所有 LINE 功能本來就不會啟動。
 
 ### 無狀態工具
 - **`src/theme.js`** — 視覺常數集中地：`THEME`（配色/圓角/陰影）、`EVENT_COLORS`
@@ -424,11 +425,16 @@ createAppSupabase({ schema: 'calendar' })
 
 ## LINE 整合
 
-跟 calorie-tracker / recipe-book 完全相同的實作（`src/liff.js` + `api/`），差異只有：
-- `_lineLogin.js` 沒有「回填暱稱到 user_settings」那段——本 app 沒有 `user_settings` 表，
-  不需要顯示暱稱
-- `getSupabaseAdminForLine()` 指向共用的 `shared` schema（`line_links` 表實際所在的地方，
-  見上方「跨 app 共用 LINE 登入」），不是本 app 自己的 `calendar` schema
+跟 calorie-tracker / recipe-book **完全相同**的實作：
+- 前端 `src/liff.js` 是 `@peggy-life/shared/lineAuth` 的薄殼（邏輯只有一份）
+- `api/` 底下的 `_lineVerify.js`/`_lineLogin.js`/`_lineLink.js`/`_lineLinkStatus.js`/
+  `line-login.js`/`line-link.js`/`line-link-status.js` 三個 app **逐字相同**（Vercel
+  serverless 必須每個 app 各放一份，改任何一份要同步另外兩份），唯一不同的檔案是
+  `_supabaseAdmin.js`——`getSupabaseAdmin()` 指向本 app 自己的 `calendar` schema，
+  `getSupabaseAdminForLine()` 指向共用的 `shared` schema（`line_links` 表實際所在的地方，
+  見上方「跨 app 共用 LINE 登入」）
+- `_lineLogin.js` 首次 LINE 登入會把 LINE 顯示名稱 seed 進 `shared.user_profiles`
+  （僅暱稱空白時），本 app 的暱稱顯示（`Settings.jsx`）讀同一張表，直接受惠
 
 `api/` 底下跟 LINE 有關的檔案：`_lineLogin.js`/`line-login.js`（LIFF 自動登入）、
 `_lineLink.js`/`line-link.js`（把目前登入的帳號綁定到這個 LINE 身份）、

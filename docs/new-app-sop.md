@@ -38,7 +38,7 @@ apps/<app-name>/
 │   ├── db.js                # Supabase 查詢的純函式，元件不直接 import supabase
 │   ├── use<Domain>.js      # 狀態中樞 hook（見下方「狀態中樞」）
 │   ├── utils.js             # 無副作用的純函式（格式化、篩選、parse）
-│   ├── liff.js              # 只有需要 LINE 整合才加（自動登入 + 帳號連結 + 連結狀態查詢）
+│   ├── liff.js              # 只有需要 LINE 整合才加：@peggy-life/shared/lineAuth 的薄殼（見第 9 節）
 │   └── components/
 │       ├── Auth.jsx         # 只有需要登入才加（email/password，抄 recipe-book 的版本）
 │       ├── Settings.jsx / SettingsTab.jsx  # 帳號資訊：email、暱稱、LINE 連結、登出
@@ -224,6 +224,14 @@ export function getSupabaseAdmin() {
 這一節是三個現有 app（calorie-tracker、recipe-book、calendar）目前**完全一致**的實作，
 新 app 要做登入/LINE/暱稱，直接照抄這裡的模式，不要自己重新設計。
 
+> **同步規則**：`api/` 底下的 `_lineVerify.js`、`_lineLogin.js`、`_lineLink.js`、
+> `_lineLinkStatus.js`、`line-login.js`、`line-link.js`、`line-link-status.js` 在三個
+> 現有 app 之間**逐字相同**（Vercel serverless 只能每個 app 各放一份實體檔案，沒辦法
+> import monorepo 其他 package）。改任何一份就要 `cp` 同步到其他 app。唯一允許不同的
+> 是 `_supabaseAdmin.js` 裡 `getSupabaseAdmin()` 指向的 schema 名稱。
+> 前端的 `src/liff.js` 則沒有這個問題——邏輯集中在 `packages/shared/src/lineAuth.js`，
+> 各 app 只放 14 行薄殼。
+
 ### 9.1 Email/密碼登入
 
 抄 `apps/recipe-book/src/components/Auth.jsx`：email/password 登入/註冊/忘記密碼。
@@ -235,7 +243,9 @@ export function getSupabaseAdmin() {
 讓使用者從 LINE App 裡打開連結（`https://liff.line.me/<LIFF_ID>`）時不用輸入帳密，
 直接用 LINE 身份登入。三個檔案一組：
 
-- **`src/liff.js`**：
+- **`src/liff.js`** — 不要自己寫！LINE 前端邏輯只有一份，在
+  `packages/shared/src/lineAuth.js` 的 `createLineAuth(supabase)`，新 app 的 liff.js
+  只是薄殼（照抄任一現有 app 的 `src/liff.js`，14 行）。factory 提供：
   - `initLiff()` — app 啟動時呼叫一次 `liff.init({ liffId })`（`VITE_LIFF_ID` 沒設就
     直接 return，整段功能靜默跳過，不影響一般網頁使用）
   - `lineAutoLogin()` — 只有 `liff.isInClient() && liff.isLoggedIn()` 才會嘗試：
