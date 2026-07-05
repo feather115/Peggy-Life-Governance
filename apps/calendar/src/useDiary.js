@@ -134,6 +134,18 @@ export function useDiary(userId) {
     }));
   }, [categories]);
 
+  const moveTagInCategory = useCallback(async (categoryId, tag, direction) => {
+    const cat = categories.find((c) => c.id === categoryId);
+    if (!cat) return;
+    const idx = cat.tags.indexOf(tag);
+    const targetIdx = idx + direction;
+    if (idx === -1 || targetIdx < 0 || targetIdx >= cat.tags.length) return;
+    const nextTags = cat.tags.slice();
+    [nextTags[idx], nextTags[targetIdx]] = [nextTags[targetIdx], nextTags[idx]];
+    const updated = await db.updateCategory(categoryId, { tags: nextTags });
+    setCategories((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
+  }, [categories]);
+
   const removeTagFromCategory = useCallback(async (categoryId, tag) => {
     const cat = categories.find((c) => c.id === categoryId);
     if (!cat) return;
@@ -147,6 +159,6 @@ export function useDiary(userId) {
     loaded, loadError, entries, entriesByDate, categories,
     createEntry, updateEntry, deleteEntry,
     addCategory, renameCategory, deleteCategory, moveCategory,
-    addTagToCategory, removeTagFromCategory, moveTagToCategory,
+    addTagToCategory, removeTagFromCategory, moveTagToCategory, moveTagInCategory,
   };
 }

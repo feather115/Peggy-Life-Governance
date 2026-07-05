@@ -17,8 +17,10 @@ const S = {
   renameInput: { flex: 1, boxSizing: 'border-box', padding: '6px 10px', borderRadius: 8, border: `1px solid ${THEME.primary}`, fontSize: 15, fontWeight: 700, color: THEME.textDark, background: THEME.surface, outline: 'none' },
   deleteLabel: (confirming) => ({ cursor: 'pointer', fontSize: 12, fontWeight: 600, color: confirming ? THEME.error : THEME.textMuted, whiteSpace: 'nowrap' }),
   tagsWrap: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
-  tagChip: { display: 'flex', alignItems: 'center', gap: 6, background: THEME.surfaceAlt, padding: '7px 6px 7px 12px', borderRadius: 999 },
-  tagLabel: { fontSize: 12, color: THEME.textDark, fontWeight: 500 },
+  tagChip: { display: 'flex', alignItems: 'center', gap: 4, background: THEME.surfaceAlt, padding: '5px 6px 5px 4px', borderRadius: 999 },
+  tagReorderCol: { display: 'flex', flexDirection: 'column', gap: 0 },
+  tagReorderBtn: (disabled) => ({ border: 'none', background: 'none', cursor: disabled ? 'default' : 'pointer', color: disabled ? THEME.textFaint : THEME.textMuted, fontSize: 9, lineHeight: 1, padding: '1px 3px', outline: 'none' }),
+  tagLabel: { fontSize: 12, color: THEME.textDark, fontWeight: 500, marginLeft: 2 },
   tagRemove: { cursor: 'pointer', width: 18, height: 18, borderRadius: '50%', background: THEME.bg, color: THEME.textMuted, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12 },
   addRow: { display: 'flex', gap: 8 },
   tagInput: { flex: 1, boxSizing: 'border-box', padding: '8px 10px', borderRadius: 8, border: `1px dashed ${THEME.textFaint}`, fontSize: 13, color: THEME.textDark, background: 'transparent', outline: 'none' },
@@ -33,7 +35,7 @@ const S = {
   addCategoryBtn: { border: 'none', cursor: 'pointer', padding: '0 18px', borderRadius: THEME.radiusSm, background: THEME.primary, color: '#fff', fontSize: 14, fontWeight: 700 },
 };
 
-function CategoryCard({ category, allCategories, onRename, onDelete, onAddTag, onRemoveTag, onMoveTagHere, onMoveUp, onMoveDown, canMoveUp, canMoveDown }) {
+function CategoryCard({ category, allCategories, onRename, onDelete, onAddTag, onRemoveTag, onMoveTagHere, onMoveTagInCategory, onMoveUp, onMoveDown, canMoveUp, canMoveDown }) {
   const [renaming, setRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState(category.name);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -103,8 +105,12 @@ function CategoryCard({ category, allCategories, onRename, onDelete, onAddTag, o
       </div>
 
       <div style={S.tagsWrap}>
-        {category.tags.map((tag) => (
+        {category.tags.map((tag, i) => (
           <div key={tag} style={S.tagChip}>
+            <div style={S.tagReorderCol}>
+              <button type="button" style={S.tagReorderBtn(i === 0)} disabled={i === 0} onClick={() => onMoveTagInCategory(tag, -1)} aria-label="標籤上移">▲</button>
+              <button type="button" style={S.tagReorderBtn(i === category.tags.length - 1)} disabled={i === category.tags.length - 1} onClick={() => onMoveTagInCategory(tag, 1)} aria-label="標籤下移">▼</button>
+            </div>
             <span style={S.tagLabel}>{tag}</span>
             <span style={S.tagRemove} onClick={() => onRemoveTag(tag)}>×</span>
           </div>
@@ -137,7 +143,7 @@ function CategoryCard({ category, allCategories, onRename, onDelete, onAddTag, o
   );
 }
 
-export default function ManageTags({ categories, onRenameCategory, onDeleteCategory, onAddTag, onRemoveTag, onMoveTag, onAddCategory, onMoveCategory, onClose }) {
+export default function ManageTags({ categories, onRenameCategory, onDeleteCategory, onAddTag, onRemoveTag, onMoveTag, onMoveTagInCategory, onAddCategory, onMoveCategory, onClose }) {
   const [newCategoryInput, setNewCategoryInput] = useState('');
 
   const submitNewCategory = () => {
@@ -165,6 +171,7 @@ export default function ManageTags({ categories, onRenameCategory, onDeleteCateg
             onAddTag={(tag) => onAddTag(cat.id, tag)}
             onRemoveTag={(tag) => onRemoveTag(cat.id, tag)}
             onMoveTagHere={(tag, fromCategoryId) => onMoveTag(tag, fromCategoryId, cat.id)}
+            onMoveTagInCategory={(tag, direction) => onMoveTagInCategory(cat.id, tag, direction)}
             onMoveUp={() => onMoveCategory(cat.id, -1)}
             onMoveDown={() => onMoveCategory(cat.id, 1)}
             canMoveUp={i > 0}

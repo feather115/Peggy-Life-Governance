@@ -28,10 +28,11 @@ const S = {
   textarea: { width: '100%', boxSizing: 'border-box', border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSm, padding: '12px 14px', fontSize: 14, lineHeight: 1.6, color: THEME.textDark, background: THEME.surface, outline: 'none', fontFamily: 'inherit', resize: 'vertical' },
   categoryList: { display: 'flex', flexDirection: 'column', gap: 16 },
   categoryCard: { background: THEME.surface, borderRadius: THEME.radius, padding: '16px 18px', boxShadow: THEME.shadow },
-  categoryName: { fontSize: 13, fontWeight: 700, color: THEME.textMuted, marginBottom: 12 },
+  categoryHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
+  categoryName: { fontSize: 13, fontWeight: 700, color: THEME.textMuted },
   tagWrap: { display: 'flex', flexWrap: 'wrap', gap: 8 },
   tagChip: (selected) => ({ cursor: 'pointer', padding: '9px 15px', borderRadius: 999, background: selected ? THEME.primary : THEME.surfaceAlt, color: selected ? '#fff' : THEME.textDark, fontSize: 13, fontWeight: selected ? 700 : 500, boxShadow: selected ? '0 4px 10px rgba(61,90,128,.28)' : 'none' }),
-  addTagChip: { cursor: 'pointer', padding: '9px 15px', borderRadius: 999, background: 'transparent', border: `1px dashed ${THEME.textFaint}`, color: THEME.textMuted, fontSize: 13, fontWeight: 600 },
+  addTagIconBtn: { flexShrink: 0, border: 'none', cursor: 'pointer', width: 22, height: 22, borderRadius: '50%', background: THEME.surfaceAlt, color: THEME.textMuted, fontSize: 14, fontWeight: 700, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 },
   addTagRow: { display: 'flex', gap: 8, marginTop: 10 },
   addTagInput: { flex: 1, boxSizing: 'border-box', border: `1px dashed ${THEME.textFaint}`, background: 'transparent', borderRadius: 999, padding: '8px 14px', fontSize: 13, color: THEME.textDark, outline: 'none' },
   addTagBtn: { border: 'none', cursor: 'pointer', padding: '0 16px', borderRadius: 999, background: THEME.primarySoft, color: THEME.primary, fontSize: 13, fontWeight: 700 },
@@ -41,11 +42,12 @@ const S = {
   errorBox: { background: THEME.errorBg, color: THEME.error, padding: '10px 12px', borderRadius: THEME.radiusSm, fontSize: 13, fontWeight: 600, marginBottom: 16 },
 };
 
-// 分類卡片內的「+ 新增標籤」：點開變成輸入框，Enter/按鈕送出。
-// 如果輸入的名字在別的分類已經存在，不會建立重複標籤，直接把既有的那個標籤選起來就好
-// （這裡只是要選一個標籤來用，不是在管分類——真的要把標籤搬到別的分類，去設定頁的
-// 「管理分類與標籤」，那邊才有處理重複標籤的完整流程）。
-function AddTagControl({ category, allCategories, onAddTag, onSelectTag }) {
+// 一張分類卡片：分類名稱 + 右上角小「+」新增標籤按鈕 + 標籤 chip 清單。
+// 「+」點開變成輸入框，Enter/按鈕送出。如果輸入的名字在別的分類已經存在，不會建立
+// 重複標籤，直接把既有的那個標籤選起來就好（這裡只是要選一個標籤來用，不是在管分類
+// ——真的要把標籤搬到別的分類，去設定頁的「管理分類與標籤」，那邊才有處理重複標籤的
+// 完整流程）。
+function CategoryTagCard({ category, allCategories, selectedTags, onToggleTag, onAddTag, onSelectTag }) {
   const [adding, setAdding] = useState(false);
   const [draft, setDraft] = useState('');
   const [hint, setHint] = useState('');
@@ -70,27 +72,37 @@ function AddTagControl({ category, allCategories, onAddTag, onSelectTag }) {
     setDraft(''); setAdding(false);
   };
 
-  if (!adding) {
-    return (
-      <>
-        <div style={S.addTagChip} onClick={() => { setAdding(true); setHint(''); }}>＋ 新增標籤</div>
-        {hint && <div style={S.addTagHint}>{hint}</div>}
-      </>
-    );
-  }
-
   return (
-    <div style={S.addTagRow}>
-      <input
-        autoFocus
-        style={S.addTagInput}
-        value={draft}
-        onChange={(e) => setDraft(e.target.value)}
-        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submit(); } if (e.key === 'Escape') setAdding(false); }}
-        onBlur={submit}
-        placeholder="輸入新標籤名稱"
-      />
-      <button type="button" style={S.addTagBtn} onMouseDown={(e) => e.preventDefault()} onClick={submit}>加入</button>
+    <div style={S.categoryCard}>
+      <div style={S.categoryHeader}>
+        <div style={S.categoryName}>{category.name}</div>
+        <button type="button" style={S.addTagIconBtn} onClick={() => { setAdding(true); setHint(''); }} aria-label="新增標籤">＋</button>
+      </div>
+
+      {category.tags.length > 0 && (
+        <div style={S.tagWrap}>
+          {category.tags.map((tag) => (
+            <div key={tag} style={S.tagChip(selectedTags.includes(tag))} onClick={() => onToggleTag(tag)}>{tag}</div>
+          ))}
+        </div>
+      )}
+      {category.tags.length === 0 && <div style={S.emptyCategory}>這個分類還沒有標籤</div>}
+
+      {adding && (
+        <div style={S.addTagRow}>
+          <input
+            autoFocus
+            style={S.addTagInput}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submit(); } if (e.key === 'Escape') setAdding(false); }}
+            onBlur={submit}
+            placeholder="輸入新標籤名稱"
+          />
+          <button type="button" style={S.addTagBtn} onMouseDown={(e) => e.preventDefault()} onClick={submit}>加入</button>
+        </div>
+      )}
+      {hint && <div style={S.addTagHint}>{hint}</div>}
     </div>
   );
 }
@@ -218,18 +230,15 @@ export default function DiaryForm({ entry, dateKey, categories, onSave, onDelete
 
         <div style={S.categoryList}>
           {categories.map((cat) => (
-            <div key={cat.id} style={S.categoryCard}>
-              <div style={S.categoryName}>{cat.name}</div>
-              {cat.tags.length > 0 && (
-                <div style={S.tagWrap}>
-                  {cat.tags.map((tag) => (
-                    <div key={tag} style={S.tagChip(tags.includes(tag))} onClick={() => toggleTag(tag)}>{tag}</div>
-                  ))}
-                </div>
-              )}
-              {cat.tags.length === 0 && <div style={S.emptyCategory}>這個分類還沒有標籤</div>}
-              <AddTagControl category={cat} allCategories={categories} onAddTag={onAddTag} onSelectTag={selectTag} />
-            </div>
+            <CategoryTagCard
+              key={cat.id}
+              category={cat}
+              allCategories={categories}
+              selectedTags={tags}
+              onToggleTag={toggleTag}
+              onAddTag={onAddTag}
+              onSelectTag={selectTag}
+            />
           ))}
         </div>
 
