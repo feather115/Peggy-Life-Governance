@@ -1,7 +1,8 @@
 // 日檢視：單日事件 + 日記合併時間軸，可切換前一天/後一天，底部有「新增事件」「新增日記」按鈕。
 import React from 'react';
 import { INTERVAL_UNIT_LABEL, buildDayTimeline, dayLabel, formatDiaryTime, formatTime } from '../utils.js';
-import { THEME, categoryAccentForTag } from '../theme.js';
+import { THEME } from '../theme.js';
+import { DiaryTags } from './TimelineItems.jsx';
 
 const S = {
   wrap: { display: 'flex', flexDirection: 'column', minHeight: '100%' },
@@ -21,8 +22,6 @@ const S = {
   tagsRow: { display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 6, marginLeft: 80 },
   allDayTagsRow: { display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 6, marginLeft: 18 },
   tagChip: { fontSize: 11, fontWeight: 600, color: THEME.textMuted, background: THEME.surface, padding: '3px 8px', borderRadius: 999 },
-  diaryTagChip: (accent) => ({ fontSize: 11, fontWeight: 600, color: accent, background: THEME.primarySoft, padding: '3px 8px', borderRadius: 999 }),
-  diaryTagChipOnAllDay: (accent) => ({ fontSize: 11, fontWeight: 600, color: accent, background: THEME.surface, padding: '3px 8px', borderRadius: 999 }),
   diaryTop: { display: 'flex', gap: 10, alignItems: 'baseline' },
   diaryTime: { fontSize: 13, fontWeight: 600, color: THEME.primary, width: 78, flexShrink: 0, whiteSpace: 'nowrap' },
   diaryEmpty: { fontSize: 13, color: THEME.textFaint },
@@ -109,19 +108,14 @@ export default function DayView({ dateKey, onShiftDay, eventsByDate, entriesByDa
           }
           // diary
           const entry = item.data;
-          const tags = entry.tags || [];
           const hasMeta = !!entry.location || (entry.people || []).length > 0;
-          const tagChipStyle = entry.all_day ? S.diaryTagChipOnAllDay : S.diaryTagChip;
-          const renderTags = () => tags.length === 0 ? (
-            <span style={S.diaryEmpty}>✎ 這則日記還沒有內容</span>
-          ) : (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-              {tags.map((t) => (
-                <span key={t} style={tagChipStyle(categoryAccentForTag(t, categories || []))}>
-                  {t}{entry.tag_details?.[t] ? `：${entry.tag_details[t]}` : ''}
-                </span>
-              ))}
-            </div>
+          const renderTags = () => (
+            <DiaryTags
+              entry={entry}
+              categories={categories}
+              onTint={!!entry.all_day}
+              fallback={<span style={S.diaryEmpty}>✎ 這則日記還沒有內容</span>}
+            />
           );
           if (entry.all_day) {
             return (

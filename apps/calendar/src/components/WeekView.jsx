@@ -1,7 +1,8 @@
-// 週檢視：一週 7 天直向列表，每天下面列出當天事件+日記，點某一天跳去日檢視（openDay）。
+// 週檢視：一週 7 天直向列表，每天下面列出當天事件+日記+任務（TimelineItems），點某一天跳去日檢視（openDay）。
 import React, { useMemo } from 'react';
-import { DOW, buildDayTimeline, dateKeyFrom, formatDiaryTime, formatTime, getWeekDays, parseDateKey, todayKey, weekRangeLabel } from '../utils.js';
-import { THEME, categoryAccentForTag } from '../theme.js';
+import { DOW, buildDayTimeline, dateKeyFrom, getWeekDays, parseDateKey, todayKey, weekRangeLabel } from '../utils.js';
+import { THEME } from '../theme.js';
+import TimelineItems from './TimelineItems.jsx';
 
 const S = {
   panel: { background: THEME.surface, borderRadius: THEME.radius, padding: 14, margin: '6px 20px 20px', boxShadow: THEME.shadow },
@@ -12,38 +13,8 @@ const S = {
   dayHeader: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 },
   dayLabel: { fontSize: 14, fontWeight: 700, color: THEME.textDark },
   todayBadge: { fontSize: 11, fontWeight: 700, color: '#fff', background: THEME.primary, padding: '2px 7px', borderRadius: 999 },
-  item: { padding: '3px 0' },
-  itemRow: { display: 'flex', gap: 8, fontSize: 13, alignItems: 'flex-start' },
-  itemDot: { width: 8, height: 8, borderRadius: '50%', flexShrink: 0, alignSelf: 'center' },
-  itemTime: { color: THEME.textMuted, width: 78, flexShrink: 0, whiteSpace: 'nowrap', alignSelf: 'center' },
-  itemTitle: { color: THEME.textDark, alignSelf: 'center' },
-  itemMeta: (indent = 102) => ({ fontSize: 11, color: THEME.textMuted, marginLeft: indent }),
-  tagChipWrap: { display: 'flex', flexWrap: 'wrap', gap: 6 },
-  diaryTagChip: (accent) => ({ fontSize: 11, fontWeight: 600, color: accent, background: THEME.primarySoft, padding: '3px 8px', borderRadius: 999 }),
   empty: { fontSize: 13, color: THEME.textFaint },
 };
-
-function metaLine(location, people) {
-  const parts = [];
-  if (location) parts.push(`📍 ${location}`);
-  if (people && people.length > 0) parts.push(`👤 ${people.join('、')}`);
-  return parts.length > 0 ? parts.join(' · ') : null;
-}
-
-// 日記標籤用框框（chip）顯示，跟 DayView 一致，不是純文字用頓號接起來
-function DiaryTags({ entry, categories }) {
-  const tags = entry.tags || [];
-  if (tags.length === 0) return <span style={S.itemTitle}>日記</span>;
-  return (
-    <div style={S.tagChipWrap}>
-      {tags.map((t) => (
-        <span key={t} style={S.diaryTagChip(categoryAccentForTag(t, categories || []))}>
-          {t}{entry.tag_details?.[t] ? `：${entry.tag_details[t]}` : ''}
-        </span>
-      ))}
-    </div>
-  );
-}
 
 export default function WeekView({ anchorKey, onAnchorChange, selectedDateKey, onOpenDay, eventsByDate, entriesByDate, categories, tasksByDueDate }) {
   const anchor = parseDateKey(anchorKey);
@@ -77,50 +48,7 @@ export default function WeekView({ anchorKey, onAnchorChange, selectedDateKey, o
             </div>
             {timeline.length === 0
               ? <div style={S.empty}>沒有事件</div>
-              : timeline.map((item) => {
-                if (item.kind === 'event') {
-                  const ev = item.data;
-                  const meta = metaLine(ev.location, null);
-                  return (
-                    <div key={`ev-${ev.id}`} style={S.item}>
-                      <div style={S.itemRow}>
-                        <span style={{ ...S.itemDot, background: ev.color || THEME.primary }} />
-                        {!ev.all_day && <span style={S.itemTime}>{formatTime(ev.start_at)}</span>}
-                        <span style={S.itemTitle}>{ev.title}</span>
-                      </div>
-                      {meta && <div style={S.itemMeta(ev.all_day ? 16 : 102)}>{meta}</div>}
-                    </div>
-                  );
-                }
-                if (item.kind === 'diary') {
-                  const entry = item.data;
-                  const meta = metaLine(entry.location, entry.people);
-                  return (
-                    <div key={`di-${entry.id}`} style={S.item}>
-                      <div style={S.itemRow}>
-                        {entry.all_day ? null : (
-                          <>
-                            <span style={{ ...S.itemDot, background: THEME.primaryDark }} />
-                            <span style={S.itemTime}>{formatDiaryTime(entry)}</span>
-                          </>
-                        )}
-                        <DiaryTags entry={entry} categories={categories} />
-                      </div>
-                      {meta && <div style={S.itemMeta(entry.all_day ? 0 : 102)}>{meta}</div>}
-                    </div>
-                  );
-                }
-                const t = item.data;
-                return (
-                  <div key={`task-${t.id}`} style={S.item}>
-                    <div style={S.itemRow}>
-                      <span style={{ width: 8, height: 8, borderRadius: 1, background: THEME.textMuted, flexShrink: 0 }} />
-                      <span style={S.itemTime}>☐</span>
-                      <span style={S.itemTitle}>{t.title}</span>
-                    </div>
-                  </div>
-                );
-              })}
+              : <TimelineItems timeline={timeline} categories={categories} />}
           </div>
         );
       })}

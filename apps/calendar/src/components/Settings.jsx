@@ -142,7 +142,7 @@ function NicknameEditor({ userId }) {
   );
 }
 
-export default function Settings({ session, onClose, onManageTags }) {
+export default function Settings({ session, onClose, onManageTags, onSignOut }) {
   const displayEmail = (() => {
     const email = session?.user?.email || '';
     if (email.endsWith('@line.invalid')) {
@@ -173,6 +173,12 @@ export default function Settings({ session, onClose, onManageTags }) {
           <div style={S.rowLabel}>管理分類與標籤</div>
           <div style={S.rowArrow}>›</div>
         </div>
+
+        {onSignOut && (
+          <div style={{ ...S.row, justifyContent: 'center' }} onClick={onSignOut}>
+            <div style={{ ...S.rowLabel, color: THEME.error }}>登出</div>
+          </div>
+        )}
       </div>
     </div>
   );

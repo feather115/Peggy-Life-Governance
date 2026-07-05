@@ -1,4 +1,11 @@
 // App 外殼：520px 置中容器，載入 useEvents + useDiary + useTasks，依 view 切換月/週/日/任務或各種表單。
+// 覆蓋畫面（表單/設定）統一用一個 overlay state 管理：
+//   null
+//   | { type: 'event', mode: 'create', dateKey } | { type: 'event', mode: 'edit', event }
+//   | { type: 'diary', mode: 'create', dateKey } | { type: 'diary', mode: 'edit', entry }
+//   | { type: 'task', mode: 'create' } | { type: 'task', mode: 'edit', task }
+//   | { type: 'settings' } | { type: 'manageTags' }
+// 之後要加新畫面就加一個 type，不要再疊三元運算子鏈。
 import React, { useState } from 'react';
 import { useEvents } from './useEvents.js';
 import { useDiary } from './useDiary.js';
@@ -30,14 +37,8 @@ export default function App({ session, onSignOut }) {
   const diary = useDiary(userId);
   const tasksHub = useTasks(userId);
 
-  // editing: null | { mode: 'create', dateKey } | { mode: 'edit', event }
-  const [editing, setEditing] = useState(null);
-  // editingDiary: null | { mode: 'create', dateKey } | { mode: 'edit', entry }
-  const [editingDiary, setEditingDiary] = useState(null);
-  const [showSettings, setShowSettings] = useState(false);
-  const [managingTags, setManagingTags] = useState(false);
-  // editingTask: null | { mode: 'create' } | { mode: 'edit', task }
-  const [editingTask, setEditingTask] = useState(null);
+  const [overlay, setOverlay] = useState(null);
+  const closeOverlay = () => setOverlay(null);
 
   if (!cal.loaded || !diary.loaded || !tasksHub.loaded) return <Centered>載入中…</Centered>;
   if (cal.loadError) return <Centered color={THEME.error}>載入失敗：{cal.loadError}</Centered>;
@@ -55,59 +56,80 @@ export default function App({ session, onSignOut }) {
   const handleSaveEvent = async (payload, existingId) => {
     if (existingId) await cal.updateEvent(existingId, payload);
     else await cal.createEvent(payload);
-    setEditing(null);
+    closeOverlay();
   };
 
   const handleDeleteEvent = async (eventId) => {
     await cal.deleteEvent(eventId);
-    setEditing(null);
+    closeOverlay();
   };
 
   const handleSaveDiary = async (payload, existingId) => {
     if (existingId) await diary.updateEntry(existingId, payload);
     else await diary.createEntry(payload);
-    setEditingDiary(null);
+    closeOverlay();
   };
 
   const handleDeleteDiary = async (entryId) => {
     await diary.deleteEntry(entryId);
-    setEditingDiary(null);
+    closeOverlay();
   };
 
   const handleSaveTask = async (payload, existingId) => {
     if (existingId) await tasksHub.updateTask(existingId, payload);
     else await tasksHub.createTask(payload);
-    setEditingTask(null);
+    closeOverlay();
   };
 
-  const overlay = editing
-    ? (
-      <EventForm
-        event={editing.mode === 'edit' ? editing.event : null}
-        defaultDateKey={editing.mode === 'create' ? editing.dateKey : undefined}
-        allEvents={cal.events}
-        onSave={handleSaveEvent}
-        onDelete={editing.mode === 'edit' ? handleDeleteEvent : null}
-        onCancel={() => setEditing(null)}
-      />
-    )
-    : editingDiary
-    ? (
-      <DiaryForm
-        entry={editingDiary.mode === 'edit' ? editingDiary.entry : null}
-        dateKey={editingDiary.mode === 'edit' ? editingDiary.entry.entry_date : editingDiary.dateKey}
-        categories={diary.categories}
-        onSave={handleSaveDiary}
-        onDelete={editingDiary.mode === 'edit' ? handleDeleteDiary : null}
-        onCancel={() => setEditingDiary(null)}
-        onAddTag={diary.addTagToCategory}
-        tagDetailHistory={diary.tagDetailHistory}
-      />
-    )
-    : showSettings
-    ? (
-      managingTags
-        ? (
+  const editEvent = (event) => setOverlay({ type: 'event', mode: 'edit', event });
+  const editDiary = (entry) => setOverlay({ type: 'diary', mode: 'edit', entry });
+  const goToTasks = () => { closeOverlay(); cal.setView('tasks'); };
+
+  const renderOverlay = () => {
+    switch (overlay?.type) {
+      case 'event':
+        return (
+          <EventForm
+            event={overlay.mode === 'edit' ? overlay.event : null}
+            defaultDateKey={overlay.mode === 'create' ? overlay.dateKey : undefined}
+            allEvents={cal.events}
+            onSave={handleSaveEvent}
+            onDelete={overlay.mode === 'edit' ? handleDeleteEvent : null}
+            onCancel={closeOverlay}
+          />
+        );
+      case 'diary':
+        return (
+          <DiaryForm
+            entry={overlay.mode === 'edit' ? overlay.entry : null}
+            dateKey={overlay.mode === 'edit' ? overlay.entry.entry_date : overlay.dateKey}
+            categories={diary.categories}
+            onSave={handleSaveDiary}
+            onDelete={overlay.mode === 'edit' ? handleDeleteDiary : null}
+            onCancel={closeOverlay}
+            onAddTag={diary.addTagToCategory}
+            tagDetailHistory={diary.tagDetailHistory}
+          />
+        );
+      case 'task':
+        return (
+          <TaskForm
+            task={overlay.mode === 'edit' ? overlay.task : null}
+            onSave={handleSaveTask}
+            onCancel={closeOverlay}
+          />
+        );
+      case 'settings':
+        return (
+          <Settings
+            session={session}
+            onClose={closeOverlay}
+            onManageTags={() => setOverlay({ type: 'manageTags' })}
+            onSignOut={onSignOut}
+          />
+        );
+      case 'manageTags':
+        return (
           <ManageTags
             categories={diary.categories}
             onRenameCategory={diary.renameCategory}
@@ -119,26 +141,15 @@ export default function App({ session, onSignOut }) {
             onRenameTag={diary.renameTagInCategory}
             onAddCategory={diary.addCategory}
             onMoveCategory={diary.moveCategory}
-            onClose={() => setManagingTags(false)}
+            onClose={() => setOverlay({ type: 'settings' })}
           />
-        )
-        : (
-          <Settings
-            session={session}
-            onClose={() => setShowSettings(false)}
-            onManageTags={() => setManagingTags(true)}
-          />
-        )
-    )
-    : editingTask
-    ? (
-      <TaskForm
-        task={editingTask.mode === 'edit' ? editingTask.task : null}
-        onSave={handleSaveTask}
-        onCancel={() => setEditingTask(null)}
-      />
-    )
-    : null;
+        );
+      default:
+        return null;
+    }
+  };
+
+  const overlayNode = renderOverlay();
 
   return (
     <div style={{
@@ -154,18 +165,15 @@ export default function App({ session, onSignOut }) {
       boxShadow: '0 0 60px -20px rgba(0,0,0,.12)',
       overflow: 'hidden',
     }}>
-      {overlay ? (
+      {overlayNode ? (
         <div className="ps" style={{ flex: 1, overflowY: 'auto' }}>
-          {overlay}
+          {overlayNode}
         </div>
       ) : (
         <>
-          <header style={{ padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: THEME.surface }}>
+          <header style={{ padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: THEME.surface }}>
             <h1 style={{ fontSize: 18, fontWeight: 700, color: THEME.textDark, margin: 0 }}>TY Calendar</h1>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-              <button onClick={() => setShowSettings(true)} aria-label="設定" style={{ border: 'none', background: 'none', color: THEME.textMuted, fontSize: 18, cursor: 'pointer', outline: 'none', lineHeight: 1 }}>⚙</button>
-              <button onClick={onSignOut} style={{ border: 'none', background: 'none', color: THEME.textMuted, fontWeight: 600, fontSize: 13, cursor: 'pointer', outline: 'none' }}>登出</button>
-            </div>
+            <button onClick={() => setOverlay({ type: 'settings' })} aria-label="設定" style={{ border: 'none', background: 'none', color: THEME.textMuted, fontSize: 18, cursor: 'pointer', outline: 'none', lineHeight: 1, padding: 4 }}>⚙</button>
           </header>
 
           <ViewTabs view={cal.view} onChange={cal.setView} onToday={cal.goToday} />
@@ -182,6 +190,9 @@ export default function App({ session, onSignOut }) {
                 entriesByDate={diary.entriesByDate}
                 categories={diary.categories}
                 tasksByDueDate={tasksHub.tasksByDueDate}
+                onEditEvent={editEvent}
+                onEditDiary={editDiary}
+                onGoToTasks={goToTasks}
               />
             )}
             {cal.view === 'week' && (
@@ -204,18 +215,18 @@ export default function App({ session, onSignOut }) {
                 entriesByDate={diary.entriesByDate}
                 categories={diary.categories}
                 tasksByDueDate={tasksHub.tasksByDueDate}
-                onEdit={(event) => setEditing({ mode: 'edit', event })}
-                onCreate={(dateKey) => setEditing({ mode: 'create', dateKey })}
-                onEditDiary={(entry) => setEditingDiary({ mode: 'edit', entry })}
-                onCreateDiary={(dateKey) => setEditingDiary({ mode: 'create', dateKey })}
-                onGoToTasks={() => cal.setView('tasks')}
+                onEdit={editEvent}
+                onCreate={(dateKey) => setOverlay({ type: 'event', mode: 'create', dateKey })}
+                onEditDiary={editDiary}
+                onCreateDiary={(dateKey) => setOverlay({ type: 'diary', mode: 'create', dateKey })}
+                onGoToTasks={goToTasks}
               />
             )}
             {cal.view === 'tasks' && (
               <TasksView
                 tasks={tasksHub.tasks}
-                onEdit={(task) => setEditingTask({ mode: 'edit', task })}
-                onCreate={() => setEditingTask({ mode: 'create' })}
+                onEdit={(task) => setOverlay({ type: 'task', mode: 'edit', task })}
+                onCreate={() => setOverlay({ type: 'task', mode: 'create' })}
                 onDelete={tasksHub.deleteTask}
                 onConfirmComplete={tasksHub.confirmComplete}
               />
