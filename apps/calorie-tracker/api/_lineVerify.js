@@ -14,7 +14,7 @@ function peekJwtPayload(token) {
 
 export async function verifyLineIdToken(idToken, channelId) {
   if (!idToken) throw new Error('缺少 idToken');
-  if (!channelId) throw new Error('伺服器未設定 LINE_CHANNEL_ID');
+  if (!channelId) throw Object.assign(new Error('伺服器未設定 LINE_CHANNEL_ID'), { statusCode: 500 });
   const trimmedChannelId = String(channelId).trim();
 
   const res = await fetch('https://api.line.me/oauth2/v2.1/verify', {

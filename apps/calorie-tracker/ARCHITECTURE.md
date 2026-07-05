@@ -80,7 +80,7 @@ Supabase ⇄ db.js ⇄ useAppData.js ⇄ App.jsx ⇄ components/*
 - **`src/Root.jsx`** — 看有沒有設定 `.env`、有沒有登入，決定顯示 `ConfigMissing` / `Auth` / `App`。
 - **`src/App.jsx`** — 主外殼。載入 `useAppData`，管理 UI 狀態（目前分頁、選取日期、哪個面板開著），把分頁與面板組起來。
 - **`src/useAppData.js`** — ⭐ **狀態中樞**。所有資料（days/foods/goals/tags）與改資料的動作都在這。元件透過它操作資料。
-- **`src/db.js`** — Supabase 的純 CRUD 函式，一個動作一個 function。
+- **`src/db.js`** — Supabase 的純 CRUD 函式，一個動作一個 function。**所有寫入都會檢查 `error` 並 throw**，由呼叫端（`useAppData`）決定怎麼處理——不要新增「默默吞掉錯誤」的寫入，否則會出現「畫面改了、DB 沒改、重整又跳回來」的鬼影。
 - **`src/supabase.js`** — 建立 Supabase client；`supabaseReady` 判斷有沒有設定金鑰。
 
 ### 無狀態工具
@@ -116,7 +116,7 @@ Supabase ⇄ db.js ⇄ useAppData.js ⇄ App.jsx ⇄ components/*
 
 | Schema | 屬於哪個 app | 內容 |
 |---|---|---|
-| `calorie_tracker` | calorie-tracker | 11 張表（`user_settings`、`day_records`、`meal_items`、`challenges` …）+ 2 個 RPC function（`is_challenge_member`、`find_challenge_by_code`） |
+| `calorie_tracker` | calorie-tracker | 10 張表（`user_settings`、`day_records`、`meal_items`、`challenges` …；migration 當時搬了 11 張，其中 `line_links` 後來再搬去 `shared`）+ 2 個 RPC function（`is_challenge_member`、`find_challenge_by_code`） |
 | `recipe_book` | recipe-book | `recipes` 表 |
 | `calendar` | calendar | `events` 表 |
 | `shared` | 三個 app 共用 | `line_links`（LINE 身份 ↔ Supabase 帳號對照），見下方「跨 app 共用資料」 |
@@ -155,7 +155,7 @@ SET pgrst.db_schemas = '...'` + `NOTIFY pgrst, 'reload config'`，見根目錄
 ## 資料庫結構（Supabase）
 
 完整 SQL 在 `supabase/schema.sql`（用 `public` schema 寫，配合本目錄下的 migration 最後會搬到
-`calorie_tracker`）。六張表：
+`calorie_tracker`）。目前共 10 張表（飲食基本 6 張＋挑戰 3 張＋`food_usage`）：
 
 | 表 | 用途 | 重點 |
 |---|---|---|
@@ -178,7 +178,9 @@ SET pgrst.db_schemas = '...'` + `NOTIFY pgrst, 'reload config'`，見根目錄
 - **挑戰用邀請碼分群** — 建挑戰時自動生 6 碼邀請碼（避開易混淆字元 0/O/1/I/L），分享給朋友才能加入；非成員看不到該挑戰任何資料。RLS 用 `SECURITY DEFINER` 的 helper function `is_challenge_member()` 避免 policy 遞迴。
 - **邀請碼查詢繞過 RLS** — `find_challenge_by_code(p_code)` 也是 `SECURITY DEFINER` function。原因：`challenges` 的 select policy 只允許「建立者」或「已經是成員」讀取，所以還沒加入的人直接 `select ... where invite_code = ...` 會被 RLS 擋成空結果，誤判成「邀請碼不存在」。這個函式繞過限制，只回傳 `id`/`name` 給任何登入者查詢，加入流程（`db.js` 的 `joinChallengeByCode`）改用這個 RPC。
 - **暱稱跨 app 共用** ⭐ — 暱稱（`display_name`）存在 `shared.user_profiles`
-  （`packages/shared/supabase/2026-07-06_shared_user_profiles.sql`），不是這個 app 自己的
+  （`packages/shared/supabase/2026-07-06_shared_user_profiles.sql`；另有
+  `2026-07-06_user_profiles_service_role_grant.sql` 補 service_role 的表權限，
+  LINE 自動登入的暱稱 seed 需要，**新環境兩支都要跑**），不是這個 app 自己的
   `calorie_tracker.user_settings`。在這裡的「設定」分頁改暱稱，recipe-book 的「設定」
   分頁會立刻看到同一個名字，反過來也一樣——跟 `shared.line_links`（LINE 帳號連結）是
   同一個「三個 app 共用一份使用者資料」的設計思路。
@@ -206,7 +208,7 @@ SET pgrst.db_schemas = '...'` + `NOTIFY pgrst, 'reload config'`，見根目錄
     trigger 會互相覆蓋掉對方。
 - **自訂食物的品牌/備註** — `custom_foods.brand`、`custom_foods.note` 都是選填欄位，純粹給使用者自己標記用（例如「全家」「去冰半糖」），不影響任何計算邏輯。因為 `meal_items` 是快照，**改自訂食物的品牌/備註/數值都不會動到已經記錄過的歷史餐點**——這點對話中問過好幾次，是這個 App 的核心設計原則，改任何 `custom_foods` 欄位都要記住這個前提。
 - **`meal_items` 也有 `brand`** — 加入餐點時把當時食物的品牌也一起快照進去，今日頁才能顯示「名稱 · 品牌」。
-- **食物庫排序用 `food_usage`，不是排序 `custom_foods`/`FOODS` 本身** — 選用/新增/編輯食物時都會 `upsert` 一筆 `food_usage`（`useAppData.js` 的 `touchFood()`），`FoodSheet.jsx` 顯示清單時依這張表的時間排序，最近用過的排最上面；宵夜餐別仍維持原本「依熱量低到高」排序，不套用這個邏輯。
+- **食物庫排序用 `food_usage`，不是排序 `custom_foods`/`FOODS` 本身** — 選用/新增/編輯食物時都會 `upsert` 一筆 `food_usage`（`useAppData.js` 的 `touchFood()`），`FoodSheet.jsx` 顯示清單時依這張表的時間排序，最近用過的排最上面；宵夜餐別仍維持原本「依熱量低到高」排序，不套用這個邏輯。刪除自訂食物或「清除全部」時會一併清掉對應的 `food_usage` 紀錄，避免累積孤兒排序資料。
 - **記錄原因標籤顏色存在 `tag_defs.color`** — 主要給 `type='other'` 的標籤使用；設定頁可選顏色，報表月曆會把當天啟用的每個記錄原因標籤畫成對應顏色的小點。舊標籤沒有顏色時前端 fallback 為 `#E8A13C`。
 
 ---
@@ -250,7 +252,7 @@ SET pgrst.db_schemas = '...'` + `NOTIFY pgrst, 'reload config'`，見根目錄
 3. 驗證拿到 `payload.sub`（LINE 使用者唯一 ID）後，查 `line_links` 表看有沒有連結過既有帳號：
    - 有連結 → 用那個帳號的 email 產生登入連結。
    - 沒連結 → 用 `line-${sub}@line.invalid` 這個固定格式的信箱建一個新帳號（第一次見到這個 LINE 使用者）。
-4. 用 Supabase admin 的 `generateLink({ type: 'magiclink' })` 產生一次性憑證（`hashed_token`），前端用 `supabase.auth.verifyOtp({ token_hash, type: 'magiclink' })` 直接換成真正的 session——**全程不需要 email/密碼**。
+4. 用 Supabase admin 的 `generateLink({ type: 'magiclink' })` 產生一次性憑證（`hashed_token`），前端用 `supabase.auth.verifyOtp({ token_hash, type: 'magiclink' })` 直接換成真正的 session——**全程不需要 email/密碼**。若使用者還沒設定暱稱，會順便把 LINE 顯示名稱填進 `shared.user_profiles`（暱稱的正牌存放處，見「暱稱跨 app 共用」；只在空白時填，不會蓋掉自訂暱稱）。
 5. 任何一步失敗都會把原因記在 `Root.jsx` 的 `lineDebug` state，顯示在登入頁最下面一行灰字，方便在沒有電腦除錯工具的情況下定位問題（例如 scope 沒開、channel 還沒發布等）。
 
 ### 帳號連結（`linkLineAccount()`，設定頁「🔗 連結 LINE 帳號」）

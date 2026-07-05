@@ -14,7 +14,9 @@ export const MEALS_DEF = [
   { key: 'midnight',  label: '宵夜', icon: '🌙', iconBg: '#E3EAFB', eh: '想吃就記，誠實面對' },
 ];
 
-// Built-in food library (ids are for frontend use only and are not written to the database; they are saved as a "snapshot" when added to a meal)
+// Built-in food library. Adding to a meal stores a "snapshot" of the values (not a foreign key),
+// but the id itself IS persisted as a plain string in meal_items.food_ref / food_usage.food_ref
+// (e.g. 'egg') — so don't rename existing ids, or usage-based sorting loses track of them.
 export const FOODS = [
   { id: 'egg',          name: '水煮蛋',     unit: '1 顆',  cal: 78,  p: 6,  c: 1,  f: 5 },
   { id: 'chicken',      name: '雞胸肉',     unit: '150g',  cal: 165, p: 31, c: 0,  f: 4 }

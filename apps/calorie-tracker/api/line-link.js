@@ -12,6 +12,6 @@ export default async function handler(req, res) {
     res.status(200).json(result);
   } catch (e) {
     console.error('[POST /api/line-link] failed:', JSON.stringify({ message: e.message, code: e.code, details: e.details, hint: e.hint }));
-    res.status(400).json({ error: e.message || '連結失敗', code: e.code, details: e.details, hint: e.hint });
+    res.status(e.statusCode || 400).json({ error: e.message || '連結失敗', code: e.code, details: e.details, hint: e.hint });
   }
 }

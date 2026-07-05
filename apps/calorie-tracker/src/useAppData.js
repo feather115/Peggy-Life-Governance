@@ -4,11 +4,15 @@
 //  Components do not call db.js directly, but use the actions returned here.
 //
 //  Returns:
-//    state   loaded, loadError, days, customFoods, four goal*, two tagDefs sets
-//    setter  setGoalCal/P/C/F (automatically debounced and saved to Supabase)
-//    action  toggleTag, saveDayNote, addMeal, removeMeal,
+//    state   loaded, loadError, days, customFoods, foodUsage, displayName,
+//            four goal*, two tagDefs sets, challenges
+//    setter  setGoalCal/P/C/F, setDisplayName (automatically debounced and saved to Supabase)
+//    action  toggleTag, saveDayNote, addMeal, removeMeal, editMeal,
 //            addCustomFood, removeCustomFood, updateCustomFood, importFoods,
-//            addTagDef, deleteTagDef, clearAll
+//            addTagDef, updateTagColor, deleteTagDef, clearAll,
+//            createChallenge, joinChallenge, leaveChallenge, updateChallenge,
+//            endChallenge, deleteChallenge, submitWeightEntry, removeWeightEntry, setMemberColor
+//  Internal: touchFood (called by addMeal/addCustomFood/updateCustomFood to keep food_usage sorting fresh)
 // ============================================================
 
 import { useState, useEffect, useCallback } from 'react';
@@ -117,7 +121,7 @@ export function useAppData(userId) {
       if (!day) return prev;
       return { ...prev, [date]: { ...day, meals: { ...day.meals, [mealKey]: day.meals[mealKey].filter((i) => i.id !== itemId) } } };
     });
-  }, [userId]);
+  }, []);
 
   // ── Edit an already added meal item (name/brand/unit/calories/nutrients) ────────
   const editMeal = useCallback(async (date, mealKey, itemId, patch) => {
@@ -128,7 +132,7 @@ export function useAppData(userId) {
       const items = day.meals[mealKey].map((i) => (i.id === itemId ? updated : i));
       return { ...prev, [date]: { ...day, meals: { ...day.meals, [mealKey]: items } } };
     });
-  }, [userId]);
+  }, []);
 
   // ── Custom Foods ──────────────────────────────────────────
   const addCustomFood = useCallback(async (food) => {
@@ -139,8 +143,14 @@ export function useAppData(userId) {
   }, [userId, touchFood]);
 
   const removeCustomFood = useCallback(async (id) => {
-    await db.deleteCustomFood(id);
+    await db.deleteCustomFood(userId, id);
     setCustomFoods((prev) => prev.filter((f) => f.id !== id));
+    setFoodUsage((prev) => {
+      if (!(id in prev)) return prev;
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
   }, [userId]);
 
   // Modify custom food definition; previously recorded meals are snapshots and are not affected by this action.
@@ -191,7 +201,7 @@ export function useAppData(userId) {
       }
       return next;
     });
-  }, [userId]);
+  }, []);
 
   // ── Clear all data (retains tag definitions and goals) ──────────────────
   const clearAll = useCallback(async () => {
@@ -199,9 +209,12 @@ export function useAppData(userId) {
     if (ids.length) await supabase.from('day_records').delete().in('id', ids);
     const cfIds = customFoods.map((f) => f.id);
     if (cfIds.length) await supabase.from('custom_foods').delete().in('id', cfIds);
+    // Sorting records go with the foods/meals — clear them too so food_usage doesn't keep orphan refs
+    await supabase.from('food_usage').delete().eq('user_id', userId);
     setDays({});
     setCustomFoods([]);
-  }, [days, customFoods]);
+    setFoodUsage({});
+  }, [days, customFoods, userId]);
 
   // ── Weight Challenge actions ────────────────────────────────
   const createChallenge = useCallback(async (payload) => {

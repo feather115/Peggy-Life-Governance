@@ -38,14 +38,14 @@ export default function ChallengeTab({ app }) {
   const [selectedId, setSelectedId] = useState(null);
   const [showEnded, setShowEnded] = useState(false);
 
-  const active = challenges.filter(c => c.status === 'active');
-  const ended = challenges.filter(c => c.status === 'ended');
-
-  // Default to select the first active challenge
-  const current = useMemo(() => {
-    if (selectedId) return challenges.find(c => c.id === selectedId) || active[0] || ended[0] || null;
-    return active[0] || ended[0] || null;
-  }, [selectedId, challenges, active, ended]);
+  // Filter inside the memo — filtering outside would create new arrays every render and defeat the memo
+  const { active, ended, current } = useMemo(() => {
+    const act = challenges.filter(c => c.status === 'active');
+    const end = challenges.filter(c => c.status === 'ended');
+    // Default to select the first active challenge
+    const cur = (selectedId && challenges.find(c => c.id === selectedId)) || act[0] || end[0] || null;
+    return { active: act, ended: end, current: cur };
+  }, [selectedId, challenges]);
 
   return (
     <div style={{ padding: '6px 18px 20px' }}>

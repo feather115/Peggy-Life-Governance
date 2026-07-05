@@ -18,7 +18,7 @@ function devApiRoute(path, handler) {
           res.setHeader('Content-Type', 'application/json');
           res.end(JSON.stringify(result));
         } catch (e) {
-          res.statusCode = 400;
+          res.statusCode = e.statusCode || 400;
           res.setHeader('Content-Type', 'application/json');
           res.end(JSON.stringify({ error: e.message || '請求失敗' }));
         }

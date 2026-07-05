@@ -1,16 +1,11 @@
 import { supabase } from './supabase.js';
 
 // ── helpers ────────────────────────────────────────────────────
-function dkFrom(d) {
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
-
+// (user_id, date) is unique, so a single upsert either creates the day record or returns the existing one (no select-then-insert race).
 async function ensureDayRecord(userId, date) {
-  const { data: existing } = await supabase
-    .from('day_records').select('id').eq('user_id', userId).eq('date', date).maybeSingle();
-  if (existing) return existing.id;
   const { data, error } = await supabase
-    .from('day_records').insert({ user_id: userId, date }).select('id').single();
+    .from('day_records').upsert({ user_id: userId, date }, { onConflict: 'user_id,date' })
+    .select('id').single();
   if (error) throw error;
   return data.id;
 }
@@ -31,7 +26,7 @@ export async function loadAll(userId) {
   const foodUsage = {};
   (usageRes.data || []).forEach(u => { foodUsage[u.food_ref] = u.last_used_at; });
 
-  const settings = settingsRes.data || { goal_cal:1500, goal_p:110, goal_c:150, goal_f:50, display_name:null };
+  const settings = settingsRes.data || { goal_cal:1500, goal_p:110, goal_c:150, goal_f:50 };
   const tagDefs = tagsRes.data || [];
   const mapTag = (t) => ({ id: t.id, label: t.label, color: t.color || '#E8A13C' });
   const customFoods = (foodsRes.data || []).map(f => ({
@@ -68,7 +63,9 @@ export async function loadAll(userId) {
 // Logs when a food was selected/added/edited (for food library sorting: recently used foods appear at the top)
 export async function touchFoodUsage(userId, foodRef) {
   if (!foodRef) return;
-  await supabase.from('food_usage').upsert({ user_id: userId, food_ref: String(foodRef), last_used_at: new Date().toISOString() });
+  const { error } = await supabase.from('food_usage')
+    .upsert({ user_id: userId, food_ref: String(foodRef), last_used_at: new Date().toISOString() });
+  if (error) throw error;
 }
 
 // ── settings ──────────────────────────────────────────────────
@@ -77,10 +74,13 @@ export async function saveSettings(userId, { goalCal, goalP, goalC, goalF, displ
     user_id: userId, goal_cal: goalCal, goal_p: goalP, goal_c: goalC, goal_f: goalF,
     updated_at: new Date().toISOString(),
   };
-  await supabase.from('user_settings').upsert(row);
+  const { error } = await supabase.from('user_settings').upsert(row);
+  if (error) throw error;
   // 暱稱是跨 app 共用的，寫進 shared.user_profiles，不是這裡的 user_settings
   if (displayName !== undefined) {
-    await supabase.schema('shared').from('user_profiles').upsert({ user_id: userId, display_name: displayName || null });
+    const { error: profileErr } = await supabase.schema('shared')
+      .from('user_profiles').upsert({ user_id: userId, display_name: displayName || null });
+    if (profileErr) throw profileErr;
   }
 }
 
@@ -99,7 +99,8 @@ export async function updateTagDefColor(id, color) {
   return { id: data.id, label: data.label, color: data.color || '#E8A13C' };
 }
 export async function deleteTagDef(id) {
-  await supabase.from('tag_defs').delete().eq('id', id);
+  const { error } = await supabase.from('tag_defs').delete().eq('id', id);
+  if (error) throw error;
 }
 
 // ── custom foods ──────────────────────────────────────────────
@@ -123,8 +124,11 @@ export async function updateCustomFood(id, food) {
   return { id: data.id, name: data.name, unit: data.unit, brand: data.brand || '', note: data.note || '',
     cal: Number(data.cal), p: Number(data.p), c: Number(data.c), f: Number(data.f), custom: true };
 }
-export async function deleteCustomFood(id) {
-  await supabase.from('custom_foods').delete().eq('id', id);
+export async function deleteCustomFood(userId, id) {
+  const { error } = await supabase.from('custom_foods').delete().eq('id', id);
+  if (error) throw error;
+  // Also drop the sorting record so food_usage doesn't accumulate orphan rows
+  await supabase.from('food_usage').delete().eq('user_id', userId).eq('food_ref', String(id));
 }
 
 // ── meal items (snapshot) ─────────────────────────────────────
@@ -147,7 +151,8 @@ export async function addMealItem(userId, date, mealKey, foodSnapshot) {
   };
 }
 export async function removeMealItem(id) {
-  await supabase.from('meal_items').delete().eq('id', id);
+  const { error } = await supabase.from('meal_items').delete().eq('id', id);
+  if (error) throw error;
 }
 // Edits an already added meal item (name/brand/unit/calories/nutrients); only modifies this specific entry without affecting other days.
 export async function updateMealItem(id, patch) {
@@ -168,20 +173,21 @@ export async function updateMealItem(id, patch) {
 // ── day note ──────────────────────────────────────────────────
 export async function saveDayNote(userId, date, note) {
   const recordId = await ensureDayRecord(userId, date);
-  await supabase.from('day_records').update({ day_note: note, updated_at: new Date().toISOString() })
+  const { error } = await supabase.from('day_records')
+    .update({ day_note: note, updated_at: new Date().toISOString() })
     .eq('id', recordId);
+  if (error) throw error;
   return recordId;
 }
 
 // ── day tags ──────────────────────────────────────────────────
 export async function toggleDayTag(userId, date, tagDefId, makeActive) {
   const recordId = await ensureDayRecord(userId, date);
-  if (makeActive) {
-    await supabase.from('day_tags').upsert({ day_record_id: recordId, tag_def_id: tagDefId });
-  } else {
-    await supabase.from('day_tags').delete()
-      .eq('day_record_id', recordId).eq('tag_def_id', tagDefId);
-  }
+  const { error } = makeActive
+    ? await supabase.from('day_tags').upsert({ day_record_id: recordId, tag_def_id: tagDefId })
+    : await supabase.from('day_tags').delete()
+        .eq('day_record_id', recordId).eq('tag_def_id', tagDefId);
+  if (error) throw error;
   return recordId;
 }
 
@@ -265,7 +271,9 @@ export async function createChallenge(userId, { name, startDate, endDate }) {
       .select('id,invite_code').single();
     if (!error) {
       // Creator automatically joins as a member
-      await supabase.from('challenge_members').insert({ challenge_id: data.id, user_id: userId });
+      const { error: memberErr } = await supabase
+        .from('challenge_members').insert({ challenge_id: data.id, user_id: userId });
+      if (memberErr) throw memberErr;
       return data.id;
     }
     if (error.code !== '23505') throw error; // Throw immediately if it's not a unique violation
@@ -295,8 +303,9 @@ export async function setMemberColor(userId, challengeId, colorHex) {
 }
 
 export async function leaveChallenge(userId, challengeId) {
-  await supabase.from('challenge_members').delete()
+  const { error } = await supabase.from('challenge_members').delete()
     .eq('challenge_id', challengeId).eq('user_id', userId);
+  if (error) throw error;
 }
 
 // Only creator can modify (enforced by RLS); patch can contain name / start_date / end_date
@@ -319,28 +328,21 @@ export async function endChallenge(challengeId, winnerUserId) {
 }
 
 export async function deleteChallenge(challengeId) {
-  await supabase.from('challenges').delete().eq('id', challengeId);
+  const { error } = await supabase.from('challenges').delete().eq('id', challengeId);
+  if (error) throw error;
 }
 
 export async function upsertWeightEntry(userId, { challengeId, kgDiff, weekLabel }) {
-  // If the entry for the same week already exists -> update it, otherwise insert a new record
-  const { data: existing } = await supabase
-    .from('weight_entries').select('id')
-    .eq('challenge_id', challengeId).eq('user_id', userId).eq('week_label', weekLabel).maybeSingle();
-  if (existing) {
-    const { data, error } = await supabase
-      .from('weight_entries').update({ kg_diff: kgDiff, recorded_at: new Date().toISOString() })
-      .eq('id', existing.id).select('*').single();
-    if (error) throw error;
-    return { id: data.id, userId, kgDiff: Number(data.kg_diff), weekLabel: data.week_label, recordedAt: data.recorded_at };
-  }
-  const { data, error } = await supabase.from('weight_entries').insert({
+  // (challenge_id, user_id, week_label) is unique — a single upsert covers both "first entry this week" and "overwrite this week's entry"
+  const { data, error } = await supabase.from('weight_entries').upsert({
     challenge_id: challengeId, user_id: userId, kg_diff: kgDiff, week_label: weekLabel,
-  }).select('*').single();
+    recorded_at: new Date().toISOString(),
+  }, { onConflict: 'challenge_id,user_id,week_label' }).select('*').single();
   if (error) throw error;
   return { id: data.id, userId, kgDiff: Number(data.kg_diff), weekLabel: data.week_label, recordedAt: data.recorded_at };
 }
 
 export async function deleteWeightEntry(entryId) {
-  await supabase.from('weight_entries').delete().eq('id', entryId);
+  const { error } = await supabase.from('weight_entries').delete().eq('id', entryId);
+  if (error) throw error;
 }

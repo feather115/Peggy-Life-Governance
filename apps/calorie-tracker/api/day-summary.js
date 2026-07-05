@@ -10,6 +10,6 @@ export default async function handler(req, res) {
     const summary = await generateDaySummary(req.body || {}, process.env.GROQ_API_KEY);
     res.status(200).json({ summary });
   } catch (e) {
-    res.status(400).json({ error: e.message || '產生摘要失敗' });
+    res.status(e.statusCode || 400).json({ error: e.message || '產生摘要失敗' });
   }
 }
