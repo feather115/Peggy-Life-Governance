@@ -128,6 +128,14 @@ export default function DiaryForm({ entry, dateKey, categories, onSave, onDelete
   const [error, setError] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
 
+  // 未儲存變更防呆：記住第一次 render 的欄位快照，按返回時有差異就先問一聲
+  const snapshot = JSON.stringify({ allDay, time, endTime, location, peopleText, note, tags, tagDetails });
+  const [initialSnapshot] = useState(snapshot);
+  const handleCancel = () => {
+    if (snapshot !== initialSnapshot && !window.confirm('內容還沒儲存，確定要離開嗎？')) return;
+    onCancel();
+  };
+
   const selectTag = (tag) => {
     setTags((prev) => (prev.includes(tag) ? prev : [...prev, tag]));
   };
@@ -192,7 +200,7 @@ export default function DiaryForm({ entry, dateKey, categories, onSave, onDelete
   return (
     <div>
       <div style={S.header}>
-        <button type="button" onClick={onCancel} disabled={busy} style={S.backBtn} aria-label="返回">←</button>
+        <button type="button" onClick={handleCancel} disabled={busy} style={S.backBtn} aria-label="返回">←</button>
         <button type="button" onClick={handleSave} disabled={busy} style={S.confirmBtn}>{busy ? '儲存中…' : '完成記錄'}</button>
       </div>
 
@@ -231,6 +239,21 @@ export default function DiaryForm({ entry, dateKey, categories, onSave, onDelete
             : <span style={S.noSelection}>還沒有選擇標籤</span>}
         </div>
 
+        {/* 標籤選擇是寫日記的核心動作，放在最上面；時間/地點等補充欄位在後面 */}
+        <div style={{ ...S.categoryList, marginBottom: 20 }}>
+          {categories.map((cat) => (
+            <CategoryTagCard
+              key={cat.id}
+              category={cat}
+              allCategories={categories}
+              selectedTags={tags}
+              onToggleTag={toggleTag}
+              onAddTag={onAddTag}
+              onSelectTag={selectTag}
+            />
+          ))}
+        </div>
+
         <div style={S.toggleRow}>
           <div style={S.toggleLabel}>全天日記</div>
           <div style={S.toggleTrack(allDay)} onClick={() => setAllDay((v) => !v)}>
@@ -267,20 +290,6 @@ export default function DiaryForm({ entry, dateKey, categories, onSave, onDelete
         <div style={S.field}>
           <div style={S.fieldLabel}>今天的感覺</div>
           <textarea style={{ ...S.textarea, minHeight: 76 }} value={note} onChange={(e) => setNote(e.target.value)} rows={3} placeholder="寫下今天的一些想法…" />
-        </div>
-
-        <div style={S.categoryList}>
-          {categories.map((cat) => (
-            <CategoryTagCard
-              key={cat.id}
-              category={cat}
-              allCategories={categories}
-              selectedTags={tags}
-              onToggleTag={toggleTag}
-              onAddTag={onAddTag}
-              onSelectTag={selectTag}
-            />
-          ))}
         </div>
 
         {isEdit && onDelete && (
