@@ -1,12 +1,24 @@
 // Initialize LINE LIFF + auto-login when opened inside LINE
 // Skip if VITE_LIFF_ID is not configured; the App will function as a standard web page without affecting any existing features.
-import liff from '@line/liff';
+//
+// @line/liff 改用動態 import：只有「有設 VITE_LIFF_ID 且 user agent 看起來是 LINE
+// in-app browser」才會下載 liff SDK。一般瀏覽器（含桌機）完全不載入，主 bundle 變小、
+// 首次載入變快。判斷邏輯跟舊行為等價——舊版就算載入了 liff，只要 isInClient() 是
+// false，自動登入/帳號連結也全都不會發生，所以 UA 不含 Line 時直接跳過不會少功能。
 import { supabase } from './supabase.js';
+
+let liff = null; // 動態載入後的 liff instance；null = 沒載（沒設 LIFF_ID 或不在 LINE 裡）
+
+function looksLikeLineClient() {
+  return /Line\//i.test(navigator.userAgent);
+}
 
 export async function initLiff() {
   const liffId = import.meta.env.VITE_LIFF_ID;
-  if (!liffId) return;
+  if (!liffId || !looksLikeLineClient()) return;
   try {
+    const mod = await import('@line/liff');
+    liff = mod.default;
     await liff.init({ liffId });
   } catch (e) {
     console.warn('LIFF init failed (normal when testing in a regular browser):', e.message);
@@ -17,6 +29,7 @@ export async function initLiff() {
 // Returns { ok, reason }: ok=true means the Supabase session has been established for the user; reason contains the diagnostic failure reason.
 export async function lineAutoLogin() {
   if (!import.meta.env.VITE_LIFF_ID) return { ok: false, reason: '沒設定 VITE_LIFF_ID' };
+  if (!liff) return { ok: false, reason: '不是在 LINE App 裡開的（liff 未載入）' };
   if (!liff.isInClient()) return { ok: false, reason: '不是在 LINE App 裡開的（isInClient=false）' };
   if (!liff.isLoggedIn()) return { ok: false, reason: 'liff.isLoggedIn() = false' };
 
@@ -45,7 +58,7 @@ export async function lineAutoLogin() {
 
 // Whether LINE linking can be performed on this device (must be opened in LINE App and logged in via LIFF)
 export function canLinkLine() {
-  return !!import.meta.env.VITE_LIFF_ID && liff.isInClient() && liff.isLoggedIn();
+  return !!import.meta.env.VITE_LIFF_ID && !!liff && liff.isInClient() && liff.isLoggedIn();
 }
 
 // Binds the currently logged-in account to this LINE identity. Afterwards, opening from LINE will directly log in to this account (without creating a new account).

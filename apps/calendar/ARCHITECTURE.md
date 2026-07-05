@@ -46,10 +46,11 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
 | **週檢視（7 天直向列表，含事件+日記+任務時間軸）** | `src/components/WeekView.jsx` |
 | **日檢視（事件+日記+任務合併時間軸、新增按鈕）** | `src/components/DayView.jsx` |
 | **月/週/日/任務切換 tab、回到今天** | `src/components/ViewTabs.jsx` |
+| **時間軸列的共用渲染（事件/日記/任務列、日記標籤 chip、地點/同伴小字）** | `src/components/TimelineItems.jsx` |
 | **新增/編輯事件表單（標題、顏色、標籤、標題建議、全天、時間、備註、刪除）** | `src/components/EventForm.jsx` |
 | **新增/編輯日記表單（分類標籤選擇、時間、地點、和誰在一起、心情筆記）** | `src/components/DiaryForm.jsx` |
 | **時間選擇（預設 30 分鐘一格下拉選單，可切換手動輸入）** | `src/components/TimeSelect.jsx` |
-| **設定頁入口（清單，目前只有一項）** | `src/components/Settings.jsx` |
+| **設定頁（帳號/暱稱/LINE 連結、管理標籤入口、登出）** | `src/components/Settings.jsx` |
 | **管理分類與標籤（改名/刪除分類、新增/刪除標籤）** | `src/components/ManageTags.jsx` |
 | **任務列表（狀態顯示、標記完成、歷史紀錄、刪除）** | `src/components/TasksView.jsx` |
 | **新增/編輯任務表單（標題、重複間隔、到期日、是否顯示在行事曆）** | `src/components/TaskForm.jsx` |
@@ -62,7 +63,7 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
 | **事件狀態中樞（事件清單、檢視模式、月/週/日/任務翻頁與選中日）** | `src/useEvents.js` |
 | **日記狀態中樞（日記清單、分類標籤、預設分類種子）** | `src/useDiary.js` |
 | **任務狀態中樞（任務清單、標記完成與下次到期日運算）** | `src/useTasks.js` |
-| **主外殼、editing/editingDiary/showSettings/managingTags/editingTask state** | `src/App.jsx` |
+| **主外殼、overlay state（單一物件管理所有覆蓋畫面）** | `src/App.jsx` |
 
 ---
 
@@ -71,10 +72,13 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
 ### 核心
 - **`src/main.jsx`** — 進入點，呼叫 `initLiff()` 完成後掛載 `<Root/>`。
 - **`src/Root.jsx`** — 檢查 `.env` → 執行 LINE 自動登入 / Email 登入驗證 → 已登入則載入 `<App/>`。
-- **`src/App.jsx`** — 520px 置中外殼，同時載入 `useEvents()` + `useDiary()` + `useTasks()`，
-  依 editing/editingDiary/showSettings/editingTask（互斥）切換「月/週/日/任務檢視」或
-  對應表單；header 有一顆 ⚙ 齒輪按鈕開 `showSettings`，`showSettings` 底下再依
-  `managingTags` 切換 `Settings.jsx`（清單）或 `ManageTags.jsx`（實際管理畫面）。
+- **`src/App.jsx`** — 520px 置中外殼，同時載入 `useEvents()` + `useDiary()` + `useTasks()`。
+  所有覆蓋畫面（事件/日記/任務表單、設定、管理標籤）用**單一 `overlay` state 物件**管理
+  （`null | { type: 'event'|'diary'|'task', mode, ... } | { type: 'settings' } |
+  { type: 'manageTags' }`），`renderOverlay()` 依 type switch——之前是五個獨立 boolean/
+  物件 state 疊三元運算子鏈，每加一個畫面就更難讀，改掉了；之後要加新覆蓋畫面就加一個
+  type。header 只剩標題 + ⚙ 齒輪按鈕（開設定頁），登出按鈕移到設定頁裡（跟
+  calorie-tracker/recipe-book 一致，手機上省一顆常駐按鈕）。
 - **`src/useEvents.js`** — ⭐ **事件狀態中樞**。載入事件、`eventsByDate`（依日期分組）、
   `view`（月/週/日/任務，**預設 `'day'`**——開 app 直接看「今天要幹嘛」，不是先看整個
   月曆）、`anchorKey`（目前翻頁翻到哪個月/週/天）、`selectedDateKey`
@@ -99,7 +103,11 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
 - **`src/supabase.js`** — re-export `@peggy-life/shared` 的 supabase client（`schema: 'calendar'`）。
 - **`src/liff.js`** — LINE LIFF 初始化、LINE 自動登入及帳號綁定（跟其他 app 共用同一套邏輯）、
   `checkLineLinked()`（查詢目前帳號是否已綁定 LINE，給 `Settings.jsx` 的 `LineLinker`
-  用，任何瀏覽器都能查，不需要在 LINE App 裡開）。
+  用，任何瀏覽器都能查，不需要在 LINE App 裡開）。**`@line/liff` 是動態 import**：只有
+  「有設 `VITE_LIFF_ID` 且 user agent 含 `Line/`（LINE in-app browser）」才會下載 liff
+  SDK（獨立 chunk 約 119kB），一般瀏覽器完全不載入，主 bundle 從 ~600kB 降到 ~480kB。
+  行為跟舊版等價——舊版就算載了 liff，`isInClient()` 為 false 時所有 LINE 功能本來就
+  不會啟動，所以 UA 不是 LINE 時跳過載入不會少任何功能。
 
 ### 無狀態工具
 - **`src/theme.js`** — 視覺常數集中地：`THEME`（配色/圓角/陰影）、`EVENT_COLORS`
@@ -115,31 +123,25 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
 ### 畫面（`src/components/`）
 - **`ViewTabs.jsx`** — 月/週/日/任務四個 tab + 「今天」按鈕（`view==='tasks'` 時不顯示，
   任務列表沒有「翻頁到某一天」的概念）。
+- **`TimelineItems.jsx`** — ⭐ **時間軸列的共用渲染**。之前 Week/Month 各自複製一份
+  「事件列/日記列/任務列」的渲染邏輯（dot、固定寬度時間欄、`metaLine` 地點/同伴小字、
+  `DiaryTags` 標籤 chip、全天項目不顯示時間欄……），連續好幾個需求都要三個檢視改三遍，
+  所以抽出來：Week 的每日清單、Month 的選中日摘要卡都直接用 `<TimelineItems>`，DayView
+  版型不同（大卡片、有筆記）只共用 `metaLine()` 和 `DiaryTags`。歷來的顯示規則都集中在
+  這裡：時間欄固定 `width: 78` + `nowrap`（用 `minWidth` 會被長時間區間撐開導致各列
+  chip 起始位置不齊）、全天事件只留彩色 dot 不顯示時間欄、全天日記連 dot 都不顯示、
+  `meta(indent)` 依列型態縮排（計時列 102 / 全天事件 16 / 全天日記 0）。
+  `onEventClick`/`onDiaryClick`/`onTaskClick` 是選填 prop：有傳項目才可點（Month 摘要卡
+  用，直接開編輯），沒傳就純顯示（Week 用，整個日列本身已經可點）。
 - **`MonthView.jsx`** — 格線月曆，日期下方顯示事件顏色圓點（最多 3 個不同色）+ 日記圓點
   （固定用 `theme.primaryDark`）+ 任務小方點（`theme.textMuted`），圖例列說明三種點
   代表什麼。點日期只會「選中」（`onSelectDay`），不離開月檢視；下方的「選中日摘要卡」
-  顯示該天的合併時間軸，每個事件/日記項目下方如果有地點/同伴會多一行 `metaLine()`
-  （📍 地點 · 👤 同伴，事件只有地點沒有同伴），日記標籤用 `DiaryTags`（內部元件）
-  顯示成 chip 框框（有填細節的標籤變成「標籤：細節」），跟 `DayView.jsx` 的
-  `diaryTagChip` 同一套視覺，不是純文字用頓號接起來，需要 `categories` prop
-  （`App.jsx` 傳 `diary.categories`）算標籤所屬分類的強調色。點摘要卡標題才會呼叫
-  `onOpenDay` 跳去日檢視。
-- **`WeekView.jsx`** — 一週 7 天直向列表，每天顯示事件+日記+到期任務合併時間軸，
-  同樣用 `metaLine()` 在每個項目下方補一行地點/同伴、`DiaryTags` 把日記標籤顯示成
-  chip 框框（同上，也需要 `categories` prop），點某一天呼叫 `onOpenDay` 跳去日檢視。
-  **時間欄固定寬度對齊**：`itemTime`（Week/Month）、`DayView.jsx` 的 `time`/`diaryTime`
-  都改成固定 `width: 78`（不是 `minWidth`）+ `whiteSpace: 'nowrap'` + `flexShrink: 0`，
-  三個檢視統一用同一個寬度。原本用 `minWidth` 的問題是「時間文字比 minWidth 寬」時
-  這一列會被撐開，同一頁不同列的時間欄寬度就不一致，後面的標籤 chip 起始位置跟著
-  參差不齊（尤其是「12:30–01:30」這種時間區間比「22:00」寬很多）；固定寬度 + 不換行
-  確保所有列的時間欄都佔滿同樣寬度，chip 起始位置永遠對齊。
-  **全天項目不顯示「全天」文字**：Week/Month 的 `itemRow` 遇到 `ev.all_day`/
-  `entry.all_day` 時直接不 render 時間 `<span>`（不是把文字換成別的，是整個時間欄
-  都不出現）——事件全天列還留著彩色 dot，日記全天列連 dot 都拿掉（`entry.all_day`
-  時 dot+時間一起跳過，只留標籤/標題），跟 `DayView.jsx` 的全天卡片設計一致（見下）。
-  底下的 `metaLine()` 那行縮排也跟著調整：`itemMeta(indent)` 改成函式，事件全天列
-  縮排 16（只算 dot+gap，沒有時間欄那段寬度）、日記全天列縮排 0（完全沒有 dot），
-  計時列維持原本的 102。
+  用 `<TimelineItems>` 顯示該天的合併時間軸，**摘要卡裡的項目可以直接點**——事件/日記
+  點了直接開對應的編輯表單、任務點了跳任務檢視（`onEditEvent`/`onEditDiary`/
+  `onGoToTasks`，`App.jsx` 傳入），不用先繞去日檢視再點一次；點摘要卡標題列才是
+  `onOpenDay` 跳日檢視。
+- **`WeekView.jsx`** — 一週 7 天直向列表，每天用 `<TimelineItems>` 顯示事件+日記+到期
+  任務合併時間軸（純顯示、不傳 click handler），點某一天呼叫 `onOpenDay` 跳去日檢視。
 - **`DayView.jsx`** — 單日事件+日記+任務合併時間軸（`buildDayTimeline`），事件卡片顯示
   顏色點/時間/標題/描述/標籤，日記卡片顯示時間/標籤（依分類上色）/地點/同伴/心情筆記，
   任務卡片顯示虛線邊框+核取方塊圖示（點擊呼叫 `onGoToTasks` 切到任務檢視，不能直接在
@@ -156,7 +158,11 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
 - **`EventForm.jsx`** — 新增/編輯事件表單：標題（新增模式下輸入時會列出過去用過的相同
   標題建議，點擊帶入標題+顏色）、7 色顏色選擇器、標籤（Enter 加入的 chip 輸入）、
   全天開關（切換是否顯示時間欄位）、開始/結束時間（日期 `<input type="date">` +
-  `TimeSelect`）、描述、刪除（兩段確認）。
+  `TimeSelect`）、描述、刪除（兩段確認的置中文字連結）。**動作列跟 DiaryForm 統一**：
+  「儲存」固定在頂部 header 右側（表單再長都不用滑到底才能存），返回鍵在左上；
+  原本底部的儲存/取消直排按鈕已移除。**未儲存變更防呆**：mount 時記一份欄位 JSON
+  快照，按返回時跟目前值比對，有差異先跳 `window.confirm('內容還沒儲存，確定要離開嗎？')`，
+  避免手滑丟失輸入（DiaryForm 同一套做法）。
 - **`DiaryForm.jsx`** — 新增/編輯單筆日記：已選標籤即時預覽（每個已選標籤旁邊有一個
   選填的「細節」輸入框，例如「追劇」填「想見你 EP5」，存進 `tag_details` map，取消
   選取該標籤時會順便清掉對應的細節，不留孤兒 key；輸入框有 `list` 屬性接一個原生
@@ -165,7 +171,10 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
   （`TimeSelect`）、地點、和誰在一起（逗號/頓號分隔的文字輸入，存入前轉成陣列）、
   心情筆記、依分類分組的標籤選擇卡片（`CategoryTagCard` 內部元件，點擊 toggle 選取
   狀態）、刪除（兩段確認）。**不含**「管理分類與標籤」入口——那個入口移到設定頁了
-  （見下）。`CategoryTagCard` 右上角有一顆小小的「＋」圓形按鈕（不是文字按鈕，因為
+  （見下）。**欄位順序：標籤選擇區在最上面**（緊接在已選標籤預覽下方），時間/地點/
+  同伴/心情筆記排後面——選標籤是寫日記的核心動作，舊版把分類卡片放在表單最底部，
+  選完標籤還要滑回最上面填細節，動線是反的，改過來了。**未儲存變更防呆**跟
+  `EventForm.jsx` 同一套：按返回時有未儲存的改動會先 `window.confirm` 確認。`CategoryTagCard` 右上角有一顆小小的「＋」圓形按鈕（不是文字按鈕，因為
   寫日記的分類卡片已經很多資訊，字太大反而搶戲）：點下去在卡片底部展開輸入框，
   Enter/按鈕送出。輸入的名字如果在別的分類已經存在，不會建立重複標籤——跟
   `ManageTags.jsx` 的處理方式不一樣：`ManageTags.jsx` 是彈出確認卡片問要不要把標籤
@@ -186,8 +195,9 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
   `db.js` 的 `loadMyDisplayName`/`updateDisplayName`，也就是跨 app 共用的
   `shared.user_profiles.display_name`——在這裡改暱稱，calorie-tracker、recipe-book
   的設定頁會立刻看到同一個名字，反過來也一樣）+ `LineLinker`（內部元件，見下）；
-  下面是「管理分類與標籤」一列，點下去切到 `ManageTags.jsx`，之後有新設定項目直接
-  加在清單裡。
+  下面是「管理分類與標籤」一列（點下去切到 `ManageTags.jsx`）和**「登出」一列**
+  （紅字置中，登出按鈕從主畫面 header 移過來的，跟 calorie-tracker/recipe-book 的
+  設定頁一致），之後有新設定項目直接加在清單裡。
   **`LineLinker`** 的連結狀態邏輯（跟其他兩個 app 共用同一套設計）：`checkLineLinked()`
   查到 `true` 就寫進 `localStorage`（key `calendar:line-linked`），下次開 app 先用快取
   顯示「已連結」，查詢還沒回來或暫時失敗（回傳 `null`）都不會覆蓋掉快取，避免畫面
