@@ -12,11 +12,9 @@ const S = {
   heading: { textAlign: 'center', marginBottom: 22 },
   headingEyebrow: { fontSize: 12, letterSpacing: '0.06em', color: THEME.textFaint, fontWeight: 600, marginBottom: 6 },
   headingTitle: { fontSize: 18, fontWeight: 700, color: THEME.textDark },
-  selectedChips: { minHeight: 30, display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 },
-  selectedTagRow: { display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center' },
-  selectedChip: { flexShrink: 0, fontSize: 12, fontWeight: 700, color: '#fff', background: THEME.primary, padding: '5px 12px', borderRadius: 999 },
-  selectedTagDetailInput: { flex: '0 1 200px', boxSizing: 'border-box', border: 'none', borderBottom: `1px dashed ${THEME.textFaint}`, background: 'transparent', padding: '3px 2px', fontSize: 12, color: THEME.textDark, outline: 'none' },
-  noSelection: { fontSize: 13, color: THEME.textFaint, textAlign: 'center' },
+  selectedChips: { minHeight: 30, display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', marginBottom: 20 },
+  selectedChip: { fontSize: 12, fontWeight: 700, color: '#fff', background: THEME.primary, padding: '5px 12px', borderRadius: 999 },
+  noSelection: { fontSize: 13, color: THEME.textFaint },
   toggleRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 },
   toggleLabel: { fontSize: 14, color: THEME.textDark, fontWeight: 600 },
   toggleTrack: (on) => ({ width: 44, height: 26, borderRadius: 13, background: on ? THEME.primary : THEME.textFaint, position: 'relative', cursor: 'pointer' }),
@@ -40,6 +38,10 @@ const S = {
   addTagBtn: { border: 'none', cursor: 'pointer', padding: '0 16px', borderRadius: 999, background: THEME.primarySoft, color: THEME.primary, fontSize: 13, fontWeight: 700 },
   addTagHint: { fontSize: 11, color: THEME.textFaint, marginTop: 6 },
   emptyCategory: { fontSize: 12, color: THEME.textFaint },
+  detailList: { display: 'flex', flexDirection: 'column', gap: 6, marginTop: 10 },
+  detailRow: { display: 'flex', alignItems: 'center', gap: 8 },
+  detailTagLabel: { flexShrink: 0, fontSize: 12, fontWeight: 700, color: THEME.primary, maxWidth: 90, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+  detailInput: { flex: 1, minWidth: 0, boxSizing: 'border-box', border: 'none', borderBottom: `1px dashed ${THEME.textFaint}`, background: 'transparent', padding: '3px 2px', fontSize: 12, color: THEME.textDark, outline: 'none' },
   deleteLink: (confirming) => ({ marginTop: 24, textAlign: 'center', fontSize: 13, fontWeight: 600, color: confirming ? THEME.error : THEME.textMuted, cursor: 'pointer' }),
   errorBox: { background: THEME.errorBg, color: THEME.error, padding: '10px 12px', borderRadius: THEME.radiusSm, fontSize: 13, fontWeight: 600, marginBottom: 16 },
 };
@@ -49,7 +51,7 @@ const S = {
 // 重複標籤，直接把既有的那個標籤選起來就好（這裡只是要選一個標籤來用，不是在管分類
 // ——真的要把標籤搬到別的分類，去設定頁的「管理分類與標籤」，那邊才有處理重複標籤的
 // 完整流程）。
-function CategoryTagCard({ category, allCategories, selectedTags, onToggleTag, onAddTag, onSelectTag }) {
+function CategoryTagCard({ category, allCategories, selectedTags, onToggleTag, onAddTag, onSelectTag, tagDetails, onSetTagDetail, tagDetailHistory }) {
   const [adding, setAdding] = useState(false);
   const [draft, setDraft] = useState('');
   const [hint, setHint] = useState('');
@@ -89,6 +91,34 @@ function CategoryTagCard({ category, allCategories, selectedTags, onToggleTag, o
         </div>
       )}
       {category.tags.length === 0 && <div style={S.emptyCategory}>這個分類還沒有標籤</div>}
+
+      {/* 選中的標籤（屬於這個分類的）在這裡填細節，緊接在標籤下方，不用跑去別的地方找 */}
+      {category.tags.some((t) => selectedTags.includes(t)) && (
+        <div style={S.detailList}>
+          {category.tags.filter((t) => selectedTags.includes(t)).map((tag) => {
+            const historyId = `tagdetail-${encodeURIComponent(tag)}`;
+            const history = tagDetailHistory?.get(tag) || [];
+            return (
+              <div key={tag} style={S.detailRow}>
+                <span style={S.detailTagLabel}>{tag}</span>
+                <input
+                  type="text"
+                  style={S.detailInput}
+                  value={tagDetails[tag] || ''}
+                  onChange={(e) => onSetTagDetail(tag, e.target.value)}
+                  placeholder="細節（選填）"
+                  list={history.length > 0 ? historyId : undefined}
+                />
+                {history.length > 0 && (
+                  <datalist id={historyId}>
+                    {history.map((h) => <option key={h} value={h} />)}
+                  </datalist>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {adding && (
         <div style={S.addTagRow}>
@@ -214,44 +244,8 @@ export default function DiaryForm({ entry, dateKey, categories, onSave, onDelete
 
         <div style={S.selectedChips}>
           {tags.length > 0
-            ? tags.map((t) => {
-              const historyId = `tagdetail-${encodeURIComponent(t)}`;
-              const history = tagDetailHistory?.get(t) || [];
-              return (
-                <div key={t} style={S.selectedTagRow}>
-                  <span style={S.selectedChip}>{t}</span>
-                  <input
-                    type="text"
-                    style={S.selectedTagDetailInput}
-                    value={tagDetails[t] || ''}
-                    onChange={(e) => setTagDetail(t, e.target.value)}
-                    placeholder="細節（選填，例如追劇的劇名）"
-                    list={history.length > 0 ? historyId : undefined}
-                  />
-                  {history.length > 0 && (
-                    <datalist id={historyId}>
-                      {history.map((h) => <option key={h} value={h} />)}
-                    </datalist>
-                  )}
-                </div>
-              );
-            })
+            ? tags.map((t) => <span key={t} style={S.selectedChip}>{t}</span>)
             : <span style={S.noSelection}>還沒有選擇標籤</span>}
-        </div>
-
-        {/* 標籤選擇是寫日記的核心動作，放在最上面；時間/地點等補充欄位在後面 */}
-        <div style={{ ...S.categoryList, marginBottom: 20 }}>
-          {categories.map((cat) => (
-            <CategoryTagCard
-              key={cat.id}
-              category={cat}
-              allCategories={categories}
-              selectedTags={tags}
-              onToggleTag={toggleTag}
-              onAddTag={onAddTag}
-              onSelectTag={selectTag}
-            />
-          ))}
         </div>
 
         <div style={S.toggleRow}>
@@ -290,6 +284,23 @@ export default function DiaryForm({ entry, dateKey, categories, onSave, onDelete
         <div style={S.field}>
           <div style={S.fieldLabel}>今天的感覺</div>
           <textarea style={{ ...S.textarea, minHeight: 76 }} value={note} onChange={(e) => setNote(e.target.value)} rows={3} placeholder="寫下今天的一些想法…" />
+        </div>
+
+        <div style={S.categoryList}>
+          {categories.map((cat) => (
+            <CategoryTagCard
+              key={cat.id}
+              category={cat}
+              allCategories={categories}
+              selectedTags={tags}
+              onToggleTag={toggleTag}
+              onAddTag={onAddTag}
+              onSelectTag={selectTag}
+              tagDetails={tagDetails}
+              onSetTagDetail={setTagDetail}
+              tagDetailHistory={tagDetailHistory}
+            />
+          ))}
         </div>
 
         {isEdit && onDelete && (
