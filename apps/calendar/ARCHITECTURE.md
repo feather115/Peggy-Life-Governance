@@ -132,7 +132,9 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
   標題建議，點擊帶入標題+顏色）、7 色顏色選擇器、標籤（Enter 加入的 chip 輸入）、
   全天開關（切換是否顯示時間欄位）、開始/結束時間（日期 `<input type="date">` +
   `TimeSelect`）、描述、刪除（兩段確認）。
-- **`DiaryForm.jsx`** — 新增/編輯單筆日記：已選標籤即時預覽、全天切換、時間/結束時間
+- **`DiaryForm.jsx`** — 新增/編輯單筆日記：已選標籤即時預覽（每個已選標籤旁邊有一個
+  選填的「細節」輸入框，例如「追劇」填「想見你 EP5」，存進 `tag_details` map，取消
+  選取該標籤時會順便清掉對應的細節，不留孤兒 key）、全天切換、時間/結束時間
   （`TimeSelect`）、地點、和誰在一起（逗號/頓號分隔的文字輸入，存入前轉成陣列）、
   心情筆記、依分類分組的標籤選擇卡片（`CategoryTagCard` 內部元件，點擊 toggle 選取
   狀態）、刪除（兩段確認）。**不含**「管理分類與標籤」入口——那個入口移到設定頁了
@@ -260,7 +262,7 @@ createAppSupabase({ schema: 'calendar' })
 | `tags` | text[] | 標籤（自由輸入，不受分類系統管理，跟日記標籤是兩套獨立機制） |
 | `created_at` | timestamptz | 建立時間 |
 
-### `diary_entries`（完整 SQL 見 `supabase/2026-07-02_diary.sql`）
+### `diary_entries`（完整 SQL 見 `supabase/2026-07-02_diary.sql` + `2026-07-06_diary_tag_details.sql`）
 
 | 欄位 | 型別 | 用途 |
 |---|---|---|
@@ -273,6 +275,12 @@ createAppSupabase({ schema: 'calendar' })
 | `people` | text[] | 和誰在一起（自由輸入文字用逗號/頓號分隔，存進來前轉陣列） |
 | `tags` | text[] | 選中的標籤（必須是某個 `tag_categories.tags` 裡的字串，但沒有資料庫層級外鍵約束，
   刪除分類/標籤時由前端 `useDiary.js` 主動同步清掉） |
+| `tag_details` | jsonb | 標籤 → 細節文字的 map，例如 `{"追劇":"想見你 EP5"}`。**不是每個標籤都會有值**，
+  只有使用者真的填了才會有 key（`DiaryForm.jsx` 存檔前會清掉沒填細節、或標籤已經
+  取消選取的殘留 key，見下方設計重點）。故意不改 `tags` 本身的結構（拆成
+  `[{tag, detail}]` 物件陣列）——`tags` 是 `text[]`，跟 `tag_categories.tags`
+  共用同一套「純字串陣列」慣例，`categoryAccentForTag()` 之類既有邏輯都假設
+  `tags` 是字串陣列，用獨立的 `tag_details` map 疊加細節，改動範圍小很多 |
 | `note` | text | 心情筆記（選填） |
 | `created_at` | timestamptz | 建立時間 |
 
@@ -348,10 +356,11 @@ createAppSupabase({ schema: 'calendar' })
 | `2026-07-02_tasks.sql` | 建 `tasks` 表 + RLS（Phase 3 週期性任務） |
 | `2026-07-04_event_location.sql` | `events` 加 `location` 欄位 |
 | `2026-07-05_category_sort_order.sql` | `tag_categories` 加 `sort_order` 欄位並依 `created_at` backfill 既有資料 |
+| `2026-07-06_diary_tag_details.sql` | `diary_entries` 加 `tag_details` jsonb 欄位（標籤細節，例如追劇填劇名） |
 
 > 新環境依序跑：`schema.sql` → `2026-07-02_event_color_tags.sql` → `2026-07-02_diary.sql`
-> → `2026-07-02_tasks.sql` → `2026-07-04_event_location.sql` → `2026-07-05_category_sort_order.sql`。
-> 之後有新欄位/新表再依日期新增檔案，格式跟其他 app 一致：
+> → `2026-07-02_tasks.sql` → `2026-07-04_event_location.sql` → `2026-07-05_category_sort_order.sql`
+> → `2026-07-06_diary_tag_details.sql`。之後有新欄位/新表再依日期新增檔案，格式跟其他 app 一致：
 > `YYYY-MM-DD_描述.sql`。
 
 ---

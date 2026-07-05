@@ -96,7 +96,9 @@ export default function DayView({ dateKey, onShiftDay, eventsByDate, entriesByDa
                 ) : (
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                     {tags.map((t) => (
-                      <span key={t} style={S.diaryTagChip(categoryAccentForTag(t, categories || []))}>{t}</span>
+                      <span key={t} style={S.diaryTagChip(categoryAccentForTag(t, categories || []))}>
+                        {t}{entry.tag_details?.[t] ? `：${entry.tag_details[t]}` : ''}
+                      </span>
                     ))}
                   </div>
                 )}

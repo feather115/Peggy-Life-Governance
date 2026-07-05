@@ -12,9 +12,11 @@ const S = {
   heading: { textAlign: 'center', marginBottom: 22 },
   headingEyebrow: { fontSize: 12, letterSpacing: '0.06em', color: THEME.textFaint, fontWeight: 600, marginBottom: 6 },
   headingTitle: { fontSize: 18, fontWeight: 700, color: THEME.textDark },
-  selectedChips: { minHeight: 30, display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', marginBottom: 20 },
-  selectedChip: { fontSize: 12, fontWeight: 700, color: '#fff', background: THEME.primary, padding: '5px 12px', borderRadius: 999 },
-  noSelection: { fontSize: 13, color: THEME.textFaint },
+  selectedChips: { minHeight: 30, display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 },
+  selectedTagRow: { display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center' },
+  selectedChip: { flexShrink: 0, fontSize: 12, fontWeight: 700, color: '#fff', background: THEME.primary, padding: '5px 12px', borderRadius: 999 },
+  selectedTagDetailInput: { flex: '0 1 200px', boxSizing: 'border-box', border: 'none', borderBottom: `1px dashed ${THEME.textFaint}`, background: 'transparent', padding: '3px 2px', fontSize: 12, color: THEME.textDark, outline: 'none' },
+  noSelection: { fontSize: 13, color: THEME.textFaint, textAlign: 'center' },
   toggleRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 },
   toggleLabel: { fontSize: 14, color: THEME.textDark, fontWeight: 600 },
   toggleTrack: (on) => ({ width: 44, height: 26, borderRadius: 13, background: on ? THEME.primary : THEME.textFaint, position: 'relative', cursor: 'pointer' }),
@@ -121,6 +123,7 @@ export default function DiaryForm({ entry, dateKey, categories, onSave, onDelete
   const [peopleText, setPeopleText] = useState((entry?.people || []).join('、'));
   const [note, setNote] = useState(entry?.note || '');
   const [tags, setTags] = useState(entry?.tags || []);
+  const [tagDetails, setTagDetails] = useState(entry?.tag_details || {});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -131,11 +134,27 @@ export default function DiaryForm({ entry, dateKey, categories, onSave, onDelete
 
   const toggleTag = (tag) => {
     setTags((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]));
+    setTagDetails((prev) => {
+      if (!(tag in prev)) return prev;
+      const next = { ...prev };
+      delete next[tag];
+      return next;
+    });
+  };
+
+  const setTagDetail = (tag, detail) => {
+    setTagDetails((prev) => ({ ...prev, [tag]: detail }));
   };
 
   const handleSave = async () => {
     setError('');
     const people = peopleText.split(/[,、]/).map((p) => p.trim()).filter(Boolean);
+    // 只留下目前有選中、而且真的有填細節的標籤
+    const cleanedTagDetails = {};
+    tags.forEach((tag) => {
+      const detail = (tagDetails[tag] || '').trim();
+      if (detail) cleanedTagDetails[tag] = detail;
+    });
     const payload = {
       entry_date: dateKey,
       all_day: allDay,
@@ -144,6 +163,7 @@ export default function DiaryForm({ entry, dateKey, categories, onSave, onDelete
       location: location.trim() || null,
       people,
       tags,
+      tag_details: cleanedTagDetails,
       note: note.trim() || null,
     };
     setBusy(true);
@@ -186,7 +206,18 @@ export default function DiaryForm({ entry, dateKey, categories, onSave, onDelete
 
         <div style={S.selectedChips}>
           {tags.length > 0
-            ? tags.map((t) => <span key={t} style={S.selectedChip}>{t}</span>)
+            ? tags.map((t) => (
+              <div key={t} style={S.selectedTagRow}>
+                <span style={S.selectedChip}>{t}</span>
+                <input
+                  type="text"
+                  style={S.selectedTagDetailInput}
+                  value={tagDetails[t] || ''}
+                  onChange={(e) => setTagDetail(t, e.target.value)}
+                  placeholder="細節（選填，例如追劇的劇名）"
+                />
+              </div>
+            ))
             : <span style={S.noSelection}>還沒有選擇標籤</span>}
         </div>
 
