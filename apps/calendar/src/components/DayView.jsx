@@ -10,19 +10,26 @@ const S = {
   title: { fontSize: 16, fontWeight: 700, color: THEME.textDark },
   list: { flex: 1, padding: '4px 20px 16px', display: 'flex', flexDirection: 'column', gap: 10 },
   card: { cursor: 'pointer', padding: 14, background: THEME.surfaceAlt2, borderRadius: THEME.radiusSm },
+  allDayCard: { cursor: 'pointer', padding: 14, background: THEME.primarySoft, borderRadius: THEME.radiusSm },
   eventTop: { display: 'flex', gap: 10, alignItems: 'baseline' },
+  allDayTop: { display: 'flex', gap: 10, alignItems: 'center' },
   dot: { width: 8, height: 8, borderRadius: '50%', flexShrink: 0, alignSelf: 'center' },
   time: { fontSize: 13, fontWeight: 600, color: THEME.primary, width: 78, flexShrink: 0, whiteSpace: 'nowrap' },
   eventTitle: { fontSize: 15, fontWeight: 600, color: THEME.textDark },
   desc: { fontSize: 13, color: THEME.textMuted, marginTop: 4, marginLeft: 80, lineHeight: 1.5 },
+  allDayDesc: { fontSize: 13, color: THEME.textMuted, marginTop: 4, marginLeft: 18, lineHeight: 1.5 },
   tagsRow: { display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 6, marginLeft: 80 },
+  allDayTagsRow: { display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 6, marginLeft: 18 },
   tagChip: { fontSize: 11, fontWeight: 600, color: THEME.textMuted, background: THEME.surface, padding: '3px 8px', borderRadius: 999 },
   diaryTagChip: (accent) => ({ fontSize: 11, fontWeight: 600, color: accent, background: THEME.primarySoft, padding: '3px 8px', borderRadius: 999 }),
+  diaryTagChipOnAllDay: (accent) => ({ fontSize: 11, fontWeight: 600, color: accent, background: THEME.surface, padding: '3px 8px', borderRadius: 999 }),
   diaryTop: { display: 'flex', gap: 10, alignItems: 'baseline' },
   diaryTime: { fontSize: 13, fontWeight: 600, color: THEME.primary, width: 78, flexShrink: 0, whiteSpace: 'nowrap' },
   diaryEmpty: { fontSize: 13, color: THEME.textFaint },
   diaryMeta: { display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 6, marginLeft: 80, fontSize: 12, color: THEME.textMuted },
+  allDayDiaryMeta: { display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 6, marginLeft: 18, fontSize: 12, color: THEME.textMuted },
   diaryNote: { fontSize: 13, color: THEME.textMuted, lineHeight: 1.5, fontStyle: 'italic', marginTop: 6, marginLeft: 80 },
+  allDayDiaryNote: { fontSize: 13, color: THEME.textMuted, lineHeight: 1.5, fontStyle: 'italic', marginTop: 6, marginLeft: 18 },
   taskCard: { cursor: 'pointer', display: 'flex', gap: 10, alignItems: 'center', padding: 14, background: THEME.surfaceAlt, borderRadius: THEME.radiusSm, border: `1px dashed ${THEME.border}` },
   taskCheck: { fontSize: 15 },
   taskTitle: { fontSize: 15, fontWeight: 600, color: THEME.textDark },
@@ -54,11 +61,28 @@ export default function DayView({ dateKey, onShiftDay, eventsByDate, entriesByDa
           if (item.kind === 'event') {
             const ev = item.data;
             const tags = ev.tags || [];
+            if (ev.all_day) {
+              return (
+                <div key={`ev-${ev.id}`} style={S.allDayCard} onClick={() => onEdit(ev)}>
+                  <div style={S.allDayTop}>
+                    <span style={{ ...S.dot, background: ev.color || THEME.primary }} />
+                    <span style={S.eventTitle}>{ev.title}</span>
+                  </div>
+                  {ev.location && <div style={S.allDayDesc}>📍 {ev.location}</div>}
+                  {ev.description && <div style={S.allDayDesc}>{ev.description}</div>}
+                  {tags.length > 0 && (
+                    <div style={S.allDayTagsRow}>
+                      {tags.map((t) => <span key={t} style={S.tagChip}>{t}</span>)}
+                    </div>
+                  )}
+                </div>
+              );
+            }
             return (
               <div key={`ev-${ev.id}`} style={S.card} onClick={() => onEdit(ev)}>
                 <div style={S.eventTop}>
                   <span style={{ ...S.dot, background: ev.color || THEME.primary }} />
-                  <span style={S.time}>{ev.all_day ? '全天' : formatTime(ev.start_at)}</span>
+                  <span style={S.time}>{formatTime(ev.start_at)}</span>
                   <span style={S.eventTitle}>{ev.title}</span>
                 </div>
                 {ev.location && <div style={S.desc}>📍 {ev.location}</div>}
@@ -87,21 +111,40 @@ export default function DayView({ dateKey, onShiftDay, eventsByDate, entriesByDa
           const entry = item.data;
           const tags = entry.tags || [];
           const hasMeta = !!entry.location || (entry.people || []).length > 0;
+          const tagChipStyle = entry.all_day ? S.diaryTagChipOnAllDay : S.diaryTagChip;
+          const renderTags = () => tags.length === 0 ? (
+            <span style={S.diaryEmpty}>✎ 這則日記還沒有內容</span>
+          ) : (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {tags.map((t) => (
+                <span key={t} style={tagChipStyle(categoryAccentForTag(t, categories || []))}>
+                  {t}{entry.tag_details?.[t] ? `：${entry.tag_details[t]}` : ''}
+                </span>
+              ))}
+            </div>
+          );
+          if (entry.all_day) {
+            return (
+              <div key={`di-${entry.id}`} style={S.allDayCard} onClick={() => onEditDiary(entry)}>
+                <div style={S.allDayTop}>
+                  <span style={{ ...S.dot, background: THEME.primaryDark }} />
+                  {renderTags()}
+                </div>
+                {hasMeta && (
+                  <div style={S.allDayDiaryMeta}>
+                    {entry.location && <span>📍 {entry.location}</span>}
+                    {(entry.people || []).length > 0 && <span>👤 {entry.people.slice(0, 3).join('、')}{entry.people.length > 3 ? ` +${entry.people.length - 3}` : ''}</span>}
+                  </div>
+                )}
+                {entry.note && <div style={S.allDayDiaryNote}>「{entry.note}」</div>}
+              </div>
+            );
+          }
           return (
             <div key={`di-${entry.id}`} style={S.card} onClick={() => onEditDiary(entry)}>
               <div style={S.diaryTop}>
                 <span style={S.diaryTime}>{formatDiaryTime(entry)}</span>
-                {tags.length === 0 ? (
-                  <span style={S.diaryEmpty}>✎ 這則日記還沒有內容</span>
-                ) : (
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                    {tags.map((t) => (
-                      <span key={t} style={S.diaryTagChip(categoryAccentForTag(t, categories || []))}>
-                        {t}{entry.tag_details?.[t] ? `：${entry.tag_details[t]}` : ''}
-                      </span>
-                    ))}
-                  </div>
-                )}
+                {renderTags()}
               </div>
               {hasMeta && (
                 <div style={S.diaryMeta}>
