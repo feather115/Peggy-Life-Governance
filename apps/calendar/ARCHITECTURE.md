@@ -119,11 +119,17 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
   （固定用 `theme.primaryDark`）+ 任務小方點（`theme.textMuted`），圖例列說明三種點
   代表什麼。點日期只會「選中」（`onSelectDay`），不離開月檢視；下方的「選中日摘要卡」
   顯示該天的合併時間軸，每個事件/日記項目下方如果有地點/同伴會多一行 `metaLine()`
-  （📍 地點 · 👤 同伴，事件只有地點沒有同伴），點摘要卡標題才會呼叫 `onOpenDay`
-  跳去日檢視。
+  （📍 地點 · 👤 同伴，事件只有地點沒有同伴），日記標籤用 `tagsWithDetails()` 顯示
+  （有填細節的標籤變成「標籤：細節」），點摘要卡標題才會呼叫 `onOpenDay` 跳去日檢視。
 - **`WeekView.jsx`** — 一週 7 天直向列表，每天顯示事件+日記+到期任務合併時間軸，
-  同樣用 `metaLine()` 在每個項目下方補一行地點/同伴，點某一天呼叫 `onOpenDay`
-  跳去日檢視。
+  同樣用 `metaLine()` 在每個項目下方補一行地點/同伴、`tagsWithDetails()` 顯示標籤
+  細節，點某一天呼叫 `onOpenDay` 跳去日檢視。
+  **時間欄固定寬度對齊**：`itemTime`（Week/Month）、`DayView.jsx` 的 `time`/`diaryTime`
+  都改成固定 `width: 78`（不是 `minWidth`）+ `whiteSpace: 'nowrap'` + `flexShrink: 0`，
+  三個檢視統一用同一個寬度。原本用 `minWidth` 的問題是「時間文字比 minWidth 寬」時
+  這一列會被撐開，同一頁不同列的時間欄寬度就不一致，後面的標籤 chip 起始位置跟著
+  參差不齊（尤其是「12:30–01:30」這種時間區間比「22:00」寬很多）；固定寬度 + 不換行
+  確保所有列的時間欄都佔滿同樣寬度，chip 起始位置永遠對齊。
 - **`DayView.jsx`** — 單日事件+日記+任務合併時間軸（`buildDayTimeline`），事件卡片顯示
   顏色點/時間/標題/描述/標籤，日記卡片顯示時間/標籤（依分類上色）/地點/同伴/心情筆記，
   任務卡片顯示虛線邊框+核取方塊圖示（點擊呼叫 `onGoToTasks` 切到任務檢視，不能直接在

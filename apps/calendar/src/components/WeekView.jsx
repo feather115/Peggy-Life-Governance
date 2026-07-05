@@ -15,9 +15,9 @@ const S = {
   item: { padding: '3px 0' },
   itemRow: { display: 'flex', gap: 8, fontSize: 13, alignItems: 'center' },
   itemDot: { width: 8, height: 8, borderRadius: '50%', flexShrink: 0 },
-  itemTime: { color: THEME.textMuted, minWidth: 36 },
+  itemTime: { color: THEME.textMuted, width: 78, flexShrink: 0, whiteSpace: 'nowrap' },
   itemTitle: { color: THEME.textDark },
-  itemMeta: { fontSize: 11, color: THEME.textMuted, marginLeft: 44 },
+  itemMeta: { fontSize: 11, color: THEME.textMuted, marginLeft: 102 },
   empty: { fontSize: 13, color: THEME.textFaint },
 };
 
@@ -26,6 +26,12 @@ function metaLine(location, people) {
   if (location) parts.push(`📍 ${location}`);
   if (people && people.length > 0) parts.push(`👤 ${people.join('、')}`);
   return parts.length > 0 ? parts.join(' · ') : null;
+}
+
+function tagsWithDetails(entry) {
+  const tags = entry.tags || [];
+  if (tags.length === 0) return '日記';
+  return tags.map((t) => (entry.tag_details?.[t] ? `${t}：${entry.tag_details[t]}` : t)).join('、');
 }
 
 export default function WeekView({ anchorKey, onAnchorChange, selectedDateKey, onOpenDay, eventsByDate, entriesByDate, tasksByDueDate }) {
@@ -83,7 +89,7 @@ export default function WeekView({ anchorKey, onAnchorChange, selectedDateKey, o
                       <div style={S.itemRow}>
                         <span style={{ ...S.itemDot, background: THEME.primaryDark }} />
                         <span style={S.itemTime}>{formatDiaryTime(entry)}</span>
-                        <span style={S.itemTitle}>{(entry.tags || []).join('、') || '日記'}</span>
+                        <span style={S.itemTitle}>{tagsWithDetails(entry)}</span>
                       </div>
                       {meta && <div style={S.itemMeta}>{meta}</div>}
                     </div>
