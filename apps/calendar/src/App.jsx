@@ -116,6 +116,7 @@ export default function App({ session, onSignOut }) {
             onRemoveTag={diary.removeTagFromCategory}
             onMoveTag={diary.moveTagToCategory}
             onMoveTagInCategory={diary.moveTagInCategory}
+            onRenameTag={diary.renameTagInCategory}
             onAddCategory={diary.addCategory}
             onMoveCategory={diary.moveCategory}
             onClose={() => setManagingTags(false)}

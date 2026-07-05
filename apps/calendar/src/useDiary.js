@@ -161,6 +161,32 @@ export function useDiary(userId) {
     setCategories((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
   }, [categories]);
 
+  const renameTagInCategory = useCallback(async (categoryId, oldTag, newTag) => {
+    const cat = categories.find((c) => c.id === categoryId);
+    if (!cat || !cat.tags.includes(oldTag) || oldTag === newTag) return;
+    const existsElsewhere = categories.some((c) => c.tags.includes(newTag));
+    if (existsElsewhere) return;
+
+    const nextTags = cat.tags.map((t) => (t === oldTag ? newTag : t));
+    const updatedCategory = await db.updateCategory(categoryId, { tags: nextTags });
+    setCategories((prev) => prev.map((c) => (c.id === updatedCategory.id ? updatedCategory : c)));
+
+    // 同步更新所有引用這個標籤的日記：tags 陣列裡的字串、tag_details 的 key，兩邊都要改
+    const affected = entries.filter((e) => (e.tags || []).includes(oldTag));
+    if (affected.length > 0) {
+      const updated = await Promise.all(affected.map((e) => {
+        const nextEntryTags = e.tags.map((t) => (t === oldTag ? newTag : t));
+        const nextDetails = { ...(e.tag_details || {}) };
+        if (oldTag in nextDetails) {
+          nextDetails[newTag] = nextDetails[oldTag];
+          delete nextDetails[oldTag];
+        }
+        return db.updateDiaryEntry(e.id, { tags: nextEntryTags, tag_details: nextDetails });
+      }));
+      setEntries((prev) => prev.map((e) => updated.find((u) => u.id === e.id) || e));
+    }
+  }, [categories, entries]);
+
   const removeTagFromCategory = useCallback(async (categoryId, tag) => {
     const cat = categories.find((c) => c.id === categoryId);
     if (!cat) return;
@@ -174,6 +200,6 @@ export function useDiary(userId) {
     loaded, loadError, entries, entriesByDate, categories, tagDetailHistory,
     createEntry, updateEntry, deleteEntry,
     addCategory, renameCategory, deleteCategory, moveCategory,
-    addTagToCategory, removeTagFromCategory, moveTagToCategory, moveTagInCategory,
+    addTagToCategory, removeTagFromCategory, moveTagToCategory, moveTagInCategory, renameTagInCategory,
   };
 }

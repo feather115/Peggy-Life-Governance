@@ -206,12 +206,27 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
   把標籤從舊分類移除、加進新分類（不影響既有日記的 `tags` 陣列，因為存的是標籤
   字串本身，換分類不會改變字串）。沒有做長按拖曳移動——在手機版 LINE LIFF 的
   webview 裡長按手勢不夠可靠，確認卡片在各種裝置上都能穩定運作。
-  **標籤順序也能調整**：每個標籤 chip 左邊有一組更小的 ▲▼（跟分類的 ▲▼ 同一個
-  設計，只是縮小塞進 chip 裡），呼叫 `useDiary.js` 的 `moveTagInCategory(categoryId,
+  **標籤順序也能調整**：每個標籤是一個獨立的列（`TagRow` 內部元件，不是塞在一起
+  的 pill 標籤雲），左邊是 ▲▼，呼叫 `useDiary.js` 的 `moveTagInCategory(categoryId,
   tag, direction)`——直接在 `category.tags` 這個字串陣列裡跟相鄰的標籤交換位置，
   整包 `tags` 陣列一起 update 回去（沒有像分類那樣獨立的 `sort_order` 欄位，標籤的
   順序就是陣列順序本身），邊界（第一個/最後一個）按鈕一樣會 disable。這個順序會
-  反映到 `DiaryForm.jsx` 每個分類卡片裡標籤 chip 的排列順序。
+  反映到 `DiaryForm.jsx` 每個分類卡片裡標籤 chip 的排列順序。**改成一列一個標籤是
+  刻意的**：舊版是把 ▲▼ 縮小塞進一顆顆 pill 標籤裡（像分類卡片頂端那組的縮小版），
+  在手機上塞太多小按鈕反而更難點準；改成直向列表後每個按鈕都能給到足夠大的點擊
+  區域（`tagReorderBtn` 的 padding 從 `1px 3px` 加大到 `7px 10px`），沒有做拖曳排序
+  ——原因跟下面「沒有做長按拖曳移動」一樣，觸控手勢在 LINE LIFF webview 裡不夠可靠，
+  按鈕點擊在各種裝置上都比較穩定。
+  **標籤可以改名**：點標籤文字（不是點 ▲▼ 或 ×）進入改名模式，Enter/失焦確認，
+  邏輯跟分類改名一樣。改名會呼叫 `useDiary.js` 的 `renameTagInCategory(categoryId,
+  oldTag, newTag)`：先檢查新名字有沒有跟任何分類（含自己）撞名，撞了就在輸入框
+  下面顯示錯誤提示、不送出（維持「標籤名稱跨分類唯一」的規則，不能靠改名繞過）；
+  沒撞名的話除了更新 `tag_categories.tags`，還要**同步改掉所有引用這個標籤的日記**
+  ——`diary_entries.tags` 陣列裡的字串、`tag_details` 的 key（如果那則日記剛好對
+  這個標籤填過細節）都要一起换成新名字，不然舊日記會變成引用一個不存在的標籤字串
+  （孤兒標籤，跟刪除分類時要清掉的問題是同一類，只是這次是「改名」而不是「刪除」，
+  所以是換字串而不是拿掉）。這一步是前端 `Promise.all` 迴圈更新每一則受影響的日記，
+  不是資料庫層級的 cascade。
 - **`TasksView.jsx`** — 任務列表，依到期日排序，狀態文字依 `diffDays` 顯示「已逾期 N 天」
   （紅）/「今天到期」（主色）/「N 天後到期」（灰）。每筆有「標記完成」（點開會出現日期
   選擇器，預設今天，確認後呼叫 `onConfirmComplete`）、「歷史紀錄 (N)」（有完成過才顯示，
