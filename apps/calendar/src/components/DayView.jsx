@@ -27,9 +27,9 @@ const S = {
   diaryTime: { fontSize: 13, fontWeight: 600, color: THEME.primary, width: 78, flexShrink: 0, whiteSpace: 'nowrap' },
   diaryEmpty: { fontSize: 13, color: THEME.textFaint },
   diaryMeta: { display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 6, marginLeft: 80, fontSize: 12, color: THEME.textMuted },
-  allDayDiaryMeta: { display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 6, marginLeft: 18, fontSize: 12, color: THEME.textMuted },
+  allDayDiaryMeta: { display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 6, marginLeft: 0, fontSize: 12, color: THEME.textMuted },
   diaryNote: { fontSize: 13, color: THEME.textMuted, lineHeight: 1.5, fontStyle: 'italic', marginTop: 6, marginLeft: 80 },
-  allDayDiaryNote: { fontSize: 13, color: THEME.textMuted, lineHeight: 1.5, fontStyle: 'italic', marginTop: 6, marginLeft: 18 },
+  allDayDiaryNote: { fontSize: 13, color: THEME.textMuted, lineHeight: 1.5, fontStyle: 'italic', marginTop: 6, marginLeft: 0 },
   taskCard: { cursor: 'pointer', display: 'flex', gap: 10, alignItems: 'center', padding: 14, background: THEME.surfaceAlt, borderRadius: THEME.radiusSm, border: `1px dashed ${THEME.border}` },
   taskCheck: { fontSize: 15 },
   taskTitle: { fontSize: 15, fontWeight: 600, color: THEME.textDark },
@@ -127,7 +127,6 @@ export default function DayView({ dateKey, onShiftDay, eventsByDate, entriesByDa
             return (
               <div key={`di-${entry.id}`} style={S.allDayCard} onClick={() => onEditDiary(entry)}>
                 <div style={S.allDayTop}>
-                  <span style={{ ...S.dot, background: THEME.primaryDark }} />
                   {renderTags()}
                 </div>
                 {hasMeta && (

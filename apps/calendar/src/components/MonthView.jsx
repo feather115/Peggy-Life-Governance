@@ -38,7 +38,7 @@ const DetailCardStyle = {
   itemDot: { width: 8, height: 8, borderRadius: '50%', flexShrink: 0 },
   itemTime: { color: THEME.textMuted, width: 78, flexShrink: 0, whiteSpace: 'nowrap' },
   itemTitle: { color: THEME.textDark },
-  itemMeta: { fontSize: 11, color: THEME.textMuted, marginLeft: 102 },
+  itemMeta: (indent = 102) => ({ fontSize: 11, color: THEME.textMuted, marginLeft: indent }),
 };
 
 function metaLine(location, people) {
@@ -158,10 +158,10 @@ export default function MonthView({ anchorKey, onAnchorChange, selectedDateKey, 
                 <div key={`ev-${ev.id}`} style={DetailCardStyle.item}>
                   <div style={DetailCardStyle.itemRow}>
                     <span style={{ ...DetailCardStyle.itemDot, background: ev.color || THEME.primary }} />
-                    <span style={DetailCardStyle.itemTime}>{ev.all_day ? '全天' : formatTime(ev.start_at)}</span>
+                    {!ev.all_day && <span style={DetailCardStyle.itemTime}>{formatTime(ev.start_at)}</span>}
                     <span style={DetailCardStyle.itemTitle}>{ev.title}</span>
                   </div>
-                  {meta && <div style={DetailCardStyle.itemMeta}>{meta}</div>}
+                  {meta && <div style={DetailCardStyle.itemMeta(ev.all_day ? 16 : 102)}>{meta}</div>}
                 </div>
               );
             }
@@ -171,11 +171,15 @@ export default function MonthView({ anchorKey, onAnchorChange, selectedDateKey, 
               return (
                 <div key={`di-${entry.id}`} style={DetailCardStyle.item}>
                   <div style={DetailCardStyle.itemRow}>
-                    <span style={{ ...DetailCardStyle.itemDot, background: THEME.primaryDark }} />
-                    <span style={DetailCardStyle.itemTime}>{formatDiaryTime(entry)}</span>
+                    {entry.all_day ? null : (
+                      <>
+                        <span style={{ ...DetailCardStyle.itemDot, background: THEME.primaryDark }} />
+                        <span style={DetailCardStyle.itemTime}>{formatDiaryTime(entry)}</span>
+                      </>
+                    )}
                     <span style={DetailCardStyle.itemTitle}>{tagsWithDetails(entry)}</span>
                   </div>
-                  {meta && <div style={DetailCardStyle.itemMeta}>{meta}</div>}
+                  {meta && <div style={DetailCardStyle.itemMeta(entry.all_day ? 0 : 102)}>{meta}</div>}
                 </div>
               );
             }

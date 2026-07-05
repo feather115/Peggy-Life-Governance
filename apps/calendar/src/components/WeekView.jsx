@@ -17,7 +17,7 @@ const S = {
   itemDot: { width: 8, height: 8, borderRadius: '50%', flexShrink: 0 },
   itemTime: { color: THEME.textMuted, width: 78, flexShrink: 0, whiteSpace: 'nowrap' },
   itemTitle: { color: THEME.textDark },
-  itemMeta: { fontSize: 11, color: THEME.textMuted, marginLeft: 102 },
+  itemMeta: (indent = 102) => ({ fontSize: 11, color: THEME.textMuted, marginLeft: indent }),
   empty: { fontSize: 13, color: THEME.textFaint },
 };
 
@@ -74,10 +74,10 @@ export default function WeekView({ anchorKey, onAnchorChange, selectedDateKey, o
                     <div key={`ev-${ev.id}`} style={S.item}>
                       <div style={S.itemRow}>
                         <span style={{ ...S.itemDot, background: ev.color || THEME.primary }} />
-                        <span style={S.itemTime}>{ev.all_day ? '全天' : formatTime(ev.start_at)}</span>
+                        {!ev.all_day && <span style={S.itemTime}>{formatTime(ev.start_at)}</span>}
                         <span style={S.itemTitle}>{ev.title}</span>
                       </div>
-                      {meta && <div style={S.itemMeta}>{meta}</div>}
+                      {meta && <div style={S.itemMeta(ev.all_day ? 16 : 102)}>{meta}</div>}
                     </div>
                   );
                 }
@@ -87,11 +87,15 @@ export default function WeekView({ anchorKey, onAnchorChange, selectedDateKey, o
                   return (
                     <div key={`di-${entry.id}`} style={S.item}>
                       <div style={S.itemRow}>
-                        <span style={{ ...S.itemDot, background: THEME.primaryDark }} />
-                        <span style={S.itemTime}>{formatDiaryTime(entry)}</span>
+                        {entry.all_day ? null : (
+                          <>
+                            <span style={{ ...S.itemDot, background: THEME.primaryDark }} />
+                            <span style={S.itemTime}>{formatDiaryTime(entry)}</span>
+                          </>
+                        )}
                         <span style={S.itemTitle}>{tagsWithDetails(entry)}</span>
                       </div>
-                      {meta && <div style={S.itemMeta}>{meta}</div>}
+                      {meta && <div style={S.itemMeta(entry.all_day ? 0 : 102)}>{meta}</div>}
                     </div>
                   );
                 }
