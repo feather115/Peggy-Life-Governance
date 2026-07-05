@@ -1,5 +1,4 @@
 export {
-  supabase,
   supabaseReady,
   createAppSupabase,
   createSupabaseClient,
