@@ -109,7 +109,7 @@ function CategoryTagCard({ category, allCategories, selectedTags, onToggleTag, o
   );
 }
 
-export default function DiaryForm({ entry, dateKey, categories, onSave, onDelete, onCancel, onAddTag }) {
+export default function DiaryForm({ entry, dateKey, categories, onSave, onDelete, onCancel, onAddTag, tagDetailHistory }) {
   const isEdit = !!entry;
 
   const [allDay, setAllDay] = useState(!!entry?.all_day);
@@ -206,18 +206,28 @@ export default function DiaryForm({ entry, dateKey, categories, onSave, onDelete
 
         <div style={S.selectedChips}>
           {tags.length > 0
-            ? tags.map((t) => (
-              <div key={t} style={S.selectedTagRow}>
-                <span style={S.selectedChip}>{t}</span>
-                <input
-                  type="text"
-                  style={S.selectedTagDetailInput}
-                  value={tagDetails[t] || ''}
-                  onChange={(e) => setTagDetail(t, e.target.value)}
-                  placeholder="細節（選填，例如追劇的劇名）"
-                />
-              </div>
-            ))
+            ? tags.map((t) => {
+              const historyId = `tagdetail-${encodeURIComponent(t)}`;
+              const history = tagDetailHistory?.get(t) || [];
+              return (
+                <div key={t} style={S.selectedTagRow}>
+                  <span style={S.selectedChip}>{t}</span>
+                  <input
+                    type="text"
+                    style={S.selectedTagDetailInput}
+                    value={tagDetails[t] || ''}
+                    onChange={(e) => setTagDetail(t, e.target.value)}
+                    placeholder="細節（選填，例如追劇的劇名）"
+                    list={history.length > 0 ? historyId : undefined}
+                  />
+                  {history.length > 0 && (
+                    <datalist id={historyId}>
+                      {history.map((h) => <option key={h} value={h} />)}
+                    </datalist>
+                  )}
+                </div>
+              );
+            })
             : <span style={S.noSelection}>還沒有選擇標籤</span>}
         </div>
 

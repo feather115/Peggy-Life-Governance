@@ -52,6 +52,21 @@ export function useDiary(userId) {
 
   const entriesByDate = useMemo(() => groupDiaryByDate(entries), [entries]);
 
+  // tag → 過去填過的細節文字（去重、最近的排前面），給 DiaryForm 的細節輸入框做自動建議用
+  const tagDetailHistory = useMemo(() => {
+    const sorted = entries.slice().sort((a, b) => (b.entry_date || '').localeCompare(a.entry_date || ''));
+    const map = new Map();
+    sorted.forEach((e) => {
+      Object.entries(e.tag_details || {}).forEach(([tag, detail]) => {
+        if (!detail) return;
+        if (!map.has(tag)) map.set(tag, []);
+        const arr = map.get(tag);
+        if (!arr.includes(detail)) arr.push(detail);
+      });
+    });
+    return map;
+  }, [entries]);
+
   const createEntry = useCallback(async (payload) => {
     const created = await db.createDiaryEntry(userId, payload);
     setEntries((prev) => [...prev, created]);
@@ -156,7 +171,7 @@ export function useDiary(userId) {
   }, [categories]);
 
   return {
-    loaded, loadError, entries, entriesByDate, categories,
+    loaded, loadError, entries, entriesByDate, categories, tagDetailHistory,
     createEntry, updateEntry, deleteEntry,
     addCategory, renameCategory, deleteCategory, moveCategory,
     addTagToCategory, removeTagFromCategory, moveTagToCategory, moveTagInCategory,

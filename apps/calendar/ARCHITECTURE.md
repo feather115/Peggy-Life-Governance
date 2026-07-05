@@ -82,7 +82,9 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
   `openDay(dateKey)`（月/週檢視點下去統一走這條：對齊 anchor + selected + 切到日檢視）、
   新增/編輯/刪除 action。
 - **`src/useDiary.js`** — ⭐ **日記狀態中樞**。載入日記與分類、`entriesByDate`（依日期分組）、
-  日記 CRUD、分類/標籤管理（新增分類、改名、刪除、新增/刪除標籤）。**新使用者第一次使用時
+  日記 CRUD、分類/標籤管理（新增分類、改名、刪除、新增/刪除標籤）、`tagDetailHistory`
+  （`Map<tag, string[]>`，把所有日記裡每個標籤填過的細節文字去重、依日期新到舊排序，
+  給 `DiaryForm.jsx` 的細節輸入框當 `<datalist>` 建議選項用）。**新使用者第一次使用時
   如果分類是空的，會自動種一組預設分類**（工作/社交/心情/健康）方便直接上手，之後不會再種。
 - **`src/useTasks.js`** — ⭐ **任務狀態中樞**。載入任務、`tasksByDueDate`（依到期日分組，
   只有 `show_on_calendar=true` 的才會進這個分組，給月/週/日檢視顯示用）、任務 CRUD、
@@ -134,7 +136,9 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
   `TimeSelect`）、描述、刪除（兩段確認）。
 - **`DiaryForm.jsx`** — 新增/編輯單筆日記：已選標籤即時預覽（每個已選標籤旁邊有一個
   選填的「細節」輸入框，例如「追劇」填「想見你 EP5」，存進 `tag_details` map，取消
-  選取該標籤時會順便清掉對應的細節，不留孤兒 key）、全天切換、時間/結束時間
+  選取該標籤時會順便清掉對應的細節，不留孤兒 key；輸入框有 `list` 屬性接一個原生
+  `<datalist>`，選項是 `useDiary.js` 算出的 `tagDetailHistory`——同一個標籤過去填過
+  的細節文字，點輸入框瀏覽器會跳原生下拉建議，不用重新打一次同樣的劇名）、全天切換、時間/結束時間
   （`TimeSelect`）、地點、和誰在一起（逗號/頓號分隔的文字輸入，存入前轉成陣列）、
   心情筆記、依分類分組的標籤選擇卡片（`CategoryTagCard` 內部元件，點擊 toggle 選取
   狀態）、刪除（兩段確認）。**不含**「管理分類與標籤」入口——那個入口移到設定頁了
