@@ -73,46 +73,40 @@ export function useRecipes(userId) {
   const [currentView, setCurrentView] = useState('home');
   const [selectedRecipeId, setSelectedRecipeId] = useState(null);
 
-  // Initial load
+  // Initial load — queries are independent, so fire them in parallel (same pattern as
+  // calorie-tracker's loadAll). Likes / names / cook records failing is non-fatal:
+  // the catalog still renders, we just warn and fall back to empty lists.
   useEffect(() => {
     let cancel = false;
-    db.loadRecipes()
-      .then(async (recipeRows) => {
+    setLoaded(false);
+    setCookRecordError('');
+    Promise.all([
+      db.loadRecipes(),
+      db.loadAllLikes().catch((e) => { console.warn('按讚資料載入失敗：', e.message); return []; }),
+      // shared.user_profiles 的 RLS 只開放給 authenticated，訪客查了必定 permission denied，
+      // 直接跳過（「誰按讚」對訪客顯示成「某人」是預期行為）
+      isGuest
+        ? Promise.resolve([])
+        : db.loadDisplayNames().catch((e) => { console.warn('使用者暱稱載入失敗：', e.message); return []; }),
+      isGuest
+        ? Promise.resolve([])
+        : db.loadCookRecords(userId).catch((e) => {
+            console.warn('料理行事曆紀錄載入失敗：', e.message);
+            if (!cancel) setCookRecordError(e.message || '行事曆紀錄載入失敗');
+            return [];
+          }),
+    ])
+      .then(([recipeRows, likeRows, nameRows, recordRows]) => {
         if (cancel) return;
         setRecipes(recipeRows);
-        try {
-          const likeRows = await db.loadAllLikes();
-          if (!cancel) setLikes(likeRows);
-        } catch (e) {
-          if (!cancel) console.warn('按讚資料載入失敗：', e.message);
-        }
-        try {
-          const nameRows = await db.loadDisplayNames();
-          if (!cancel) setDisplayNameRows(nameRows);
-        } catch (e) {
-          if (!cancel) console.warn('使用者暱稱載入失敗：', e.message);
-        }
-        if (isGuest) {
-          setCookRecords([]);
-          setLoaded(true);
-          return;
-        }
-        try {
-          const recordRows = await db.loadCookRecords(userId);
-          if (cancel) return;
-          setCookRecordError('');
-          setCookRecords(recordRows);
-        } catch (e) {
-          if (cancel) return;
-          console.warn('料理行事曆紀錄載入失敗：', e.message);
-          setCookRecordError(e.message || '行事曆紀錄載入失敗');
-          setCookRecords([]);
-        }
+        setLikes(likeRows);
+        setDisplayNameRows(nameRows);
+        setCookRecords(recordRows);
         setLoaded(true);
       })
       .catch((e) => {
         if (cancel) return;
-        console.error('雲端數據調度失敗：', e.message);
+        console.error('食譜載入失敗：', e.message);
         setLoadError(e.message || '載入失敗');
         setLoaded(true);
       });
@@ -186,18 +180,18 @@ export function useRecipes(userId) {
       setCookRecordError(e.message || '料理紀錄新增失敗');
       throw e;
     }
-    setCookRecords((prev) => {
-      const withoutDuplicate = prev.filter((record) => !(
-        record.cooked_date === saved.cooked_date && record.recipe_id === saved.recipe_id
-      ));
-      const nextRecords = [...withoutDuplicate, saved].sort((a, b) => {
-        if (a.cooked_date !== b.cooked_date) return b.cooked_date.localeCompare(a.cooked_date);
-        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-      });
-      syncLastCookedAt(recipeId, nextRecords);
-      return nextRecords;
+    // Compute the next list outside the setState updater — updaters must stay pure
+    // (React can invoke them more than once), so the syncLastCookedAt DB write lives out here.
+    const withoutDuplicate = cookRecords.filter((record) => !(
+      record.cooked_date === saved.cooked_date && record.recipe_id === saved.recipe_id
+    ));
+    const nextRecords = [...withoutDuplicate, saved].sort((a, b) => {
+      if (a.cooked_date !== b.cooked_date) return b.cooked_date.localeCompare(a.cooked_date);
+      return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
     });
-  }, [userId, syncLastCookedAt]);
+    setCookRecords(nextRecords);
+    syncLastCookedAt(recipeId, nextRecords);
+  }, [userId, cookRecords, syncLastCookedAt]);
 
   const saveRecipe = useCallback(async (payload, existingId) => {
     if (existingId) {
@@ -229,17 +223,9 @@ export function useRecipes(userId) {
       setCookRecordError(e.message || '料理紀錄刪除失敗');
       throw e;
     }
-
-    if (recordToRemove) {
-      const recipeId = recordToRemove.recipe_id;
-      setCookRecords((prev) => {
-        const nextRecords = prev.filter((record) => record.id !== recordId);
-        syncLastCookedAt(recipeId, nextRecords);
-        return nextRecords;
-      });
-    } else {
-      setCookRecords((prev) => prev.filter((record) => record.id !== recordId));
-    }
+    const nextRecords = cookRecords.filter((record) => record.id !== recordId);
+    setCookRecords(nextRecords);
+    if (recordToRemove) syncLastCookedAt(recordToRemove.recipe_id, nextRecords);
   }, [cookRecords, syncLastCookedAt]);
 
   const updateCookRecordNotes = useCallback(async (recordId, notes) => {
