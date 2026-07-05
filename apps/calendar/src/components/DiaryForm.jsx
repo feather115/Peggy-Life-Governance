@@ -31,12 +31,71 @@ const S = {
   categoryName: { fontSize: 13, fontWeight: 700, color: THEME.textMuted, marginBottom: 12 },
   tagWrap: { display: 'flex', flexWrap: 'wrap', gap: 8 },
   tagChip: (selected) => ({ cursor: 'pointer', padding: '9px 15px', borderRadius: 999, background: selected ? THEME.primary : THEME.surfaceAlt, color: selected ? '#fff' : THEME.textDark, fontSize: 13, fontWeight: selected ? 700 : 500, boxShadow: selected ? '0 4px 10px rgba(61,90,128,.28)' : 'none' }),
+  addTagChip: { cursor: 'pointer', padding: '9px 15px', borderRadius: 999, background: 'transparent', border: `1px dashed ${THEME.textFaint}`, color: THEME.textMuted, fontSize: 13, fontWeight: 600 },
+  addTagRow: { display: 'flex', gap: 8, marginTop: 10 },
+  addTagInput: { flex: 1, boxSizing: 'border-box', border: `1px dashed ${THEME.textFaint}`, background: 'transparent', borderRadius: 999, padding: '8px 14px', fontSize: 13, color: THEME.textDark, outline: 'none' },
+  addTagBtn: { border: 'none', cursor: 'pointer', padding: '0 16px', borderRadius: 999, background: THEME.primarySoft, color: THEME.primary, fontSize: 13, fontWeight: 700 },
+  addTagHint: { fontSize: 11, color: THEME.textFaint, marginTop: 6 },
   emptyCategory: { fontSize: 12, color: THEME.textFaint },
   deleteLink: (confirming) => ({ marginTop: 24, textAlign: 'center', fontSize: 13, fontWeight: 600, color: confirming ? THEME.error : THEME.textMuted, cursor: 'pointer' }),
   errorBox: { background: THEME.errorBg, color: THEME.error, padding: '10px 12px', borderRadius: THEME.radiusSm, fontSize: 13, fontWeight: 600, marginBottom: 16 },
 };
 
-export default function DiaryForm({ entry, dateKey, categories, onSave, onDelete, onCancel }) {
+// 分類卡片內的「+ 新增標籤」：點開變成輸入框，Enter/按鈕送出。
+// 如果輸入的名字在別的分類已經存在，不會建立重複標籤，直接把既有的那個標籤選起來就好
+// （這裡只是要選一個標籤來用，不是在管分類——真的要把標籤搬到別的分類，去設定頁的
+// 「管理分類與標籤」，那邊才有處理重複標籤的完整流程）。
+function AddTagControl({ category, allCategories, onAddTag, onSelectTag }) {
+  const [adding, setAdding] = useState(false);
+  const [draft, setDraft] = useState('');
+  const [hint, setHint] = useState('');
+
+  const submit = async () => {
+    const val = draft.trim();
+    if (!val) { setAdding(false); return; }
+    if (category.tags.includes(val)) {
+      onSelectTag(val);
+      setDraft(''); setAdding(false);
+      return;
+    }
+    const owner = allCategories.find((c) => c.id !== category.id && c.tags.includes(val));
+    if (owner) {
+      onSelectTag(val);
+      setHint(`「${val}」已經在「${owner.name}」分類，直接幫你選起來了`);
+      setDraft(''); setAdding(false);
+      return;
+    }
+    await onAddTag(category.id, val);
+    onSelectTag(val);
+    setDraft(''); setAdding(false);
+  };
+
+  if (!adding) {
+    return (
+      <>
+        <div style={S.addTagChip} onClick={() => { setAdding(true); setHint(''); }}>＋ 新增標籤</div>
+        {hint && <div style={S.addTagHint}>{hint}</div>}
+      </>
+    );
+  }
+
+  return (
+    <div style={S.addTagRow}>
+      <input
+        autoFocus
+        style={S.addTagInput}
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submit(); } if (e.key === 'Escape') setAdding(false); }}
+        onBlur={submit}
+        placeholder="輸入新標籤名稱"
+      />
+      <button type="button" style={S.addTagBtn} onMouseDown={(e) => e.preventDefault()} onClick={submit}>加入</button>
+    </div>
+  );
+}
+
+export default function DiaryForm({ entry, dateKey, categories, onSave, onDelete, onCancel, onAddTag }) {
   const isEdit = !!entry;
 
   const [allDay, setAllDay] = useState(!!entry?.all_day);
@@ -53,6 +112,10 @@ export default function DiaryForm({ entry, dateKey, categories, onSave, onDelete
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
+
+  const selectTag = (tag) => {
+    setTags((prev) => (prev.includes(tag) ? prev : [...prev, tag]));
+  };
 
   const toggleTag = (tag) => {
     setTags((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]));
@@ -157,15 +220,15 @@ export default function DiaryForm({ entry, dateKey, categories, onSave, onDelete
           {categories.map((cat) => (
             <div key={cat.id} style={S.categoryCard}>
               <div style={S.categoryName}>{cat.name}</div>
-              {cat.tags.length === 0 ? (
-                <div style={S.emptyCategory}>這個分類還沒有標籤</div>
-              ) : (
+              {cat.tags.length > 0 && (
                 <div style={S.tagWrap}>
                   {cat.tags.map((tag) => (
                     <div key={tag} style={S.tagChip(tags.includes(tag))} onClick={() => toggleTag(tag)}>{tag}</div>
                   ))}
                 </div>
               )}
+              {cat.tags.length === 0 && <div style={S.emptyCategory}>這個分類還沒有標籤</div>}
+              <AddTagControl category={cat} allCategories={categories} onAddTag={onAddTag} onSelectTag={selectTag} />
             </div>
           ))}
         </div>

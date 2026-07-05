@@ -100,6 +100,7 @@ export default function App({ session, onSignOut }) {
         onSave={handleSaveDiary}
         onDelete={editingDiary.mode === 'edit' ? handleDeleteDiary : null}
         onCancel={() => setEditingDiary(null)}
+        onAddTag={diary.addTagToCategory}
       />
     )
     : showSettings
