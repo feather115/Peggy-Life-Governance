@@ -47,7 +47,7 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
 | **日檢視（事件+日記+任務合併時間軸、新增按鈕）** | `src/components/DayView.jsx` |
 | **月/週/日/任務切換 tab、回到今天** | `src/components/ViewTabs.jsx` |
 | **時間軸列的共用渲染（事件/日記/任務列、日記標籤 chip、地點/同伴小字）** | `src/components/TimelineItems.jsx` |
-| **新增/編輯事件表單（標題、顏色、標籤、標題建議、全天、時間、備註、刪除）** | `src/components/EventForm.jsx` |
+| **新增/編輯事件表單（標題、顏色、標籤、標題建議、全天、時間、地點、和誰、備註、刪除）** | `src/components/EventForm.jsx` |
 | **新增/編輯日記表單（分類標籤選擇、時間、地點、和誰在一起、心情筆記）** | `src/components/DiaryForm.jsx` |
 | **時間選擇（預設 30 分鐘一格下拉選單，可切換手動輸入）** | `src/components/TimeSelect.jsx` |
 | **設定頁（帳號/暱稱/LINE 連結、管理標籤入口、登出）** | `src/components/Settings.jsx` |
@@ -144,7 +144,7 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
 - **`WeekView.jsx`** — 一週 7 天直向列表，每天用 `<TimelineItems>` 顯示事件+日記+到期
   任務合併時間軸（純顯示、不傳 click handler），點某一天呼叫 `onOpenDay` 跳去日檢視。
 - **`DayView.jsx`** — 單日事件+日記+任務合併時間軸（`buildDayTimeline`），事件卡片顯示
-  顏色點/時間/標題/描述/標籤，日記卡片顯示時間/標籤（依分類上色）/地點/同伴/心情筆記，
+  顏色點/時間/標題/地點/同伴/描述/標籤，日記卡片顯示時間/標籤（依分類上色）/地點/同伴/心情筆記，
   任務卡片顯示虛線邊框+核取方塊圖示（點擊呼叫 `onGoToTasks` 切到任務檢視，不能直接在
   這裡標記完成——完成流程需要選日期，統一在任務檢視操作），可切換前一天/後一天，底部
   並排「＋ 新增事件」「＋ 新增日記」兩個按鈕（新增動作只從日檢視發起，月/週檢視只負責
@@ -159,7 +159,8 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
 - **`EventForm.jsx`** — 新增/編輯事件表單：標題（新增模式下輸入時會列出過去用過的相同
   標題建議，點擊帶入標題+顏色）、7 色顏色選擇器、標籤（Enter 加入的 chip 輸入）、
   全天開關（切換是否顯示時間欄位）、開始/結束時間（日期 `<input type="date">` +
-  `TimeSelect`）、描述、刪除（兩段確認的置中文字連結）。**動作列跟 DiaryForm 統一**：
+  `TimeSelect`）、地點、和誰（逗號/頓號分隔的文字輸入，存入前轉成陣列，跟 DiaryForm
+  同一套做法）、描述、刪除（兩段確認的置中文字連結）。**動作列跟 DiaryForm 統一**：
   「儲存」固定在頂部 header 右側（表單再長都不用滑到底才能存），返回鍵在左上；
   原本底部的儲存/取消直排按鈕已移除。**未儲存變更防呆**：mount 時記一份欄位 JSON
   快照，按返回時跟目前值比對，有差異先跳 `window.confirm('內容還沒儲存，確定要離開嗎？')`，
@@ -304,7 +305,7 @@ createAppSupabase({ schema: 'calendar' })
 三張表，都在 `calendar` schema：
 
 ### `events`（完整 SQL 見 `supabase/schema.sql` + `2026-07-02_event_color_tags.sql` +
-`2026-07-04_event_location.sql`）
+`2026-07-04_event_location.sql` + `2026-07-08_event_people.sql`）
 
 | 欄位 | 型別 | 用途 |
 |---|---|---|
@@ -313,6 +314,7 @@ createAppSupabase({ schema: 'calendar' })
 | `title` | text | 事件標題 |
 | `description` | text | 備註（選填） |
 | `location` | text | 地點（選填，Day 檢視顯示在描述上方，帶 📍） |
+| `people` | text[] | 同伴（選填，表單用「、」或「,」分隔輸入，顯示帶 👤，跟日記 `people` 同一套慣例） |
 | `start_at` | timestamptz | 開始時間 |
 | `end_at` | timestamptz | 結束時間（選填） |
 | `all_day` | boolean | 是否為全天事件 |
@@ -415,10 +417,11 @@ createAppSupabase({ schema: 'calendar' })
 | `2026-07-04_event_location.sql` | `events` 加 `location` 欄位 |
 | `2026-07-05_category_sort_order.sql` | `tag_categories` 加 `sort_order` 欄位並依 `created_at` backfill 既有資料 |
 | `2026-07-06_diary_tag_details.sql` | `diary_entries` 加 `tag_details` jsonb 欄位（標籤細節，例如追劇填劇名） |
+| `2026-07-08_event_people.sql` | `events` 加 `people` text[] 欄位（事件同伴，跟日記的 `people` 同慣例） |
 
 > 新環境依序跑：`schema.sql` → `2026-07-02_event_color_tags.sql` → `2026-07-02_diary.sql`
 > → `2026-07-02_tasks.sql` → `2026-07-04_event_location.sql` → `2026-07-05_category_sort_order.sql`
-> → `2026-07-06_diary_tag_details.sql`。之後有新欄位/新表再依日期新增檔案，格式跟其他 app 一致：
+> → `2026-07-06_diary_tag_details.sql` → `2026-07-08_event_people.sql`。之後有新欄位/新表再依日期新增檔案，格式跟其他 app 一致：
 > `YYYY-MM-DD_描述.sql`。
 
 ---

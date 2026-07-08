@@ -7,6 +7,7 @@ const EVENT_COLUMNS = [
   'title',
   'description',
   'location',
+  'people',
   'start_at',
   'end_at',
   'all_day',

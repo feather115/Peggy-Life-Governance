@@ -16,7 +16,7 @@ export const ROW = {
   diaryTagChip: (accent, onTint) => ({ fontSize: 11, fontWeight: 600, color: accent, background: onTint ? THEME.surface : THEME.primarySoft, padding: '3px 8px', borderRadius: 999 }),
 };
 
-// 📍 地點 · 👤 同伴 的一行小字；事件沒有同伴欄位，傳 null 就好
+// 📍 地點 · 👤 同伴 的一行小字（事件與日記共用）
 export function metaLine(location, people) {
   const parts = [];
   if (location) parts.push(`📍 ${location}`);
@@ -51,7 +51,7 @@ export default function TimelineItems({ timeline, categories, onEventClick, onDi
   return timeline.map((item) => {
     if (item.kind === 'event') {
       const ev = item.data;
-      const meta = metaLine(ev.location, null);
+      const meta = metaLine(ev.location, ev.people);
       const c = clickable(onEventClick && (() => onEventClick(ev)));
       return (
         <div key={`ev-${ev.id}`} style={{ ...ROW.item, ...c.style }} onClick={c.onClick}>

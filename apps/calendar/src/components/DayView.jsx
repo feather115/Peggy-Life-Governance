@@ -68,6 +68,7 @@ export default function DayView({ dateKey, onShiftDay, eventsByDate, entriesByDa
                     <span style={S.eventTitle}>{ev.title}</span>
                   </div>
                   {ev.location && <div style={S.allDayDesc}>📍 {ev.location}</div>}
+                  {(ev.people || []).length > 0 && <div style={S.allDayDesc}>👤 {ev.people.join('、')}</div>}
                   {ev.description && <div style={S.allDayDesc}>{ev.description}</div>}
                   {tags.length > 0 && (
                     <div style={S.allDayTagsRow}>
@@ -85,6 +86,7 @@ export default function DayView({ dateKey, onShiftDay, eventsByDate, entriesByDa
                   <span style={S.eventTitle}>{ev.title}</span>
                 </div>
                 {ev.location && <div style={S.desc}>📍 {ev.location}</div>}
+                {(ev.people || []).length > 0 && <div style={S.desc}>👤 {ev.people.join('、')}</div>}
                 {ev.description && <div style={S.desc}>{ev.description}</div>}
                 {tags.length > 0 && (
                   <div style={S.tagsRow}>

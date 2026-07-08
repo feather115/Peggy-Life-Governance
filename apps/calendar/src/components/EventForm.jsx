@@ -58,6 +58,7 @@ export default function EventForm({ event, defaultDateKey, allEvents = [], onSav
   const [tagDraft, setTagDraft] = useState('');
   const [description, setDescription] = useState(event?.description || '');
   const [location, setLocation] = useState(event?.location || '');
+  const [peopleText, setPeopleText] = useState((event?.people || []).join('、'));
   const [allDay, setAllDay] = useState(!!event?.all_day);
   const [startValue, setStartValue] = useState(
     event ? toDatetimeLocalValue(event.start_at) : defaultStartValue(defaultDateKey),
@@ -69,7 +70,7 @@ export default function EventForm({ event, defaultDateKey, allEvents = [], onSav
   const [titleTouched, setTitleTouched] = useState(false);
 
   // 未儲存變更防呆：記住第一次 render 的欄位快照，按返回時有差異就先問一聲
-  const snapshot = JSON.stringify({ title, color, tags, description, location, allDay, startValue, endValue });
+  const snapshot = JSON.stringify({ title, color, tags, description, location, peopleText, allDay, startValue, endValue });
   const [initialSnapshot] = useState(snapshot);
   const handleCancel = () => {
     if (snapshot !== initialSnapshot && !window.confirm('內容還沒儲存，確定要離開嗎？')) return;
@@ -119,10 +120,14 @@ export default function EventForm({ event, defaultDateKey, allEvents = [], onSav
     if (!title.trim()) return;
     if (!startValue) { setError('請選擇開始時間'); return; }
 
+    // 同 DiaryForm：一個輸入框用「、」或「,」分隔多個人
+    const people = peopleText.split(/[,、]/).map((p) => p.trim()).filter(Boolean);
+
     const payload = {
       title: title.trim(),
       description: description.trim() || null,
       location: location.trim() || null,
+      people,
       all_day: allDay,
       start_at: fromDatetimeLocalValue(allDay ? `${startValue.slice(0, 10)}T00:00` : startValue),
       end_at: endValue ? fromDatetimeLocalValue(allDay ? `${endValue.slice(0, 10)}T00:00` : endValue) : null,
@@ -264,6 +269,11 @@ export default function EventForm({ event, defaultDateKey, allEvents = [], onSav
         <div style={S.field}>
           <div style={S.label}>地點 <span style={{ color: THEME.textFaint }}>(選填)</span></div>
           <input style={S.input} value={location} onChange={(e) => setLocation(e.target.value)} placeholder="例如：台大醫院" />
+        </div>
+
+        <div style={S.field}>
+          <div style={S.label}>和誰 <span style={{ color: THEME.textFaint }}>(選填，用「、」分隔)</span></div>
+          <input style={S.input} value={peopleText} onChange={(e) => setPeopleText(e.target.value)} placeholder="例如：阿華、媽媽" />
         </div>
 
         <div style={S.field}>
