@@ -12,6 +12,7 @@ export const ROW = {
   time: { color: THEME.textMuted, width: 78, flexShrink: 0, whiteSpace: 'nowrap', alignSelf: 'center' },
   title: { color: THEME.textDark, alignSelf: 'center' },
   meta: (indent = 102) => ({ fontSize: 11, color: THEME.textMuted, marginLeft: indent }),
+  metaInline: { fontSize: 11, color: THEME.textMuted, alignSelf: 'center' },
   tagChipWrap: { display: 'flex', flexWrap: 'wrap', gap: 6 },
   diaryTagChip: (accent, onTint) => ({ fontSize: 11, fontWeight: 600, color: accent, background: onTint ? THEME.surface : THEME.primarySoft, padding: '3px 8px', borderRadius: 999 }),
 };
@@ -67,6 +68,8 @@ export default function TimelineItems({ timeline, categories, onEventClick, onDi
     if (item.kind === 'diary') {
       const entry = item.data;
       const meta = metaLine(entry.location, entry.people);
+      // 標籤最多一個時，地點/同伴小字直接接在標籤旁同一行；兩個以上才另起一行
+      const metaInline = (entry.tags || []).length <= 1;
       const c = clickable(onDiaryClick && (() => onDiaryClick(entry)));
       return (
         <div key={`di-${entry.id}`} style={{ ...ROW.item, ...c.style }} onClick={c.onClick}>
@@ -78,8 +81,9 @@ export default function TimelineItems({ timeline, categories, onEventClick, onDi
               </>
             )}
             <DiaryTags entry={entry} categories={categories} />
+            {metaInline && meta && <span style={ROW.metaInline}>{meta}</span>}
           </div>
-          {meta && <div style={ROW.meta(entry.all_day ? 0 : 102)}>{meta}</div>}
+          {!metaInline && meta && <div style={ROW.meta(entry.all_day ? 0 : 102)}>{meta}</div>}
         </div>
       );
     }

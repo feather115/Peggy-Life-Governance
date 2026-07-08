@@ -131,7 +131,9 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
   版型不同（大卡片、有筆記）只共用 `metaLine()` 和 `DiaryTags`。歷來的顯示規則都集中在
   這裡：時間欄固定 `width: 78` + `nowrap`（用 `minWidth` 會被長時間區間撐開導致各列
   chip 起始位置不齊）、全天事件只留彩色 dot 不顯示時間欄、全天日記連 dot 都不顯示、
-  `meta(indent)` 依列型態縮排（計時列 102 / 全天事件 16 / 全天日記 0）。
+  `meta(indent)` 依列型態縮排（計時列 102 / 全天事件 16 / 全天日記 0）、**日記標籤
+  最多一個時地點/同伴小字直接接在標籤 chip 旁同一行**（兩個以上標籤才另起一行，
+  DayView 的日記卡片也套同一條規則——單行資訊少時不用多佔一行）。
   `onEventClick`/`onDiaryClick`/`onTaskClick` 是選填 prop：有傳項目才可點（Month 摘要卡
   用，直接開編輯），沒傳就純顯示（Week 用，整個日列本身已經可點）。
 - **`MonthView.jsx`** — 格線月曆，日期下方顯示事件顏色圓點（最多 3 個不同色）+ 日記圓點

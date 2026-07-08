@@ -26,6 +26,7 @@ const S = {
   diaryTime: { fontSize: 13, fontWeight: 600, color: THEME.primary, width: 78, flexShrink: 0, whiteSpace: 'nowrap' },
   diaryEmpty: { fontSize: 13, color: THEME.textFaint },
   diaryMeta: { display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 6, marginLeft: 80, fontSize: 12, color: THEME.textMuted },
+  diaryMetaInline: { display: 'flex', flexWrap: 'wrap', gap: 10, fontSize: 12, color: THEME.textMuted, alignSelf: 'center' },
   allDayDiaryMeta: { display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 6, marginLeft: 0, fontSize: 12, color: THEME.textMuted },
   diaryNote: { fontSize: 13, color: THEME.textMuted, lineHeight: 1.5, fontStyle: 'italic', marginTop: 6, marginLeft: 80 },
   allDayDiaryNote: { fontSize: 13, color: THEME.textMuted, lineHeight: 1.5, fontStyle: 'italic', marginTop: 6, marginLeft: 0 },
@@ -111,6 +112,14 @@ export default function DayView({ dateKey, onShiftDay, eventsByDate, entriesByDa
           // diary
           const entry = item.data;
           const hasMeta = !!entry.location || (entry.people || []).length > 0;
+          // 標籤最多一個時，地點/同伴直接接在標籤旁同一行；兩個以上才另起一行
+          const metaInline = (entry.tags || []).length <= 1;
+          const metaSpans = hasMeta && (
+            <>
+              {entry.location && <span>📍 {entry.location}</span>}
+              {(entry.people || []).length > 0 && <span>👤 {entry.people.slice(0, 3).join('、')}{entry.people.length > 3 ? ` +${entry.people.length - 3}` : ''}</span>}
+            </>
+          );
           const renderTags = () => (
             <DiaryTags
               entry={entry}
@@ -124,13 +133,9 @@ export default function DayView({ dateKey, onShiftDay, eventsByDate, entriesByDa
               <div key={`di-${entry.id}`} style={S.allDayCard} onClick={() => onEditDiary(entry)}>
                 <div style={S.allDayTop}>
                   {renderTags()}
+                  {metaInline && hasMeta && <div style={S.diaryMetaInline}>{metaSpans}</div>}
                 </div>
-                {hasMeta && (
-                  <div style={S.allDayDiaryMeta}>
-                    {entry.location && <span>📍 {entry.location}</span>}
-                    {(entry.people || []).length > 0 && <span>👤 {entry.people.slice(0, 3).join('、')}{entry.people.length > 3 ? ` +${entry.people.length - 3}` : ''}</span>}
-                  </div>
-                )}
+                {!metaInline && hasMeta && <div style={S.allDayDiaryMeta}>{metaSpans}</div>}
                 {entry.note && <div style={S.allDayDiaryNote}>「{entry.note}」</div>}
               </div>
             );
@@ -140,13 +145,9 @@ export default function DayView({ dateKey, onShiftDay, eventsByDate, entriesByDa
               <div style={S.diaryTop}>
                 <span style={S.diaryTime}>{formatDiaryTime(entry)}</span>
                 {renderTags()}
+                {metaInline && hasMeta && <div style={S.diaryMetaInline}>{metaSpans}</div>}
               </div>
-              {hasMeta && (
-                <div style={S.diaryMeta}>
-                  {entry.location && <span>📍 {entry.location}</span>}
-                  {(entry.people || []).length > 0 && <span>👤 {entry.people.slice(0, 3).join('、')}{entry.people.length > 3 ? ` +${entry.people.length - 3}` : ''}</span>}
-                </div>
-              )}
+              {!metaInline && hasMeta && <div style={S.diaryMeta}>{metaSpans}</div>}
               {entry.note && <div style={S.diaryNote}>「{entry.note}」</div>}
             </div>
           );
