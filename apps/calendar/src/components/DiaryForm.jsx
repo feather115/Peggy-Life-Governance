@@ -25,6 +25,8 @@ const S = {
   endRow: { display: 'flex', gap: 8 },
   clearBtn: { border: `1px solid ${THEME.border}`, background: THEME.surface, cursor: 'pointer', padding: '0 12px', borderRadius: THEME.radiusSm, fontSize: 13, color: THEME.textMuted, fontWeight: 600 },
   field: { marginBottom: 20 },
+  historyChips: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 },
+  historyChip: (selected) => ({ cursor: 'pointer', padding: '5px 12px', borderRadius: 999, background: selected ? THEME.primary : THEME.surfaceAlt, color: selected ? '#fff' : THEME.textDark, fontSize: 12, fontWeight: selected ? 700 : 500 }),
   textarea: { width: '100%', boxSizing: 'border-box', border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSm, padding: '12px 14px', fontSize: 14, lineHeight: 1.6, color: THEME.textDark, background: THEME.surface, outline: 'none', fontFamily: 'inherit', resize: 'vertical' },
   categoryList: { display: 'flex', flexDirection: 'column', gap: 16 },
   categoryCard: { background: THEME.surface, borderRadius: THEME.radius, padding: '16px 18px', boxShadow: THEME.shadow },
@@ -139,7 +141,7 @@ function CategoryTagCard({ category, allCategories, selectedTags, onToggleTag, o
   );
 }
 
-export default function DiaryForm({ entry, dateKey, categories, onSave, onDelete, onCancel, onAddTag, tagDetailHistory }) {
+export default function DiaryForm({ entry, dateKey, categories, locationHistory = [], peopleHistory = [], onSave, onDelete, onCancel, onAddTag, tagDetailHistory }) {
   const isEdit = !!entry;
 
   const [allDay, setAllDay] = useState(!!entry?.all_day);
@@ -164,6 +166,13 @@ export default function DiaryForm({ entry, dateKey, categories, onSave, onDelete
   const handleCancel = () => {
     if (snapshot !== initialSnapshot && !window.confirm('內容還沒儲存，確定要離開嗎？')) return;
     onCancel();
+  };
+
+  // 「和誰」目前已填的人（跟儲存時同一套切法），點歷史 chip 可切換加入/移除
+  const peopleList = peopleText.split(/[,、]/).map((p) => p.trim()).filter(Boolean);
+  const togglePerson = (name) => {
+    const next = peopleList.includes(name) ? peopleList.filter((p) => p !== name) : [...peopleList, name];
+    setPeopleText(next.join('、'));
   };
 
   const selectTag = (tag) => {
@@ -274,11 +283,25 @@ export default function DiaryForm({ entry, dateKey, categories, onSave, onDelete
         <div style={S.field}>
           <div style={S.fieldLabel}>地點</div>
           <input type="text" style={S.input} value={location} onChange={(e) => setLocation(e.target.value)} placeholder="例如：家裡" />
+          {locationHistory.length > 0 && (
+            <div style={S.historyChips}>
+              {locationHistory.slice(0, 8).map((loc) => (
+                <div key={loc} style={S.historyChip(location.trim() === loc)} onClick={() => setLocation(location.trim() === loc ? '' : loc)}>{loc}</div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div style={S.field}>
           <div style={S.fieldLabel}>和誰在一起</div>
           <input type="text" style={S.input} value={peopleText} onChange={(e) => setPeopleText(e.target.value)} placeholder="例如：阿華、媽媽" />
+          {peopleHistory.length > 0 && (
+            <div style={S.historyChips}>
+              {peopleHistory.slice(0, 8).map((name) => (
+                <div key={name} style={S.historyChip(peopleList.includes(name))} onClick={() => togglePerson(name)}>{name}</div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div style={S.field}>

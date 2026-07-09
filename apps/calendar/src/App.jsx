@@ -6,7 +6,7 @@
 //   | { type: 'task', mode: 'create' } | { type: 'task', mode: 'edit', task }
 //   | { type: 'settings' } | { type: 'manageTags' }
 // 之後要加新畫面就加一個 type，不要再疊三元運算子鏈。
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useEvents } from './useEvents.js';
 import { useDiary } from './useDiary.js';
 import { useTasks } from './useTasks.js';
@@ -39,6 +39,25 @@ export default function App({ session, onSignOut }) {
 
   const [overlay, setOverlay] = useState(null);
   const closeOverlay = () => setOverlay(null);
+
+  // 日記 + 事件裡曾經填過的地點/人名（去重、最近的排前面），給表單的建議 chips 用
+  const fieldHistory = useMemo(() => {
+    const records = [
+      ...diary.entries.map((e) => ({ date: e.entry_date || '', location: e.location, people: e.people })),
+      ...cal.events.map((ev) => ({ date: (ev.start_at || '').slice(0, 10), location: ev.location, people: ev.people })),
+    ].sort((a, b) => b.date.localeCompare(a.date));
+    const locations = [];
+    const people = [];
+    records.forEach((r) => {
+      const loc = (r.location || '').trim();
+      if (loc && !locations.includes(loc)) locations.push(loc);
+      (r.people || []).forEach((p) => {
+        const name = (p || '').trim();
+        if (name && !people.includes(name)) people.push(name);
+      });
+    });
+    return { locations, people };
+  }, [diary.entries, cal.events]);
 
   if (!cal.loaded || !diary.loaded || !tasksHub.loaded) return <Centered>載入中…</Centered>;
   if (cal.loadError) return <Centered color={THEME.error}>載入失敗：{cal.loadError}</Centered>;
@@ -93,6 +112,8 @@ export default function App({ session, onSignOut }) {
             event={overlay.mode === 'edit' ? overlay.event : null}
             defaultDateKey={overlay.mode === 'create' ? overlay.dateKey : undefined}
             allEvents={cal.events}
+            locationHistory={fieldHistory.locations}
+            peopleHistory={fieldHistory.people}
             onSave={handleSaveEvent}
             onDelete={overlay.mode === 'edit' ? handleDeleteEvent : null}
             onCancel={closeOverlay}
@@ -104,6 +125,8 @@ export default function App({ session, onSignOut }) {
             entry={overlay.mode === 'edit' ? overlay.entry : null}
             dateKey={overlay.mode === 'edit' ? overlay.entry.entry_date : overlay.dateKey}
             categories={diary.categories}
+            locationHistory={fieldHistory.locations}
+            peopleHistory={fieldHistory.people}
             onSave={handleSaveDiary}
             onDelete={overlay.mode === 'edit' ? handleDeleteDiary : null}
             onCancel={closeOverlay}

@@ -78,7 +78,9 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
   { type: 'manageTags' }`），`renderOverlay()` 依 type switch——之前是五個獨立 boolean/
   物件 state 疊三元運算子鏈，每加一個畫面就更難讀，改掉了；之後要加新覆蓋畫面就加一個
   type。header 只剩標題 + ⚙ 齒輪按鈕（開設定頁），登出按鈕移到設定頁裡（跟
-  calorie-tracker/recipe-book 一致，手機上省一顆常駐按鈕）。
+  calorie-tracker/recipe-book 一致，手機上省一顆常駐按鈕）。另外用 `useMemo` 算
+  `fieldHistory`（日記+事件曾填過的地點/人名，去重、最近優先），傳給 EventForm/
+  DiaryForm 當地點與「和誰」的歷史建議 chips 資料來源。
 - **`src/useEvents.js`** — ⭐ **事件狀態中樞**。載入事件、`eventsByDate`（依日期分組）、
   `view`（月/週/日/任務，**預設 `'day'`**——開 app 直接看「今天要幹嘛」，不是先看整個
   月曆）、`anchorKey`（目前翻頁翻到哪個月/週/天）、`selectedDateKey`
@@ -162,14 +164,20 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
   標題建議，點擊帶入標題+顏色）、7 色顏色選擇器、標籤（Enter 加入的 chip 輸入）、
   全天開關（切換是否顯示時間欄位）、開始/結束時間（日期 `<input type="date">` +
   `TimeSelect`）、地點、和誰（逗號/頓號分隔的文字輸入，存入前轉成陣列，跟 DiaryForm
-  同一套做法）、描述、刪除（兩段確認的置中文字連結）。**動作列跟 DiaryForm 統一**：
+  同一套做法）、描述、刪除（兩段確認的置中文字連結）。**地點/和誰輸入框下方有歷史
+  建議 chips**：`App.jsx` 用 `useMemo` 從所有日記+事件彙整出曾填過的地點與人名
+  （去重、最近的排前面，兩種表單共用同一份），以 `locationHistory`/`peopleHistory`
+  props 傳進來，各顯示最多 8 顆。點地點 chip 帶入（再點一次清除）；點人名 chip
+  toggle 加入/移除該人（用跟儲存時同一套逗號/頓號切法解析目前輸入）。輸入框本身
+  照樣可自由輸入新值，新值存檔後下次自然進入建議清單。**動作列跟 DiaryForm 統一**：
   「儲存」固定在頂部 header 右側（表單再長都不用滑到底才能存），返回鍵在左上；
   原本底部的儲存/取消直排按鈕已移除。**未儲存變更防呆**：mount 時記一份欄位 JSON
   快照，按返回時跟目前值比對，有差異先跳 `window.confirm('內容還沒儲存，確定要離開嗎？')`，
   避免手滑丟失輸入（DiaryForm 同一套做法）。
 - **`DiaryForm.jsx`** — 新增/編輯單筆日記：頂部已選標籤即時預覽（純顯示用的 chip，
   不含輸入框）、全天切換、時間/結束時間（`TimeSelect`）、地點、和誰在一起（逗號/
-  頓號分隔的文字輸入，存入前轉成陣列）、心情筆記、依分類分組的標籤選擇卡片
+  頓號分隔的文字輸入，存入前轉成陣列；兩欄下方都有歷史建議 chips，來源與行為跟
+  `EventForm.jsx` 同一套，見上）、心情筆記、依分類分組的標籤選擇卡片
   （`CategoryTagCard` 內部元件，點擊 toggle 選取狀態，放在表單最下面）、刪除
   （兩段確認）。**不含**「管理分類與標籤」入口——那個入口移到設定頁了（見下）。
   **欄位順序維持原本的「全天→時間→地點→同伴→筆記→標籤」**：曾經試過把標籤卡片
