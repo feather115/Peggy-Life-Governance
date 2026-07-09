@@ -53,7 +53,7 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js / useOptions.js 
 | **時間選擇（預設 30 分鐘一格下拉選單，可切換手動輸入）** | `src/components/TimeSelect.jsx` |
 | **地點/和誰的歷史選單輸入（下拉選歷史值，可切自行輸入，人名顯示成 tag chips）** | `src/components/HistoryFields.jsx` |
 | **設定頁（帳號/暱稱/LINE 連結、管理標籤入口、登出）** | `src/components/Settings.jsx` |
-| **管理日記分類與標籤（改名/刪除分類、新增/刪除標籤）** | `src/components/ManageTags.jsx` |
+| **管理日記分類與標籤（三層：分類→主標籤→子標籤；改名/刪除/排序/收合）** | `src/components/ManageTags.jsx` |
 | **管理地點、人名與事件標籤（改名同步、封存、刪除、子標籤）** | `src/components/ManageOptions.jsx` |
 | **任務列表（狀態顯示、標記完成、歷史紀錄、刪除）** | `src/components/TasksView.jsx` |
 | **新增/編輯任務表單（標題、重複間隔、到期日、是否顯示在行事曆）** | `src/components/TaskForm.jsx` |
@@ -92,10 +92,15 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js / useOptions.js 
   `openDay(dateKey)`（月/週檢視點下去統一走這條：對齊 anchor + selected + 切到日檢視）、
   新增/編輯/刪除 action。
 - **`src/useDiary.js`** — ⭐ **日記狀態中樞**。載入日記與分類、`entriesByDate`（依日期分組）、
-  日記 CRUD、分類/標籤管理（新增分類、改名、刪除、新增/刪除標籤）、`tagDetailHistory`
+  日記 CRUD、分類/標籤管理（新增分類、改名、刪除、新增/刪除/改名/排序主標籤與子標籤——
+  `addSubTag`/`renameSubTag`/`removeSubTag`/`moveSubTag`）、`tagDetailHistory`
   （`Map<tag, string[]>`，把所有日記裡每個標籤填過的細節文字去重、依日期新到舊排序，
   給 `DiaryForm.jsx` 的細節輸入框當 `<datalist>` 建議選項用）。**新使用者第一次使用時
   如果分類是空的，會自動種一組預設分類**（工作/社交/心情/健康）方便直接上手，之後不會再種。
+  `tags` 的形狀是 `[{ name, subs: [] }]`（2026-07-09 起 jsonb，見下方 `tag_categories`）；
+  載入時 `normalizeCategories()` 會把 migration 前的純字串陣列包成新格式（讀不會壞，
+  但寫入需要先跑 migration）。`findTagOwner(categories, name)`（具名 export）是
+  「標籤名稱全域唯一（含子標籤）」檢查的單一入口，`ManageTags.jsx` 也用它。
 - **`src/useTasks.js`** — ⭐ **任務狀態中樞**。載入任務、`tasksByDueDate`（依到期日分組，
   只有 `show_on_calendar=true` 的才會進這個分組，給月/週/日檢視顯示用）、任務 CRUD、
   `confirmComplete(taskId, doneDate)`（標記完成：用 `utils.addInterval()` 算出下次到期日、
@@ -244,39 +249,26 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js / useOptions.js 
   顯示「已連結」，查詢還沒回來或暫時失敗（回傳 `null`）都不會覆蓋掉快取，避免畫面
   閃一下「未連結」又跳回「已連結」；「連結 LINE 帳號」按鈕只有 `canLinkLine()` 為
   true（在 LINE App 裡開啟且 LIFF 已登入）才會顯示，一般瀏覽器打開看不到這顆按鈕。
-- **`ManageTags.jsx`** — 管理分類與標籤：點分類名稱進入改名模式（Enter/失焦確認）、
-  刪除分類（兩段確認，會連動清掉既有日記裡用到這些標籤的紀錄，見 `useDiary.js`
-  的 `deleteCategory`）、每個分類卡片內新增/刪除標籤、底部新增分類、卡片左上角
-  ▲▼ 按鈕調整分類順序（呼叫 `useDiary.js` 的 `moveCategory`，跟相鄰分類互換
-  `sort_order` 後在前端重新排序，邊界按鈕會 disable）。原本是從日記表單裡的連結
-  進入，現在改成設定頁底下的子頁（`App.jsx` 的 `showSettings` + `managingTags`
-  兩層 state），因為塞在日記表單流程裡不容易發現、也跟「寫日記」這個當下動作無關。
-  **標籤名稱跨分類不能重複**：在某分類輸入一個「其他分類已經在用」的標籤名稱時，
-  不會直接新增，而是彈出「「X」已經在「Y」分類，要移到「Z」嗎？」的確認卡片（
-  移過來/取消），確認後呼叫 `useDiary.js` 的 `moveTagToCategory(tag, fromId, toId)`
-  把標籤從舊分類移除、加進新分類（不影響既有日記的 `tags` 陣列，因為存的是標籤
-  字串本身，換分類不會改變字串）。沒有做長按拖曳移動——在手機版 LINE LIFF 的
-  webview 裡長按手勢不夠可靠，確認卡片在各種裝置上都能穩定運作。
-  **標籤順序也能調整**：每個標籤是一個獨立的列（`TagRow` 內部元件，不是塞在一起
-  的 pill 標籤雲），左邊是 ▲▼，呼叫 `useDiary.js` 的 `moveTagInCategory(categoryId,
-  tag, direction)`——直接在 `category.tags` 這個字串陣列裡跟相鄰的標籤交換位置，
-  整包 `tags` 陣列一起 update 回去（沒有像分類那樣獨立的 `sort_order` 欄位，標籤的
-  順序就是陣列順序本身），邊界（第一個/最後一個）按鈕一樣會 disable。這個順序會
-  反映到 `DiaryForm.jsx` 每個分類卡片裡標籤 chip 的排列順序。**改成一列一個標籤是
-  刻意的**：舊版是把 ▲▼ 縮小塞進一顆顆 pill 標籤裡（像分類卡片頂端那組的縮小版），
-  在手機上塞太多小按鈕反而更難點準；改成直向列表後每個按鈕都能給到足夠大的點擊
-  區域（`tagReorderBtn` 的 padding 從 `1px 3px` 加大到 `7px 10px`），沒有做拖曳排序
-  ——原因跟下面「沒有做長按拖曳移動」一樣，觸控手勢在 LINE LIFF webview 裡不夠可靠，
-  按鈕點擊在各種裝置上都比較穩定。
-  **標籤可以改名**：點標籤文字（不是點 ▲▼ 或 ×）進入改名模式，Enter/失焦確認，
-  邏輯跟分類改名一樣。改名會呼叫 `useDiary.js` 的 `renameTagInCategory(categoryId,
-  oldTag, newTag)`：先檢查新名字有沒有跟任何分類（含自己）撞名，撞了就在輸入框
-  下面顯示錯誤提示、不送出（維持「標籤名稱跨分類唯一」的規則，不能靠改名繞過）；
-  沒撞名的話除了更新 `tag_categories.tags`，還要**同步改掉所有引用這個標籤的日記**
-  ——`diary_entries.tags` 陣列裡的字串、`tag_details` 的 key（如果那則日記剛好對
-  這個標籤填過細節）都要一起换成新名字，不然舊日記會變成引用一個不存在的標籤字串
-  （孤兒標籤，跟刪除分類時要清掉的問題是同一類，只是這次是「改名」而不是「刪除」，
-  所以是換字串而不是拿掉）。這一步是前端 `Promise.all` 迴圈更新每一則受影響的日記，
+- **`ManageTags.jsx`** — 管理分類與標籤，**三層結構：分類 → 主標籤 → 子標籤**
+  （2026-07-09 改版，版型參考外部 mockup、配色沿用 THEME）。分類卡片頂列：▲▼ 調整
+  分類順序（`useDiary.moveCategory`，跟相鄰分類互換 `sort_order`，邊界 disable）、
+  點名稱行內改名（`InlineName` 內部元件：span ↔ 底線 input，Enter/失焦送出、Esc 取消，
+  分類/主標籤/子標籤三層共用）、▾/▸ 收合整個分類、刪除分類（兩段確認，連動清掉既有
+  日記裡用到的主/子標籤，見 `useDiary.deleteCategory`）。每個主標籤一列（`TagBox`
+  內部元件）：▲▼ 排序（`moveTagInCategory`，直接在 `tags` 陣列裡交換位置，順序就是
+  陣列順序）、點名字改名、子標籤數 badge、▾/▸ 展開子標籤區、× 刪除。展開後子標籤是
+  圓角 chip：‹ › 左右排序（`moveSubTag`）、點名字改名（`renameSubTag`）、× 刪除
+  （`removeSubTag`）、虛線「+ 新增」pill 點開變輸入框（`addSubTag`）；主標籤同樣用
+  虛線「+ 新增主標籤」pill 新增。全程沒有拖曳——mockup 用 HTML5 drag，但在手機版
+  LINE LIFF webview 裡觸控拖曳不可靠，一律用按鈕。
+  **標籤名稱全域唯一（含子標籤）**：改名/新增前都用 `useDiary.findTagOwner()` 檢查，
+  撞名就顯示錯誤提示不送出。特例：在某分類新增一個「別的分類已在用的**主標籤**」名稱
+  時，彈出「要移到 Z 嗎？」確認卡片，確認後 `moveTagToCategory` 整個標籤物件（連同
+  子標籤）搬過去（不影響既有日記的 `tags`，存的是名字字串，換分類不會變）；撞到的
+  是**子標籤**則直接擋下提示。
+  **主標籤/子標籤改名會同步改寫舊日記**：`useDiary.js` 的 `renameTagInCategory`/
+  `renameSubTag` 共用 `syncEntriesTagRename()`——`diary_entries.tags` 陣列裡的字串、
+  `tag_details` 的 key 一起換成新名字，避免孤兒標籤；前端 `Promise.all` 迴圈更新，
   不是資料庫層級的 cascade。
 - **`ManageOptions.jsx`** — 管理地點、人名與事件標籤（設定頁的另一個子頁，管的是
   `event_options` 選項庫，跟 `ManageTags.jsx` 管的日記分類是兩套獨立機制）。三個
@@ -379,25 +371,27 @@ createAppSupabase({ schema: 'calendar' })
 | `time` / `end_time` | text | `HH:MM` 字串（不用 `time` 型別，避免時區/格式化的額外複雜度，反正只是顯示用） |
 | `location` | text | 地點（選填） |
 | `people` | text[] | 和誰在一起（表單用 `HistoryFields.jsx` 的選單/自行輸入加人，直接存陣列） |
-| `tags` | text[] | 選中的標籤（必須是某個 `tag_categories.tags` 裡的字串，但沒有資料庫層級外鍵約束，
-  刪除分類/標籤時由前端 `useDiary.js` 主動同步清掉） |
+| `tags` | text[] | 選中的標籤（主標籤或子標籤都以**名字字串**扁平存放，必須存在於某個
+  `tag_categories.tags`，但沒有資料庫層級外鍵約束，刪除分類/標籤時由前端 `useDiary.js`
+  主動同步清掉） |
 | `tag_details` | jsonb | 標籤 → 細節文字的 map，例如 `{"追劇":"想見你 EP5"}`。**不是每個標籤都會有值**，
   只有使用者真的填了才會有 key（`DiaryForm.jsx` 存檔前會清掉沒填細節、或標籤已經
   取消選取的殘留 key，見下方設計重點）。故意不改 `tags` 本身的結構（拆成
-  `[{tag, detail}]` 物件陣列）——`tags` 是 `text[]`，跟 `tag_categories.tags`
-  共用同一套「純字串陣列」慣例，`categoryAccentForTag()` 之類既有邏輯都假設
-  `tags` 是字串陣列，用獨立的 `tag_details` map 疊加細節，改動範圍小很多 |
+  `[{tag, detail}]` 物件陣列）——日記的 `tags` 維持純字串陣列（子標籤也是存名字），
+  用獨立的 `tag_details` map 疊加細節，改動範圍小很多 |
 | `note` | text | 心情筆記（選填） |
 | `created_at` | timestamptz | 建立時間 |
 
-### `tag_categories`（完整 SQL 見 `supabase/2026-07-02_diary.sql` + `2026-07-05_category_sort_order.sql`）
+### `tag_categories`（完整 SQL 見 `supabase/2026-07-02_diary.sql` + `2026-07-05_category_sort_order.sql` + `2026-07-09_tag_subtags.sql`）
 
 | 欄位 | 型別 | 用途 |
 |---|---|---|
 | `id` | bigint (PK, identity) | 主鍵 |
 | `user_id` | uuid → `auth.users(id)` | 擁有者（CASCADE），每人的分類/標籤互不相通 |
 | `name` | text | 分類名稱（工作/社交/心情/健康…） |
-| `tags` | text[] | 這個分類底下的標籤，**不是獨立一張表**，直接存陣列 |
+| `tags` | jsonb | 這個分類底下的標籤，**不是獨立一張表**，直接存陣列。2026-07-09 起從 `text[]`
+  改成 `[{ "name": "運動", "subs": ["跑步"] }]` 支援子標籤；migration 會把舊字串
+  元素自動包成物件（可重跑），前端 `useDiary.normalizeCategories()` 另外兜底 |
 | `sort_order` | int | 使用者自訂的顯示順序（`ManageTags.jsx` 的 ▲▼ 按鈕調整），`loadCategories`
   依此排序，不是 `created_at` |
 | `created_at` | timestamptz | 建立時間 |

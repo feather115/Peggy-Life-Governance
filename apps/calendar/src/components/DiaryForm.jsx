@@ -33,6 +33,7 @@ const S = {
   categoryName: { fontSize: 13, fontWeight: 700, color: THEME.textMuted },
   tagWrap: { display: 'flex', flexWrap: 'wrap', gap: 8 },
   tagChip: (selected) => ({ cursor: 'pointer', padding: '9px 15px', borderRadius: 999, background: selected ? THEME.primary : THEME.surfaceAlt, color: selected ? '#fff' : THEME.textDark, fontSize: 13, fontWeight: selected ? 700 : 500, boxShadow: selected ? '0 4px 10px rgba(61,90,128,.28)' : 'none' }),
+  subTagChip: (selected) => ({ cursor: 'pointer', padding: '8px 13px', borderRadius: 999, background: selected ? THEME.primary : 'transparent', border: `1px solid ${selected ? THEME.primary : THEME.border}`, color: selected ? '#fff' : THEME.textMuted, fontSize: 12, fontWeight: selected ? 700 : 500, boxShadow: selected ? '0 4px 10px rgba(61,90,128,.28)' : 'none' }),
   addTagIconBtn: { flexShrink: 0, border: 'none', cursor: 'pointer', width: 22, height: 22, borderRadius: '50%', background: THEME.surfaceAlt, color: THEME.textMuted, fontSize: 14, fontWeight: 700, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 },
   addTagRow: { display: 'flex', gap: 8, marginTop: 10 },
   addTagInput: { flex: 1, boxSizing: 'border-box', border: `1px dashed ${THEME.textFaint}`, background: 'transparent', borderRadius: 999, padding: '8px 14px', fontSize: 13, color: THEME.textDark, outline: 'none' },
@@ -48,6 +49,7 @@ const S = {
 };
 
 // 一張分類卡片：分類名稱 + 右上角小「+」新增標籤按鈕 + 標籤 chip 清單。
+// 主標籤後面跟著它的子標籤（└ 前綴、外框樣式），選子標籤跟選主標籤一樣存名字。
 // 「+」點開變成輸入框，Enter/按鈕送出。如果輸入的名字在別的分類已經存在，不會建立
 // 重複標籤，直接把既有的那個標籤選起來就好（這裡只是要選一個標籤來用，不是在管分類
 // ——真的要把標籤搬到別的分類，去設定頁的「管理分類與標籤」，那邊才有處理重複標籤的
@@ -57,15 +59,18 @@ function CategoryTagCard({ category, allCategories, selectedTags, onToggleTag, o
   const [draft, setDraft] = useState('');
   const [hint, setHint] = useState('');
 
+  // 這個分類底下所有可選的名字（主標籤 + 子標籤，攤平），依畫面順序
+  const categoryTagNames = category.tags.flatMap((t) => [t.name, ...t.subs]);
+
   const submit = async () => {
     const val = draft.trim();
     if (!val) { setAdding(false); return; }
-    if (category.tags.includes(val)) {
+    if (categoryTagNames.includes(val)) {
       onSelectTag(val);
       setDraft(''); setAdding(false);
       return;
     }
-    const owner = allCategories.find((c) => c.id !== category.id && c.tags.includes(val));
+    const owner = allCategories.find((c) => c.id !== category.id && c.tags.some((t) => t.name === val || t.subs.includes(val)));
     if (owner) {
       onSelectTag(val);
       setHint(`「${val}」已經在「${owner.name}」分類，直接幫你選起來了`);
@@ -87,16 +92,21 @@ function CategoryTagCard({ category, allCategories, selectedTags, onToggleTag, o
       {category.tags.length > 0 && (
         <div style={S.tagWrap}>
           {category.tags.map((tag) => (
-            <div key={tag} style={S.tagChip(selectedTags.includes(tag))} onClick={() => onToggleTag(tag)}>{tag}</div>
+            <React.Fragment key={tag.name}>
+              <div style={S.tagChip(selectedTags.includes(tag.name))} onClick={() => onToggleTag(tag.name)}>{tag.name}</div>
+              {tag.subs.map((sub) => (
+                <div key={sub} style={S.subTagChip(selectedTags.includes(sub))} onClick={() => onToggleTag(sub)}>└ {sub}</div>
+              ))}
+            </React.Fragment>
           ))}
         </div>
       )}
       {category.tags.length === 0 && <div style={S.emptyCategory}>這個分類還沒有標籤</div>}
 
       {/* 選中的標籤（屬於這個分類的）在這裡填細節，緊接在標籤下方，不用跑去別的地方找 */}
-      {category.tags.some((t) => selectedTags.includes(t)) && (
+      {categoryTagNames.some((t) => selectedTags.includes(t)) && (
         <div style={S.detailList}>
-          {category.tags.filter((t) => selectedTags.includes(t)).map((tag) => {
+          {categoryTagNames.filter((t) => selectedTags.includes(t)).map((tag) => {
             const historyId = `tagdetail-${encodeURIComponent(tag)}`;
             const history = tagDetailHistory?.get(tag) || [];
             return (
