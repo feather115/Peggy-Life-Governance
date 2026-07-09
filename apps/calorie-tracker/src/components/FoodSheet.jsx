@@ -12,6 +12,7 @@ export default function FoodSheet({ app, selectedDate, mealKey, onClose }) {
   const [aiBusy, setAiBusy] = useState(false);
   const [aiError, setAiError] = useState('');
   const [qtyMap, setQtyMap] = useState({}); // Currently selected servings for each food, defaults to 1
+  const [search, setSearch] = useState('');
   const [toastMsg, setToastMsg] = useState('');
   const toastTimerRef = useRef(null);
 
@@ -39,6 +40,8 @@ export default function FoodSheet({ app, selectedDate, mealKey, onClose }) {
       return 0;
     });
   }
+  const kw = search.trim().toLowerCase();
+  if (kw) list = list.filter((fo) => [fo.name, fo.brand, fo.note].some((s) => s && s.toLowerCase().includes(kw)));
 
   const fcn = parseFloat(form.cal);
   const canSave = !!form.name.trim() && !isNaN(fcn) && fcn >= 0;
@@ -144,10 +147,22 @@ export default function FoodSheet({ app, selectedDate, mealKey, onClose }) {
 
       {!formOpen && (
         <div className="ps" style={{ flex: 1, overflowY: 'auto', padding: '6px 16px 20px' }}>
+          <div style={{ position: 'relative', marginTop: 7 }}>
+            <span style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', fontSize: 14, pointerEvents: 'none' }}>🔍</span>
+            <input type="search" enterKeyHint="search" value={search} onChange={(e) => setSearch(e.target.value)}
+              placeholder="搜尋食物名稱、品牌、備註"
+              style={{ width: '100%', border: 'none', background: '#F0F3F1', borderRadius: 12, padding: '11px 36px', fontSize: 16, fontWeight: 700, color: '#234034' }} />
+            {search && (
+              <button onClick={() => setSearch('')} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', border: 'none', background: '#fff', color: '#6E8B7C', width: 22, height: 22, borderRadius: '50%', cursor: 'pointer', fontSize: 13, lineHeight: 1 }}>×</button>
+            )}
+          </div>
           <button onClick={() => { setEditingId(null); setFormOpen(true); setForm({ name: '', brand: '', note: '', unit: '1 份', cal: '', p: '', c: '', f: '' }); setAiQuery(''); setAiError(''); }} style={{ width: '100%', border: '2px dashed #B7D5C2', background: '#F6FAF7', borderRadius: 16, padding: '12px 14px', marginTop: 7, display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', textAlign: 'left' }}>
             <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#2E8B5E', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 800, lineHeight: 1, flex: 'none' }}>＋</div>
             <div><div style={{ fontSize: 14, fontWeight: 800, color: '#234034' }}>新增自訂食物</div><div style={{ fontSize: 12, color: '#6E8B7C', marginTop: 1, fontWeight: 600 }}>輸入名稱、卡路里、營養素</div></div>
           </button>
+          {kw && list.length === 0 && (
+            <div style={{ marginTop: 16, textAlign: 'center', fontSize: 13, color: '#9bb0a3', fontWeight: 700 }}>找不到「{search.trim()}」，可以用上面的按鈕新增</div>
+          )}
           {list.map((fo) => (
             <div key={fo.id} style={{ background: '#F6FAF7', borderRadius: 16, padding: '11px 13px', marginTop: 7 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
