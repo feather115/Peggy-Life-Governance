@@ -4,12 +4,13 @@
 //   | { type: 'event', mode: 'create', dateKey } | { type: 'event', mode: 'edit', event }
 //   | { type: 'diary', mode: 'create', dateKey } | { type: 'diary', mode: 'edit', entry }
 //   | { type: 'task', mode: 'create' } | { type: 'task', mode: 'edit', task }
-//   | { type: 'settings' } | { type: 'manageTags' }
+//   | { type: 'settings' } | { type: 'manageTags' } | { type: 'manageOptions' }
 // 之後要加新畫面就加一個 type，不要再疊三元運算子鏈。
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { useEvents } from './useEvents.js';
 import { useDiary } from './useDiary.js';
 import { useTasks } from './useTasks.js';
+import { useOptions } from './useOptions.js';
 import { THEME } from './theme.js';
 import { dateKeyFrom, parseDateKey } from './utils.js';
 import ViewTabs from './components/ViewTabs.jsx';
@@ -20,6 +21,7 @@ import TasksView from './components/TasksView.jsx';
 import EventForm from './components/EventForm.jsx';
 import DiaryForm from './components/DiaryForm.jsx';
 import ManageTags from './components/ManageTags.jsx';
+import ManageOptions from './components/ManageOptions.jsx';
 import Settings from './components/Settings.jsx';
 import TaskForm from './components/TaskForm.jsx';
 
@@ -36,30 +38,12 @@ export default function App({ session, onSignOut }) {
   const cal = useEvents(userId);
   const diary = useDiary(userId);
   const tasksHub = useTasks(userId);
+  const opts = useOptions(userId);
 
   const [overlay, setOverlay] = useState(null);
   const closeOverlay = () => setOverlay(null);
 
-  // 日記 + 事件裡曾經填過的地點/人名（去重、最近的排前面），給表單的建議 chips 用
-  const fieldHistory = useMemo(() => {
-    const records = [
-      ...diary.entries.map((e) => ({ date: e.entry_date || '', location: e.location, people: e.people })),
-      ...cal.events.map((ev) => ({ date: (ev.start_at || '').slice(0, 10), location: ev.location, people: ev.people })),
-    ].sort((a, b) => b.date.localeCompare(a.date));
-    const locations = [];
-    const people = [];
-    records.forEach((r) => {
-      const loc = (r.location || '').trim();
-      if (loc && !locations.includes(loc)) locations.push(loc);
-      (r.people || []).forEach((p) => {
-        const name = (p || '').trim();
-        if (name && !people.includes(name)) people.push(name);
-      });
-    });
-    return { locations, people };
-  }, [diary.entries, cal.events]);
-
-  if (!cal.loaded || !diary.loaded || !tasksHub.loaded) return <Centered>載入中…</Centered>;
+  if (!cal.loaded || !diary.loaded || !tasksHub.loaded || !opts.loaded) return <Centered>載入中…</Centered>;
   if (cal.loadError) return <Centered color={THEME.error}>載入失敗：{cal.loadError}</Centered>;
   if (diary.loadError) return <Centered color={THEME.error}>載入失敗：{diary.loadError}</Centered>;
   if (tasksHub.loadError) return <Centered color={THEME.error}>載入失敗：{tasksHub.loadError}</Centered>;
@@ -75,6 +59,12 @@ export default function App({ session, onSignOut }) {
   const handleSaveEvent = async (payload, existingId) => {
     if (existingId) await cal.updateEvent(existingId, payload);
     else await cal.createEvent(payload);
+    // 新出現的地點/人名/標籤自動補進選項庫，下次選單就有
+    await opts.ensureNames([
+      { kind: 'location', names: [payload.location] },
+      { kind: 'person', names: payload.people },
+      { kind: 'tag', names: payload.tags },
+    ]);
     closeOverlay();
   };
 
@@ -86,6 +76,10 @@ export default function App({ session, onSignOut }) {
   const handleSaveDiary = async (payload, existingId) => {
     if (existingId) await diary.updateEntry(existingId, payload);
     else await diary.createEntry(payload);
+    await opts.ensureNames([
+      { kind: 'location', names: [payload.location] },
+      { kind: 'person', names: payload.people },
+    ]);
     closeOverlay();
   };
 
@@ -112,8 +106,9 @@ export default function App({ session, onSignOut }) {
             event={overlay.mode === 'edit' ? overlay.event : null}
             defaultDateKey={overlay.mode === 'create' ? overlay.dateKey : undefined}
             allEvents={cal.events}
-            locationHistory={fieldHistory.locations}
-            peopleHistory={fieldHistory.people}
+            locationHistory={opts.menus.locations}
+            peopleHistory={opts.menus.people}
+            tagOptions={opts.menus.tags}
             onSave={handleSaveEvent}
             onDelete={overlay.mode === 'edit' ? handleDeleteEvent : null}
             onCancel={closeOverlay}
@@ -125,8 +120,8 @@ export default function App({ session, onSignOut }) {
             entry={overlay.mode === 'edit' ? overlay.entry : null}
             dateKey={overlay.mode === 'edit' ? overlay.entry.entry_date : overlay.dateKey}
             categories={diary.categories}
-            locationHistory={fieldHistory.locations}
-            peopleHistory={fieldHistory.people}
+            locationHistory={opts.menus.locations}
+            peopleHistory={opts.menus.people}
             onSave={handleSaveDiary}
             onDelete={overlay.mode === 'edit' ? handleDeleteDiary : null}
             onCancel={closeOverlay}
@@ -148,6 +143,7 @@ export default function App({ session, onSignOut }) {
             session={session}
             onClose={closeOverlay}
             onManageTags={() => setOverlay({ type: 'manageTags' })}
+            onManageOptions={() => setOverlay({ type: 'manageOptions' })}
             onSignOut={onSignOut}
           />
         );
@@ -164,6 +160,17 @@ export default function App({ session, onSignOut }) {
             onRenameTag={diary.renameTagInCategory}
             onAddCategory={diary.addCategory}
             onMoveCategory={diary.moveCategory}
+            onClose={() => setOverlay({ type: 'settings' })}
+          />
+        );
+      case 'manageOptions':
+        return (
+          <ManageOptions
+            opts={opts}
+            events={cal.events}
+            entries={diary.entries}
+            renameEventField={cal.renameFieldValue}
+            renameDiaryField={diary.renameFieldValue}
             onClose={() => setOverlay({ type: 'settings' })}
           />
         );

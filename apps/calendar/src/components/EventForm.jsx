@@ -35,10 +35,6 @@ const S = {
   dateInput: { flex: 3, boxSizing: 'border-box', border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSm, padding: '11px 12px', fontSize: 15, color: THEME.textDark, background: THEME.surface, outline: 'none' },
   timeInputWrap: { flex: 2 },
   clearBtn: { border: `1px solid ${THEME.border}`, background: THEME.surface, cursor: 'pointer', padding: '0 14px', borderRadius: THEME.radiusSm, fontSize: 13, color: THEME.textMuted, fontWeight: 600 },
-  tagsWrap: { display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' },
-  tagChip: { display: 'flex', alignItems: 'center', gap: 4, background: THEME.primarySoft, color: THEME.primary, fontSize: 12, fontWeight: 600, padding: '5px 8px 5px 10px', borderRadius: 999 },
-  tagRemove: { cursor: 'pointer', fontSize: 13, lineHeight: 1 },
-  tagInput: { border: `1px dashed ${THEME.textFaint}`, background: 'transparent', fontSize: 12, padding: '6px 10px', borderRadius: 999, color: THEME.textMuted, outline: 'none', width: 120 },
   errorBox: { background: THEME.errorBg, color: THEME.error, padding: '10px 12px', borderRadius: THEME.radiusSm, fontSize: 13, fontWeight: 600, marginBottom: 12 },
   deleteLink: (confirming) => ({ marginTop: 24, textAlign: 'center', fontSize: 13, fontWeight: 600, color: confirming ? THEME.error : THEME.textMuted, cursor: 'pointer' }),
 };
@@ -50,13 +46,12 @@ function defaultStartValue(dateKey) {
   return toDatetimeLocalValue(d.toISOString());
 }
 
-export default function EventForm({ event, defaultDateKey, allEvents = [], locationHistory = [], peopleHistory = [], onSave, onDelete, onCancel }) {
+export default function EventForm({ event, defaultDateKey, allEvents = [], locationHistory = [], peopleHistory = [], tagOptions = [], onSave, onDelete, onCancel }) {
   const isEdit = !!event;
 
   const [title, setTitle] = useState(event?.title || '');
   const [color, setColor] = useState(event?.color || EVENT_COLORS[0]);
   const [tags, setTags] = useState(event?.tags || []);
-  const [tagDraft, setTagDraft] = useState('');
   const [description, setDescription] = useState(event?.description || '');
   const [location, setLocation] = useState(event?.location || '');
   const [people, setPeople] = useState(event?.people || []);
@@ -92,16 +87,6 @@ export default function EventForm({ event, defaultDateKey, allEvents = [], locat
     });
     return Array.from(seen.entries()).slice(0, 5);
   }, [allEvents, title, isEdit]);
-
-  const addTagFromDraft = (e) => {
-    if (e.key !== 'Enter') return;
-    e.preventDefault();
-    const val = tagDraft.trim();
-    if (!val) return;
-    if (!tags.includes(val)) setTags((prev) => [...prev, val]);
-    setTagDraft('');
-  };
-  const removeTag = (tag) => setTags((prev) => prev.filter((t) => t !== tag));
 
   const toggleAllDay = () => {
     const nowAllDay = !allDay;
@@ -281,22 +266,7 @@ export default function EventForm({ event, defaultDateKey, allEvents = [], locat
 
         <div style={S.field}>
           <div style={S.label}>標籤 <span style={{ color: THEME.textFaint }}>(選填)</span></div>
-          <div style={S.tagsWrap}>
-            {tags.map((tag) => (
-              <div key={tag} style={S.tagChip}>
-                <span>{tag}</span>
-                <span style={S.tagRemove} onClick={() => removeTag(tag)}>×</span>
-              </div>
-            ))}
-            <input
-              type="text"
-              value={tagDraft}
-              onChange={(e) => setTagDraft(e.target.value)}
-              onKeyDown={addTagFromDraft}
-              placeholder="輸入後按 Enter"
-              style={S.tagInput}
-            />
-          </div>
+          <PeopleSelect people={tags} onChange={setTags} history={tagOptions} addPlaceholder="輸入標籤後按 Enter" />
         </div>
 
         {isEdit && onDelete && (

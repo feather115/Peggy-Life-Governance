@@ -21,12 +21,13 @@ Phase 3 週期性任務。
 ## 資料流
 
 ```
-Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / App.jsx ⇄ components/*
-          (純 API)  (狀態+動作，三個獨立 hook)                  (登入閘口 / 協調)     (畫面)
+Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js / useOptions.js ⇄ Root.jsx / App.jsx ⇄ components/*
+          (純 API)  (狀態+動作，四個獨立 hook)                                (登入閘口 / 協調)     (畫面)
 ```
 
 - 元件**不會**直接呼叫 `db.js`。事件走 `useEvents()`；日記與標籤分類走 `useDiary()`；
-  週期性任務走 `useTasks()`。三個 hook 平行存在，`App.jsx` 同時使用並互相傳遞需要的資料
+  週期性任務走 `useTasks()`；地點/人名/事件標籤選項庫走 `useOptions()`。
+  四個 hook 平行存在，`App.jsx` 同時使用並互相傳遞需要的資料
   （例如 `DayView` 需要 `useEvents` 的事件 + `useDiary` 的日記 + `useTasks` 的當日到期
   任務，用 `utils.js` 的 `buildDayTimeline()` 合併成一條時間軸）。
 - `Root.jsx` 負責：`.env` 檢查、LINE 自動登入、Email/密碼登入閘口。
@@ -52,11 +53,12 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
 | **時間選擇（預設 30 分鐘一格下拉選單，可切換手動輸入）** | `src/components/TimeSelect.jsx` |
 | **地點/和誰的歷史選單輸入（下拉選歷史值，可切自行輸入，人名顯示成 tag chips）** | `src/components/HistoryFields.jsx` |
 | **設定頁（帳號/暱稱/LINE 連結、管理標籤入口、登出）** | `src/components/Settings.jsx` |
-| **管理分類與標籤（改名/刪除分類、新增/刪除標籤）** | `src/components/ManageTags.jsx` |
+| **管理日記分類與標籤（改名/刪除分類、新增/刪除標籤）** | `src/components/ManageTags.jsx` |
+| **管理地點、人名與事件標籤（改名同步、封存、刪除、子標籤）** | `src/components/ManageOptions.jsx` |
 | **任務列表（狀態顯示、標記完成、歷史紀錄、刪除）** | `src/components/TasksView.jsx` |
 | **新增/編輯任務表單（標題、重複間隔、到期日、是否顯示在行事曆）** | `src/components/TaskForm.jsx` |
 | **日期運算、事件/日記分組、時間軸合併、任務間隔運算** | `src/utils.js` |
-| **Supabase 查詢（events / diary_entries / tag_categories / tasks 的 CRUD）** | `src/db.js` |
+| **Supabase 查詢（events / diary_entries / tag_categories / tasks / event_options 的 CRUD）** | `src/db.js` |
 | **Supabase client 連線** | `src/supabase.js`（re-export `@peggy-life/shared`） |
 | **LINE LIFF 初始化與登入** | `src/liff.js` |
 | **Email/密碼與 LINE 自動登入閘口** | `src/Root.jsx` |
@@ -64,6 +66,7 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
 | **事件狀態中樞（事件清單、檢視模式、月/週/日/任務翻頁與選中日）** | `src/useEvents.js` |
 | **日記狀態中樞（日記清單、分類標籤、預設分類種子）** | `src/useDiary.js` |
 | **任務狀態中樞（任務清單、標記完成與下次到期日運算）** | `src/useTasks.js` |
+| **選項庫狀態中樞（地點/人名/事件標籤選單、改名合併、封存）** | `src/useOptions.js` |
 | **主外殼、overlay state（單一物件管理所有覆蓋畫面）** | `src/App.jsx` |
 
 ---
@@ -79,9 +82,9 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
   { type: 'manageTags' }`），`renderOverlay()` 依 type switch——之前是五個獨立 boolean/
   物件 state 疊三元運算子鏈，每加一個畫面就更難讀，改掉了；之後要加新覆蓋畫面就加一個
   type。header 只剩標題 + ⚙ 齒輪按鈕（開設定頁），登出按鈕移到設定頁裡（跟
-  calorie-tracker/recipe-book 一致，手機上省一顆常駐按鈕）。另外用 `useMemo` 算
-  `fieldHistory`（日記+事件曾填過的地點/人名，去重、最近優先），傳給 EventForm/
-  DiaryForm 當地點與「和誰」的歷史建議 chips 資料來源。
+  calorie-tracker/recipe-book 一致，手機上省一顆常駐按鈕）。地點/人名/事件標籤的
+  選單資料來自 `useOptions()` 的 `menus`，傳給 EventForm/DiaryForm；事件/日記存檔後
+  呼叫 `opts.ensureNames()` 把新出現的名字自動補進選項庫。
 - **`src/useEvents.js`** — ⭐ **事件狀態中樞**。載入事件、`eventsByDate`（依日期分組）、
   `view`（月/週/日/任務，**預設 `'day'`**——開 app 直接看「今天要幹嘛」，不是先看整個
   月曆）、`anchorKey`（目前翻頁翻到哪個月/週/天）、`selectedDateKey`
@@ -97,10 +100,19 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
   只有 `show_on_calendar=true` 的才會進這個分組，給月/週/日檢視顯示用）、任務 CRUD、
   `confirmComplete(taskId, doneDate)`（標記完成：用 `utils.addInterval()` 算出下次到期日、
   把完成日期推進 `history` 陣列）。
+- **`src/useOptions.js`** — ⭐ **選項庫狀態中樞**（地點/人名/事件標籤，`event_options` 表）。
+  `menus`（表單下拉選單資料：未封存的地點/人名字串陣列 + 標籤 `{ value, label }` 陣列，
+  子標籤縮排、母標籤封存整組不出現）、`ensureNames()`（事件/日記存檔後把新名字自動補進
+  選項庫，失敗只警告不擋存檔）、`addOption`/`setArchived`/`removeOption`、
+  `renameOption()`（同層同名自動合併：子標籤搬到目標下、同名子標籤消掉；回傳
+  `{ kind, oldName, newName }` 讓 `ManageOptions.jsx` 同步改寫過去的事件/日記）。
+  **跟其他 hook 不同：載入失敗不擋整個 app**——選單退化成純文字輸入，`loadError`
+  只在設定頁的維護頁顯示（例如 migration 還沒跑）。
 - **`src/db.js`** — Supabase 的純查詢函式：events（`loadEvents`/`createEvent`/…）、
   diary_entries（`loadDiaryEntries`/`createDiaryEntry`/…）、tag_categories
   （`loadCategories`/`createCategories`/`updateCategory`/`deleteCategory`）、tasks
-  （`loadTasks`/`createTask`/`updateTask`/`deleteTask`）、使用者暱稱
+  （`loadTasks`/`createTask`/`updateTask`/`deleteTask`）、event_options
+  （`loadOptions`/`createOptions`/`updateOption`/`deleteOption`）、使用者暱稱
   （`loadMyDisplayName`/`updateDisplayName`，查的是跨 app 共用的 `shared.user_profiles`，
   用 `.schema('shared')` 切換查詢目標，不是另開一個 client）。
 - **`src/supabase.js`** — re-export `@peggy-life/shared` 的 supabase client（`schema: 'calendar'`）。
@@ -162,7 +174,8 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
   這是使用者實際看畫面反饋的：「全天」文字塞在時間欄裡看起來很生硬，拆成獨立卡片
   樣式比較自然；Week/Month 也套用同一套「不顯示全天欄位」的邏輯保持一致（見上）。
 - **`EventForm.jsx`** — 新增/編輯事件表單：標題（新增模式下輸入時會列出過去用過的相同
-  標題建議，點擊帶入標題+顏色）、7 色顏色選擇器、標籤（Enter 加入的 chip 輸入）、
+  標題建議，點擊帶入標題+顏色）、7 色顏色選擇器、標籤（`PeopleSelect` 多選：選單列出
+  選項庫的母/子標籤，也可自行輸入）、
   全天開關（切換是否顯示時間欄位）、開始/結束時間（日期 `<input type="date">` +
   `TimeSelect`）、地點/和誰（`HistoryFields.jsx` 的歷史選單元件，見下，跟 DiaryForm
   同一套）、描述、刪除（兩段確認的置中文字連結）。**動作列跟 DiaryForm 統一**：
@@ -201,19 +214,20 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
   任意分鐘，切回去按「整點/半點」；如果傳入的 `value` 本來就不是 30 分鐘的倍數（例如
   舊資料或手動輸入過），下拉選單會自動多出一個「HH:MM（自訂）」的選項顯示目前值，
   不會憑空把值改掉。
-- **`HistoryFields.jsx`** — 地點/和誰的歷史選單輸入元件，`EventForm.jsx`/`DiaryForm.jsx`
-  共用，跟 `TimeSelect.jsx` 同一套「下拉選單 + 選『自行輸入…』才切換成文字輸入框」的
-  慣例。歷史資料是 `App.jsx` 用 `useMemo` 算的 `fieldHistory`（所有日記+事件曾填過的
-  地點/人名，去重、最近的排前面，兩種表單共用同一份），以 `locationHistory`/
-  `peopleHistory` props 傳進表單。
-  - `LocationSelect`：`<select>` 列出「（不填）+ 歷史地點 + 自行輸入…」；選「自行輸入…」
-    切換成文字輸入框（旁邊有「從清單選」按鈕切回去）。目前值不在歷史裡、或根本還沒有
-    歷史時，直接顯示輸入框。
-  - `PeopleSelect`：已選的人顯示成 tag chips（primarySoft 底、可 × 移除，樣式跟
-    EventForm 的標籤 chip 一致），下方 `<select>`（「＋ 選擇加入…」）從歷史加人（已選的
-    不再列出），選「自行輸入…」展開文字輸入框（Enter/「加入」送出新名字）。表單 state
-    直接就是 `people` 陣列——原本「一個文字框用逗號/頓號分隔、存檔前 split」的做法
-    已改掉，兩個表單都是。
+- **`HistoryFields.jsx`** — 地點/和誰/事件標籤的選單輸入元件，`EventForm.jsx`/
+  `DiaryForm.jsx` 共用，跟 `TimeSelect.jsx` 同一套「下拉選單 + 選『自行輸入…』才
+  切換成文字輸入框」的慣例。選單資料來自 `useOptions()` 的 `menus`（`event_options`
+  選項庫裡未封存的項目，事件與日記共用同一池），以 `locationHistory`/`peopleHistory`/
+  `tagOptions` props 傳進表單。
+  - `LocationSelect`：`<select>` 列出「（不填）+ 選項庫地點 + 自行輸入…」；選「自行
+    輸入…」切換成文字輸入框（旁邊有「從清單選」按鈕切回去）。目前值不在選單裡
+    （例如被封存的舊地點）、或選項庫是空的時，直接顯示輸入框。
+  - `PeopleSelect`：通用多選欄位，「和誰」跟事件「標籤」都用它。已選的顯示成 tag
+    chips（primarySoft 底、可 × 移除），下方 `<select>`（「＋ 選擇加入…」）從選單加入
+    （已選的不再列出），選「自行輸入…」展開文字輸入框（Enter/「加入」送出新值）。
+    `history` 項目可以是字串或 `{ value, label }`——事件標籤用後者，子標籤 label
+    帶「└ 」縮排、選了存的是純名字。表單 state 直接就是陣列——原本「一個文字框用
+    逗號/頓號分隔、存檔前 split」的做法已改掉。
 - **`Settings.jsx`** — 設定頁，從 header ⚙ 按鈕進入。最上面是帳號卡片：顯示目前登入的
   email（LINE 登入的帳號是 `line-<sub>@line.invalid` 這種假 email，會轉成
   `LINE: U1234...wxyz` 遮罩顯示，邏輯跟 calorie-tracker/recipe-book 的 `Auth.jsx`/
@@ -221,7 +235,8 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
   `db.js` 的 `loadMyDisplayName`/`updateDisplayName`，也就是跨 app 共用的
   `shared.user_profiles.display_name`——在這裡改暱稱，calorie-tracker、recipe-book
   的設定頁會立刻看到同一個名字，反過來也一樣）+ `LineLinker`（內部元件，見下）；
-  下面是「管理分類與標籤」一列（點下去切到 `ManageTags.jsx`）和**「登出」一列**
+  下面是「管理日記分類與標籤」一列（點下去切到 `ManageTags.jsx`）、「管理地點、
+  人名與事件標籤」一列（切到 `ManageOptions.jsx`）和**「登出」一列**
   （紅字置中，登出按鈕從主畫面 header 移過來的，跟 calorie-tracker/recipe-book 的
   設定頁一致），之後有新設定項目直接加在清單裡。
   **`LineLinker`** 的連結狀態邏輯（跟其他兩個 app 共用同一套設計）：`checkLineLinked()`
@@ -263,6 +278,18 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
   （孤兒標籤，跟刪除分類時要清掉的問題是同一類，只是這次是「改名」而不是「刪除」，
   所以是換字串而不是拿掉）。這一步是前端 `Promise.all` 迴圈更新每一則受影響的日記，
   不是資料庫層級的 cascade。
+- **`ManageOptions.jsx`** — 管理地點、人名與事件標籤（設定頁的另一個子頁，管的是
+  `event_options` 選項庫，跟 `ManageTags.jsx` 管的日記分類是兩套獨立機制）。三個
+  區塊：地點、和誰（人名）、事件標籤（每個標籤卡片內含子標籤列表 + 新增子標籤輸入列）。
+  每一列（`OptionRow` 內部元件）：**點名字直接改**（Enter/失焦送出；改名先走
+  `useOptions.renameOption()`——同層撞名自動合併——再用 `useEvents`/`useDiary` 的
+  `renameFieldValue()` 同步改寫過去引用的事件/日記，跟 `renameTagInCategory` 同一套
+  「前端 Promise.all 迴圈、不是 DB cascade」的做法）、**使用次數**（前端從已載入的
+  事件+日記算的，地點/人名兩邊都算、標籤只算事件）、**封存/恢復**（封存只影響之後的
+  選單，過去紀錄照舊）、**永久刪除 🗑**（只有使用 0 次、而且標籤底下沒有子標籤時才
+  出現，按了還有 `window.confirm` 確認）。每個區塊底部有虛線的「＋ 新增，按 Enter」
+  輸入列；新增撞到已封存的同名項目時直接幫它恢復（不會建重複的）。選項庫載入失敗
+  （例如 migration 還沒跑）時頁面頂端顯示錯誤提示，其他功能不受影響。
 - **`TasksView.jsx`** — 任務列表，依到期日排序，狀態文字依 `diffDays` 顯示「已逾期 N 天」
   （紅）/「今天到期」（主色）/「N 天後到期」（灰）。每筆有「標記完成」（點開會出現日期
   選擇器，預設今天，確認後呼叫 `onConfirmComplete`）、「歷史紀錄 (N)」（有完成過才顯示，
@@ -321,7 +348,7 @@ createAppSupabase({ schema: 'calendar' })
 
 ## 資料庫結構（Supabase）
 
-三張表，都在 `calendar` schema：
+五張表，都在 `calendar` schema：
 
 ### `events`（完整 SQL 見 `supabase/schema.sql` + `2026-07-02_event_color_tags.sql` +
 `2026-07-04_event_location.sql` + `2026-07-08_event_people.sql`）
@@ -338,7 +365,7 @@ createAppSupabase({ schema: 'calendar' })
 | `end_at` | timestamptz | 結束時間（選填） |
 | `all_day` | boolean | 是否為全天事件 |
 | `color` | text | 顏色（`EVENT_COLORS` 其中一個 hex，選填） |
-| `tags` | text[] | 標籤（自由輸入，不受分類系統管理，跟日記標籤是兩套獨立機制） |
+| `tags` | text[] | 標籤（存純名字字串；選單與母/子階層由 `event_options` 管理，跟日記標籤是兩套獨立機制） |
 | `created_at` | timestamptz | 建立時間 |
 
 ### `diary_entries`（完整 SQL 見 `supabase/2026-07-02_diary.sql` + `2026-07-06_diary_tag_details.sql`）
@@ -390,8 +417,26 @@ createAppSupabase({ schema: 'calendar' })
 | `history` | date[] | 完成歷史（跟 `tag_categories.tags` 一樣，直接存陣列不另開子表） |
 | `created_at` | timestamptz | 建立時間 |
 
+### `event_options`（完整 SQL 見 `supabase/2026-07-09_event_options.sql`）
+
+地點/人名/事件標籤的選項庫：表單下拉選單與設定頁「管理地點、人名與事件標籤」的資料來源。
+事件與日記的地點/人名共用同一池。migration 會把既有事件/日記用過的值回填進來。
+
+| 欄位 | 型別 | 用途 |
+|---|---|---|
+| `id` | bigint (PK, identity) | 主鍵 |
+| `user_id` | uuid → `auth.users(id)` | 擁有者（CASCADE） |
+| `kind` | text | `location` / `person` / `tag`（check constraint） |
+| `name` | text | 顯示名稱；**事件/日記存的還是純文字，不是這裡的 id**——選項庫只管選單跟維護，改名時由前端同步改寫過去的紀錄 |
+| `parent_id` | bigint → `event_options(id)` | 子標籤指向母標籤（CASCADE，只有 `kind='tag'` 會用到，一層） |
+| `archived` | boolean | 封存：選單不再出現，但過去紀錄照舊保留 |
+| `created_at` | timestamptz | 建立時間（選單排序依這個） |
+
+同層同名有唯一索引（`user_id, kind, name, coalesce(parent_id, 0)`），
+`ManageOptions.jsx` 改名撞到同名時走 `useOptions.renameOption()` 的自動合併。
+
 **設計重點：**
-- **RLS 全開，沒有分享機制** — 四張表的 policy 都是 `auth.uid() = user_id`
+- **RLS 全開，沒有分享機制** — 五張表的 policy 都是 `auth.uid() = user_id`
   （select/insert/update/delete 都一樣），純個人行程，不像 recipe-book 有 `is_shared`
   這種公開機制。以後如果要加「共享行事曆」，這幾張表都要新增 `is_shared` 或另開對照表，
   不要直接改 `user_id` 的語意。
@@ -437,10 +482,11 @@ createAppSupabase({ schema: 'calendar' })
 | `2026-07-05_category_sort_order.sql` | `tag_categories` 加 `sort_order` 欄位並依 `created_at` backfill 既有資料 |
 | `2026-07-06_diary_tag_details.sql` | `diary_entries` 加 `tag_details` jsonb 欄位（標籤細節，例如追劇填劇名） |
 | `2026-07-08_event_people.sql` | `events` 加 `people` text[] 欄位（事件同伴，跟日記的 `people` 同慣例） |
+| `2026-07-09_event_options.sql` | 建 `event_options` 表 + RLS（地點/人名/事件標籤選項庫），並回填既有事件/日記用過的值 |
 
 > 新環境依序跑：`schema.sql` → `2026-07-02_event_color_tags.sql` → `2026-07-02_diary.sql`
 > → `2026-07-02_tasks.sql` → `2026-07-04_event_location.sql` → `2026-07-05_category_sort_order.sql`
-> → `2026-07-06_diary_tag_details.sql` → `2026-07-08_event_people.sql`。之後有新欄位/新表再依日期新增檔案，格式跟其他 app 一致：
+> → `2026-07-06_diary_tag_details.sql` → `2026-07-08_event_people.sql` → `2026-07-09_event_options.sql`。之後有新欄位/新表再依日期新增檔案，格式跟其他 app 一致：
 > `YYYY-MM-DD_描述.sql`。
 
 ---

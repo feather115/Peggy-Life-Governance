@@ -84,6 +84,19 @@ export function useDiary(userId) {
     setEntries((prev) => prev.filter((e) => e.id !== entryId));
   }, []);
 
+  // 選項庫改名時同步改寫過去日記的欄位值（field: 'location' | 'people'）
+  const renameFieldValue = useCallback(async (field, oldName, newName) => {
+    const affected = entries.filter((e) => (field === 'location' ? e.location === oldName : (e[field] || []).includes(oldName)));
+    if (affected.length === 0) return;
+    const updated = await Promise.all(affected.map((e) => {
+      const patch = field === 'location'
+        ? { location: newName }
+        : { [field]: [...new Set(e[field].map((v) => (v === oldName ? newName : v)))] };
+      return db.updateDiaryEntry(e.id, patch);
+    }));
+    setEntries((prev) => prev.map((e) => updated.find((u) => u.id === e.id) || e));
+  }, [entries]);
+
   const addCategory = useCallback(async (name) => {
     const nextOrder = categories.length ? Math.max(...categories.map((c) => c.sort_order ?? 0)) + 1 : 0;
     const [created] = await db.createCategories(userId, [{ name, tags: [] }], nextOrder);
@@ -198,7 +211,7 @@ export function useDiary(userId) {
 
   return {
     loaded, loadError, entries, entriesByDate, categories, tagDetailHistory,
-    createEntry, updateEntry, deleteEntry,
+    createEntry, updateEntry, deleteEntry, renameFieldValue,
     addCategory, renameCategory, deleteCategory, moveCategory,
     addTagToCategory, removeTagFromCategory, moveTagToCategory, moveTagInCategory, renameTagInCategory,
   };

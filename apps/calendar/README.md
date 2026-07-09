@@ -1,7 +1,8 @@
 # TY Calendar
 
-個人行程管理：月/週/日三種檢視、事件（含顏色/標籤/地點/和誰，地點與人名用歷史
-下拉選單選、也可自行輸入新值）、日記（多筆/天，標籤依分類管理）、
+個人行程管理：月/週/日三種檢視、事件（含顏色/標籤/地點/和誰，地點、人名與標籤用
+下拉選單選、也可自行輸入新值；標籤支援母/子兩層，選項可在設定頁維護、封存、改名）、
+日記（多筆/天，標籤依分類管理）、
 週期性任務（標記完成自動算下次到期日）。跟 calorie-tracker、recipe-book 共用同一個
 Supabase 專案的使用者（`auth.users`），可以在 LINE App 裡直接開啟並自動登入。
 
@@ -37,6 +38,8 @@ npm install
      （日記標籤加細節欄位，例如追劇填劇名）
    - [`supabase/2026-07-08_event_people.sql`](./supabase/2026-07-08_event_people.sql)
      （`events` 加同伴欄位）
+   - [`supabase/2026-07-09_event_options.sql`](./supabase/2026-07-09_event_options.sql)
+     （建地點/人名/事件標籤選項庫，並回填既有資料）
 3. **Integrations → Data API → Settings → Exposed schemas** 加上 `calendar`（如果還沒加），
    儲存後等 30 秒。如果加完還是回 `PGRST106`/`Invalid schema`，這是 Supabase 平台已知
    問題，去 SQL Editor 跑 `ALTER ROLE authenticator SET pgrst.db_schemas = '...'` +

@@ -53,6 +53,19 @@ export function useEvents(userId) {
     setEvents((prev) => prev.filter((e) => e.id !== eventId));
   }, []);
 
+  // 選項庫改名時同步改寫過去事件的欄位值（field: 'location' | 'people' | 'tags'）
+  const renameFieldValue = useCallback(async (field, oldName, newName) => {
+    const affected = events.filter((ev) => (field === 'location' ? ev.location === oldName : (ev[field] || []).includes(oldName)));
+    if (affected.length === 0) return;
+    const updated = await Promise.all(affected.map((ev) => {
+      const patch = field === 'location'
+        ? { location: newName }
+        : { [field]: [...new Set(ev[field].map((v) => (v === oldName ? newName : v)))] };
+      return db.updateEvent(ev.id, patch);
+    }));
+    setEvents((prev) => prev.map((e) => updated.find((u) => u.id === e.id) || e));
+  }, [events]);
+
   const goToday = useCallback(() => {
     const t = todayKey();
     setAnchorKey(t);
@@ -72,6 +85,6 @@ export function useEvents(userId) {
     anchorKey, setAnchorKey,
     selectedDateKey, setSelectedDateKey,
     goToday, openDay,
-    createEvent, updateEvent, deleteEvent,
+    createEvent, updateEvent, deleteEvent, renameFieldValue,
   };
 }

@@ -135,6 +135,46 @@ export async function deleteCategory(categoryId) {
   if (error) throw error;
 }
 
+// ---- 選項庫（地點/人名/事件標籤，設定頁「管理地點、人名與標籤」維護）----
+
+const OPTION_COLUMNS = ['id', 'user_id', 'kind', 'name', 'parent_id', 'archived', 'created_at'].join(', ');
+
+export async function loadOptions(userId) {
+  const { data, error } = await supabase
+    .from('event_options')
+    .select(OPTION_COLUMNS)
+    .eq('user_id', userId)
+    .order('created_at', { ascending: true });
+  if (error) throw error;
+  return data || [];
+}
+
+export async function createOptions(userId, rows) {
+  // rows: [{ kind, name, parent_id? }]
+  const { data, error } = await supabase
+    .from('event_options')
+    .insert(rows.map((r) => ({ ...r, user_id: userId })))
+    .select(OPTION_COLUMNS);
+  if (error) throw error;
+  return data || [];
+}
+
+export async function updateOption(optionId, patch) {
+  const { data, error } = await supabase
+    .from('event_options')
+    .update(patch)
+    .eq('id', optionId)
+    .select(OPTION_COLUMNS)
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteOption(optionId) {
+  const { error } = await supabase.from('event_options').delete().eq('id', optionId);
+  if (error) throw error;
+}
+
 // ---- 週期性任務 ----
 
 const TASK_COLUMNS = [

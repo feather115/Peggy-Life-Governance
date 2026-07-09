@@ -46,11 +46,14 @@ export function LocationSelect({ value, onChange, history, placeholder }) {
   );
 }
 
-// 和誰：已選的人顯示成 tag chips（可 × 移除），下拉選單從歷史加人，選「自行輸入…」打開文字輸入框加新名字。
-export function PeopleSelect({ people, onChange, history }) {
+// 多選欄位（和誰/事件標籤）：已選的顯示成 tag chips（可 × 移除），下拉選單從歷史加入，
+// 選「自行輸入…」打開文字輸入框加新值。history 項目可以是字串，也可以是 { value, label }
+// （label 用來在選單裡縮排子標籤，選了存的是 value）。
+export function PeopleSelect({ people, onChange, history, addPlaceholder = '輸入名字後按 Enter' }) {
   const [adding, setAdding] = useState(false);
   const [draft, setDraft] = useState('');
-  const available = history.filter((name) => !people.includes(name));
+  const items = history.map((h) => (typeof h === 'string' ? { value: h, label: h } : h));
+  const available = items.filter((it) => !people.includes(it.value));
 
   const addDraft = () => {
     const name = draft.trim();
@@ -81,7 +84,7 @@ export function PeopleSelect({ people, onChange, history }) {
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addDraft(); } if (e.key === 'Escape') { setDraft(''); setAdding(false); } }}
-            placeholder="輸入名字後按 Enter"
+            placeholder={addPlaceholder}
           />
           <button type="button" style={S.addBtn} onMouseDown={(e) => e.preventDefault()} onClick={addDraft}>加入</button>
           {history.length > 0 && (
@@ -98,7 +101,7 @@ export function PeopleSelect({ people, onChange, history }) {
           }}
         >
           <option value="">＋ 選擇加入…</option>
-          {available.map((name) => <option key={name} value={name}>{name}</option>)}
+          {available.map((it) => <option key={it.value} value={it.value}>{it.label}</option>)}
           <option value={CUSTOM}>自行輸入…</option>
         </select>
       )}
