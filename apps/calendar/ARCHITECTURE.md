@@ -50,6 +50,7 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
 | **新增/編輯事件表單（標題、顏色、標籤、標題建議、全天、時間、地點、和誰、備註、刪除）** | `src/components/EventForm.jsx` |
 | **新增/編輯日記表單（分類標籤選擇、時間、地點、和誰在一起、心情筆記）** | `src/components/DiaryForm.jsx` |
 | **時間選擇（預設 30 分鐘一格下拉選單，可切換手動輸入）** | `src/components/TimeSelect.jsx` |
+| **地點/和誰的歷史選單輸入（下拉選歷史值，可切自行輸入，人名顯示成 tag chips）** | `src/components/HistoryFields.jsx` |
 | **設定頁（帳號/暱稱/LINE 連結、管理標籤入口、登出）** | `src/components/Settings.jsx` |
 | **管理分類與標籤（改名/刪除分類、新增/刪除標籤）** | `src/components/ManageTags.jsx` |
 | **任務列表（狀態顯示、標記完成、歷史紀錄、刪除）** | `src/components/TasksView.jsx` |
@@ -163,21 +164,16 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
 - **`EventForm.jsx`** — 新增/編輯事件表單：標題（新增模式下輸入時會列出過去用過的相同
   標題建議，點擊帶入標題+顏色）、7 色顏色選擇器、標籤（Enter 加入的 chip 輸入）、
   全天開關（切換是否顯示時間欄位）、開始/結束時間（日期 `<input type="date">` +
-  `TimeSelect`）、地點、和誰（逗號/頓號分隔的文字輸入，存入前轉成陣列，跟 DiaryForm
-  同一套做法）、描述、刪除（兩段確認的置中文字連結）。**地點/和誰輸入框下方有歷史
-  建議 chips**：`App.jsx` 用 `useMemo` 從所有日記+事件彙整出曾填過的地點與人名
-  （去重、最近的排前面，兩種表單共用同一份），以 `locationHistory`/`peopleHistory`
-  props 傳進來，各顯示最多 8 顆。點地點 chip 帶入（再點一次清除）；點人名 chip
-  toggle 加入/移除該人（用跟儲存時同一套逗號/頓號切法解析目前輸入）。輸入框本身
-  照樣可自由輸入新值，新值存檔後下次自然進入建議清單。**動作列跟 DiaryForm 統一**：
+  `TimeSelect`）、地點/和誰（`HistoryFields.jsx` 的歷史選單元件，見下，跟 DiaryForm
+  同一套）、描述、刪除（兩段確認的置中文字連結）。**動作列跟 DiaryForm 統一**：
   「儲存」固定在頂部 header 右側（表單再長都不用滑到底才能存），返回鍵在左上；
   原本底部的儲存/取消直排按鈕已移除。**未儲存變更防呆**：mount 時記一份欄位 JSON
   快照，按返回時跟目前值比對，有差異先跳 `window.confirm('內容還沒儲存，確定要離開嗎？')`，
   避免手滑丟失輸入（DiaryForm 同一套做法）。
 - **`DiaryForm.jsx`** — 新增/編輯單筆日記：頂部已選標籤即時預覽（純顯示用的 chip，
-  不含輸入框）、全天切換、時間/結束時間（`TimeSelect`）、地點、和誰在一起（逗號/
-  頓號分隔的文字輸入，存入前轉成陣列；兩欄下方都有歷史建議 chips，來源與行為跟
-  `EventForm.jsx` 同一套，見上）、心情筆記、依分類分組的標籤選擇卡片
+  不含輸入框）、全天切換、時間/結束時間（`TimeSelect`）、地點/和誰在一起
+  （`HistoryFields.jsx` 的歷史選單元件，見下，跟 `EventForm.jsx` 同一套）、
+  心情筆記、依分類分組的標籤選擇卡片
   （`CategoryTagCard` 內部元件，點擊 toggle 選取狀態，放在表單最下面）、刪除
   （兩段確認）。**不含**「管理分類與標籤」入口——那個入口移到設定頁了（見下）。
   **欄位順序維持原本的「全天→時間→地點→同伴→筆記→標籤」**：曾經試過把標籤卡片
@@ -205,6 +201,19 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js ⇄ Root.jsx / A
   任意分鐘，切回去按「整點/半點」；如果傳入的 `value` 本來就不是 30 分鐘的倍數（例如
   舊資料或手動輸入過），下拉選單會自動多出一個「HH:MM（自訂）」的選項顯示目前值，
   不會憑空把值改掉。
+- **`HistoryFields.jsx`** — 地點/和誰的歷史選單輸入元件，`EventForm.jsx`/`DiaryForm.jsx`
+  共用，跟 `TimeSelect.jsx` 同一套「下拉選單 + 選『自行輸入…』才切換成文字輸入框」的
+  慣例。歷史資料是 `App.jsx` 用 `useMemo` 算的 `fieldHistory`（所有日記+事件曾填過的
+  地點/人名，去重、最近的排前面，兩種表單共用同一份），以 `locationHistory`/
+  `peopleHistory` props 傳進表單。
+  - `LocationSelect`：`<select>` 列出「（不填）+ 歷史地點 + 自行輸入…」；選「自行輸入…」
+    切換成文字輸入框（旁邊有「從清單選」按鈕切回去）。目前值不在歷史裡、或根本還沒有
+    歷史時，直接顯示輸入框。
+  - `PeopleSelect`：已選的人顯示成 tag chips（primarySoft 底、可 × 移除，樣式跟
+    EventForm 的標籤 chip 一致），下方 `<select>`（「＋ 選擇加入…」）從歷史加人（已選的
+    不再列出），選「自行輸入…」展開文字輸入框（Enter/「加入」送出新名字）。表單 state
+    直接就是 `people` 陣列——原本「一個文字框用逗號/頓號分隔、存檔前 split」的做法
+    已改掉，兩個表單都是。
 - **`Settings.jsx`** — 設定頁，從 header ⚙ 按鈕進入。最上面是帳號卡片：顯示目前登入的
   email（LINE 登入的帳號是 `line-<sub>@line.invalid` 這種假 email，會轉成
   `LINE: U1234...wxyz` 遮罩顯示，邏輯跟 calorie-tracker/recipe-book 的 `Auth.jsx`/
@@ -324,7 +333,7 @@ createAppSupabase({ schema: 'calendar' })
 | `title` | text | 事件標題 |
 | `description` | text | 備註（選填） |
 | `location` | text | 地點（選填，Day 檢視顯示在描述上方，帶 📍） |
-| `people` | text[] | 同伴（選填，表單用「、」或「,」分隔輸入，顯示帶 👤，跟日記 `people` 同一套慣例） |
+| `people` | text[] | 同伴（選填，表單用 `HistoryFields.jsx` 的選單/自行輸入加人，顯示帶 👤，跟日記 `people` 同一套慣例） |
 | `start_at` | timestamptz | 開始時間 |
 | `end_at` | timestamptz | 結束時間（選填） |
 | `all_day` | boolean | 是否為全天事件 |
@@ -342,7 +351,7 @@ createAppSupabase({ schema: 'calendar' })
 | `all_day` | boolean | 全天日記（不記錄時間） |
 | `time` / `end_time` | text | `HH:MM` 字串（不用 `time` 型別，避免時區/格式化的額外複雜度，反正只是顯示用） |
 | `location` | text | 地點（選填） |
-| `people` | text[] | 和誰在一起（自由輸入文字用逗號/頓號分隔，存進來前轉陣列） |
+| `people` | text[] | 和誰在一起（表單用 `HistoryFields.jsx` 的選單/自行輸入加人，直接存陣列） |
 | `tags` | text[] | 選中的標籤（必須是某個 `tag_categories.tags` 裡的字串，但沒有資料庫層級外鍵約束，
   刪除分類/標籤時由前端 `useDiary.js` 主動同步清掉） |
 | `tag_details` | jsonb | 標籤 → 細節文字的 map，例如 `{"追劇":"想見你 EP5"}`。**不是每個標籤都會有值**，

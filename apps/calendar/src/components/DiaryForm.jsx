@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { THEME } from '../theme.js';
 import { dayLabel } from '../utils.js';
 import TimeSelect from './TimeSelect.jsx';
+import { LocationSelect, PeopleSelect } from './HistoryFields.jsx';
 
 const S = {
   header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', background: THEME.surface, borderBottom: `1px solid ${THEME.border}` },
@@ -25,8 +26,6 @@ const S = {
   endRow: { display: 'flex', gap: 8 },
   clearBtn: { border: `1px solid ${THEME.border}`, background: THEME.surface, cursor: 'pointer', padding: '0 12px', borderRadius: THEME.radiusSm, fontSize: 13, color: THEME.textMuted, fontWeight: 600 },
   field: { marginBottom: 20 },
-  historyChips: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 },
-  historyChip: (selected) => ({ cursor: 'pointer', padding: '5px 12px', borderRadius: 999, background: selected ? THEME.primary : THEME.surfaceAlt, color: selected ? '#fff' : THEME.textDark, fontSize: 12, fontWeight: selected ? 700 : 500 }),
   textarea: { width: '100%', boxSizing: 'border-box', border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSm, padding: '12px 14px', fontSize: 14, lineHeight: 1.6, color: THEME.textDark, background: THEME.surface, outline: 'none', fontFamily: 'inherit', resize: 'vertical' },
   categoryList: { display: 'flex', flexDirection: 'column', gap: 16 },
   categoryCard: { background: THEME.surface, borderRadius: THEME.radius, padding: '16px 18px', boxShadow: THEME.shadow },
@@ -152,7 +151,7 @@ export default function DiaryForm({ entry, dateKey, categories, locationHistory 
   })());
   const [endTime, setEndTime] = useState(entry?.end_time || '');
   const [location, setLocation] = useState(entry?.location || '');
-  const [peopleText, setPeopleText] = useState((entry?.people || []).join('、'));
+  const [people, setPeople] = useState(entry?.people || []);
   const [note, setNote] = useState(entry?.note || '');
   const [tags, setTags] = useState(entry?.tags || []);
   const [tagDetails, setTagDetails] = useState(entry?.tag_details || {});
@@ -161,18 +160,11 @@ export default function DiaryForm({ entry, dateKey, categories, locationHistory 
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   // 未儲存變更防呆：記住第一次 render 的欄位快照，按返回時有差異就先問一聲
-  const snapshot = JSON.stringify({ allDay, time, endTime, location, peopleText, note, tags, tagDetails });
+  const snapshot = JSON.stringify({ allDay, time, endTime, location, people, note, tags, tagDetails });
   const [initialSnapshot] = useState(snapshot);
   const handleCancel = () => {
     if (snapshot !== initialSnapshot && !window.confirm('內容還沒儲存，確定要離開嗎？')) return;
     onCancel();
-  };
-
-  // 「和誰」目前已填的人（跟儲存時同一套切法），點歷史 chip 可切換加入/移除
-  const peopleList = peopleText.split(/[,、]/).map((p) => p.trim()).filter(Boolean);
-  const togglePerson = (name) => {
-    const next = peopleList.includes(name) ? peopleList.filter((p) => p !== name) : [...peopleList, name];
-    setPeopleText(next.join('、'));
   };
 
   const selectTag = (tag) => {
@@ -195,7 +187,6 @@ export default function DiaryForm({ entry, dateKey, categories, locationHistory 
 
   const handleSave = async () => {
     setError('');
-    const people = peopleText.split(/[,、]/).map((p) => p.trim()).filter(Boolean);
     // 只留下目前有選中、而且真的有填細節的標籤
     const cleanedTagDetails = {};
     tags.forEach((tag) => {
@@ -282,26 +273,12 @@ export default function DiaryForm({ entry, dateKey, categories, locationHistory 
 
         <div style={S.field}>
           <div style={S.fieldLabel}>地點</div>
-          <input type="text" style={S.input} value={location} onChange={(e) => setLocation(e.target.value)} placeholder="例如：家裡" />
-          {locationHistory.length > 0 && (
-            <div style={S.historyChips}>
-              {locationHistory.slice(0, 8).map((loc) => (
-                <div key={loc} style={S.historyChip(location.trim() === loc)} onClick={() => setLocation(location.trim() === loc ? '' : loc)}>{loc}</div>
-              ))}
-            </div>
-          )}
+          <LocationSelect value={location} onChange={setLocation} history={locationHistory} placeholder="例如：家裡" />
         </div>
 
         <div style={S.field}>
           <div style={S.fieldLabel}>和誰在一起</div>
-          <input type="text" style={S.input} value={peopleText} onChange={(e) => setPeopleText(e.target.value)} placeholder="例如：阿華、媽媽" />
-          {peopleHistory.length > 0 && (
-            <div style={S.historyChips}>
-              {peopleHistory.slice(0, 8).map((name) => (
-                <div key={name} style={S.historyChip(peopleList.includes(name))} onClick={() => togglePerson(name)}>{name}</div>
-              ))}
-            </div>
-          )}
+          <PeopleSelect people={people} onChange={setPeople} history={peopleHistory} />
         </div>
 
         <div style={S.field}>

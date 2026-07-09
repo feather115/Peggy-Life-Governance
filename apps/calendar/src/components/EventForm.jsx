@@ -5,6 +5,7 @@ import React, { useMemo, useState } from 'react';
 import { fromDatetimeLocalValue, toDatetimeLocalValue } from '../utils.js';
 import { EVENT_COLORS, THEME } from '../theme.js';
 import TimeSelect from './TimeSelect.jsx';
+import { LocationSelect, PeopleSelect } from './HistoryFields.jsx';
 
 const S = {
   header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', background: THEME.surface, borderBottom: `1px solid ${THEME.border}` },
@@ -23,7 +24,6 @@ const S = {
   suggestions: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 },
   suggestionChip: { cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, background: THEME.surfaceAlt, padding: '5px 10px 5px 8px', borderRadius: 999, fontSize: 12, color: THEME.textDark },
   suggestionDot: { width: 8, height: 8, borderRadius: '50%', flexShrink: 0 },
-  historyChip: (selected) => ({ cursor: 'pointer', padding: '5px 12px', borderRadius: 999, background: selected ? THEME.primary : THEME.surfaceAlt, color: selected ? '#fff' : THEME.textDark, fontSize: 12, fontWeight: selected ? 700 : 500 }),
   colorsRow: { display: 'flex', gap: 8 },
   colorDot: (selected) => ({ cursor: 'pointer', width: 28, height: 28, borderRadius: '50%', border: selected ? `2px solid ${THEME.textDark}` : '2px solid transparent' }),
   toggleRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 },
@@ -59,7 +59,7 @@ export default function EventForm({ event, defaultDateKey, allEvents = [], locat
   const [tagDraft, setTagDraft] = useState('');
   const [description, setDescription] = useState(event?.description || '');
   const [location, setLocation] = useState(event?.location || '');
-  const [peopleText, setPeopleText] = useState((event?.people || []).join('、'));
+  const [people, setPeople] = useState(event?.people || []);
   const [allDay, setAllDay] = useState(!!event?.all_day);
   const [startValue, setStartValue] = useState(
     event ? toDatetimeLocalValue(event.start_at) : defaultStartValue(defaultDateKey),
@@ -71,7 +71,7 @@ export default function EventForm({ event, defaultDateKey, allEvents = [], locat
   const [titleTouched, setTitleTouched] = useState(false);
 
   // 未儲存變更防呆：記住第一次 render 的欄位快照，按返回時有差異就先問一聲
-  const snapshot = JSON.stringify({ title, color, tags, description, location, peopleText, allDay, startValue, endValue });
+  const snapshot = JSON.stringify({ title, color, tags, description, location, people, allDay, startValue, endValue });
   const [initialSnapshot] = useState(snapshot);
   const handleCancel = () => {
     if (snapshot !== initialSnapshot && !window.confirm('內容還沒儲存，確定要離開嗎？')) return;
@@ -92,13 +92,6 @@ export default function EventForm({ event, defaultDateKey, allEvents = [], locat
     });
     return Array.from(seen.entries()).slice(0, 5);
   }, [allEvents, title, isEdit]);
-
-  // 「和誰」目前已填的人（跟儲存時同一套切法），點歷史 chip 可切換加入/移除
-  const peopleList = peopleText.split(/[,、]/).map((p) => p.trim()).filter(Boolean);
-  const togglePerson = (name) => {
-    const next = peopleList.includes(name) ? peopleList.filter((p) => p !== name) : [...peopleList, name];
-    setPeopleText(next.join('、'));
-  };
 
   const addTagFromDraft = (e) => {
     if (e.key !== 'Enter') return;
@@ -127,9 +120,6 @@ export default function EventForm({ event, defaultDateKey, allEvents = [], locat
     setTitleTouched(true);
     if (!title.trim()) return;
     if (!startValue) { setError('請選擇開始時間'); return; }
-
-    // 同 DiaryForm：一個輸入框用「、」或「,」分隔多個人
-    const people = peopleText.split(/[,、]/).map((p) => p.trim()).filter(Boolean);
 
     const payload = {
       title: title.trim(),
@@ -276,26 +266,12 @@ export default function EventForm({ event, defaultDateKey, allEvents = [], locat
 
         <div style={S.field}>
           <div style={S.label}>地點 <span style={{ color: THEME.textFaint }}>(選填)</span></div>
-          <input style={S.input} value={location} onChange={(e) => setLocation(e.target.value)} placeholder="例如：台大醫院" />
-          {locationHistory.length > 0 && (
-            <div style={S.suggestions}>
-              {locationHistory.slice(0, 8).map((loc) => (
-                <div key={loc} style={S.historyChip(location.trim() === loc)} onClick={() => setLocation(location.trim() === loc ? '' : loc)}>{loc}</div>
-              ))}
-            </div>
-          )}
+          <LocationSelect value={location} onChange={setLocation} history={locationHistory} placeholder="例如：台大醫院" />
         </div>
 
         <div style={S.field}>
-          <div style={S.label}>和誰 <span style={{ color: THEME.textFaint }}>(選填，用「、」分隔)</span></div>
-          <input style={S.input} value={peopleText} onChange={(e) => setPeopleText(e.target.value)} placeholder="例如：阿華、媽媽" />
-          {peopleHistory.length > 0 && (
-            <div style={S.suggestions}>
-              {peopleHistory.slice(0, 8).map((name) => (
-                <div key={name} style={S.historyChip(peopleList.includes(name))} onClick={() => togglePerson(name)}>{name}</div>
-              ))}
-            </div>
-          )}
+          <div style={S.label}>和誰 <span style={{ color: THEME.textFaint }}>(選填)</span></div>
+          <PeopleSelect people={people} onChange={setPeople} history={peopleHistory} />
         </div>
 
         <div style={S.field}>
