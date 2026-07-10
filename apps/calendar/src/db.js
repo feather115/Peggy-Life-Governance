@@ -56,7 +56,7 @@ export async function deleteEvent(eventId) {
 
 const DIARY_COLUMNS = [
   'id', 'user_id', 'entry_date', 'all_day', 'time', 'end_time',
-  'locations', 'people', 'tags', 'tag_details', 'note', 'hashtags', 'created_at',
+  'locations', 'people', 'tags', 'tag_details', 'title', 'note', 'hashtags', 'created_at',
 ].join(', ');
 
 export async function loadDiaryEntries(userId) {
