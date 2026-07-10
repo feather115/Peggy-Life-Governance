@@ -138,7 +138,8 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js / useOptions.js 
   （`getMonthDays`）、週的 7 天（`getWeekDays`）、事件/日記分組（`groupEventsByDate`/
   `groupDiaryByDate`）、`buildDayTimeline(events, diaryEntries, tasksDueToday)`（把某天的
   事件+日記+到期任務合併成一條依時間排序的時間軸，Month/Week/Day 三個檢視共用同一個函式，
-  行為才會一致）、`addInterval(dateKey, value, unit)` / `diffDays(a, b)`（任務的到期日運算）、
+  行為才會一致；事件的排序 key 用 `formatTime()` 轉本地時間——`start_at` 是 UTC 字串，
+  直接 slice 會拿到 UTC 時刻、跟日記的本地時間字串混排會錯位）、`addInterval(dateKey, value, unit)` / `diffDays(a, b)`（任務的到期日運算）、
   `<input type="datetime-local">` 字串轉換。
 
 ### 畫面（`src/components/`）
@@ -149,8 +150,9 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js / useOptions.js 
   Week 的每日清單、Month 的選中日摘要卡、Day 的當日清單**全部**直接用 `<TimelineItems>`。
   **2026-07-10 起統一為設計稿的白卡版型**（原本的固定寬度時間欄列版型與文字日記
   「紙張卡」都退場）：計時項目（事件與日記）一律「白底 + `THEME.border` 邊框」卡片，
-  **時間獨立一行放卡片頂端**（13px 粗體深色）。日記卡由上而下：時間 → `title` 大字
-  標題（17px 粗體）→ `note` 小字灰色描述（`pre-wrap` 保留換行）→ ＃快速注記 pill
+  **時間獨立一行放卡片頂端**（13px 粗體深色）。日記卡由上而下：時間 → `title`
+  標題（計時卡 15px、**全天日記 17px**——全天卡沒有時間列，靠大標題跟計時卡做出
+  層次，事件標題一律 15px）→ `note` 小字灰色描述（`pre-wrap` 保留換行）→ ＃快速注記 pill
   （深藍 `hashtagBg`/`hashtagInk`，2026-07-10 從暖橘改藍）→ 分隔線 → 底部一行（`footerRow`）：**標籤 chip
   （`DiaryTags`，依分類上色）後面同一行直接接資訊列**（每個地點各自一個 📍 span、
   同伴合併一個 👤 span、超過 3 人顯示 `+N`，共用 `<MetaRow>`），放不下才 flex-wrap

@@ -12,7 +12,9 @@ const S = {
   card: { padding: '14px 16px', background: THEME.surface, border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSm, display: 'flex', flexDirection: 'column', gap: 10 },
   allDayCard: { padding: '14px 16px', background: THEME.primarySoft, border: 'none', borderRadius: THEME.radiusSm, display: 'flex', flexDirection: 'column', gap: 10 },
   cardTime: { fontSize: 13, fontWeight: 700, color: THEME.textDark },
-  entryTitle: { fontSize: 17, fontWeight: 700, color: THEME.textDark },
+  // 計時卡標題縮小、全天日記標題放大：全天卡沒有時間列，靠大標題跟計時卡做出層次
+  entryTitle: { fontSize: 15, fontWeight: 700, color: THEME.textDark },
+  allDayDiaryTitle: { fontSize: 17, fontWeight: 700, color: THEME.textDark },
   eventTitleRow: { display: 'flex', alignItems: 'center', gap: 8 },
   dot: { width: 8, height: 8, borderRadius: '50%', flexShrink: 0 },
   note: { fontSize: 13.5, color: THEME.textMuted, lineHeight: 1.5, whiteSpace: 'pre-wrap' },
@@ -129,7 +131,7 @@ export default function TimelineItems({ timeline, categories, onEventClick, onDi
               {!entry.all_day && <div style={S.cardTime}>{formatDiaryTime(entry)}</div>}
               {(entry.title || entry.note) && (
                 <div>
-                  {entry.title && <div style={S.entryTitle}>{entry.title}</div>}
+                  {entry.title && <div style={entry.all_day ? S.allDayDiaryTitle : S.entryTitle}>{entry.title}</div>}
                   {entry.note && <div style={{ ...S.note, marginTop: entry.title ? 4 : 0 }}>{entry.note}</div>}
                 </div>
               )}

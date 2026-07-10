@@ -115,7 +115,8 @@ export function buildDayTimeline(dateEvents, dateDiaryEntries, dateTasks) {
   const eventItems = (dateEvents || []).map((ev) => ({
     kind: 'event', id: ev.id, data: ev,
     isAllDay: !!ev.all_day,
-    sortKey: ev.all_day ? '' : ev.start_at.slice(11, 16),
+    // start_at 是 UTC 字串，直接 slice 會拿到 UTC 時間、跟日記的本地時間字串排在一起會錯位
+    sortKey: ev.all_day ? '' : formatTime(ev.start_at),
   }));
   const diaryItems = (dateDiaryEntries || []).map((entry) => ({
     kind: 'diary', id: entry.id, data: entry,
