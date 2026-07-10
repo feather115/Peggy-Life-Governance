@@ -135,7 +135,12 @@ export default function FoodSheet({ app, selectedDate, mealKey, onClose }) {
       )}
       <div style={{ padding: '8px 20px 6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ fontSize: 18, fontWeight: 900, color: '#234034' }}>加入{mealLabel}</span>
-        <button onClick={onClose} style={{ border: 'none', background: '#2E8B5E', color: '#fff', fontWeight: 800, fontSize: 14, padding: '8px 16px', borderRadius: 18, cursor: 'pointer' }}>完成</button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {formOpen && (
+            <button onClick={save} disabled={!canSave} style={{ border: 'none', background: canSave ? '#2E8B5E' : '#C7D6CC', color: '#fff', fontWeight: 800, fontSize: 14, padding: '8px 16px', borderRadius: 18, cursor: canSave ? 'pointer' : 'not-allowed' }}>{editingId ? '儲存修改' : `儲存並加入${mealLabel}`}</button>
+          )}
+          <button onClick={onClose} style={{ border: 'none', background: formOpen ? '#F0F3F1' : '#2E8B5E', color: formOpen ? '#6E8B7C' : '#fff', fontWeight: 800, fontSize: 14, padding: '8px 16px', borderRadius: 18, cursor: 'pointer' }}>跳出</button>
+        </div>
       </div>
 
       {isMid && (
@@ -234,9 +239,7 @@ export default function FoodSheet({ app, selectedDate, mealKey, onClose }) {
           </div>
           <div style={{ marginTop: 14, fontSize: 13, fontWeight: 800, color: '#6E8B7C' }}>備註（選填）</div>
           <textarea value={form.note} onChange={setField('note')} placeholder="例如：去冰半糖、不要香菜" rows={2}
-            style={{ width: '100%', marginTop: 5, border: 'none', background: '#F6FAF7', borderRadius: 12, padding: '12px 14px', fontSize: 16, fontWeight: 700, color: '#234034', fontFamily: 'inherit', resize: 'none' }} />
-          <button onClick={save} disabled={!canSave} style={{ width: '100%', marginTop: 18, border: 'none', background: canSave ? '#2E8B5E' : '#C7D6CC', color: '#fff', fontWeight: 900, fontSize: 14, padding: 14, borderRadius: 16, cursor: 'pointer' }}>{editingId ? '儲存修改' : `儲存並加入${mealLabel}`}</button>
-        </div>
+            style={{ width: '100%', marginTop: 5, border: 'none', background: '#F6FAF7', borderRadius: 12, padding: '12px 14px', fontSize: 16, fontWeight: 700, color: '#234034', fontFamily: 'inherit', resize: 'none' }} />        </div>
       )}
     </Sheet>
   );
