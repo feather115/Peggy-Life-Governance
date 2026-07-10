@@ -151,10 +151,12 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js / useOptions.js 
   「紙張卡」都退場）：計時項目（事件與日記）一律「白底 + `THEME.border` 邊框」卡片，
   **時間獨立一行放卡片頂端**（13px 粗體深色）。日記卡由上而下：時間 → `title` 大字
   標題（17px 粗體）→ `note` 小字灰色描述（`pre-wrap` 保留換行）→ ＃快速注記 pill
-  （暖橘 `hashtagBg`/`hashtagInk`）→ 分隔線 → 標籤 chip（`DiaryTags`，依分類上色）→
-  底部資訊列（**每個地點各自一個 📍 span**、同伴合併一個 👤 span、超過 3 人顯示
-  `+N`，共用 `<MetaRow>`；分隔線只在有標籤或地點/同伴時出現）。沒內容的日記
-  （純標籤打卡）省略中段，只有時間 + 標籤 chip + 資訊列。事件卡同版型：時間 →
+  （暖橘 `hashtagBg`/`hashtagInk`）→ 分隔線 → 底部一行（`footerRow`）：**標籤 chip
+  （`DiaryTags`，依分類上色）後面同一行直接接資訊列**（每個地點各自一個 📍 span、
+  同伴合併一個 👤 span、超過 3 人顯示 `+N`，共用 `<MetaRow>`），放不下才 flex-wrap
+  換行——使用者反饋標籤和地點/同伴分兩行太佔空間；分隔線只在有標籤或地點/同伴時
+  出現。沒內容的日記（純標籤打卡）省略中段，只有時間 + 同一行的標籤 chip 與
+  資訊列。事件卡同版型：時間 →
   顏色點+標題 → 描述 → 標籤 chip → `<MetaRow>`。任務卡是虛線邊框 + ☐ + 「任務 ·
   每 X 一次」。全天事件/日記維持獨立的淺藍卡（`allDayCard`，見下方全天說明）。
   `onEventClick`/`onDiaryClick`/`onTaskClick` 是選填 prop：有傳項目才可點

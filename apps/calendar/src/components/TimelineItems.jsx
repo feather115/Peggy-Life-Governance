@@ -20,6 +20,8 @@ const S = {
   tagChip: { fontSize: 12.5, fontWeight: 600, color: THEME.textMuted, background: THEME.bg, padding: '4px 10px', borderRadius: 999 },
   tagsRow: { display: 'flex', flexWrap: 'wrap', gap: 8 },
   meta: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '4px 14px', fontSize: 12.5, color: THEME.textMuted },
+  // 標籤 chip 與 📍👤 資訊列同一行（放不下才換行）
+  footerRow: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '6px 12px' },
   metaItem: { display: 'inline-flex', alignItems: 'center', gap: 4, fontWeight: 500 },
   metaIcon: { fontSize: 11 },
   diaryEmpty: { fontSize: 13, color: THEME.textFaint },
@@ -162,8 +164,10 @@ export default function TimelineItems({ timeline, categories, onEventClick, onDi
               {((entry.tags || []).length > 0 || hasMeta) && (
                 <>
                   <div style={S.divider} />
-                  {(entry.tags || []).length > 0 && <DiaryTags entry={entry} categories={categories} />}
-                  <MetaRow locations={entry.locations} people={entry.people} />
+                  <div style={S.footerRow}>
+                    {(entry.tags || []).length > 0 && <DiaryTags entry={entry} categories={categories} />}
+                    <MetaRow locations={entry.locations} people={entry.people} />
+                  </div>
                 </>
               )}
             </div>
@@ -200,8 +204,10 @@ export default function TimelineItems({ timeline, categories, onEventClick, onDi
         return (
           <div key={`di-${entry.id}`} style={{ ...S.card, ...c.style }} onClick={c.onClick}>
             <div style={S.cardTime}>{formatDiaryTime(entry)}</div>
-            {renderTags()}
-            <MetaRow locations={entry.locations} people={entry.people} />
+            <div style={S.footerRow}>
+              {renderTags()}
+              <MetaRow locations={entry.locations} people={entry.people} />
+            </div>
           </div>
         );
       })}
