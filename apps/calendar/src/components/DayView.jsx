@@ -111,12 +111,12 @@ export default function DayView({ dateKey, onShiftDay, eventsByDate, entriesByDa
           }
           // diary
           const entry = item.data;
-          const hasMeta = !!entry.location || (entry.people || []).length > 0;
+          const hasMeta = (entry.locations || []).length > 0 || (entry.people || []).length > 0;
           // 標籤最多一個時，地點/同伴直接接在標籤旁同一行；兩個以上才另起一行
           const metaInline = (entry.tags || []).length <= 1;
           const metaSpans = hasMeta && (
             <>
-              {entry.location && <span>📍 {entry.location}</span>}
+              {(entry.locations || []).length > 0 && <span>📍 {entry.locations.join('、')}</span>}
               {(entry.people || []).length > 0 && <span>👤 {entry.people.slice(0, 3).join('、')}{entry.people.length > 3 ? ` +${entry.people.length - 3}` : ''}</span>}
             </>
           );

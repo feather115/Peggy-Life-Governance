@@ -67,7 +67,7 @@ export default function TimelineItems({ timeline, categories, onEventClick, onDi
     }
     if (item.kind === 'diary') {
       const entry = item.data;
-      const meta = metaLine(entry.location, entry.people);
+      const meta = metaLine((entry.locations || []).join('、'), entry.people);
       // 標籤最多一個時，地點/同伴小字直接接在標籤旁同一行；兩個以上才另起一行
       const metaInline = (entry.tags || []).length <= 1;
       const c = clickable(onDiaryClick && (() => onDiaryClick(entry)));

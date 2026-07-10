@@ -102,7 +102,7 @@ export default function ManageOptions({ opts, events, entries, renameEventField,
       (ev.tags || []).forEach((t) => bump('tag', t));
     });
     entries.forEach((e) => {
-      bump('location', e.location);
+      (e.locations || []).forEach((l) => bump('location', l));
       (e.people || []).forEach((p) => bump('person', p));
     });
     return count;
@@ -127,7 +127,7 @@ export default function ManageOptions({ opts, events, entries, renameEventField,
     const { kind, oldName, newName: name } = result;
     if (kind === 'location') {
       await renameEventField('location', oldName, name);
-      await renameDiaryField('location', oldName, name);
+      await renameDiaryField('locations', oldName, name);
     } else if (kind === 'person') {
       await renameEventField('people', oldName, name);
       await renameDiaryField('people', oldName, name);

@@ -59,7 +59,7 @@ export default function App({ session, onSignOut }) {
     });
     diary.entries.forEach((en) => {
       const ts = new Date(`${en.entry_date}T${en.time || '00:00'}`).getTime();
-      touch('location', en.location, ts);
+      (en.locations || []).forEach((l) => touch('location', l, ts));
       (en.people || []).forEach((p) => touch('person', p, ts));
     });
     const sortBy = (kind, names) =>
@@ -104,7 +104,7 @@ export default function App({ session, onSignOut }) {
     if (existingId) await diary.updateEntry(existingId, payload);
     else await diary.createEntry(payload);
     await opts.ensureNames([
-      { kind: 'location', names: [payload.location] },
+      { kind: 'location', names: payload.locations },
       { kind: 'person', names: payload.people },
     ]);
     closeOverlay();

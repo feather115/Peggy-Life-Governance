@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { THEME } from '../theme.js';
 import { dayLabel } from '../utils.js';
 import TimeSelect from './TimeSelect.jsx';
-import { LocationSelect, PeopleSelect } from './HistoryFields.jsx';
+import { PeopleSelect } from './HistoryFields.jsx';
 
 const S = {
   header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', background: THEME.surface, borderBottom: `1px solid ${THEME.border}` },
@@ -160,7 +160,7 @@ export default function DiaryForm({ entry, dateKey, categories, locationHistory 
     return `${String(now.getHours()).padStart(2, '0')}:${String(roundedMinutes).padStart(2, '0')}`;
   })());
   const [endTime, setEndTime] = useState(entry?.end_time || '');
-  const [location, setLocation] = useState(entry?.location || '');
+  const [locations, setLocations] = useState(entry?.locations || []);
   const [people, setPeople] = useState(entry?.people || []);
   const [note, setNote] = useState(entry?.note || '');
   const [tags, setTags] = useState(entry?.tags || []);
@@ -170,7 +170,7 @@ export default function DiaryForm({ entry, dateKey, categories, locationHistory 
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   // 未儲存變更防呆：記住第一次 render 的欄位快照，按返回時有差異就先問一聲
-  const snapshot = JSON.stringify({ allDay, time, endTime, location, people, note, tags, tagDetails });
+  const snapshot = JSON.stringify({ allDay, time, endTime, locations, people, note, tags, tagDetails });
   const [initialSnapshot] = useState(snapshot);
   const handleCancel = () => {
     if (snapshot !== initialSnapshot && !window.confirm('內容還沒儲存，確定要離開嗎？')) return;
@@ -208,7 +208,7 @@ export default function DiaryForm({ entry, dateKey, categories, locationHistory 
       all_day: allDay,
       time: allDay ? null : (time || null),
       end_time: allDay ? null : (endTime || null),
-      location: location.trim() || null,
+      locations,
       people,
       tags,
       tag_details: cleanedTagDetails,
@@ -283,7 +283,7 @@ export default function DiaryForm({ entry, dateKey, categories, locationHistory 
 
         <div style={S.field}>
           <div style={S.fieldLabel}>地點</div>
-          <LocationSelect value={location} onChange={setLocation} history={locationHistory} placeholder="例如：家裡" />
+          <PeopleSelect people={locations} onChange={setLocations} history={locationHistory} addPlaceholder="輸入地點後按 Enter" />
         </div>
 
         <div style={S.field}>

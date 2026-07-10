@@ -190,7 +190,8 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js / useOptions.js 
   避免手滑丟失輸入（DiaryForm 同一套做法）。
 - **`DiaryForm.jsx`** — 新增/編輯單筆日記：頂部已選標籤即時預覽（純顯示用的 chip，
   不含輸入框）、全天切換、時間/結束時間（`TimeSelect`）、地點/和誰在一起
-  （`HistoryFields.jsx` 的歷史選單元件，見下，跟 `EventForm.jsx` 同一套）、
+  （`HistoryFields.jsx`，見下；**日記地點可多個**，跟「和誰」一樣用 `PeopleSelect`
+  多選 chip，存 `locations` text[]；事件的地點維持單值 `LocationSelect`）、
   心情筆記、依分類分組的標籤選擇卡片
   （`CategoryTagCard` 內部元件，點擊 toggle 選取狀態，放在表單最下面）、刪除
   （兩段確認）。**不含**「管理分類與標籤」入口——那個入口移到設定頁了（見下）。
@@ -229,7 +230,8 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js / useOptions.js 
   越前面、沒用過的排最後——推薦與清單順序都吃這個排序，不需要額外的 DB 欄位或
   使用次數記錄（事件/日記本來就整批載入前端）。
   - `LocationSelect`（單值）：輸入框＋推薦；「清單」的 `<select>` 列「（不填）+
-    全部地點」。
+    全部地點」。只剩 `EventForm.jsx` 在用——日記的地點已改多選（`locations` text[]），
+    用下面的 `PeopleSelect`。
   - `PeopleSelect`：通用多選欄位，「和誰」跟事件「標籤」都用它。已選的顯示成 tag
     chips（primarySoft 底、可 × 移除），輸入框 Enter/「加入」/點推薦加入新值；
     「清單」的 `<select>`（「＋ 選擇加入…」）列出未選的全部選項。`history` 項目
@@ -372,7 +374,7 @@ createAppSupabase({ schema: 'calendar' })
 | `entry_date` | date | 這則日記屬於哪一天（不是 timestamptz，日記本來就是「屬於某天」不是某個精確時刻） |
 | `all_day` | boolean | 全天日記（不記錄時間） |
 | `time` / `end_time` | text | `HH:MM` 字串（不用 `time` 型別，避免時區/格式化的額外複雜度，反正只是顯示用） |
-| `location` | text | 地點（選填） |
+| `locations` | text[] | 地點，可多個（原本是單值 `location` text，2026-07-10 migration 改名＋轉陣列；顯示時用「、」串接） |
 | `people` | text[] | 和誰在一起（表單用 `HistoryFields.jsx` 的選單/自行輸入加人，直接存陣列） |
 | `tags` | text[] | 選中的標籤（主標籤或子標籤都以**名字字串**扁平存放，必須存在於某個
   `tag_categories.tags`，但沒有資料庫層級外鍵約束，刪除分類/標籤時由前端 `useDiary.js`
@@ -486,10 +488,13 @@ createAppSupabase({ schema: 'calendar' })
 | `2026-07-06_diary_tag_details.sql` | `diary_entries` 加 `tag_details` jsonb 欄位（標籤細節，例如追劇填劇名） |
 | `2026-07-08_event_people.sql` | `events` 加 `people` text[] 欄位（事件同伴，跟日記的 `people` 同慣例） |
 | `2026-07-09_event_options.sql` | 建 `event_options` 表 + RLS（地點/人名/事件標籤選項庫），並回填既有事件/日記用過的值 |
+| `2026-07-09_tag_subtags.sql` | `tag_categories.tags` 由字串陣列改成 `{name, subs}` 物件陣列（含壞資料修復） |
+| `2026-07-10_diary_locations_array.sql` | `diary_entries.location`（text）改名 `locations` 並轉 `text[]`（日記地點可多個），既有值轉單元素陣列 |
 
 > 新環境依序跑：`schema.sql` → `2026-07-02_event_color_tags.sql` → `2026-07-02_diary.sql`
 > → `2026-07-02_tasks.sql` → `2026-07-04_event_location.sql` → `2026-07-05_category_sort_order.sql`
-> → `2026-07-06_diary_tag_details.sql` → `2026-07-08_event_people.sql` → `2026-07-09_event_options.sql`。之後有新欄位/新表再依日期新增檔案，格式跟其他 app 一致：
+> → `2026-07-06_diary_tag_details.sql` → `2026-07-08_event_people.sql` → `2026-07-09_event_options.sql`
+> → `2026-07-09_tag_subtags.sql` → `2026-07-10_diary_locations_array.sql`。之後有新欄位/新表再依日期新增檔案，格式跟其他 app 一致：
 > `YYYY-MM-DD_描述.sql`。
 
 ---
