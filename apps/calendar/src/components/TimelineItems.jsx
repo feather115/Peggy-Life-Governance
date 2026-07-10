@@ -1,5 +1,5 @@
 // 三個檢視共用的時間軸小元件：Week/Month 用 <TimelineItems> 渲染整條清單，
-// DayView（卡片版型不同）只共用 metaLine / DiaryTags。改這裡一次，三個檢視同時生效。
+// DayView（2026-07-10 起改設計稿白卡版型）只共用 DiaryTags。改這裡一次，Week/Month 同時生效。
 import React from 'react';
 import { formatDiaryTime, formatTime } from '../utils.js';
 import { DIARY_SERIF, THEME, categoryAccentForTag } from '../theme.js';
@@ -17,6 +17,7 @@ export const ROW = {
   diaryTagChip: (accent, onTint) => ({ fontSize: 11, fontWeight: 600, color: accent, background: onTint ? THEME.surface : THEME.primarySoft, padding: '3px 8px', borderRadius: 999 }),
   paperItem: { margin: '4px 0', padding: '10px 12px 8px', background: THEME.paper, border: `1px solid ${THEME.paperBorder}`, borderRadius: 10 },
   paperTime: { textAlign: 'center', fontSize: 10, letterSpacing: 2, color: THEME.paperMuted, marginBottom: 4 },
+  paperTitle: { fontFamily: DIARY_SERIF, fontSize: 14, fontWeight: 700, color: THEME.paperInk },
   paperNote: { fontFamily: DIARY_SERIF, fontSize: 13, lineHeight: 1.8, color: THEME.paperInk, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' },
   paperHashtags: { display: 'flex', flexWrap: 'wrap', gap: '2px 8px', marginTop: 4, fontSize: 12, fontWeight: 600, color: THEME.hashtagInk },
   paperFooter: { marginTop: 6, paddingTop: 6, borderTop: `1px dashed ${THEME.paperDivider}`, display: 'flex', flexDirection: 'column', gap: 4 },
@@ -77,11 +78,12 @@ export default function TimelineItems({ timeline, categories, onEventClick, onDi
       // 標籤最多一個時，地點/同伴小字直接接在標籤旁同一行；兩個以上才另起一行
       const metaInline = (entry.tags || []).length <= 1;
       const c = clickable(onDiaryClick && (() => onDiaryClick(entry)));
-      // 有寫「今天的感覺」（文字描述或＃注記）→ 緊湊版紙張卡（跟 DayView 同一套視覺，文字截 2 行）
-      if (entry.note || (entry.hashtags || []).length > 0) {
+      // 有內容（標題/文字描述/＃注記）→ 緊湊版紙張卡（文字截 2 行）
+      if (entry.title || entry.note || (entry.hashtags || []).length > 0) {
         return (
           <div key={`di-${entry.id}`} style={{ ...ROW.paperItem, ...c.style }} onClick={c.onClick}>
             <div style={ROW.paperTime}>✦&nbsp;&nbsp;{entry.all_day ? '全天' : formatDiaryTime(entry)}&nbsp;&nbsp;✦</div>
+            {entry.title && <div style={ROW.paperTitle}>{entry.title}</div>}
             {entry.note && <div style={ROW.paperNote}>{entry.note}</div>}
             {(entry.hashtags || []).length > 0 && (
               <div style={ROW.paperHashtags}>

@@ -144,27 +144,27 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js / useOptions.js 
 ### 畫面（`src/components/`）
 - **`ViewTabs.jsx`** — 月/週/日/任務四個 tab + 「今天」按鈕（`view==='tasks'` 時不顯示，
   任務列表沒有「翻頁到某一天」的概念）。
-- **文字日記的「紙張卡」呈現** — 日記分兩種視覺：**完全沒填**「今天的感覺」的（純
-  標籤打卡）維持原本的緊湊 chip 列；**有填**的（`note` 非空**或** `hashtags` 非空）
-  改用暖色紙感卡片——置中「✦ 時間 ✦」小字、內文用襯線字體（`DIARY_SERIF`，
-  `index.html` 載入 Noto Serif TC）、行高拉大，＃快速注記以暖橘色（`hashtagInk`）
-  接在內文末尾（只有＃沒寫描述時＃就是卡片主角），標籤氣泡 chip（`DiaryTags
-  onTint`，白底）與 📍👤 小字收進底部虛線腳註。配色是 `theme.js` 的 `paper*` 系列
-  （刻意跳出柔和藍主題，讓有內容的日記一眼被認出來）。DayView 是完整版（全文、
-  `whiteSpace: pre-wrap`），Week/Month（`TimelineItems`）是緊湊版（文字
-  `-webkit-line-clamp` 截 2 行）。判斷純看有沒有內容，表單不用選。表單端
-  「今天的感覺」區塊＝文字框＋「＃ 快速注記」輸入（Enter/「加入」變暖橘 chip，
-  ＃由系統加、輸入的前導 #/＃ 會被剝掉，重複的不再加）。
+- **文字日記的「紙張卡」呈現（Week/Month 限定）** — 日記分兩種視覺：**完全沒填**
+  內容的（純標籤打卡）維持緊湊 chip 列；**有內容**的（`title`、`note`、`hashtags`
+  任一非空）在 Week/Month（`TimelineItems`）用暖色紙感卡片——置中「✦ 時間 ✦」小字、
+  標題與內文用襯線字體（`DIARY_SERIF`，`index.html` 載入 Noto Serif TC）、文字
+  `-webkit-line-clamp` 截 2 行，＃快速注記以暖橘色（`hashtagInk`）接在內文末尾，
+  標籤氣泡 chip（`DiaryTags onTint`，白底）與 📍👤 小字收進底部虛線腳註。配色是
+  `theme.js` 的 `paper*` 系列（刻意跳出柔和藍主題，讓有內容的日記一眼被認出來）。
+  **DayView 從 2026-07-10 起不再用紙張卡**，改用設計稿的白卡版型（見下方 DayView
+  說明）。判斷純看有沒有內容，表單不用選。表單端＝「標題（選填）」單行輸入＋
+  「今天的感覺」文字框＋「＃ 快速注記」輸入（Enter/「加入」變暖橘 chip，＃由系統加、
+  輸入的前導 #/＃ 會被剝掉，重複的不再加）。
 - **`TimelineItems.jsx`** — ⭐ **時間軸列的共用渲染**。之前 Week/Month 各自複製一份
   「事件列/日記列/任務列」的渲染邏輯（dot、固定寬度時間欄、`metaLine` 地點/同伴小字、
   `DiaryTags` 標籤 chip、全天項目不顯示時間欄……），連續好幾個需求都要三個檢視改三遍，
   所以抽出來：Week 的每日清單、Month 的選中日摘要卡都直接用 `<TimelineItems>`，DayView
-  版型不同（大卡片、有筆記）只共用 `metaLine()` 和 `DiaryTags`。歷來的顯示規則都集中在
+  版型不同（設計稿白卡）只共用 `DiaryTags`。歷來的顯示規則都集中在
   這裡：時間欄固定 `width: 78` + `nowrap`（用 `minWidth` 會被長時間區間撐開導致各列
   chip 起始位置不齊）、全天事件只留彩色 dot 不顯示時間欄、全天日記連 dot 都不顯示、
   `meta(indent)` 依列型態縮排（計時列 102 / 全天事件 16 / 全天日記 0）、**日記標籤
-  最多一個時地點/同伴小字直接接在標籤 chip 旁同一行**（兩個以上標籤才另起一行，
-  DayView 的日記卡片也套同一條規則——單行資訊少時不用多佔一行）。
+  最多一個時地點/同伴小字直接接在標籤 chip 旁同一行**（兩個以上標籤才另起一行；
+  DayView 只剩全天日記卡還套這條規則，計時卡改版後一律直向堆疊）。
   `onEventClick`/`onDiaryClick`/`onTaskClick` 是選填 prop：有傳項目才可點（Month 摘要卡
   用，直接開編輯），沒傳就純顯示（Week 用，整個日列本身已經可點）。
 - **`MonthView.jsx`** — 格線月曆，日期下方顯示事件顏色圓點（最多 3 個不同色）+ 日記圓點
@@ -176,12 +176,18 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js / useOptions.js 
   `onOpenDay` 跳日檢視。
 - **`WeekView.jsx`** — 一週 7 天直向列表，每天用 `<TimelineItems>` 顯示事件+日記+到期
   任務合併時間軸（純顯示、不傳 click handler），點某一天呼叫 `onOpenDay` 跳去日檢視。
-- **`DayView.jsx`** — 單日事件+日記+任務合併時間軸（`buildDayTimeline`），事件卡片顯示
-  顏色點/時間/標題/地點/同伴/描述/標籤，日記卡片顯示時間/標籤（依分類上色）/地點/同伴/心情筆記，
-  任務卡片顯示虛線邊框+核取方塊圖示（點擊呼叫 `onGoToTasks` 切到任務檢視，不能直接在
-  這裡標記完成——完成流程需要選日期，統一在任務檢視操作），可切換前一天/後一天，底部
-  並排「＋ 新增事件」「＋ 新增日記」兩個按鈕（新增動作只從日檢視發起，月/週檢視只負責
-  導覽——見下方原因說明）。**全天事件/日記是獨立的卡片樣式**（`allDayCard`），不是
+- **`DayView.jsx`** — 單日事件+日記+任務合併時間軸（`buildDayTimeline`）。
+  **2026-07-10 依設計稿改版**：計時項目（事件與日記）一律用「白底 + 邊框」卡片
+  （`THEME.surface` / `THEME.border`），**時間獨立一行放卡片頂端**（13px 粗體深色），
+  不再是左側固定寬度時間欄。日記卡由上而下：時間 → `title` 大字標題（17px 粗體）→
+  `note` 小字灰色描述 → ＃快速注記 pill（暖橘 `hashtagBg`/`hashtagInk`）→ 分隔線 →
+  標籤 chip（`DiaryTags`）→ 底部資訊列（**每個地點各自一個 📍 span**、同伴合併一個
+  👤 span，共用 `<MetaRow>`；分隔線只在有標籤或地點/同伴時出現）。事件卡同版型：
+  時間 → 顏色點+標題 → 描述 → 標籤 chip → `<MetaRow>`。任務卡片維持虛線邊框+核取
+  方塊圖示（點擊呼叫 `onGoToTasks` 切到任務檢視，不能直接在這裡標記完成——完成流程
+  需要選日期，統一在任務檢視操作），可切換前一天/後一天，底部並排「＋ 新增事件」
+  「＋ 新增日記」兩個按鈕（新增動作只從日檢視發起，月/週檢視只負責導覽——見下方
+  原因說明）。**全天事件/日記是獨立的卡片樣式**（`allDayCard`），不是
   塞進時間欄那格文字寫「全天」——沒有時間欄，事件是 dot + 標題起頭，**日記連 dot 都
   拿掉**（日記的 dot 本來就是固定色、沒有像事件顏色那樣攜帶資訊，使用者反饋看起來
   像個多餘的黑點，拿掉後 `allDayDiaryMeta`/`allDayDiaryNote` 的縮排也跟著從 18 改成 0，
@@ -395,6 +401,7 @@ createAppSupabase({ schema: 'calendar' })
   取消選取的殘留 key，見下方設計重點）。故意不改 `tags` 本身的結構（拆成
   `[{tag, detail}]` 物件陣列）——日記的 `tags` 維持純字串陣列（子標籤也是存名字），
   用獨立的 `tag_details` map 疊加細節，改動範圍小很多 |
+| `title` | text | 日記標題（選填，日檢視卡片的大字標題，2026-07-10 新版當日排版加入） |
 | `note` | text | 心情筆記（選填，「今天的感覺」的文字描述） |
 | `hashtags` | text[] | ＃快速注記：自由發揮的俏皮短句（例如「今天吃好多」），跟結構化的 `tags` 分開存、不進選項庫。存純文字不含「＃」，顯示時才加 |
 | `created_at` | timestamptz | 建立時間 |
@@ -503,11 +510,13 @@ createAppSupabase({ schema: 'calendar' })
 | `2026-07-09_tag_subtags.sql` | `tag_categories.tags` 由字串陣列改成 `{name, subs}` 物件陣列（含壞資料修復） |
 | `2026-07-10_diary_locations_array.sql` | `diary_entries.location`（text）改名 `locations` 並轉 `text[]`（日記地點可多個），既有值轉單元素陣列 |
 | `2026-07-10_diary_hashtags.sql` | `diary_entries` 加 `hashtags text[]` 欄位（＃快速注記） |
+| `2026-07-10_diary_title.sql` | `diary_entries` 加 `title text` 欄位（日記標題，配合新版當日排版） |
 
 > 新環境依序跑：`schema.sql` → `2026-07-02_event_color_tags.sql` → `2026-07-02_diary.sql`
 > → `2026-07-02_tasks.sql` → `2026-07-04_event_location.sql` → `2026-07-05_category_sort_order.sql`
 > → `2026-07-06_diary_tag_details.sql` → `2026-07-08_event_people.sql` → `2026-07-09_event_options.sql`
-> → `2026-07-09_tag_subtags.sql` → `2026-07-10_diary_locations_array.sql` → `2026-07-10_diary_hashtags.sql`。之後有新欄位/新表再依日期新增檔案，格式跟其他 app 一致：
+> → `2026-07-09_tag_subtags.sql` → `2026-07-10_diary_locations_array.sql` → `2026-07-10_diary_hashtags.sql`
+> → `2026-07-10_diary_title.sql`。之後有新欄位/新表再依日期新增檔案，格式跟其他 app 一致：
 > `YYYY-MM-DD_描述.sql`。
 
 ---

@@ -3,9 +3,10 @@
 個人行程管理：月/週/日三種檢視、事件（含顏色/標籤/地點/和誰，地點與人名預設直接
 輸入、打字時即時推薦歷史選項（依最近使用排序），也可按「清單」瀏覽全部；標籤支援
 母/子兩層，選項可在設定頁維護、封存、改名）、
-日記（多筆/天，地點可多個，標籤依分類管理，支援分類→主標籤→子標籤三層；「今天的
-感覺」分文字描述＋＃快速注記兩種輸入，有填的日記在時間軸上以暖色紙張卡＋襯線字體
-呈現、＃注記暖橘色接在文末，純標籤打卡維持緊湊 chip 列）、
+日記（多筆/天，地點可多個，標籤依分類管理，支援分類→主標籤→子標籤三層；可填選填的
+標題；「今天的感覺」分文字描述＋＃快速注記兩種輸入。日檢視用白底卡片版型：時間在
+卡片頂端、標題大字、描述小字、＃注記 pill、分隔線下是標籤 chip 與地點/同伴；週/月
+檢視有內容的日記維持暖色紙張卡＋襯線字體，純標籤打卡維持緊湊 chip 列）、
 週期性任務（標記完成自動算下次到期日）。跟 calorie-tracker、recipe-book 共用同一個
 Supabase 專案的使用者（`auth.users`），可以在 LINE App 裡直接開啟並自動登入。
 
@@ -45,6 +46,12 @@ npm install
      （建地點/人名/事件標籤選項庫，並回填既有資料）
    - [`supabase/2026-07-09_tag_subtags.sql`](./supabase/2026-07-09_tag_subtags.sql)
      （日記標籤支援子標籤：`tag_categories.tags` 從 text[] 改成 jsonb，舊資料自動轉換）
+   - [`supabase/2026-07-10_diary_locations_array.sql`](./supabase/2026-07-10_diary_locations_array.sql)
+     （日記地點改成多個：`location` text 改名 `locations` 並轉 text[]）
+   - [`supabase/2026-07-10_diary_hashtags.sql`](./supabase/2026-07-10_diary_hashtags.sql)
+     （日記加 `hashtags` 欄位：＃快速注記）
+   - [`supabase/2026-07-10_diary_title.sql`](./supabase/2026-07-10_diary_title.sql)
+     （日記加 `title` 欄位：日檢視卡片的大字標題）
 3. **Integrations → Data API → Settings → Exposed schemas** 加上 `calendar`（如果還沒加），
    儲存後等 30 秒。如果加完還是回 `PGRST106`/`Invalid schema`，這是 Supabase 平台已知
    問題，去 SQL Editor 跑 `ALTER ROLE authenticator SET pgrst.db_schemas = '...'` +

@@ -168,6 +168,7 @@ export default function DiaryForm({ entry, dateKey, categories, locationHistory 
   const [endTime, setEndTime] = useState(entry?.end_time || '');
   const [locations, setLocations] = useState(entry?.locations || []);
   const [people, setPeople] = useState(entry?.people || []);
+  const [title, setTitle] = useState(entry?.title || '');
   const [note, setNote] = useState(entry?.note || '');
   const [hashtags, setHashtags] = useState(entry?.hashtags || []);
   const [hashtagDraft, setHashtagDraft] = useState('');
@@ -178,7 +179,7 @@ export default function DiaryForm({ entry, dateKey, categories, locationHistory 
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   // 未儲存變更防呆：記住第一次 render 的欄位快照，按返回時有差異就先問一聲
-  const snapshot = JSON.stringify({ allDay, time, endTime, locations, people, note, hashtags, tags, tagDetails });
+  const snapshot = JSON.stringify({ allDay, time, endTime, locations, people, title, note, hashtags, tags, tagDetails });
   const [initialSnapshot] = useState(snapshot);
   const handleCancel = () => {
     if (snapshot !== initialSnapshot && !window.confirm('內容還沒儲存，確定要離開嗎？')) return;
@@ -227,6 +228,7 @@ export default function DiaryForm({ entry, dateKey, categories, locationHistory 
       people,
       tags,
       tag_details: cleanedTagDetails,
+      title: title.trim() || null,
       note: note.trim() || null,
       hashtags,
     };
@@ -305,6 +307,17 @@ export default function DiaryForm({ entry, dateKey, categories, locationHistory 
         <div style={S.field}>
           <div style={S.fieldLabel}>和誰在一起</div>
           <PeopleSelect people={people} onChange={setPeople} history={peopleHistory} />
+        </div>
+
+        <div style={S.field}>
+          <div style={S.fieldLabel}>標題 <span style={{ color: THEME.textFaint, fontWeight: 500 }}>(選填)</span></div>
+          <input
+            type="text"
+            style={S.input}
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="幫這則日記下個標題，例如：颱風天閑晃"
+          />
         </div>
 
         <div style={S.field}>
