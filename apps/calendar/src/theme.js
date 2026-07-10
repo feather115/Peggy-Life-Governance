@@ -21,20 +21,10 @@ export const THEME = {
   error: '#B91C1C',
   errorBg: '#FEE2E2',
   shadow: '0 1px 3px rgba(31,45,66,0.06), 0 10px 26px rgba(31,45,66,0.08)',
-  // 文字日記「紙張卡」配色：有寫「今天的感覺」的日記在時間軸上用暖色紙感呈現，
-  // DayView / TimelineItems 共用（刻意跳出柔和藍主題，讓有內容的日記一眼被認出來）
-  paper: '#FBF8F1',
-  paperBorder: '#EFE8D8',
-  paperInk: '#3A342A',
-  paperMuted: '#A89F8D',
-  paperDivider: '#E3DAC6',
-  // ＃快速注記的暖橘色（跟紙張卡同溫層、跟藍色系分類標籤 chip 區隔）
+  // ＃快速注記的暖橘色（跟藍色系分類標籤 chip 區隔）
   hashtagInk: '#8C5A3D',
   hashtagBg: '#F8EDE4',
 };
-
-// 紙張卡內文用的襯線字體（index.html 載入 Noto Serif TC）
-export const DIARY_SERIF = "Georgia, 'Noto Serif TC', serif";
 
 // 事件顏色選項（事件表單的顏色選擇器、月/週/日檢視的顏色圓點都用這組）
 export const EVENT_COLORS = ['#3D5A80', '#3D8073', '#4F8052', '#8C7A3D', '#8C5A3D', '#6B3D80', '#803D5A'];
