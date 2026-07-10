@@ -21,9 +21,9 @@ export const THEME = {
   error: '#B91C1C',
   errorBg: '#FEE2E2',
   shadow: '0 1px 3px rgba(31,45,66,0.06), 0 10px 26px rgba(31,45,66,0.08)',
-  // ＃快速注記的暖橘色（跟藍色系分類標籤 chip 區隔）
-  hashtagInk: '#8C5A3D',
-  hashtagBg: '#F8EDE4',
+  // ＃快速注記的深藍色（2026-07-10 從暖橘改藍，使用者反饋）
+  hashtagInk: '#2C4562',
+  hashtagBg: '#E3EAF4',
 };
 
 // 事件顏色選項（事件表單的顏色選擇器、月/週/日檢視的顏色圓點都用這組）

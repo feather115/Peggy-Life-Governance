@@ -151,7 +151,7 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js / useOptions.js 
   「紙張卡」都退場）：計時項目（事件與日記）一律「白底 + `THEME.border` 邊框」卡片，
   **時間獨立一行放卡片頂端**（13px 粗體深色）。日記卡由上而下：時間 → `title` 大字
   標題（17px 粗體）→ `note` 小字灰色描述（`pre-wrap` 保留換行）→ ＃快速注記 pill
-  （暖橘 `hashtagBg`/`hashtagInk`）→ 分隔線 → 底部一行（`footerRow`）：**標籤 chip
+  （深藍 `hashtagBg`/`hashtagInk`，2026-07-10 從暖橘改藍）→ 分隔線 → 底部一行（`footerRow`）：**標籤 chip
   （`DiaryTags`，依分類上色）後面同一行直接接資訊列**（每個地點各自一個 📍 span、
   同伴合併一個 👤 span、超過 3 人顯示 `+N`，共用 `<MetaRow>`），放不下才 flex-wrap
   換行——使用者反饋標籤和地點/同伴分兩行太佔空間；分隔線只在有標籤或地點/同伴時
@@ -162,7 +162,7 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js / useOptions.js 
   `onEventClick`/`onDiaryClick`/`onTaskClick` 是選填 prop：有傳項目才可點
   （Day/Month 用，直接開編輯），沒傳就純顯示（Week 用，整個日列本身已經可點）。
   表單端對應：「標題（選填）」單行輸入＋「今天的感覺」文字框＋「＃ 快速注記」輸入
-  （Enter/「加入」變暖橘 chip，＃由系統加、輸入的前導 #/＃ 會被剝掉，重複的不再加）。
+  （Enter/「加入」變深藍 chip，＃由系統加、輸入的前導 #/＃ 會被剝掉，重複的不再加）。
 - **`MonthView.jsx`** — 格線月曆，日期下方顯示事件顏色圓點（最多 3 個不同色）+ 日記圓點
   （固定用 `theme.primaryDark`）+ 任務小方點（`theme.textMuted`），圖例列說明三種點
   代表什麼。點日期只會「選中」（`onSelectDay`），不離開月檢視；下方的「選中日摘要卡」
