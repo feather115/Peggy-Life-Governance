@@ -219,20 +219,23 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js / useOptions.js 
   任意分鐘，切回去按「整點/半點」；如果傳入的 `value` 本來就不是 30 分鐘的倍數（例如
   舊資料或手動輸入過），下拉選單會自動多出一個「HH:MM（自訂）」的選項顯示目前值，
   不會憑空把值改掉。
-- **`HistoryFields.jsx`** — 地點/和誰/事件標籤的選單輸入元件，`EventForm.jsx`/
-  `DiaryForm.jsx` 共用，跟 `TimeSelect.jsx` 同一套「下拉選單 + 選『自行輸入…』才
-  切換成文字輸入框」的慣例。選單資料來自 `useOptions()` 的 `menus`（`event_options`
-  選項庫裡未封存的項目，事件與日記共用同一池），以 `locationHistory`/`peopleHistory`/
-  `tagOptions` props 傳進表單。
-  - `LocationSelect`：`<select>` 列出「（不填）+ 選項庫地點 + 自行輸入…」；選「自行
-    輸入…」切換成文字輸入框（旁邊有「從清單選」按鈕切回去）。目前值不在選單裡
-    （例如被封存的舊地點）、或選項庫是空的時，直接顯示輸入框。
+- **`HistoryFields.jsx`** — 地點/和誰/事件標籤的輸入元件，`EventForm.jsx`/
+  `DiaryForm.jsx` 共用。**預設是文字輸入框**：打字時下方即時列出包含相同字的歷史
+  選項（dashed 圓 chip，最多 5 筆，點一下帶入）；想瀏覽全部才按「清單」切換成
+  `<select>`（選完或失焦就回到輸入框）。選項資料來自 `useOptions()` 的 `menus`
+  （`event_options` 選項庫裡未封存的項目，事件與日記共用同一池），但地點/人名
+  傳進表單前會先經過 `App.jsx` 的 `recentMenus`（useMemo）**依「最近一次使用」重排**：
+  從事件（`start_at`）＋日記（`entry_date`+`time`）算每個名字最近出現的時間，越近
+  越前面、沒用過的排最後——推薦與清單順序都吃這個排序，不需要額外的 DB 欄位或
+  使用次數記錄（事件/日記本來就整批載入前端）。
+  - `LocationSelect`（單值）：輸入框＋推薦；「清單」的 `<select>` 列「（不填）+
+    全部地點」。
   - `PeopleSelect`：通用多選欄位，「和誰」跟事件「標籤」都用它。已選的顯示成 tag
-    chips（primarySoft 底、可 × 移除），下方 `<select>`（「＋ 選擇加入…」）從選單加入
-    （已選的不再列出），選「自行輸入…」展開文字輸入框（Enter/「加入」送出新值）。
-    `history` 項目可以是字串或 `{ value, label }`——事件標籤用後者，子標籤 label
-    帶「└ 」縮排、選了存的是純名字。表單 state 直接就是陣列——原本「一個文字框用
-    逗號/頓號分隔、存檔前 split」的做法已改掉。
+    chips（primarySoft 底、可 × 移除），輸入框 Enter/「加入」/點推薦加入新值；
+    「清單」的 `<select>`（「＋ 選擇加入…」）列出未選的全部選項。`history` 項目
+    可以是字串或 `{ value, label }`——事件標籤用後者，子標籤 label 帶「└ 」縮排、
+    選了存的是純名字（標籤清單維持階層順序，不做最近使用排序）。表單 state 直接
+    就是陣列。推薦 chip 用 `onMouseDown preventDefault` 避免先觸發輸入框 blur。
 - **`Settings.jsx`** — 設定頁，從 header ⚙ 按鈕進入。最上面是帳號卡片：顯示目前登入的
   email（LINE 登入的帳號是 `line-<sub>@line.invalid` 這種假 email，會轉成
   `LINE: U1234...wxyz` 遮罩顯示，邏輯跟 calorie-tracker/recipe-book 的 `Auth.jsx`/

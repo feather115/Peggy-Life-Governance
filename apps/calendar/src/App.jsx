@@ -6,7 +6,7 @@
 //   | { type: 'task', mode: 'create' } | { type: 'task', mode: 'edit', task }
 //   | { type: 'settings' } | { type: 'manageTags' } | { type: 'manageOptions' }
 // 之後要加新畫面就加一個 type，不要再疊三元運算子鏈。
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useEvents } from './useEvents.js';
 import { useDiary } from './useDiary.js';
 import { useTasks } from './useTasks.js';
@@ -42,6 +42,33 @@ export default function App({ session, onSignOut }) {
 
   const [overlay, setOverlay] = useState(null);
   const closeOverlay = () => setOverlay(null);
+
+  // 地點/人名選單依「最近一次使用」排序：從事件（start_at）＋日記（entry_date+time）
+  // 算每個名字最近出現的時間，越近越前面；沒用過的排最後（維持選項庫原本順序）。
+  const recentMenus = useMemo(() => {
+    const last = new Map();
+    const touch = (kind, name, ts) => {
+      if (!name) return;
+      const key = `${kind}:${name}`;
+      if (ts > (last.get(key) || 0)) last.set(key, ts);
+    };
+    cal.events.forEach((ev) => {
+      const ts = new Date(ev.start_at).getTime();
+      touch('location', ev.location, ts);
+      (ev.people || []).forEach((p) => touch('person', p, ts));
+    });
+    diary.entries.forEach((en) => {
+      const ts = new Date(`${en.entry_date}T${en.time || '00:00'}`).getTime();
+      touch('location', en.location, ts);
+      (en.people || []).forEach((p) => touch('person', p, ts));
+    });
+    const sortBy = (kind, names) =>
+      [...names].sort((a, b) => (last.get(`${kind}:${b}`) || 0) - (last.get(`${kind}:${a}`) || 0));
+    return {
+      locations: sortBy('location', opts.menus.locations),
+      people: sortBy('person', opts.menus.people),
+    };
+  }, [cal.events, diary.entries, opts.menus]);
 
   if (!cal.loaded || !diary.loaded || !tasksHub.loaded || !opts.loaded) return <Centered>載入中…</Centered>;
   if (cal.loadError) return <Centered color={THEME.error}>載入失敗：{cal.loadError}</Centered>;
@@ -106,8 +133,8 @@ export default function App({ session, onSignOut }) {
             event={overlay.mode === 'edit' ? overlay.event : null}
             defaultDateKey={overlay.mode === 'create' ? overlay.dateKey : undefined}
             allEvents={cal.events}
-            locationHistory={opts.menus.locations}
-            peopleHistory={opts.menus.people}
+            locationHistory={recentMenus.locations}
+            peopleHistory={recentMenus.people}
             tagOptions={opts.menus.tags}
             onSave={handleSaveEvent}
             onDelete={overlay.mode === 'edit' ? handleDeleteEvent : null}
@@ -120,8 +147,8 @@ export default function App({ session, onSignOut }) {
             entry={overlay.mode === 'edit' ? overlay.entry : null}
             dateKey={overlay.mode === 'edit' ? overlay.entry.entry_date : overlay.dateKey}
             categories={diary.categories}
-            locationHistory={opts.menus.locations}
-            peopleHistory={opts.menus.people}
+            locationHistory={recentMenus.locations}
+            peopleHistory={recentMenus.people}
             onSave={handleSaveDiary}
             onDelete={overlay.mode === 'edit' ? handleDeleteDiary : null}
             onCancel={closeOverlay}
