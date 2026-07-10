@@ -28,6 +28,9 @@ export const THEME = {
   paperInk: '#3A342A',
   paperMuted: '#A89F8D',
   paperDivider: '#E3DAC6',
+  // ＃快速注記的暖橘色（跟紙張卡同溫層、跟藍色系分類標籤 chip 區隔）
+  hashtagInk: '#8C5A3D',
+  hashtagBg: '#F8EDE4',
 };
 
 // 紙張卡內文用的襯線字體（index.html 載入 Noto Serif TC）

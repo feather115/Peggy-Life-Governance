@@ -27,6 +27,12 @@ const S = {
   clearBtn: { border: `1px solid ${THEME.border}`, background: THEME.surface, cursor: 'pointer', padding: '0 12px', borderRadius: THEME.radiusSm, fontSize: 13, color: THEME.textMuted, fontWeight: 600 },
   field: { marginBottom: 20 },
   textarea: { width: '100%', boxSizing: 'border-box', border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSm, padding: '12px 14px', fontSize: 14, lineHeight: 1.6, color: THEME.textDark, background: THEME.surface, outline: 'none', fontFamily: 'inherit', resize: 'vertical' },
+  hashtagLabel: { fontSize: 13, fontWeight: 700, color: THEME.textMuted, margin: '12px 0 8px' },
+  hashtagChips: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 },
+  hashtagChip: { display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: THEME.hashtagInk, background: THEME.hashtagBg, padding: '4px 10px', borderRadius: 999 },
+  hashtagRemove: { cursor: 'pointer', fontSize: 14, lineHeight: 1, opacity: 0.6 },
+  hashtagRow: { display: 'flex', gap: 8 },
+  hashtagAddBtn: { border: 'none', cursor: 'pointer', padding: '0 16px', borderRadius: THEME.radiusSm, background: THEME.hashtagBg, color: THEME.hashtagInk, fontSize: 13, fontWeight: 700 },
   categoryList: { display: 'flex', flexDirection: 'column', gap: 16 },
   categoryCard: { background: THEME.surface, borderRadius: THEME.radius, padding: '16px 18px', boxShadow: THEME.shadow },
   categoryHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
@@ -163,6 +169,8 @@ export default function DiaryForm({ entry, dateKey, categories, locationHistory 
   const [locations, setLocations] = useState(entry?.locations || []);
   const [people, setPeople] = useState(entry?.people || []);
   const [note, setNote] = useState(entry?.note || '');
+  const [hashtags, setHashtags] = useState(entry?.hashtags || []);
+  const [hashtagDraft, setHashtagDraft] = useState('');
   const [tags, setTags] = useState(entry?.tags || []);
   const [tagDetails, setTagDetails] = useState(entry?.tag_details || {});
   const [busy, setBusy] = useState(false);
@@ -170,7 +178,7 @@ export default function DiaryForm({ entry, dateKey, categories, locationHistory 
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   // 未儲存變更防呆：記住第一次 render 的欄位快照，按返回時有差異就先問一聲
-  const snapshot = JSON.stringify({ allDay, time, endTime, locations, people, note, tags, tagDetails });
+  const snapshot = JSON.stringify({ allDay, time, endTime, locations, people, note, hashtags, tags, tagDetails });
   const [initialSnapshot] = useState(snapshot);
   const handleCancel = () => {
     if (snapshot !== initialSnapshot && !window.confirm('內容還沒儲存，確定要離開嗎？')) return;
@@ -195,6 +203,13 @@ export default function DiaryForm({ entry, dateKey, categories, locationHistory 
     setTagDetails((prev) => ({ ...prev, [tag]: detail }));
   };
 
+  // ＃前綴由系統加，輸入時打字就好；重複的不再加
+  const addHashtag = () => {
+    const h = hashtagDraft.trim().replace(/^[#＃]+/, '');
+    setHashtagDraft('');
+    if (h && !hashtags.includes(h)) setHashtags([...hashtags, h]);
+  };
+
   const handleSave = async () => {
     setError('');
     // 只留下目前有選中、而且真的有填細節的標籤
@@ -213,6 +228,7 @@ export default function DiaryForm({ entry, dateKey, categories, locationHistory 
       tags,
       tag_details: cleanedTagDetails,
       note: note.trim() || null,
+      hashtags,
     };
     setBusy(true);
     try {
@@ -294,6 +310,28 @@ export default function DiaryForm({ entry, dateKey, categories, locationHistory 
         <div style={S.field}>
           <div style={S.fieldLabel}>今天的感覺</div>
           <textarea style={{ ...S.textarea, minHeight: 76 }} value={note} onChange={(e) => setNote(e.target.value)} rows={3} placeholder="寫下今天的一些想法…" />
+          <div style={S.hashtagLabel}>＃ 快速注記</div>
+          {hashtags.length > 0 && (
+            <div style={S.hashtagChips}>
+              {hashtags.map((h) => (
+                <span key={h} style={S.hashtagChip}>
+                  ＃{h}
+                  <span style={S.hashtagRemove} onClick={() => setHashtags(hashtags.filter((x) => x !== h))}>×</span>
+                </span>
+              ))}
+            </div>
+          )}
+          <div style={S.hashtagRow}>
+            <input
+              type="text"
+              style={S.input}
+              value={hashtagDraft}
+              onChange={(e) => setHashtagDraft(e.target.value)}
+              onKeyDown={(e) => { if (e.nativeEvent.isComposing) return; if (e.key === 'Enter') { e.preventDefault(); addHashtag(); } if (e.key === 'Escape') setHashtagDraft(''); }}
+              placeholder="輸入短句後按 Enter，例如：今天吃好多"
+            />
+            <button type="button" style={S.hashtagAddBtn} onMouseDown={(e) => e.preventDefault()} onClick={addHashtag}>加入</button>
+          </div>
         </div>
 
         <div style={S.categoryList}>

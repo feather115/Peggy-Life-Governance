@@ -18,6 +18,7 @@ export const ROW = {
   paperItem: { margin: '4px 0', padding: '10px 12px 8px', background: THEME.paper, border: `1px solid ${THEME.paperBorder}`, borderRadius: 10 },
   paperTime: { textAlign: 'center', fontSize: 10, letterSpacing: 2, color: THEME.paperMuted, marginBottom: 4 },
   paperNote: { fontFamily: DIARY_SERIF, fontSize: 13, lineHeight: 1.8, color: THEME.paperInk, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' },
+  paperHashtags: { display: 'flex', flexWrap: 'wrap', gap: '2px 8px', marginTop: 4, fontSize: 12, fontWeight: 600, color: THEME.hashtagInk },
   paperFooter: { marginTop: 6, paddingTop: 6, borderTop: `1px dashed ${THEME.paperDivider}`, display: 'flex', flexDirection: 'column', gap: 4 },
   paperMeta: { fontSize: 11, color: THEME.paperMuted },
 };
@@ -76,12 +77,17 @@ export default function TimelineItems({ timeline, categories, onEventClick, onDi
       // 標籤最多一個時，地點/同伴小字直接接在標籤旁同一行；兩個以上才另起一行
       const metaInline = (entry.tags || []).length <= 1;
       const c = clickable(onDiaryClick && (() => onDiaryClick(entry)));
-      // 有寫「今天的感覺」→ 緊湊版紙張卡（跟 DayView 同一套視覺，文字截 2 行）
-      if (entry.note) {
+      // 有寫「今天的感覺」（文字描述或＃注記）→ 緊湊版紙張卡（跟 DayView 同一套視覺，文字截 2 行）
+      if (entry.note || (entry.hashtags || []).length > 0) {
         return (
           <div key={`di-${entry.id}`} style={{ ...ROW.paperItem, ...c.style }} onClick={c.onClick}>
             <div style={ROW.paperTime}>✦&nbsp;&nbsp;{entry.all_day ? '全天' : formatDiaryTime(entry)}&nbsp;&nbsp;✦</div>
-            <div style={ROW.paperNote}>{entry.note}</div>
+            {entry.note && <div style={ROW.paperNote}>{entry.note}</div>}
+            {(entry.hashtags || []).length > 0 && (
+              <div style={ROW.paperHashtags}>
+                {entry.hashtags.map((h) => <span key={h}>＃{h}</span>)}
+              </div>
+            )}
             {((entry.tags || []).length > 0 || meta) && (
               <div style={ROW.paperFooter}>
                 {(entry.tags || []).length > 0 && <DiaryTags entry={entry} categories={categories} onTint />}

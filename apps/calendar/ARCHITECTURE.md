@@ -144,14 +144,17 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js / useOptions.js 
 ### 畫面（`src/components/`）
 - **`ViewTabs.jsx`** — 月/週/日/任務四個 tab + 「今天」按鈕（`view==='tasks'` 時不顯示，
   任務列表沒有「翻頁到某一天」的概念）。
-- **文字日記的「紙張卡」呈現** — 日記分兩種視覺：**沒寫**「今天的感覺」的（純標籤
-  打卡）維持原本的緊湊 chip 列；**有寫**的（`entry.note` 非空）改用暖色紙感卡片——
-  置中「✦ 時間 ✦」小字、內文用襯線字體（`DIARY_SERIF`，`index.html` 載入
-  Noto Serif TC）、行高拉大，標籤氣泡 chip（`DiaryTags onTint`，白底）與 📍👤 小字
-  收進底部虛線腳註。配色是 `theme.js` 的 `paper*` 系列（刻意跳出柔和藍主題，讓有
-  內容的日記一眼被認出來）。DayView 是完整版（全文、`whiteSpace: pre-wrap`），
-  Week/Month（`TimelineItems`）是緊湊版（文字 `-webkit-line-clamp` 截 2 行）。
-  判斷純看有沒有 note，不加欄位、表單不用選。
+- **文字日記的「紙張卡」呈現** — 日記分兩種視覺：**完全沒填**「今天的感覺」的（純
+  標籤打卡）維持原本的緊湊 chip 列；**有填**的（`note` 非空**或** `hashtags` 非空）
+  改用暖色紙感卡片——置中「✦ 時間 ✦」小字、內文用襯線字體（`DIARY_SERIF`，
+  `index.html` 載入 Noto Serif TC）、行高拉大，＃快速注記以暖橘色（`hashtagInk`）
+  接在內文末尾（只有＃沒寫描述時＃就是卡片主角），標籤氣泡 chip（`DiaryTags
+  onTint`，白底）與 📍👤 小字收進底部虛線腳註。配色是 `theme.js` 的 `paper*` 系列
+  （刻意跳出柔和藍主題，讓有內容的日記一眼被認出來）。DayView 是完整版（全文、
+  `whiteSpace: pre-wrap`），Week/Month（`TimelineItems`）是緊湊版（文字
+  `-webkit-line-clamp` 截 2 行）。判斷純看有沒有內容，表單不用選。表單端
+  「今天的感覺」區塊＝文字框＋「＃ 快速注記」輸入（Enter/「加入」變暖橘 chip，
+  ＃由系統加、輸入的前導 #/＃ 會被剝掉，重複的不再加）。
 - **`TimelineItems.jsx`** — ⭐ **時間軸列的共用渲染**。之前 Week/Month 各自複製一份
   「事件列/日記列/任務列」的渲染邏輯（dot、固定寬度時間欄、`metaLine` 地點/同伴小字、
   `DiaryTags` 標籤 chip、全天項目不顯示時間欄……），連續好幾個需求都要三個檢視改三遍，
@@ -392,7 +395,8 @@ createAppSupabase({ schema: 'calendar' })
   取消選取的殘留 key，見下方設計重點）。故意不改 `tags` 本身的結構（拆成
   `[{tag, detail}]` 物件陣列）——日記的 `tags` 維持純字串陣列（子標籤也是存名字），
   用獨立的 `tag_details` map 疊加細節，改動範圍小很多 |
-| `note` | text | 心情筆記（選填） |
+| `note` | text | 心情筆記（選填，「今天的感覺」的文字描述） |
+| `hashtags` | text[] | ＃快速注記：自由發揮的俏皮短句（例如「今天吃好多」），跟結構化的 `tags` 分開存、不進選項庫。存純文字不含「＃」，顯示時才加 |
 | `created_at` | timestamptz | 建立時間 |
 
 ### `tag_categories`（完整 SQL 見 `supabase/2026-07-02_diary.sql` + `2026-07-05_category_sort_order.sql` + `2026-07-09_tag_subtags.sql`）
@@ -498,11 +502,12 @@ createAppSupabase({ schema: 'calendar' })
 | `2026-07-09_event_options.sql` | 建 `event_options` 表 + RLS（地點/人名/事件標籤選項庫），並回填既有事件/日記用過的值 |
 | `2026-07-09_tag_subtags.sql` | `tag_categories.tags` 由字串陣列改成 `{name, subs}` 物件陣列（含壞資料修復） |
 | `2026-07-10_diary_locations_array.sql` | `diary_entries.location`（text）改名 `locations` 並轉 `text[]`（日記地點可多個），既有值轉單元素陣列 |
+| `2026-07-10_diary_hashtags.sql` | `diary_entries` 加 `hashtags text[]` 欄位（＃快速注記） |
 
 > 新環境依序跑：`schema.sql` → `2026-07-02_event_color_tags.sql` → `2026-07-02_diary.sql`
 > → `2026-07-02_tasks.sql` → `2026-07-04_event_location.sql` → `2026-07-05_category_sort_order.sql`
 > → `2026-07-06_diary_tag_details.sql` → `2026-07-08_event_people.sql` → `2026-07-09_event_options.sql`
-> → `2026-07-09_tag_subtags.sql` → `2026-07-10_diary_locations_array.sql`。之後有新欄位/新表再依日期新增檔案，格式跟其他 app 一致：
+> → `2026-07-09_tag_subtags.sql` → `2026-07-10_diary_locations_array.sql` → `2026-07-10_diary_hashtags.sql`。之後有新欄位/新表再依日期新增檔案，格式跟其他 app 一致：
 > `YYYY-MM-DD_描述.sql`。
 
 ---

@@ -31,6 +31,7 @@ const S = {
   paperCard: { cursor: 'pointer', padding: '14px 16px 10px', background: THEME.paper, border: `1px solid ${THEME.paperBorder}`, borderRadius: THEME.radiusSm },
   paperTime: { textAlign: 'center', fontSize: 11, letterSpacing: 2, color: THEME.paperMuted, marginBottom: 8 },
   paperNote: { fontFamily: DIARY_SERIF, fontSize: 15, lineHeight: 2, color: THEME.paperInk, whiteSpace: 'pre-wrap' },
+  paperHashtags: { display: 'flex', flexWrap: 'wrap', gap: '4px 10px', marginTop: 6, fontSize: 13, fontWeight: 600, color: THEME.hashtagInk },
   paperFooter: { marginTop: 10, paddingTop: 8, borderTop: `1px dashed ${THEME.paperDivider}`, display: 'flex', flexDirection: 'column', gap: 6 },
   paperMeta: { display: 'flex', flexWrap: 'wrap', gap: 10, fontSize: 12, color: THEME.paperMuted },
   taskCard: { cursor: 'pointer', display: 'flex', gap: 10, alignItems: 'center', padding: 14, background: THEME.surfaceAlt, borderRadius: THEME.radiusSm, border: `1px dashed ${THEME.border}` },
@@ -131,12 +132,18 @@ export default function DayView({ dateKey, onShiftDay, eventsByDate, entriesByDa
               fallback={<span style={S.diaryEmpty}>✎ 這則日記還沒有內容</span>}
             />
           );
-          // 有寫「今天的感覺」→ 紙張卡：文字當主角，標籤 chip 與地點/同伴收進虛線腳註
-          if (entry.note) {
+          // 有寫「今天的感覺」（文字描述或＃注記）→ 紙張卡：文字當主角、＃注記接在文末，
+          // 標籤 chip 與地點/同伴收進虛線腳註
+          if (entry.note || (entry.hashtags || []).length > 0) {
             return (
               <div key={`di-${entry.id}`} style={S.paperCard} onClick={() => onEditDiary(entry)}>
                 <div style={S.paperTime}>✦&nbsp;&nbsp;{entry.all_day ? '全天' : formatDiaryTime(entry)}&nbsp;&nbsp;✦</div>
-                <div style={S.paperNote}>{entry.note}</div>
+                {entry.note && <div style={S.paperNote}>{entry.note}</div>}
+                {(entry.hashtags || []).length > 0 && (
+                  <div style={S.paperHashtags}>
+                    {entry.hashtags.map((h) => <span key={h}>＃{h}</span>)}
+                  </div>
+                )}
                 {((entry.tags || []).length > 0 || hasMeta) && (
                   <div style={S.paperFooter}>
                     {(entry.tags || []).length > 0 && <DiaryTags entry={entry} categories={categories} onTint />}
