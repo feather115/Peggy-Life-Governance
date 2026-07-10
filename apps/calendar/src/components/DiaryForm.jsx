@@ -138,7 +138,7 @@ function CategoryTagCard({ category, allCategories, selectedTags, onToggleTag, o
             style={S.addTagInput}
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submit(); } if (e.key === 'Escape') setAdding(false); }}
+            onKeyDown={(e) => { if (e.nativeEvent.isComposing) return; if (e.key === 'Enter') { e.preventDefault(); submit(); } if (e.key === 'Escape') setAdding(false); }}
             onBlur={submit}
             placeholder="輸入新標籤名稱"
           />

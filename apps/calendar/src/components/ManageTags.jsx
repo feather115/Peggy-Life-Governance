@@ -77,7 +77,7 @@ function InlineName({ name, spanStyle, inputStyle, onCommit }) {
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onBlur={commit}
-        onKeyDown={(e) => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') { setEditing(false); setError(''); } }}
+        onKeyDown={(e) => { if (e.nativeEvent.isComposing) return; if (e.key === 'Enter') commit(); if (e.key === 'Escape') { setEditing(false); setError(''); } }}
       />
       {error && <span style={S.hint}>{error}</span>}
     </>
@@ -147,7 +147,7 @@ function TagBox({ tag, isFirst, isLast, allCategories, actions }) {
               placeholder="新子標籤"
               onChange={(e) => { setSubDraft(e.target.value); setSubHint(''); }}
               onBlur={submitSub}
-              onKeyDown={(e) => { if (e.key === 'Enter') submitSub(); if (e.key === 'Escape') { setAddingSub(false); setSubDraft(''); setSubHint(''); } }}
+              onKeyDown={(e) => { if (e.nativeEvent.isComposing) return; if (e.key === 'Enter') submitSub(); if (e.key === 'Escape') { setAddingSub(false); setSubDraft(''); setSubHint(''); } }}
             />
           ) : (
             <div style={S.addPill} onClick={() => setAddingSub(true)}>+ 新增</div>
@@ -245,7 +245,7 @@ function CategoryCard({ category, allCategories, onRename, onDelete, onAddTag, o
               placeholder="新主標籤"
               onChange={(e) => { setTagDraft(e.target.value); setTagHint(''); }}
               onBlur={() => { if (!pendingMove) submitTag(); }}
-              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submitTag(); } if (e.key === 'Escape') { setAddingTag(false); setTagDraft(''); setTagHint(''); } }}
+              onKeyDown={(e) => { if (e.nativeEvent.isComposing) return; if (e.key === 'Enter') { e.preventDefault(); submitTag(); } if (e.key === 'Escape') { setAddingTag(false); setTagDraft(''); setTagHint(''); } }}
             />
           ) : (
             <div style={S.addTagPill} onClick={() => setAddingTag(true)}>+ 新增主標籤</div>
@@ -315,7 +315,7 @@ export default function ManageTags({ categories, onRenameCategory, onDeleteCateg
             style={S.newCategoryInput}
             value={newCategoryInput}
             onChange={(e) => setNewCategoryInput(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submitNewCategory(); } }}
+            onKeyDown={(e) => { if (e.nativeEvent.isComposing) return; if (e.key === 'Enter') { e.preventDefault(); submitNewCategory(); } }}
             placeholder="新增分類名稱"
           />
           <button type="button" style={S.addCategoryBtn} onClick={submitNewCategory}>新增分類</button>

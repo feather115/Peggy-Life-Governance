@@ -83,7 +83,7 @@ export function PeopleSelect({ people, onChange, history, addPlaceholder = '輸�
             style={S.input}
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addDraft(); } if (e.key === 'Escape') { setDraft(''); setAdding(false); } }}
+            onKeyDown={(e) => { if (e.nativeEvent.isComposing) return; if (e.key === 'Enter') { e.preventDefault(); addDraft(); } if (e.key === 'Escape') { setDraft(''); setAdding(false); } }}
             placeholder={addPlaceholder}
           />
           <button type="button" style={S.addBtn} onMouseDown={(e) => e.preventDefault()} onClick={addDraft}>加入</button>

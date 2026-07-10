@@ -462,6 +462,11 @@ createAppSupabase({ schema: 'calendar' })
 - **新使用者的預設分類是應用層邏輯，不是資料庫 trigger** — `useDiary.js` 載入完
   `tag_categories` 後如果是空的才會呼叫 `createCategories` 種預設值，只會發生一次
   （種完之後 `tag_categories` 就不是空的了）。
+- **所有「Enter 送出」的文字輸入框都要先擋 IME 組字** — `onKeyDown` 開頭一律
+  `if (e.nativeEvent.isComposing) return;`。中文輸入法選字按 Enter 確認時 `keydown`
+  也會觸發，不擋的話打到一半的字（例如只打了姓氏）就會被直接送出。目前套用在
+  `HistoryFields.jsx`、`DiaryForm.jsx`、`ManageOptions.jsx`、`ManageTags.jsx`；
+  之後新增這類輸入框也要照做。
 
 ---
 

@@ -52,7 +52,7 @@ function OptionRow({ option, usage, canDelete, onRename, onToggleArchive, onDele
         value={draft ?? option.name}
         onChange={(e) => setDraft(e.target.value)}
         onBlur={commit}
-        onKeyDown={(e) => { if (e.key === 'Enter') e.target.blur(); if (e.key === 'Escape') setDraft(null); }}
+        onKeyDown={(e) => { if (e.nativeEvent.isComposing) return; if (e.key === 'Enter') e.target.blur(); if (e.key === 'Escape') setDraft(null); }}
       />
       <span style={S.usage}>使用 {usage} 次</span>
       <button type="button" style={S.toggleBtn} onClick={onToggleArchive}>{option.archived ? '恢復' : '封存'}</button>
@@ -77,7 +77,7 @@ function AddRow({ placeholder, onAdd, indent }) {
         style={S.addInput}
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
-        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submit(); } }}
+        onKeyDown={(e) => { if (e.nativeEvent.isComposing) return; if (e.key === 'Enter') { e.preventDefault(); submit(); } }}
         placeholder={placeholder}
       />
     </div>
