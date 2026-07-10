@@ -16,10 +16,22 @@ begin
   end if;
 end $$;
 
--- 把舊的純字串元素包成 { name, subs } 物件（只處理還沒轉換過的列）
+-- 把字串元素轉成 { name, subs } 物件（只處理還沒轉換過的列）。兩種字串來源：
+-- 1. 舊格式的純標籤名 → 包成 { name, subs: [] }
+-- 2. migration 還沒跑時 app 寫入被 PostgREST 壓成 JSON 字串的物件（例如 '{"name":"運動","subs":[]}'）→ 解析回物件
 update calendar.tag_categories
 set tags = coalesce(
-  (select jsonb_agg(jsonb_build_object('name', e, 'subs', '[]'::jsonb)) from jsonb_array_elements_text(tags) as e),
+  (
+    select jsonb_agg(
+      case
+        when jsonb_typeof(e) = 'string' and left(e #>> '{}', 1) = '{' then (e #>> '{}')::jsonb
+        when jsonb_typeof(e) = 'string' then jsonb_build_object('name', e #>> '{}', 'subs', '[]'::jsonb)
+        else e
+      end
+      order by ord
+    )
+    from jsonb_array_elements(tags) with ordinality as t(e, ord)
+  ),
   '[]'::jsonb
 )
 where exists (

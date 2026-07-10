@@ -391,7 +391,8 @@ createAppSupabase({ schema: 'calendar' })
 | `name` | text | 分類名稱（工作/社交/心情/健康…） |
 | `tags` | jsonb | 這個分類底下的標籤，**不是獨立一張表**，直接存陣列。2026-07-09 起從 `text[]`
   改成 `[{ "name": "運動", "subs": ["跑步"] }]` 支援子標籤；migration 會把舊字串
-  元素自動包成物件（可重跑），前端 `useDiary.normalizeCategories()` 另外兜底 |
+  元素自動包成物件（可重跑），也會修復 migration 沒跑期間 app 寫進 `text[]` 被
+  PostgREST 壓成 JSON 字串的元素（解析回物件），前端 `useDiary.normalizeCategories()` 另外兜底 |
 | `sort_order` | int | 使用者自訂的顯示順序（`ManageTags.jsx` 的 ▲▼ 按鈕調整），`loadCategories`
   依此排序，不是 `created_at` |
 | `created_at` | timestamptz | 建立時間 |
