@@ -144,6 +144,14 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js / useOptions.js 
 ### 畫面（`src/components/`）
 - **`ViewTabs.jsx`** — 月/週/日/任務四個 tab + 「今天」按鈕（`view==='tasks'` 時不顯示，
   任務列表沒有「翻頁到某一天」的概念）。
+- **文字日記的「紙張卡」呈現** — 日記分兩種視覺：**沒寫**「今天的感覺」的（純標籤
+  打卡）維持原本的緊湊 chip 列；**有寫**的（`entry.note` 非空）改用暖色紙感卡片——
+  置中「✦ 時間 ✦」小字、內文用襯線字體（`DIARY_SERIF`，`index.html` 載入
+  Noto Serif TC）、行高拉大，標籤氣泡 chip（`DiaryTags onTint`，白底）與 📍👤 小字
+  收進底部虛線腳註。配色是 `theme.js` 的 `paper*` 系列（刻意跳出柔和藍主題，讓有
+  內容的日記一眼被認出來）。DayView 是完整版（全文、`whiteSpace: pre-wrap`），
+  Week/Month（`TimelineItems`）是緊湊版（文字 `-webkit-line-clamp` 截 2 行）。
+  判斷純看有沒有 note，不加欄位、表單不用選。
 - **`TimelineItems.jsx`** — ⭐ **時間軸列的共用渲染**。之前 Week/Month 各自複製一份
   「事件列/日記列/任務列」的渲染邏輯（dot、固定寬度時間欄、`metaLine` 地點/同伴小字、
   `DiaryTags` 標籤 chip、全天項目不顯示時間欄……），連續好幾個需求都要三個檢視改三遍，

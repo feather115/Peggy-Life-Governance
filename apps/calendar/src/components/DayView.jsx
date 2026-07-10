@@ -1,7 +1,7 @@
 // 日檢視：單日事件 + 日記合併時間軸，可切換前一天/後一天，底部有「新增事件」「新增日記」按鈕。
 import React from 'react';
 import { INTERVAL_UNIT_LABEL, buildDayTimeline, dayLabel, formatDiaryTime, formatTime } from '../utils.js';
-import { THEME } from '../theme.js';
+import { DIARY_SERIF, THEME } from '../theme.js';
 import { DiaryTags } from './TimelineItems.jsx';
 
 const S = {
@@ -28,8 +28,11 @@ const S = {
   diaryMeta: { display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 6, marginLeft: 80, fontSize: 12, color: THEME.textMuted },
   diaryMetaInline: { display: 'flex', flexWrap: 'wrap', gap: 10, fontSize: 12, color: THEME.textMuted, alignSelf: 'center' },
   allDayDiaryMeta: { display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 6, marginLeft: 0, fontSize: 12, color: THEME.textMuted },
-  diaryNote: { fontSize: 13, color: THEME.textMuted, lineHeight: 1.5, fontStyle: 'italic', marginTop: 6, marginLeft: 80 },
-  allDayDiaryNote: { fontSize: 13, color: THEME.textMuted, lineHeight: 1.5, fontStyle: 'italic', marginTop: 6, marginLeft: 0 },
+  paperCard: { cursor: 'pointer', padding: '14px 16px 10px', background: THEME.paper, border: `1px solid ${THEME.paperBorder}`, borderRadius: THEME.radiusSm },
+  paperTime: { textAlign: 'center', fontSize: 11, letterSpacing: 2, color: THEME.paperMuted, marginBottom: 8 },
+  paperNote: { fontFamily: DIARY_SERIF, fontSize: 15, lineHeight: 2, color: THEME.paperInk, whiteSpace: 'pre-wrap' },
+  paperFooter: { marginTop: 10, paddingTop: 8, borderTop: `1px dashed ${THEME.paperDivider}`, display: 'flex', flexDirection: 'column', gap: 6 },
+  paperMeta: { display: 'flex', flexWrap: 'wrap', gap: 10, fontSize: 12, color: THEME.paperMuted },
   taskCard: { cursor: 'pointer', display: 'flex', gap: 10, alignItems: 'center', padding: 14, background: THEME.surfaceAlt, borderRadius: THEME.radiusSm, border: `1px dashed ${THEME.border}` },
   taskCheck: { fontSize: 15 },
   taskTitle: { fontSize: 15, fontWeight: 600, color: THEME.textDark },
@@ -128,6 +131,21 @@ export default function DayView({ dateKey, onShiftDay, eventsByDate, entriesByDa
               fallback={<span style={S.diaryEmpty}>✎ 這則日記還沒有內容</span>}
             />
           );
+          // 有寫「今天的感覺」→ 紙張卡：文字當主角，標籤 chip 與地點/同伴收進虛線腳註
+          if (entry.note) {
+            return (
+              <div key={`di-${entry.id}`} style={S.paperCard} onClick={() => onEditDiary(entry)}>
+                <div style={S.paperTime}>✦&nbsp;&nbsp;{entry.all_day ? '全天' : formatDiaryTime(entry)}&nbsp;&nbsp;✦</div>
+                <div style={S.paperNote}>{entry.note}</div>
+                {((entry.tags || []).length > 0 || hasMeta) && (
+                  <div style={S.paperFooter}>
+                    {(entry.tags || []).length > 0 && <DiaryTags entry={entry} categories={categories} onTint />}
+                    {hasMeta && <div style={S.paperMeta}>{metaSpans}</div>}
+                  </div>
+                )}
+              </div>
+            );
+          }
           if (entry.all_day) {
             return (
               <div key={`di-${entry.id}`} style={S.allDayCard} onClick={() => onEditDiary(entry)}>
@@ -136,7 +154,6 @@ export default function DayView({ dateKey, onShiftDay, eventsByDate, entriesByDa
                   {metaInline && hasMeta && <div style={S.diaryMetaInline}>{metaSpans}</div>}
                 </div>
                 {!metaInline && hasMeta && <div style={S.allDayDiaryMeta}>{metaSpans}</div>}
-                {entry.note && <div style={S.allDayDiaryNote}>「{entry.note}」</div>}
               </div>
             );
           }
@@ -148,7 +165,6 @@ export default function DayView({ dateKey, onShiftDay, eventsByDate, entriesByDa
                 {metaInline && hasMeta && <div style={S.diaryMetaInline}>{metaSpans}</div>}
               </div>
               {!metaInline && hasMeta && <div style={S.diaryMeta}>{metaSpans}</div>}
-              {entry.note && <div style={S.diaryNote}>「{entry.note}」</div>}
             </div>
           );
         })}

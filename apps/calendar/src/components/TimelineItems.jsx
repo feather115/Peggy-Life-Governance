@@ -2,7 +2,7 @@
 // DayView（卡片版型不同）只共用 metaLine / DiaryTags。改這裡一次，三個檢視同時生效。
 import React from 'react';
 import { formatDiaryTime, formatTime } from '../utils.js';
-import { THEME, categoryAccentForTag } from '../theme.js';
+import { DIARY_SERIF, THEME, categoryAccentForTag } from '../theme.js';
 
 export const ROW = {
   item: { padding: '3px 0' },
@@ -15,6 +15,11 @@ export const ROW = {
   metaInline: { fontSize: 11, color: THEME.textMuted, alignSelf: 'center' },
   tagChipWrap: { display: 'flex', flexWrap: 'wrap', gap: 6 },
   diaryTagChip: (accent, onTint) => ({ fontSize: 11, fontWeight: 600, color: accent, background: onTint ? THEME.surface : THEME.primarySoft, padding: '3px 8px', borderRadius: 999 }),
+  paperItem: { margin: '4px 0', padding: '10px 12px 8px', background: THEME.paper, border: `1px solid ${THEME.paperBorder}`, borderRadius: 10 },
+  paperTime: { textAlign: 'center', fontSize: 10, letterSpacing: 2, color: THEME.paperMuted, marginBottom: 4 },
+  paperNote: { fontFamily: DIARY_SERIF, fontSize: 13, lineHeight: 1.8, color: THEME.paperInk, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' },
+  paperFooter: { marginTop: 6, paddingTop: 6, borderTop: `1px dashed ${THEME.paperDivider}`, display: 'flex', flexDirection: 'column', gap: 4 },
+  paperMeta: { fontSize: 11, color: THEME.paperMuted },
 };
 
 // 📍 地點 · 👤 同伴 的一行小字（事件與日記共用）
@@ -71,6 +76,21 @@ export default function TimelineItems({ timeline, categories, onEventClick, onDi
       // 標籤最多一個時，地點/同伴小字直接接在標籤旁同一行；兩個以上才另起一行
       const metaInline = (entry.tags || []).length <= 1;
       const c = clickable(onDiaryClick && (() => onDiaryClick(entry)));
+      // 有寫「今天的感覺」→ 緊湊版紙張卡（跟 DayView 同一套視覺，文字截 2 行）
+      if (entry.note) {
+        return (
+          <div key={`di-${entry.id}`} style={{ ...ROW.paperItem, ...c.style }} onClick={c.onClick}>
+            <div style={ROW.paperTime}>✦&nbsp;&nbsp;{entry.all_day ? '全天' : formatDiaryTime(entry)}&nbsp;&nbsp;✦</div>
+            <div style={ROW.paperNote}>{entry.note}</div>
+            {((entry.tags || []).length > 0 || meta) && (
+              <div style={ROW.paperFooter}>
+                {(entry.tags || []).length > 0 && <DiaryTags entry={entry} categories={categories} onTint />}
+                {meta && <div style={ROW.paperMeta}>{meta}</div>}
+              </div>
+            )}
+          </div>
+        );
+      }
       return (
         <div key={`di-${entry.id}`} style={{ ...ROW.item, ...c.style }} onClick={c.onClick}>
           <div style={ROW.row}>
