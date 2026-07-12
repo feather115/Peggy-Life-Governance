@@ -234,7 +234,8 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js / useOptions.js 
   （`event_options` 選項庫裡未封存的項目，事件與日記共用同一池），但地點/人名
   傳進表單前會先經過 `App.jsx` 的 `recentMenus`（useMemo）**依「最近一次使用」重排**：
   從事件（`start_at`）＋日記（`entry_date`+`time`）算每個名字最近出現的時間，越近
-  越前面、沒用過的排最後——推薦與清單順序都吃這個排序，不需要額外的 DB 欄位或
+  越前面、沒用過的排最後；事件／日記中存在但未成功回填進選項庫的歷史值也會補入，
+  已封存的名稱則維持隱藏——推薦與清單順序都吃這個排序，不需要額外的 DB 欄位或
   使用次數記錄（事件/日記本來就整批載入前端）。
   - `LocationSelect`（單值）：輸入框＋推薦；「清單」的 `<select>` 列「（不填）+
     全部地點」。只剩 `EventForm.jsx` 在用——日記的地點已改多選（`locations` text[]），

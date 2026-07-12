@@ -44,12 +44,20 @@ export default function App({ session, onSignOut }) {
   const closeOverlay = () => setOverlay(null);
 
   // 地點/人名選單依「最近一次使用」排序：從事件（start_at）＋日記（entry_date+time）
-  // 算每個名字最近出現的時間，越近越前面；沒用過的排最後（維持選項庫原本順序）。
+  // 補入未成功回填到選項庫的歷史值（已封存者除外），再依最近使用排序。
   const recentMenus = useMemo(() => {
     const last = new Map();
+    const names = {
+      location: new Set(opts.menus.locations),
+      person: new Set(opts.menus.people),
+    };
+    const archived = new Set(opts.options
+      .filter((o) => o.archived)
+      .map((o) => `${o.kind}:${o.name}`));
     const touch = (kind, name, ts) => {
       if (!name) return;
       const key = `${kind}:${name}`;
+      if (!archived.has(key)) names[kind].add(name);
       if (ts > (last.get(key) || 0)) last.set(key, ts);
     };
     cal.events.forEach((ev) => {
@@ -65,10 +73,10 @@ export default function App({ session, onSignOut }) {
     const sortBy = (kind, names) =>
       [...names].sort((a, b) => (last.get(`${kind}:${b}`) || 0) - (last.get(`${kind}:${a}`) || 0));
     return {
-      locations: sortBy('location', opts.menus.locations),
-      people: sortBy('person', opts.menus.people),
+      locations: sortBy('location', names.location),
+      people: sortBy('person', names.person),
     };
-  }, [cal.events, diary.entries, opts.menus]);
+  }, [cal.events, diary.entries, opts.menus, opts.options]);
 
   if (!cal.loaded || !diary.loaded || !tasksHub.loaded || !opts.loaded) return <Centered>載入中…</Centered>;
   if (cal.loadError) return <Centered color={THEME.error}>載入失敗：{cal.loadError}</Centered>;
