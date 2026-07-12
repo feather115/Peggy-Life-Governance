@@ -46,23 +46,34 @@ export function useOptions(userId) {
     };
   }, [options]);
 
-  // 存檔後把新出現的名字自動補進選項庫；已存在（含封存的、子標籤）就不動。
+  // 存檔後把新出現的名字自動補進選項庫；再次使用封存名稱時自動恢復。
   // 失敗只警告不丟錯——表單儲存本身已經成功，不能因為補登失敗而擋住使用者。
   const ensureNames = useCallback(async (pairs) => {
     const missing = [];
+    const archived = [];
     pairs.forEach(({ kind, names }) => {
       (names || []).forEach((raw) => {
         const name = (raw || '').trim();
         if (!name) return;
-        if (options.some((o) => o.kind === kind && o.name === name)) return;
+        const existing = options.find((o) => o.kind === kind && o.name === name);
+        if (existing) {
+          if (existing.archived && !archived.some((o) => o.id === existing.id)) archived.push(existing);
+          return;
+        }
         if (missing.some((m) => m.kind === kind && m.name === name)) return;
         missing.push({ kind, name });
       });
     });
-    if (missing.length === 0) return;
+    if (missing.length === 0 && archived.length === 0) return;
     try {
-      const created = await db.createOptions(userId, missing);
-      setOptions((prev) => [...prev, ...created]);
+      const [created, restored] = await Promise.all([
+        missing.length > 0 ? db.createOptions(userId, missing) : [],
+        Promise.all(archived.map((o) => db.updateOption(o.id, { archived: false }))),
+      ]);
+      setOptions((prev) => [
+        ...prev.map((o) => restored.find((item) => item.id === o.id) || o),
+        ...created,
+      ]);
     } catch (e) {
       console.warn('選項庫自動補登失敗：', e.message);
     }

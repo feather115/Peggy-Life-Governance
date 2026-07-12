@@ -108,7 +108,8 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js / useOptions.js 
 - **`src/useOptions.js`** — ⭐ **選項庫狀態中樞**（地點/人名/事件標籤，`event_options` 表）。
   `menus`（表單下拉選單資料：未封存的地點/人名字串陣列 + 標籤 `{ value, label }` 陣列，
   子標籤縮排、母標籤封存整組不出現）、`ensureNames()`（事件/日記存檔後把新名字自動補進
-  選項庫，失敗只警告不擋存檔）、`addOption`/`setArchived`/`removeOption`、
+  選項庫，再次使用已封存名稱時會自動恢復，失敗只警告不擋存檔）、
+  `addOption`/`setArchived`/`removeOption`、
   `renameOption()`（同層同名自動合併：子標籤搬到目標下、同名子標籤消掉；回傳
   `{ kind, oldName, newName }` 讓 `ManageOptions.jsx` 同步改寫過去的事件/日記）。
   **跟其他 hook 不同：載入失敗不擋整個 app**——選單退化成純文字輸入，`loadError`
@@ -229,7 +230,8 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js / useOptions.js 
   不會憑空把值改掉。
 - **`HistoryFields.jsx`** — 地點/和誰/事件標籤的輸入元件，`EventForm.jsx`/
   `DiaryForm.jsx` 共用。**預設是文字輸入框**：打字時下方即時列出包含相同字的歷史
-  選項（包含與輸入內容完全相同的名稱；dashed 圓 chip，最多 5 筆，點一下帶入）；想瀏覽全部才按「清單」切換成
+  選項（包含與輸入內容完全相同的名稱；dashed 圓 chip，最多 5 筆，點一下帶入），
+  按 Enter、按「加入」或直接離開輸入框都會加入目前文字；想瀏覽全部才按「清單」切換成
   `<select>`（選完或失焦就回到輸入框）。選項資料來自 `useOptions()` 的 `menus`
   （`event_options` 選項庫裡未封存的項目，事件與日記共用同一池），但地點/人名
   傳進表單前會先經過 `App.jsx` 的 `recentMenus`（useMemo）**依「最近一次使用」重排**：

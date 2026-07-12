@@ -117,6 +117,7 @@ export function PeopleSelect({ people, onChange, history, addPlaceholder = 'è¼¸å
               style={S.input}
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
+              onBlur={() => add(draft.trim())}
               onKeyDown={(e) => { if (e.nativeEvent.isComposing) return; if (e.key === 'Enter') { e.preventDefault(); add(draft.trim()); } if (e.key === 'Escape') setDraft(''); }}
               placeholder={addPlaceholder}
             />
