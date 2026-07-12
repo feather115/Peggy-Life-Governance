@@ -229,7 +229,7 @@ Supabase ⇄ db.js ⇄ useEvents.js / useDiary.js / useTasks.js / useOptions.js 
   不會憑空把值改掉。
 - **`HistoryFields.jsx`** — 地點/和誰/事件標籤的輸入元件，`EventForm.jsx`/
   `DiaryForm.jsx` 共用。**預設是文字輸入框**：打字時下方即時列出包含相同字的歷史
-  選項（dashed 圓 chip，最多 5 筆，點一下帶入）；想瀏覽全部才按「清單」切換成
+  選項（包含與輸入內容完全相同的名稱；dashed 圓 chip，最多 5 筆，點一下帶入）；想瀏覽全部才按「清單」切換成
   `<select>`（選完或失焦就回到輸入框）。選項資料來自 `useOptions()` 的 `menus`
   （`event_options` 選項庫裡未封存的項目，事件與日記共用同一池），但地點/人名
   傳進表單前會先經過 `App.jsx` 的 `recentMenus`（useMemo）**依「最近一次使用」重排**：

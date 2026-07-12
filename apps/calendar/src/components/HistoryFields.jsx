@@ -22,7 +22,7 @@ const S = {
 function matchHistory(q, names) {
   const query = q.trim();
   if (!query) return [];
-  return names.filter((n) => n.includes(query) && n !== query).slice(0, SUGGEST_LIMIT);
+  return names.filter((n) => n.includes(query)).slice(0, SUGGEST_LIMIT);
 }
 
 // 推薦列：dashed 圓 chip，點一下帶入。用 onMouseDown preventDefault 避免先觸發輸入框 blur。
