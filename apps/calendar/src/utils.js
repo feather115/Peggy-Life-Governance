@@ -64,13 +64,13 @@ export function formatTime(isoString) {
   return `${h}:${m}`;
 }
 
-// 把事件依 start_at 換算成「本地日期」分組成 { dateKey: [events...] }，組內依開始時間排序
-export function groupEventsByDate(events) {
+// 把紀錄依 start_at 換算成「本地日期」分組成 { dateKey: [records...] }，組內依開始時間排序
+export function groupRecordsByDate(records) {
   const map = {};
-  events.forEach((ev) => {
-    const key = dateKeyFrom(new Date(ev.start_at));
+  records.forEach((r) => {
+    const key = dateKeyFrom(new Date(r.start_at));
     if (!map[key]) map[key] = [];
-    map[key].push(ev);
+    map[key].push(r);
   });
   Object.values(map).forEach((list) => list.sort((a, b) => new Date(a.start_at) - new Date(b.start_at)));
   return map;
@@ -90,45 +90,26 @@ export function fromDatetimeLocalValue(value) {
   return new Date(value).toISOString();
 }
 
-// 把日記依 entry_date 分組成 { dateKey: [entries...] }，組內全天優先、其餘依時間排序
-export function groupDiaryByDate(entries) {
-  const map = {};
-  entries.forEach((e) => {
-    if (!map[e.entry_date]) map[e.entry_date] = [];
-    map[e.entry_date].push(e);
-  });
-  Object.values(map).forEach((list) => list.sort((a, b) => {
-    if (!!a.all_day !== !!b.all_day) return a.all_day ? -1 : 1;
-    return (a.time || '').localeCompare(b.time || '');
-  }));
-  return map;
+// 紀錄的時間顯示：計時項目顯示 HH:mm（有結束時間顯示區間）。全天卡不顯示時間、不會呼叫到這裡。
+export function formatRecordTime(record) {
+  const t = formatTime(record.start_at);
+  return record.end_at ? `${t}–${formatTime(record.end_at)}` : t;
 }
 
-export function formatDiaryTime(entry) {
-  if (entry.all_day) return '全天';
-  if (entry.end_time) return `${entry.time || '--:--'}–${entry.end_time}`;
-  return entry.time || '--:--';
-}
-
-// 合併事件 + 日記 + 當天到期任務成一條時間軸（全天/任務在前，其餘依時間排序），Day/Week/Month 共用
-export function buildDayTimeline(dateEvents, dateDiaryEntries, dateTasks) {
-  const eventItems = (dateEvents || []).map((ev) => ({
-    kind: 'event', id: ev.id, data: ev,
-    isAllDay: !!ev.all_day,
-    // start_at 是 UTC 字串，直接 slice 會拿到 UTC 時間、跟日記的本地時間字串排在一起會錯位
-    sortKey: ev.all_day ? '' : formatTime(ev.start_at),
-  }));
-  const diaryItems = (dateDiaryEntries || []).map((entry) => ({
-    kind: 'diary', id: entry.id, data: entry,
-    isAllDay: !!entry.all_day,
-    sortKey: entry.all_day ? '' : (entry.time || '00:00'),
+// 合併紀錄 + 當天到期任務成一條時間軸（全天/任務在前，其餘依時間排序），Day/Week/Month 共用
+export function buildDayTimeline(dateRecords, dateTasks) {
+  const recordItems = (dateRecords || []).map((r) => ({
+    kind: 'record', id: r.id, data: r,
+    isAllDay: !!r.all_day,
+    // start_at 是 UTC 字串，用 formatTime 轉本地時間再排序才不會錯位
+    sortKey: r.all_day ? '' : formatTime(r.start_at),
   }));
   const taskItems = (dateTasks || []).map((t) => ({
     kind: 'task', id: t.id, data: t,
     isAllDay: true, // 任務沒有時間概念，一律當全天項目排最前面
     sortKey: '',
   }));
-  const all = [...taskItems, ...eventItems, ...diaryItems];
+  const all = [...taskItems, ...recordItems];
   const allDay = all.filter((it) => it.isAllDay);
   const timed = all.filter((it) => !it.isAllDay).sort((a, b) => a.sortKey.localeCompare(b.sortKey));
   return [...allDay, ...timed];

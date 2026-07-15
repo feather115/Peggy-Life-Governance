@@ -1,12 +1,12 @@
 // ============================================================
-//  useDiary — 日記與標籤分類的狀態中樞
-//  載入日記/分類、新增/編輯/刪除日記、分類與標籤管理全部從這裡出來。
+//  useDiaryTags — 日記「分類標籤字彙」的狀態中樞（tag_categories 表）
+//  只管標籤分類本身（三層：分類→主標籤→子標籤）；標籤實際被貼在哪筆紀錄
+//  存在 useRecords 的 diary_tags，改名/刪除標籤時透過 recordSync 回呼同步過去紀錄。
 //  元件不直接呼叫 db.js，一律透過這個 hook 回傳的 state/action。
 // ============================================================
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import * as db from './db.js';
-import { groupDiaryByDate } from './utils.js';
 
 // 新使用者第一次使用時的預設分類（跟其他使用者互不影響，只是省去從零開始建立的麻煩）
 // tags 是 [{ name, subs: [] }]：主標籤 + 子標籤兩層（2026-07-09 起 jsonb，見 migration）
@@ -35,18 +35,18 @@ export function findTagOwner(categories, name) {
   return null;
 }
 
-export function useDiary(userId) {
-  const [entries, setEntries] = useState([]);
+// recordSync：{ renameTag(oldTag, newTag), removeTags(Set<string>) }——把分類標籤的改名/刪除
+// 同步到過去紀錄的 diary_tags（實作在 useRecords）。
+export function useDiaryTags(userId, recordSync) {
   const [categories, setCategories] = useState([]);
   const [loaded, setLoaded] = useState(false);
   const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
     let cancel = false;
-    Promise.all([db.loadDiaryEntries(userId), db.loadCategories(userId)])
-      .then(async ([entryRows, categoryRows]) => {
+    db.loadCategories(userId)
+      .then(async (categoryRows) => {
         if (cancel) return;
-        setEntries(entryRows);
         if (categoryRows.length === 0) {
           // 第一次使用，沒有任何分類 → 種一組預設分類
           try {
@@ -62,57 +62,12 @@ export function useDiary(userId) {
       })
       .catch((e) => {
         if (cancel) return;
-        console.error('日記資料載入失敗：', e.message);
+        console.error('分類標籤載入失敗：', e.message);
         setLoadError(e.message || '載入失敗');
         setLoaded(true);
       });
     return () => { cancel = true; };
   }, [userId]);
-
-  const entriesByDate = useMemo(() => groupDiaryByDate(entries), [entries]);
-
-  // tag → 過去填過的細節文字（去重、最近的排前面），給 DiaryForm 的細節輸入框做自動建議用
-  const tagDetailHistory = useMemo(() => {
-    const sorted = entries.slice().sort((a, b) => (b.entry_date || '').localeCompare(a.entry_date || ''));
-    const map = new Map();
-    sorted.forEach((e) => {
-      Object.entries(e.tag_details || {}).forEach(([tag, detail]) => {
-        if (!detail) return;
-        if (!map.has(tag)) map.set(tag, []);
-        const arr = map.get(tag);
-        if (!arr.includes(detail)) arr.push(detail);
-      });
-    });
-    return map;
-  }, [entries]);
-
-  const createEntry = useCallback(async (payload) => {
-    const created = await db.createDiaryEntry(userId, payload);
-    setEntries((prev) => [...prev, created]);
-    return created;
-  }, [userId]);
-
-  const updateEntry = useCallback(async (entryId, patch) => {
-    const updated = await db.updateDiaryEntry(entryId, patch);
-    setEntries((prev) => prev.map((e) => (e.id === updated.id ? updated : e)));
-    return updated;
-  }, []);
-
-  const deleteEntry = useCallback(async (entryId) => {
-    await db.deleteDiaryEntry(entryId);
-    setEntries((prev) => prev.filter((e) => e.id !== entryId));
-  }, []);
-
-  // 選項庫改名時同步改寫過去日記的欄位值（field: 'locations' | 'people'，都是 text[]）
-  const renameFieldValue = useCallback(async (field, oldName, newName) => {
-    const affected = entries.filter((e) => (e[field] || []).includes(oldName));
-    if (affected.length === 0) return;
-    const updated = await Promise.all(affected.map((e) => {
-      const patch = { [field]: [...new Set(e[field].map((v) => (v === oldName ? newName : v)))] };
-      return db.updateDiaryEntry(e.id, patch);
-    }));
-    setEntries((prev) => prev.map((e) => updated.find((u) => u.id === e.id) || e));
-  }, [entries]);
 
   const addCategory = useCallback(async (name) => {
     const nextOrder = categories.length ? Math.max(...categories.map((c) => c.sort_order ?? 0)) + 1 : 0;
@@ -130,12 +85,10 @@ export function useDiary(userId) {
   const deleteCategory = useCallback(async (categoryId) => {
     await db.deleteCategory(categoryId);
     setCategories((prev) => prev.filter((c) => c.id !== categoryId));
-    // 被刪掉分類底下的標籤（含子標籤），從既有日記裡也拿掉，避免殘留孤兒標籤
+    // 被刪掉分類底下的標籤（含子標籤），從既有紀錄的 diary_tags 也拿掉，避免殘留孤兒標籤
     const removedTags = new Set(((categories.find((c) => c.id === categoryId)?.tags) || []).flatMap((t) => [t.name, ...t.subs]));
-    if (removedTags.size > 0) {
-      setEntries((prev) => prev.map((e) => ({ ...e, tags: (e.tags || []).filter((t) => !removedTags.has(t)) })));
-    }
-  }, [categories]);
+    recordSync.removeTags(removedTags);
+  }, [categories, recordSync]);
 
   const moveCategory = useCallback(async (categoryId, direction) => {
     const idx = categories.findIndex((c) => c.id === categoryId);
@@ -162,22 +115,6 @@ export function useDiary(userId) {
     const updated = await db.updateCategory(categoryId, { tags: nextTags });
     setCategories((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
   }, []);
-
-  // 標籤改名時同步所有引用它的日記：tags 陣列裡的字串、tag_details 的 key，兩邊都要改
-  const syncEntriesTagRename = useCallback(async (oldTag, newTag) => {
-    const affected = entries.filter((e) => (e.tags || []).includes(oldTag));
-    if (affected.length === 0) return;
-    const updated = await Promise.all(affected.map((e) => {
-      const nextEntryTags = e.tags.map((t) => (t === oldTag ? newTag : t));
-      const nextDetails = { ...(e.tag_details || {}) };
-      if (oldTag in nextDetails) {
-        nextDetails[newTag] = nextDetails[oldTag];
-        delete nextDetails[oldTag];
-      }
-      return db.updateDiaryEntry(e.id, { tags: nextEntryTags, tag_details: nextDetails });
-    }));
-    setEntries((prev) => prev.map((e) => updated.find((u) => u.id === e.id) || e));
-  }, [entries]);
 
   const addTagToCategory = useCallback(async (categoryId, tag) => {
     const cat = categories.find((c) => c.id === categoryId);
@@ -217,18 +154,17 @@ export function useDiary(userId) {
     if (!cat || !cat.tags.some((t) => t.name === oldTag) || oldTag === newTag) return;
     if (findTagOwner(categories, newTag)) return;
     await saveTags(categoryId, cat.tags.map((t) => (t.name === oldTag ? { ...t, name: newTag } : t)));
-    await syncEntriesTagRename(oldTag, newTag);
-  }, [categories, saveTags, syncEntriesTagRename]);
+    await recordSync.renameTag(oldTag, newTag);
+  }, [categories, saveTags, recordSync]);
 
   const removeTagFromCategory = useCallback(async (categoryId, tag) => {
     const cat = categories.find((c) => c.id === categoryId);
     const removing = cat?.tags.find((t) => t.name === tag);
     if (!cat || !removing) return;
     await saveTags(categoryId, cat.tags.filter((t) => t.name !== tag));
-    // 這個標籤（含子標籤）如果被用在既有日記上，一併移除
-    const removed = new Set([removing.name, ...removing.subs]);
-    setEntries((prev) => prev.map((e) => ({ ...e, tags: (e.tags || []).filter((t) => !removed.has(t)) })));
-  }, [categories, saveTags]);
+    // 這個標籤（含子標籤）如果被用在既有紀錄上，一併移除
+    recordSync.removeTags(new Set([removing.name, ...removing.subs]));
+  }, [categories, saveTags, recordSync]);
 
   // ---- 子標籤 ----
 
@@ -244,15 +180,15 @@ export function useDiary(userId) {
     await saveTags(categoryId, cat.tags.map((t) => (
       t.name === parentTag ? { ...t, subs: t.subs.map((s) => (s === oldSub ? newSub : s)) } : t
     )));
-    await syncEntriesTagRename(oldSub, newSub);
-  }, [categories, saveTags, syncEntriesTagRename]);
+    await recordSync.renameTag(oldSub, newSub);
+  }, [categories, saveTags, recordSync]);
 
   const removeSubTag = useCallback(async (categoryId, parentTag, sub) => {
     const cat = categories.find((c) => c.id === categoryId);
     if (!cat) return;
     await saveTags(categoryId, cat.tags.map((t) => (t.name === parentTag ? { ...t, subs: t.subs.filter((s) => s !== sub) } : t)));
-    setEntries((prev) => prev.map((e) => ({ ...e, tags: (e.tags || []).filter((t) => t !== sub) })));
-  }, [categories, saveTags]);
+    recordSync.removeTags(new Set([sub]));
+  }, [categories, saveTags, recordSync]);
 
   const moveSubTag = useCallback(async (categoryId, parentTag, sub, direction) => {
     const cat = categories.find((c) => c.id === categoryId);
@@ -267,8 +203,7 @@ export function useDiary(userId) {
   }, [categories, saveTags]);
 
   return {
-    loaded, loadError, entries, entriesByDate, categories, tagDetailHistory,
-    createEntry, updateEntry, deleteEntry, renameFieldValue,
+    loaded, loadError, categories,
     addCategory, renameCategory, deleteCategory, moveCategory,
     addTagToCategory, removeTagFromCategory, moveTagToCategory, moveTagInCategory, renameTagInCategory,
     addSubTag, renameSubTag, removeSubTag, moveSubTag,

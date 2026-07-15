@@ -1,6 +1,6 @@
-// 月檢視：格線月曆（有事件/日記的日期顯示顏色小圓點）+ 下方選中日期的摘要卡。
+// 月檢視：格線月曆（有紀錄的日期顯示顏色小圓點）+ 下方選中日期的摘要卡。
 // 點日期只會「選中」該天並更新摘要卡，不會離開月檢視；點摘要卡標題跳去日檢視（onOpenDay），
-// 點摘要卡裡的單一項目直接開對應的編輯畫面（事件/日記表單、任務檢視），不用先繞去日檢視。
+// 點摘要卡裡的單一項目直接開對應的編輯畫面（紀錄表單、任務檢視），不用先繞去日檢視。
 import React, { useMemo } from 'react';
 import { DOW, buildDayTimeline, dateKeyFrom, getMonthDays, monthLabel, parseDateKey, todayKey } from '../utils.js';
 import { THEME } from '../theme.js';
@@ -37,7 +37,7 @@ const DetailCardStyle = {
   empty: { fontSize: 13, color: THEME.textFaint, padding: '8px 0' },
 };
 
-export default function MonthView({ anchorKey, onAnchorChange, selectedDateKey, onSelectDay, onOpenDay, eventsByDate, entriesByDate, categories, tasksByDueDate, onEditEvent, onEditDiary, onGoToTasks }) {
+export default function MonthView({ anchorKey, onAnchorChange, selectedDateKey, onSelectDay, onOpenDay, recordsByDate, categories, tasksByDueDate, onEditRecord, onGoToTasks }) {
   const anchor = parseDateKey(anchorKey);
   const monthDays = useMemo(() => getMonthDays(anchor.getFullYear(), anchor.getMonth()), [anchor]);
 
@@ -48,7 +48,7 @@ export default function MonthView({ anchorKey, onAnchorChange, selectedDateKey, 
 
   const today = todayKey();
   const selectedDate = parseDateKey(selectedDateKey);
-  const selectedTimeline = buildDayTimeline(eventsByDate[selectedDateKey], entriesByDate?.[selectedDateKey], tasksByDueDate?.[selectedDateKey]);
+  const selectedTimeline = buildDayTimeline(recordsByDate[selectedDateKey], tasksByDueDate?.[selectedDateKey]);
   const isSelectedToday = selectedDateKey === today;
 
   return (
@@ -63,11 +63,7 @@ export default function MonthView({ anchorKey, onAnchorChange, selectedDateKey, 
         <div style={S.legend}>
           <div style={S.legendItem}>
             <span style={{ ...S.legendDot, background: THEME.primary }} />
-            <span style={S.legendLabel}>事件</span>
-          </div>
-          <div style={S.legendItem}>
-            <span style={{ ...S.legendDot, background: THEME.primaryDark }} />
-            <span style={S.legendLabel}>日記</span>
+            <span style={S.legendLabel}>紀錄</span>
           </div>
           <div style={S.legendItem}>
             <span style={taskDotStyle} />
@@ -83,15 +79,14 @@ export default function MonthView({ anchorKey, onAnchorChange, selectedDateKey, 
           {monthDays.map((dateKey, idx) => {
             if (!dateKey) return <div key={`empty-${idx}`} />;
             const date = parseDateKey(dateKey);
-            const dayEvents = eventsByDate[dateKey] || [];
-            const hasDiary = ((entriesByDate && entriesByDate[dateKey]) || []).length > 0;
+            const dayRecords = recordsByDate[dateKey] || [];
             const hasTaskDue = ((tasksByDueDate && tasksByDueDate[dateKey]) || []).length > 0;
             const isToday = dateKey === today;
             const isSelected = dateKey === selectedDateKey;
 
             const dotColors = [];
-            dayEvents.forEach((ev) => {
-              const c = ev.color || THEME.primary;
+            dayRecords.forEach((r) => {
+              const c = r.color || THEME.primaryDark;
               if (!dotColors.includes(c)) dotColors.push(c);
             });
 
@@ -113,7 +108,6 @@ export default function MonthView({ anchorKey, onAnchorChange, selectedDateKey, 
                   {dotColors.slice(0, 3).map((c) => (
                     <span key={c} style={{ ...S.dot, background: c }} />
                   ))}
-                  {hasDiary && <span style={{ ...S.dot, background: THEME.primaryDark }} />}
                   {hasTaskDue && <span style={taskDotStyle} />}
                 </div>
               </div>
@@ -137,8 +131,7 @@ export default function MonthView({ anchorKey, onAnchorChange, selectedDateKey, 
             <TimelineItems
               timeline={selectedTimeline}
               categories={categories}
-              onEventClick={onEditEvent}
-              onDiaryClick={onEditDiary}
+              onRecordClick={onEditRecord}
               onTaskClick={onGoToTasks ? () => onGoToTasks() : undefined}
             />
           )}

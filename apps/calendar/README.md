@@ -1,13 +1,14 @@
 # TY Calendar
 
-個人行程管理：月/週/日三種檢視、事件（含顏色/標籤/地點/和誰，地點與人名預設直接
-輸入、離開輸入框時自動加入，打字時即時推薦歷史選項（包含未回填至選項庫的既有紀錄，依最近使用排序，且包含與輸入內容完全相同的名稱），也可按「清單」瀏覽全部；再次使用已封存名稱時會自動恢復；標籤支援
-母/子兩層，選項可在設定頁維護、封存、改名）、
-日記（多筆/天，地點可多個，標籤依分類管理，支援分類→主標籤→子標籤三層；可填選填的
-標題；「今天的感覺」分文字描述＋＃快速注記兩種輸入。月/週/日三個檢視共用同一套
-白底卡片版型：時間在卡片頂端、標題大字、描述小字、＃注記 pill、分隔線下是標籤
-chip 與地點/同伴，純標籤打卡則只有時間＋標籤 chip）、
-週期性任務（標記完成自動算下次到期日）。跟 calorie-tracker、recipe-book 共用同一個
+個人行程管理：月/週/日三種檢視、**紀錄**（事件與日記合併後的單一實體——一筆行程過期後
+補上心情就是日記，兩者是同一列在時間軸上的前後階段）。一筆紀錄有**計畫面**（標題/顏色/
+選項庫標籤/備註）與**回顧面**（今天的感覺/＃快速注記/分類標籤），表單裡回顧面可收合、
+過期的紀錄預設展開。地點可多個、和誰、地點與人名預設直接輸入、離開輸入框時自動加入、
+打字時即時推薦歷史選項（依最近使用排序、含與輸入完全相同的名稱），也可按「清單」瀏覽
+全部；再次使用已封存名稱會自動恢復；選項庫標籤支援母/子兩層、分類標籤支援分類→主標籤→
+子標籤三層，都可在設定頁維護、封存、改名。月/週/日三個檢視共用同一套白底卡片版型：時間
+在卡片頂端、標題大字、描述/心情小字、＃注記 pill、分隔線下是分類標籤 chip 與地點/同伴。
+另有週期性任務（標記完成自動算下次到期日）。跟 calorie-tracker、recipe-book 共用同一個
 Supabase 專案的使用者（`auth.users`），可以在 LINE App 裡直接開啟並自動登入。
 
 ---
@@ -52,6 +53,9 @@ npm install
      （日記加 `hashtags` 欄位：＃快速注記）
    - [`supabase/2026-07-10_diary_title.sql`](./supabase/2026-07-10_diary_title.sql)
      （日記加 `title` 欄位：日檢視卡片的大字標題）
+   - [`supabase/2026-07-15_merge_diary_into_events.sql`](./supabase/2026-07-15_merge_diary_into_events.sql)
+     （**事件與日記合併**：日記併入 `events`、時間以 Asia/Taipei 換算成 `start_at`、
+     `diary_entries` 改名備份成 `diary_entries_bak`。**跑完前新版程式碼會查不到新欄位**）
 3. **Integrations → Data API → Settings → Exposed schemas** 加上 `calendar`（如果還沒加），
    儲存後等 30 秒。如果加完還是回 `PGRST106`/`Invalid schema`，這是 Supabase 平台已知
    問題，去 SQL Editor 跑 `ALTER ROLE authenticator SET pgrst.db_schemas = '...'` +
@@ -103,7 +107,7 @@ Vercel 會用本資料夾的 `package.json` 自動偵測 Vite，不影響其他 
 ## 程式結構
 
 對齊 calorie-tracker / recipe-book 的慣例：`main.jsx → Root.jsx → App.jsx → components/`，
-事件狀態集中在 `useEvents.js`，日記與標籤分類狀態集中在 `useDiary.js`，週期性任務狀態
-集中在 `useTasks.js`，純函式在 `utils.js`，配色常數在 `theme.js`，Supabase 查詢在
-`db.js`，Supabase client 走共用 `@peggy-life/shared`。詳細檔案地圖見
-[`ARCHITECTURE.md`](./ARCHITECTURE.md)。
+紀錄（事件+日記）狀態集中在 `useRecords.js`，日記分類標籤字彙集中在 `useDiaryTags.js`，
+週期性任務狀態集中在 `useTasks.js`，紀錄表單是 `components/RecordForm.jsx`，純函式在
+`utils.js`，配色常數在 `theme.js`，Supabase 查詢在 `db.js`，Supabase client 走共用
+`@peggy-life/shared`。詳細檔案地圖見 [`ARCHITECTURE.md`](./ARCHITECTURE.md)。

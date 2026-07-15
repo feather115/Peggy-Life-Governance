@@ -1,8 +1,9 @@
 // 三個檢視共用的時間軸渲染：Day/Week/Month 都用 <TimelineItems> 渲染整條清單。
-// 2026-07-10 依設計稿改版為白卡版型（時間置頂、標題大字、＃注記 pill、分隔線、📍👤 資訊列），
-// 原本的「紙張卡」與緊湊列版型退場。改這裡一次，三個檢視同時生效。
+// 事件與日記合併後只剩兩種項目：紀錄（record）與任務（task）。一張紀錄卡把計畫面
+// （顏色點+標題+備註+選項庫標籤）與回顧面（今天的感覺+＃注記+分類標籤+📍👤）疊在一起，
+// 有什麼顯示什麼。改這裡一次，三個檢視同時生效。
 import React from 'react';
-import { INTERVAL_UNIT_LABEL, formatDiaryTime, formatTime } from '../utils.js';
+import { INTERVAL_UNIT_LABEL, formatRecordTime } from '../utils.js';
 import { THEME, categoryAccentForTag } from '../theme.js';
 
 const S = {
@@ -12,10 +13,10 @@ const S = {
   card: { padding: '14px 16px', background: THEME.surface, border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSm, display: 'flex', flexDirection: 'column', gap: 10 },
   allDayCard: { padding: '14px 16px', background: THEME.primarySoft, border: 'none', borderRadius: THEME.radiusSm, display: 'flex', flexDirection: 'column', gap: 10 },
   cardTime: { fontSize: 13, fontWeight: 700, color: THEME.textDark },
-  // 計時卡標題縮小、全天日記標題放大：全天卡沒有時間列，靠大標題跟計時卡做出層次
+  // 計時卡標題 15px、全天卡標題放大 17px：全天卡沒有時間列，靠大標題做出層次
   entryTitle: { fontSize: 15, fontWeight: 700, color: THEME.textDark },
-  allDayDiaryTitle: { fontSize: 17, fontWeight: 700, color: THEME.textDark },
-  eventTitleRow: { display: 'flex', alignItems: 'center', gap: 8 },
+  allDayTitle: { fontSize: 17, fontWeight: 700, color: THEME.textDark },
+  titleRow: { display: 'flex', alignItems: 'center', gap: 8 },
   dot: { width: 8, height: 8, borderRadius: '50%', flexShrink: 0 },
   note: { fontSize: 13.5, color: THEME.textMuted, lineHeight: 1.5, whiteSpace: 'pre-wrap' },
   hashtagsRow: { display: 'flex', flexWrap: 'wrap', gap: '4px 8px' },
@@ -24,11 +25,11 @@ const S = {
   tagChip: { fontSize: 12.5, fontWeight: 600, color: THEME.textMuted, background: THEME.bg, padding: '4px 10px', borderRadius: 999 },
   tagsRow: { display: 'flex', flexWrap: 'wrap', gap: 8 },
   meta: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '4px 14px', fontSize: 12.5, color: THEME.textMuted },
-  // 標籤 chip 與 📍👤 資訊列同一行（放不下才換行）
+  // 分類標籤 chip 與 📍👤 資訊列同一行（放不下才換行）
   footerRow: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '6px 12px' },
   metaItem: { display: 'inline-flex', alignItems: 'center', gap: 4, fontWeight: 500 },
   metaIcon: { fontSize: 11 },
-  diaryEmpty: { fontSize: 13, color: THEME.textFaint },
+  empty: { fontSize: 13, color: THEME.textFaint },
   taskCard: { display: 'flex', gap: 10, alignItems: 'center', padding: 14, background: THEME.surfaceAlt, borderRadius: THEME.radiusSm, border: `1px dashed ${THEME.border}` },
   taskCheck: { fontSize: 15 },
   taskTitle: { fontSize: 15, fontWeight: 600, color: THEME.textDark },
@@ -37,16 +38,16 @@ const S = {
   diaryTagChip: (accent, onTint) => ({ fontSize: 11, fontWeight: 600, color: accent, background: onTint ? THEME.surface : THEME.primarySoft, padding: '3px 8px', borderRadius: 999 }),
 };
 
-// 日記標籤 chip（有填細節的顯示「標籤：細節」）。onTint=true 用在淺藍底的全天卡片上，
+// 分類標籤 chip（有填細節的顯示「標籤：細節」）。onTint=true 用在淺藍底的全天卡片上，
 // chip 背景換成白色避免跟卡片同色被吃掉。
-export function DiaryTags({ entry, categories, fallback, onTint = false }) {
-  const tags = entry.tags || [];
+export function DiaryTags({ record, categories, fallback, onTint = false }) {
+  const tags = record.diary_tags || [];
   if (tags.length === 0) return fallback ?? null;
   return (
     <div style={S.tagChipWrap}>
       {tags.map((t) => (
         <span key={t} style={S.diaryTagChip(categoryAccentForTag(t, categories || []), onTint)}>
-          {t}{entry.tag_details?.[t] ? `：${entry.tag_details[t]}` : ''}
+          {t}{record.tag_details?.[t] ? `：${record.tag_details[t]}` : ''}
         </span>
       ))}
     </div>
@@ -70,9 +71,9 @@ function MetaRow({ locations, people }) {
   );
 }
 
-// onEventClick/onDiaryClick/onTaskClick 選填：有傳項目才可點（Day/Month 用，直接進編輯）；
+// onRecordClick/onTaskClick 選填：有傳項目才可點（Day/Month 用，直接進編輯）；
 // 沒傳就純顯示（Week 用，整個日列本身已經可點跳日檢視）。
-export default function TimelineItems({ timeline, categories, onEventClick, onDiaryClick, onTaskClick }) {
+export default function TimelineItems({ timeline, categories, onRecordClick, onTaskClick }) {
   const clickable = (handler) => handler
     ? { onClick: (e) => { e.stopPropagation(); handler(); }, style: { cursor: 'pointer' } }
     : { style: {} };
@@ -80,31 +81,6 @@ export default function TimelineItems({ timeline, categories, onEventClick, onDi
   return (
     <div style={S.list}>
       {timeline.map((item) => {
-        if (item.kind === 'event') {
-          const ev = item.data;
-          const tags = ev.tags || [];
-          const c = clickable(onEventClick && (() => onEventClick(ev)));
-          return (
-            <div key={`ev-${ev.id}`} style={{ ...(ev.all_day ? S.allDayCard : S.card), ...c.style }} onClick={c.onClick}>
-              {!ev.all_day && <div style={S.cardTime}>{formatTime(ev.start_at)}</div>}
-              <div>
-                <div style={S.eventTitleRow}>
-                  <span style={{ ...S.dot, background: ev.color || THEME.primary }} />
-                  <span style={S.entryTitle}>{ev.title}</span>
-                </div>
-                {ev.description && <div style={{ ...S.note, marginTop: 4 }}>{ev.description}</div>}
-              </div>
-              {tags.length > 0 && (
-                <div style={S.tagsRow}>
-                  {tags.map((t) => (
-                    <span key={t} style={{ ...S.tagChip, background: ev.all_day ? THEME.surface : THEME.bg }}>{t}</span>
-                  ))}
-                </div>
-              )}
-              <MetaRow locations={ev.location ? [ev.location] : []} people={ev.people} />
-            </div>
-          );
-        }
         if (item.kind === 'task') {
           const t = item.data;
           const c = clickable(onTaskClick && (() => onTaskClick(t)));
@@ -118,56 +94,63 @@ export default function TimelineItems({ timeline, categories, onEventClick, onDi
             </div>
           );
         }
-        // diary
-        const entry = item.data;
-        const c = clickable(onDiaryClick && (() => onDiaryClick(entry)));
-        const hasMeta = (entry.locations || []).length > 0 || (entry.people || []).length > 0;
-        const hasContent = entry.title || entry.note || (entry.hashtags || []).length > 0;
-        // 有內容（標題/文字描述/＃注記）的日記 → 設計稿主卡：
-        // 時間、標題大字、note 小字、＃注記 pill，分隔線以下是標籤 chip 與地點/同伴
-        if (hasContent) {
-          return (
-            <div key={`di-${entry.id}`} style={{ ...(entry.all_day ? S.allDayCard : S.card), ...c.style }} onClick={c.onClick}>
-              {!entry.all_day && <div style={S.cardTime}>{formatDiaryTime(entry)}</div>}
-              {(entry.title || entry.note) && (
-                <div>
-                  {entry.title && <div style={entry.all_day ? S.allDayDiaryTitle : S.entryTitle}>{entry.title}</div>}
-                  {entry.note && <div style={{ ...S.note, marginTop: entry.title ? 4 : 0 }}>{entry.note}</div>}
-                </div>
-              )}
-              {(entry.hashtags || []).length > 0 && (
-                <div style={S.hashtagsRow}>
-                  {/* 全天卡底色跟 hashtagBg 同色，chip 換白底才不會被吃掉 */}
-                  {entry.hashtags.map((h) => (
-                    <span key={h} style={{ ...S.hashtagChip, background: entry.all_day ? THEME.surface : THEME.hashtagBg }}>#{h}</span>
-                  ))}
-                </div>
-              )}
-              {((entry.tags || []).length > 0 || hasMeta) && (
-                <>
-                  <div style={S.divider} />
-                  <div style={S.footerRow}>
-                    {(entry.tags || []).length > 0 && <DiaryTags entry={entry} categories={categories} onTint={!!entry.all_day} />}
-                    <MetaRow locations={entry.locations} people={entry.people} />
-                  </div>
-                </>
-              )}
-            </div>
-          );
-        }
-        // 沒內容的日記（純標籤打卡）：省略中段，只有時間 + 同一行的標籤 chip 與地點/同伴
+        // record（事件+日記合併後的單一項目）
+        const r = item.data;
+        const c = clickable(onRecordClick && (() => onRecordClick(r)));
+        const evTags = r.tags || [];
+        const diaryTags = r.diary_tags || [];
+        const hashtags = r.hashtags || [];
+        const hasMeta = (r.locations || []).length > 0 || (r.people || []).length > 0;
+        const hasHeader = r.color || r.title;
+        const hasBody = r.title || r.description || r.note || hashtags.length > 0 || evTags.length > 0;
+        const hasFooter = diaryTags.length > 0 || hasMeta;
+        const isEmpty = !hasBody && !hasFooter;
+
         return (
-          <div key={`di-${entry.id}`} style={{ ...(entry.all_day ? S.allDayCard : S.card), ...c.style }} onClick={c.onClick}>
-            {!entry.all_day && <div style={S.cardTime}>{formatDiaryTime(entry)}</div>}
-            <div style={S.footerRow}>
-              <DiaryTags
-                entry={entry}
-                categories={categories}
-                onTint={!!entry.all_day}
-                fallback={<span style={S.diaryEmpty}>✎ 這則日記還沒有內容</span>}
-              />
-              <MetaRow locations={entry.locations} people={entry.people} />
-            </div>
+          <div key={`rec-${r.id}`} style={{ ...(r.all_day ? S.allDayCard : S.card), ...c.style }} onClick={c.onClick}>
+            {!r.all_day && <div style={S.cardTime}>{formatRecordTime(r)}</div>}
+
+            {(hasHeader || r.description || r.note) && (
+              <div>
+                {hasHeader && (
+                  <div style={S.titleRow}>
+                    {r.color && <span style={{ ...S.dot, background: r.color }} />}
+                    {r.title && <span style={r.all_day ? S.allDayTitle : S.entryTitle}>{r.title}</span>}
+                  </div>
+                )}
+                {r.description && <div style={{ ...S.note, marginTop: hasHeader ? 4 : 0 }}>{r.description}</div>}
+                {r.note && <div style={{ ...S.note, marginTop: (hasHeader || r.description) ? 4 : 0 }}>{r.note}</div>}
+              </div>
+            )}
+
+            {hashtags.length > 0 && (
+              <div style={S.hashtagsRow}>
+                {/* 全天卡底色跟 hashtagBg 同色，chip 換白底才不會被吃掉 */}
+                {hashtags.map((h) => (
+                  <span key={h} style={{ ...S.hashtagChip, background: r.all_day ? THEME.surface : THEME.hashtagBg }}>#{h}</span>
+                ))}
+              </div>
+            )}
+
+            {evTags.length > 0 && (
+              <div style={S.tagsRow}>
+                {evTags.map((t) => (
+                  <span key={t} style={{ ...S.tagChip, background: r.all_day ? THEME.surface : THEME.bg }}>{t}</span>
+                ))}
+              </div>
+            )}
+
+            {hasFooter && (
+              <>
+                {hasBody && <div style={S.divider} />}
+                <div style={S.footerRow}>
+                  {diaryTags.length > 0 && <DiaryTags record={r} categories={categories} onTint={!!r.all_day} />}
+                  <MetaRow locations={r.locations} people={r.people} />
+                </div>
+              </>
+            )}
+
+            {isEmpty && <span style={S.empty}>✎ 這則紀錄還沒有內容</span>}
           </div>
         );
       })}

@@ -1,97 +1,60 @@
-// Supabase 的純查詢函式，元件不直接打資料庫，一律透過 useEvents 拿到的 state/actions。
+// Supabase 的純查詢函式，元件不直接打資料庫，一律透過 useRecords 拿到的 state/actions。
 import { supabase } from './supabase.js';
 
-const EVENT_COLUMNS = [
+// 「紀錄」＝合併後的單一實體（events 表）：計畫面欄位（title/color/description/tags）+
+// 回顧面欄位（note/diary_tags/tag_details/hashtags），時間統一 start_at / end_at。
+const RECORD_COLUMNS = [
   'id',
   'user_id',
   'title',
   'description',
-  'location',
+  'note',
+  'locations',
   'people',
   'start_at',
   'end_at',
   'all_day',
   'color',
   'tags',
+  'diary_tags',
+  'tag_details',
+  'hashtags',
   'created_at',
 ].join(', ');
 
-export async function loadEvents(userId) {
+export async function loadRecords(userId) {
   const { data, error } = await supabase
     .from('events')
-    .select(EVENT_COLUMNS)
+    .select(RECORD_COLUMNS)
     .eq('user_id', userId)
     .order('start_at', { ascending: true });
   if (error) throw error;
   return data || [];
 }
 
-export async function createEvent(userId, payload) {
+export async function createRecord(userId, payload) {
   const { data, error } = await supabase
     .from('events')
     .insert({ ...payload, user_id: userId })
-    .select(EVENT_COLUMNS)
+    .select(RECORD_COLUMNS)
     .single();
   if (error) throw error;
   return data;
 }
 
-export async function updateEvent(eventId, patch) {
+export async function updateRecord(recordId, patch) {
   const { data, error } = await supabase
     .from('events')
     .update(patch)
-    .eq('id', eventId)
-    .select(EVENT_COLUMNS)
+    .eq('id', recordId)
+    .select(RECORD_COLUMNS)
     .single();
   if (error) throw error;
   return data;
 }
 
-export async function deleteEvent(eventId) {
-  const { error } = await supabase.from('events').delete().eq('id', eventId);
-  if (error) throw error;
-}
-
-// ---- 日記 ----
-
-const DIARY_COLUMNS = [
-  'id', 'user_id', 'entry_date', 'all_day', 'time', 'end_time',
-  'locations', 'people', 'tags', 'tag_details', 'title', 'note', 'hashtags', 'created_at',
-].join(', ');
-
-export async function loadDiaryEntries(userId) {
-  const { data, error } = await supabase
-    .from('diary_entries')
-    .select(DIARY_COLUMNS)
-    .eq('user_id', userId)
-    .order('entry_date', { ascending: true });
-  if (error) throw error;
-  return data || [];
-}
-
-export async function createDiaryEntry(userId, payload) {
-  const { data, error } = await supabase
-    .from('diary_entries')
-    .insert({ ...payload, user_id: userId })
-    .select(DIARY_COLUMNS)
-    .single();
-  if (error) throw error;
-  return data;
-}
-
-export async function updateDiaryEntry(entryId, patch) {
-  const { data, error } = await supabase
-    .from('diary_entries')
-    .update(patch)
-    .eq('id', entryId)
-    .select(DIARY_COLUMNS)
-    .single();
-  if (error) throw error;
-  return data;
-}
-
-export async function deleteDiaryEntry(entryId) {
-  const { error } = await supabase.from('diary_entries').delete().eq('id', entryId);
+export async function deleteRecord(recordId) {
+  const { error } = await supabase.from('events').delete().eq('id', recordId);
   if (error) throw error;
 }
 

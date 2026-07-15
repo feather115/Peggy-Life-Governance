@@ -1,4 +1,4 @@
-// 地點/和誰的輸入欄位，EventForm 與 DiaryForm 共用。
+// 地點/和誰的輸入欄位，RecordForm 共用。
 // 預設是文字輸入框，打字時下方即時列出包含相同字的歷史選項（點一下帶入）；
 // 想瀏覽全部選項才按「清單」切換成下拉選單。history 由呼叫端依「最近使用」排序（App.jsx 的 recentMenus）。
 import React, { useState } from 'react';
@@ -39,39 +39,7 @@ function Suggestions({ items, onPick }) {
   );
 }
 
-// 地點（單值）：輸入框 + 推薦；「清單」切換成下拉選單瀏覽全部，選完（或失焦）回到輸入框。
-export function LocationSelect({ value, onChange, history, placeholder }) {
-  const [listMode, setListMode] = useState(false);
-
-  if (listMode) {
-    return (
-      <select
-        autoFocus
-        style={S.input}
-        value={history.includes(value) ? value : ''}
-        onBlur={() => setListMode(false)}
-        onChange={(e) => { onChange(e.target.value); setListMode(false); }}
-      >
-        <option value="">（不填）</option>
-        {history.map((loc) => <option key={loc} value={loc}>{loc}</option>)}
-      </select>
-    );
-  }
-
-  return (
-    <div>
-      <div style={S.row}>
-        <input type="text" style={S.input} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} />
-        {history.length > 0 && (
-          <button type="button" style={S.backBtn} onClick={() => setListMode(true)}>清單</button>
-        )}
-      </div>
-      <Suggestions items={matchHistory(value, history)} onPick={onChange} />
-    </div>
-  );
-}
-
-// 多選欄位（和誰/事件標籤）：已選的顯示成 tag chips（可 × 移除），
+// 多選欄位（地點/和誰/標籤）：已選的顯示成 tag chips（可 × 移除），
 // 輸入框打字時下方推薦、Enter/「加入」送出新值；「清單」切換成下拉選單瀏覽全部。
 // history 項目可以是字串，也可以是 { value, label }（label 用來在選單裡縮排子標籤，選了存的是 value）。
 export function PeopleSelect({ people, onChange, history, addPlaceholder = '輸入名字後按 Enter' }) {

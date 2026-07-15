@@ -1,5 +1,5 @@
 // 設定頁的「管理地點、人名與標籤」：維護表單下拉選單的選項庫（event_options）。
-// 改名會同步改寫過去引用的事件/日記（同層同名自動合併）；封存只影響之後的選單，
+// 改名會同步改寫過去引用的紀錄（同層同名自動合併）；封存只影響之後的選單，
 // 過去紀錄照舊保留；使用 0 次（標籤還要沒有子標籤）才能永久刪除。
 import React, { useMemo, useState } from 'react';
 import { THEME } from '../theme.js';
@@ -84,11 +84,11 @@ function AddRow({ placeholder, onAdd, indent }) {
   );
 }
 
-export default function ManageOptions({ opts, events, entries, renameEventField, renameDiaryField, onClose }) {
+export default function ManageOptions({ opts, records, renameField, onClose }) {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
-  // 每個名字被過去紀錄用了幾次（地點/人名算事件+日記，標籤只有事件有）
+  // 每個名字被過去紀錄用了幾次（選項庫只管地點/人名/事件標籤；分類標籤在另一頁）
   const usage = useMemo(() => {
     const count = new Map();
     const bump = (kind, name) => {
@@ -96,17 +96,13 @@ export default function ManageOptions({ opts, events, entries, renameEventField,
       const key = `${kind}:${name}`;
       count.set(key, (count.get(key) || 0) + 1);
     };
-    events.forEach((ev) => {
-      bump('location', ev.location);
-      (ev.people || []).forEach((p) => bump('person', p));
-      (ev.tags || []).forEach((t) => bump('tag', t));
-    });
-    entries.forEach((e) => {
-      (e.locations || []).forEach((l) => bump('location', l));
-      (e.people || []).forEach((p) => bump('person', p));
+    records.forEach((r) => {
+      (r.locations || []).forEach((l) => bump('location', l));
+      (r.people || []).forEach((p) => bump('person', p));
+      (r.tags || []).forEach((t) => bump('tag', t));
     });
     return count;
-  }, [events, entries]);
+  }, [records]);
   const usageOf = (o) => usage.get(`${o.kind}:${o.name}`) || 0;
 
   const run = async (fn) => {
@@ -120,20 +116,13 @@ export default function ManageOptions({ opts, events, entries, renameEventField,
     setBusy(false);
   };
 
-  // 改名：先改選項庫（同層同名會自動合併），再同步改寫過去引用的事件/日記
+  // 改名：先改選項庫（同層同名會自動合併），再同步改寫過去引用的紀錄
   const rename = (option, newName) => run(async () => {
     const result = await opts.renameOption(option.id, newName);
     if (!result) return;
     const { kind, oldName, newName: name } = result;
-    if (kind === 'location') {
-      await renameEventField('location', oldName, name);
-      await renameDiaryField('locations', oldName, name);
-    } else if (kind === 'person') {
-      await renameEventField('people', oldName, name);
-      await renameDiaryField('people', oldName, name);
-    } else {
-      await renameEventField('tags', oldName, name);
-    }
+    const field = kind === 'location' ? 'locations' : kind === 'person' ? 'people' : 'tags';
+    await renameField(field, oldName, name);
   });
 
   const toggleArchive = (option) => run(() => opts.setArchived(option.id, !option.archived));
@@ -163,7 +152,7 @@ export default function ManageOptions({ opts, events, entries, renameEventField,
 
         <div>
           <div style={S.sectionName}>地點</div>
-          <div style={S.sectionHint}>封存後，過去事件/日記仍會保留此地點，但之後不會再出現於選單中。改名會同步改過去的紀錄，同名自動合併。</div>
+          <div style={S.sectionHint}>封存後，過去紀錄仍會保留此地點，但之後不會再出現於選單中。改名會同步改過去的紀錄，同名自動合併。</div>
           <div style={S.rows}>
             {locations.map((o) => (
               <OptionRow key={o.id} option={o} usage={usageOf(o)} canDelete={canDelete(o)}
@@ -176,7 +165,7 @@ export default function ManageOptions({ opts, events, entries, renameEventField,
 
         <div>
           <div style={S.sectionName}>和誰（人名）</div>
-          <div style={S.sectionHint}>封存後，過去事件/日記仍會保留此人名，但之後不會再出現於選單中。改名會同步改過去的紀錄，同名自動合併。</div>
+          <div style={S.sectionHint}>封存後，過去紀錄仍會保留此人名，但之後不會再出現於選單中。改名會同步改過去的紀錄，同名自動合併。</div>
           <div style={S.rows}>
             {people.map((o) => (
               <OptionRow key={o.id} option={o} usage={usageOf(o)} canDelete={canDelete(o)}
@@ -189,7 +178,7 @@ export default function ManageOptions({ opts, events, entries, renameEventField,
 
         <div>
           <div style={S.sectionName}>事件標籤</div>
-          <div style={S.sectionHint}>每個標籤可以有子標籤。封存後過去事件仍保留紀錄，但不會再出現於選單中；母標籤封存時整組都不會出現。同名同層自動合併（含子標籤）。日記的分類與標籤在另一頁「管理分類與標籤」。</div>
+          <div style={S.sectionHint}>每個標籤可以有子標籤。封存後過去紀錄仍保留，但不會再出現於選單中；母標籤封存時整組都不會出現。同名同層自動合併（含子標籤）。日記的分類與標籤在另一頁「管理分類與標籤」。</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {topTags.map((top) => {
               const children = opts.options.filter((o) => o.parent_id === top.id);

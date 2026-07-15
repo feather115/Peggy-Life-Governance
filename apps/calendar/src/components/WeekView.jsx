@@ -1,4 +1,4 @@
-// 週檢視：一週 7 天直向列表，每天下面列出當天事件+日記+任務（TimelineItems），點某一天跳去日檢視（openDay）。
+// 週檢視：一週 7 天直向列表，每天下面列出當天紀錄+任務（TimelineItems），點某一天跳去日檢視（openDay）。
 import React, { useMemo } from 'react';
 import { DOW, buildDayTimeline, dateKeyFrom, getWeekDays, parseDateKey, todayKey, weekRangeLabel } from '../utils.js';
 import { THEME } from '../theme.js';
@@ -16,7 +16,7 @@ const S = {
   empty: { fontSize: 13, color: THEME.textFaint },
 };
 
-export default function WeekView({ anchorKey, onAnchorChange, selectedDateKey, onOpenDay, eventsByDate, entriesByDate, categories, tasksByDueDate }) {
+export default function WeekView({ anchorKey, onAnchorChange, selectedDateKey, onOpenDay, recordsByDate, categories, tasksByDueDate }) {
   const anchor = parseDateKey(anchorKey);
   const weekDays = useMemo(() => getWeekDays(anchor), [anchor]);
   const today = todayKey();
@@ -37,7 +37,7 @@ export default function WeekView({ anchorKey, onAnchorChange, selectedDateKey, o
 
       {weekDays.map((dateKey) => {
         const date = parseDateKey(dateKey);
-        const timeline = buildDayTimeline(eventsByDate[dateKey], entriesByDate?.[dateKey], tasksByDueDate?.[dateKey]);
+        const timeline = buildDayTimeline(recordsByDate[dateKey], tasksByDueDate?.[dateKey]);
         const isToday = dateKey === today;
         const isSelected = dateKey === selectedDateKey;
         return (

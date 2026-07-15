@@ -1,14 +1,13 @@
-// App 外殼：520px 置中容器，載入 useEvents + useDiary + useTasks，依 view 切換月/週/日/任務或各種表單。
+// App 外殼：520px 置中容器，載入 useRecords + useDiaryTags + useTasks，依 view 切換月/週/日/任務或表單。
 // 覆蓋畫面（表單/設定）統一用一個 overlay state 管理：
 //   null
-//   | { type: 'event', mode: 'create', dateKey } | { type: 'event', mode: 'edit', event }
-//   | { type: 'diary', mode: 'create', dateKey } | { type: 'diary', mode: 'edit', entry }
+//   | { type: 'record', mode: 'create', dateKey } | { type: 'record', mode: 'edit', record }
 //   | { type: 'task', mode: 'create' } | { type: 'task', mode: 'edit', task }
 //   | { type: 'settings' } | { type: 'manageTags' } | { type: 'manageOptions' }
 // 之後要加新畫面就加一個 type，不要再疊三元運算子鏈。
 import React, { useMemo, useState } from 'react';
-import { useEvents } from './useEvents.js';
-import { useDiary } from './useDiary.js';
+import { useRecords } from './useRecords.js';
+import { useDiaryTags } from './useDiaryTags.js';
 import { useTasks } from './useTasks.js';
 import { useOptions } from './useOptions.js';
 import { THEME } from './theme.js';
@@ -18,8 +17,7 @@ import MonthView from './components/MonthView.jsx';
 import WeekView from './components/WeekView.jsx';
 import DayView from './components/DayView.jsx';
 import TasksView from './components/TasksView.jsx';
-import EventForm from './components/EventForm.jsx';
-import DiaryForm from './components/DiaryForm.jsx';
+import RecordForm from './components/RecordForm.jsx';
 import ManageTags from './components/ManageTags.jsx';
 import ManageOptions from './components/ManageOptions.jsx';
 import Settings from './components/Settings.jsx';
@@ -35,16 +33,20 @@ function Centered({ children, color = THEME.primary }) {
 
 export default function App({ session, onSignOut }) {
   const userId = session.user.id;
-  const cal = useEvents(userId);
-  const diary = useDiary(userId);
+  const rec = useRecords(userId);
+  // 分類標籤改名/刪除要同步過去紀錄的 diary_tags，靠 useRecords 提供的兩個同步函式
+  const diaryTags = useDiaryTags(userId, {
+    renameTag: rec.renameDiaryTagEverywhere,
+    removeTags: rec.removeDiaryTagsEverywhere,
+  });
   const tasksHub = useTasks(userId);
   const opts = useOptions(userId);
 
   const [overlay, setOverlay] = useState(null);
   const closeOverlay = () => setOverlay(null);
 
-  // 地點/人名選單依「最近一次使用」排序：從事件（start_at）＋日記（entry_date+time）
-  // 補入未成功回填到選項庫的歷史值（已封存者除外），再依最近使用排序。
+  // 地點/人名選單依「最近一次使用」排序：從紀錄（start_at）補入未成功回填到選項庫的歷史值
+  // （已封存者除外），再依最近使用排序。
   const recentMenus = useMemo(() => {
     const last = new Map();
     const names = {
@@ -60,66 +62,46 @@ export default function App({ session, onSignOut }) {
       if (!archived.has(key)) names[kind].add(name);
       if (ts > (last.get(key) || 0)) last.set(key, ts);
     };
-    cal.events.forEach((ev) => {
-      const ts = new Date(ev.start_at).getTime();
-      touch('location', ev.location, ts);
-      (ev.people || []).forEach((p) => touch('person', p, ts));
+    rec.records.forEach((r) => {
+      const ts = new Date(r.start_at).getTime();
+      (r.locations || []).forEach((l) => touch('location', l, ts));
+      (r.people || []).forEach((p) => touch('person', p, ts));
     });
-    diary.entries.forEach((en) => {
-      const ts = new Date(`${en.entry_date}T${en.time || '00:00'}`).getTime();
-      (en.locations || []).forEach((l) => touch('location', l, ts));
-      (en.people || []).forEach((p) => touch('person', p, ts));
-    });
-    const sortBy = (kind, names) =>
-      [...names].sort((a, b) => (last.get(`${kind}:${b}`) || 0) - (last.get(`${kind}:${a}`) || 0));
+    const sortBy = (kind, set) =>
+      [...set].sort((a, b) => (last.get(`${kind}:${b}`) || 0) - (last.get(`${kind}:${a}`) || 0));
     return {
       locations: sortBy('location', names.location),
       people: sortBy('person', names.person),
     };
-  }, [cal.events, diary.entries, opts.menus, opts.options]);
+  }, [rec.records, opts.menus, opts.options]);
 
-  if (!cal.loaded || !diary.loaded || !tasksHub.loaded || !opts.loaded) return <Centered>載入中…</Centered>;
-  if (cal.loadError) return <Centered color={THEME.error}>載入失敗：{cal.loadError}</Centered>;
-  if (diary.loadError) return <Centered color={THEME.error}>載入失敗：{diary.loadError}</Centered>;
+  if (!rec.loaded || !diaryTags.loaded || !tasksHub.loaded || !opts.loaded) return <Centered>載入中…</Centered>;
+  if (rec.loadError) return <Centered color={THEME.error}>載入失敗：{rec.loadError}</Centered>;
+  if (diaryTags.loadError) return <Centered color={THEME.error}>載入失敗：{diaryTags.loadError}</Centered>;
   if (tasksHub.loadError) return <Centered color={THEME.error}>載入失敗：{tasksHub.loadError}</Centered>;
 
   const shiftSelectedDay = (delta) => {
-    const next = new Date(parseDateKey(cal.selectedDateKey));
+    const next = new Date(parseDateKey(rec.selectedDateKey));
     next.setDate(next.getDate() + delta);
     const nextKey = dateKeyFrom(next);
-    cal.setAnchorKey(nextKey);
-    cal.setSelectedDateKey(nextKey);
+    rec.setAnchorKey(nextKey);
+    rec.setSelectedDateKey(nextKey);
   };
 
-  const handleSaveEvent = async (payload, existingId) => {
-    if (existingId) await cal.updateEvent(existingId, payload);
-    else await cal.createEvent(payload);
+  const handleSaveRecord = async (payload, existingId) => {
+    if (existingId) await rec.updateRecord(existingId, payload);
+    else await rec.createRecord(payload);
     // 新出現的地點/人名/標籤自動補進選項庫，下次選單就有
     await opts.ensureNames([
-      { kind: 'location', names: [payload.location] },
+      { kind: 'location', names: payload.locations },
       { kind: 'person', names: payload.people },
       { kind: 'tag', names: payload.tags },
     ]);
     closeOverlay();
   };
 
-  const handleDeleteEvent = async (eventId) => {
-    await cal.deleteEvent(eventId);
-    closeOverlay();
-  };
-
-  const handleSaveDiary = async (payload, existingId) => {
-    if (existingId) await diary.updateEntry(existingId, payload);
-    else await diary.createEntry(payload);
-    await opts.ensureNames([
-      { kind: 'location', names: payload.locations },
-      { kind: 'person', names: payload.people },
-    ]);
-    closeOverlay();
-  };
-
-  const handleDeleteDiary = async (entryId) => {
-    await diary.deleteEntry(entryId);
+  const handleDeleteRecord = async (recordId) => {
+    await rec.deleteRecord(recordId);
     closeOverlay();
   };
 
@@ -129,39 +111,26 @@ export default function App({ session, onSignOut }) {
     closeOverlay();
   };
 
-  const editEvent = (event) => setOverlay({ type: 'event', mode: 'edit', event });
-  const editDiary = (entry) => setOverlay({ type: 'diary', mode: 'edit', entry });
-  const goToTasks = () => { closeOverlay(); cal.setView('tasks'); };
+  const editRecord = (record) => setOverlay({ type: 'record', mode: 'edit', record });
+  const goToTasks = () => { closeOverlay(); rec.setView('tasks'); };
 
   const renderOverlay = () => {
     switch (overlay?.type) {
-      case 'event':
+      case 'record':
         return (
-          <EventForm
-            event={overlay.mode === 'edit' ? overlay.event : null}
+          <RecordForm
+            record={overlay.mode === 'edit' ? overlay.record : null}
             defaultDateKey={overlay.mode === 'create' ? overlay.dateKey : undefined}
-            allEvents={cal.events}
+            allRecords={rec.records}
+            categories={diaryTags.categories}
             locationHistory={recentMenus.locations}
             peopleHistory={recentMenus.people}
             tagOptions={opts.menus.tags}
-            onSave={handleSaveEvent}
-            onDelete={overlay.mode === 'edit' ? handleDeleteEvent : null}
+            onSave={handleSaveRecord}
+            onDelete={overlay.mode === 'edit' ? handleDeleteRecord : null}
             onCancel={closeOverlay}
-          />
-        );
-      case 'diary':
-        return (
-          <DiaryForm
-            entry={overlay.mode === 'edit' ? overlay.entry : null}
-            dateKey={overlay.mode === 'edit' ? overlay.entry.entry_date : overlay.dateKey}
-            categories={diary.categories}
-            locationHistory={recentMenus.locations}
-            peopleHistory={recentMenus.people}
-            onSave={handleSaveDiary}
-            onDelete={overlay.mode === 'edit' ? handleDeleteDiary : null}
-            onCancel={closeOverlay}
-            onAddTag={diary.addTagToCategory}
-            tagDetailHistory={diary.tagDetailHistory}
+            onAddTag={diaryTags.addTagToCategory}
+            tagDetailHistory={rec.tagDetailHistory}
           />
         );
       case 'task':
@@ -185,20 +154,20 @@ export default function App({ session, onSignOut }) {
       case 'manageTags':
         return (
           <ManageTags
-            categories={diary.categories}
-            onRenameCategory={diary.renameCategory}
-            onDeleteCategory={diary.deleteCategory}
-            onAddTag={diary.addTagToCategory}
-            onRemoveTag={diary.removeTagFromCategory}
-            onMoveTag={diary.moveTagToCategory}
-            onMoveTagInCategory={diary.moveTagInCategory}
-            onRenameTag={diary.renameTagInCategory}
-            onAddSubTag={diary.addSubTag}
-            onRenameSubTag={diary.renameSubTag}
-            onRemoveSubTag={diary.removeSubTag}
-            onMoveSubTag={diary.moveSubTag}
-            onAddCategory={diary.addCategory}
-            onMoveCategory={diary.moveCategory}
+            categories={diaryTags.categories}
+            onRenameCategory={diaryTags.renameCategory}
+            onDeleteCategory={diaryTags.deleteCategory}
+            onAddTag={diaryTags.addTagToCategory}
+            onRemoveTag={diaryTags.removeTagFromCategory}
+            onMoveTag={diaryTags.moveTagToCategory}
+            onMoveTagInCategory={diaryTags.moveTagInCategory}
+            onRenameTag={diaryTags.renameTagInCategory}
+            onAddSubTag={diaryTags.addSubTag}
+            onRenameSubTag={diaryTags.renameSubTag}
+            onRemoveSubTag={diaryTags.removeSubTag}
+            onMoveSubTag={diaryTags.moveSubTag}
+            onAddCategory={diaryTags.addCategory}
+            onMoveCategory={diaryTags.moveCategory}
             onClose={() => setOverlay({ type: 'settings' })}
           />
         );
@@ -206,10 +175,8 @@ export default function App({ session, onSignOut }) {
         return (
           <ManageOptions
             opts={opts}
-            events={cal.events}
-            entries={diary.entries}
-            renameEventField={cal.renameFieldValue}
-            renameDiaryField={diary.renameFieldValue}
+            records={rec.records}
+            renameField={rec.renameFieldValue}
             onClose={() => setOverlay({ type: 'settings' })}
           />
         );
@@ -245,53 +212,47 @@ export default function App({ session, onSignOut }) {
             <button onClick={() => setOverlay({ type: 'settings' })} aria-label="設定" style={{ border: 'none', background: 'none', color: THEME.textMuted, fontSize: 18, cursor: 'pointer', outline: 'none', lineHeight: 1, padding: 4 }}>⚙</button>
           </header>
 
-          <ViewTabs view={cal.view} onChange={cal.setView} onToday={cal.goToday} />
+          <ViewTabs view={rec.view} onChange={rec.setView} onToday={rec.goToday} />
 
           <div className="ps" style={{ flex: 1, overflowY: 'auto', minHeight: 0, position: 'relative', background: THEME.bg }}>
-            {cal.view === 'month' && (
+            {rec.view === 'month' && (
               <MonthView
-                anchorKey={cal.anchorKey}
-                onAnchorChange={cal.setAnchorKey}
-                selectedDateKey={cal.selectedDateKey}
-                onSelectDay={cal.setSelectedDateKey}
-                onOpenDay={cal.openDay}
-                eventsByDate={cal.eventsByDate}
-                entriesByDate={diary.entriesByDate}
-                categories={diary.categories}
+                anchorKey={rec.anchorKey}
+                onAnchorChange={rec.setAnchorKey}
+                selectedDateKey={rec.selectedDateKey}
+                onSelectDay={rec.setSelectedDateKey}
+                onOpenDay={rec.openDay}
+                recordsByDate={rec.recordsByDate}
+                categories={diaryTags.categories}
                 tasksByDueDate={tasksHub.tasksByDueDate}
-                onEditEvent={editEvent}
-                onEditDiary={editDiary}
+                onEditRecord={editRecord}
                 onGoToTasks={goToTasks}
               />
             )}
-            {cal.view === 'week' && (
+            {rec.view === 'week' && (
               <WeekView
-                anchorKey={cal.anchorKey}
-                onAnchorChange={cal.setAnchorKey}
-                selectedDateKey={cal.selectedDateKey}
-                onOpenDay={cal.openDay}
-                eventsByDate={cal.eventsByDate}
-                entriesByDate={diary.entriesByDate}
-                categories={diary.categories}
+                anchorKey={rec.anchorKey}
+                onAnchorChange={rec.setAnchorKey}
+                selectedDateKey={rec.selectedDateKey}
+                onOpenDay={rec.openDay}
+                recordsByDate={rec.recordsByDate}
+                categories={diaryTags.categories}
                 tasksByDueDate={tasksHub.tasksByDueDate}
               />
             )}
-            {cal.view === 'day' && (
+            {rec.view === 'day' && (
               <DayView
-                dateKey={cal.selectedDateKey}
+                dateKey={rec.selectedDateKey}
                 onShiftDay={shiftSelectedDay}
-                eventsByDate={cal.eventsByDate}
-                entriesByDate={diary.entriesByDate}
-                categories={diary.categories}
+                recordsByDate={rec.recordsByDate}
+                categories={diaryTags.categories}
                 tasksByDueDate={tasksHub.tasksByDueDate}
-                onEdit={editEvent}
-                onCreate={(dateKey) => setOverlay({ type: 'event', mode: 'create', dateKey })}
-                onEditDiary={editDiary}
-                onCreateDiary={(dateKey) => setOverlay({ type: 'diary', mode: 'create', dateKey })}
+                onEdit={editRecord}
+                onCreate={(dateKey) => setOverlay({ type: 'record', mode: 'create', dateKey })}
                 onGoToTasks={goToTasks}
               />
             )}
-            {cal.view === 'tasks' && (
+            {rec.view === 'tasks' && (
               <TasksView
                 tasks={tasksHub.tasks}
                 onEdit={(task) => setOverlay({ type: 'task', mode: 'edit', task })}

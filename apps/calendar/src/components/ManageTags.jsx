@@ -4,7 +4,7 @@
 // 標籤名稱（含子標籤）全域唯一，衝突時顯示提示不送出。
 import React, { useState } from 'react';
 import { THEME } from '../theme.js';
-import { findTagOwner } from '../useDiary.js';
+import { findTagOwner } from '../useDiaryTags.js';
 
 const S = {
   header: { display: 'flex', alignItems: 'center', gap: 12, padding: 16, background: THEME.surface, borderBottom: `1px solid ${THEME.border}` },
