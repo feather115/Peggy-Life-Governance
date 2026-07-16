@@ -10,9 +10,9 @@ const S = {
   navBtn: { border: 'none', background: 'none', cursor: 'pointer', fontSize: 18, color: THEME.textMuted, padding: '4px 10px', outline: 'none' },
   title: { fontSize: 15, fontWeight: 700, color: THEME.textDark },
   dayRow: (selected) => ({ cursor: 'pointer', marginTop: 12, paddingBottom: 12, background: THEME.surfaceAlt2, borderRadius: THEME.radiusSm, overflow: 'hidden', boxShadow: selected ? `0 0 0 2px ${THEME.primary}` : 'none' }),
-  dayHeader: (dark) => ({ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', marginBottom: 10, background: dark ? THEME.primaryDark : THEME.primarySoft }),
-  dayLabel: (dark) => ({ fontSize: 14, fontWeight: 700, color: dark ? THEME.surface : THEME.textDark }),
-  todayBadge: (dark) => ({ fontSize: 11, fontWeight: 700, color: dark ? THEME.primaryDark : '#fff', background: dark ? THEME.surface : THEME.primary, padding: '2px 7px', borderRadius: 999 }),
+  dayHeader: (dark) => ({ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', marginBottom: 10, background: dark ? '#AFC0D3' : '#D6E0EC' }),
+  dayLabel: { fontSize: 14, fontWeight: 700, color: THEME.textDark },
+  todayBadge: { fontSize: 11, fontWeight: 700, color: '#fff', background: THEME.primary, padding: '2px 7px', borderRadius: 999 },
   dayContent: { padding: '0 10px' },
   empty: { padding: '0 2px', fontSize: 13, color: THEME.textFaint },
 };
@@ -45,8 +45,8 @@ export default function WeekView({ anchorKey, onAnchorChange, selectedDateKey, o
         return (
           <div key={dateKey} style={S.dayRow(isSelected)} onClick={() => onOpenDay(dateKey)}>
             <div style={S.dayHeader(darkHeader)}>
-              <span style={S.dayLabel(darkHeader)}>{date.getMonth() + 1}/{date.getDate()} 週{DOW[date.getDay()]}</span>
-              {isToday && <span style={S.todayBadge(darkHeader)}>今天</span>}
+              <span style={S.dayLabel}>{date.getMonth() + 1}/{date.getDate()} 週{DOW[date.getDay()]}</span>
+              {isToday && <span style={S.todayBadge}>今天</span>}
             </div>
             <div style={S.dayContent}>
               {timeline.length === 0
