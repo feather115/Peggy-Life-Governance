@@ -10,7 +10,7 @@ const S = {
   navBtn: { border: 'none', background: 'none', cursor: 'pointer', fontSize: 18, color: THEME.textMuted, padding: '4px 10px', outline: 'none' },
   title: { fontSize: 15, fontWeight: 700, color: THEME.textDark },
   dayRow: (selected) => ({ cursor: 'pointer', marginTop: 12, paddingBottom: 12, background: THEME.surfaceAlt2, borderRadius: THEME.radiusSm, overflow: 'hidden', boxShadow: selected ? `0 0 0 2px ${THEME.primary}` : 'none' }),
-  dayHeader: (dark) => ({ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', marginBottom: 10, background: dark ? '#AFC0D3' : '#D6E0EC' }),
+  dayHeader: (dark) => ({ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', marginBottom: 10, background: dark ? '#AFC9E5' : '#D9E7F6' }),
   dayLabel: { fontSize: 14, fontWeight: 700, color: THEME.textDark },
   todayBadge: { fontSize: 11, fontWeight: 700, color: '#fff', background: THEME.primary, padding: '2px 7px', borderRadius: 999 },
   dayContent: { padding: '0 10px' },

@@ -180,7 +180,7 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
   編輯表單、任務點了跳任務檢視（`onEditRecord`/`onGoToTasks`，`App.jsx` 傳入），不用先繞
   去日檢視；點摘要卡標題列才是 `onOpenDay` 跳日檢視。
 - **`WeekView.jsx`** — 一週 7 天直向列表，週導覽是獨立白色區塊；每天的日期標題依序用
-  兩個相近的柔和藍色色帶交錯區分，下方用 `<TimelineItems>` 顯示紀錄+到期任務合併時間軸
+  淡霧藍、灰藍兩個相近色帶交錯區分，下方用 `<TimelineItems>` 顯示紀錄+到期任務合併時間軸
   （純顯示、不傳 click handler），點某一天呼叫 `onOpenDay` 跳去日檢視。
 - **`DayView.jsx`** — 單日紀錄+任務合併時間軸（`buildDayTimeline` + `<TimelineItems>`，
   卡片版型見上），任務卡點擊呼叫 `onGoToTasks` 切到任務檢視（不能直接在這裡標記完成——
