@@ -33,6 +33,7 @@ Goal-driven execution:
 
 ## Project
 - npm workspaces monorepo: `apps/calorie-tracker` + `apps/recipe-book` + `apps/calendar` + `packages/shared`. React 19 + Vite; Supabase backend; deployed on Vercel. Read each app's ARCHITECTURE.md before structural changes.
+- Adding a new app: follow `docs/new-app-sop.md` — the SOP for it (scope questions, directory layout, schema isolation, state-hub/styling conventions, LINE + nickname wiring, Vercel deploy, known pitfalls). Read it first; don't re-derive conventions from the existing apps.
 - Each app has its own Supabase schema (`calorie_tracker` / `recipe_book` / `calendar`) + a `shared` schema; all share `auth.users`. Exposed-schema (PGRST106) fix: `ALTER ROLE authenticator SET pgrst.db_schemas` + `NOTIFY pgrst`.
 - DB migrations: SQL files in `apps/*/supabase/` named `YYYY-MM-DD_desc.sql`, run manually in Supabase SQL Editor. `schema.sql` may be stale — check actual columns before changing payloads.
 - LINE/LIFF is unified: logic in `packages/shared/src/lineAuth.js`; `api/_line*.js` files are verbatim-identical across the three apps — change one, sync all three.
