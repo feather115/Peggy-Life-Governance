@@ -49,6 +49,9 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
 
 ## 檔案地圖 — 「我要改 X，該開哪個檔？」
 
+> 改 UI 前先看 `UI-SPEC.md` + `ui-demo.html`（可離線開的靜態樣板，不用跑 app 就知道現況長相）；
+> 改完視覺要同步這兩份，規則見 `docs/ui-demo-sop.md`。
+
 | 你想改的東西 | 檔案 |
 |---|---|
 | **配色、圓角、陰影、事件顏色選項** | `src/theme.js` |

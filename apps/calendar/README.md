@@ -11,6 +11,9 @@
 另有週期性任務（標記完成自動算下次到期日）。跟 calorie-tracker、recipe-book 共用同一個
 Supabase 專案的使用者（`auth.users`），可以在 LINE App 裡直接開啟並自動登入。
 
+UI 現況可離線預覽：瀏覽器直接開 `ui-demo.html`（靜態樣板，規格見 `UI-SPEC.md`，
+產生與同步規則見 `docs/ui-demo-sop.md`）。
+
 ---
 
 ## 第一次設定
