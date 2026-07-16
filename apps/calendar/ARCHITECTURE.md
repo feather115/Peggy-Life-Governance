@@ -363,15 +363,15 @@ createAppSupabase({ schema: 'calendar' })
 | `hashtags` | text[] | ＃快速注記：自由短句（例如「今天吃好多」），跟結構化標籤分開存、不進選項庫。存純文字不含「＃」，顯示時才加 |
 | `created_at` | timestamptz | 建立時間 |
 
-> **舊 `location`（單值）欄位**：合併 migration 把值搬進 `locations` 後，`location` 欄位先留著
-> 不動（drop 語句在 migration 尾端註解，確認新版穩定後再手動收尾）。程式碼已不再讀它。
+> **舊 `location`（單值）欄位**：合併 migration 把值搬進 `locations` 後先留著不動，
+> 2026-07-17 已手動跑 migration 尾端註解段收尾（drop `location`）。
 
 ### `diary_entries`（**已淘汰**，2026-07-15 併入 `events`）
 
 日記原本是獨立一張表（`entry_date` + `time`/`end_time` 純字串、`tags`/`tag_details`/`title`/
 `note`/`hashtags`/`locations`）。合併時整批 `insert into events`（時間以 Asia/Taipei 換算成
 `start_at`、原 `tags` 搬進 `diary_tags`）。migration 尾端把這張表**改名備份成
-`diary_entries_bak`**（不直接 drop），確認新流程無誤後再手動刪。
+`diary_entries_bak`**（不直接 drop）；此收尾段已於 2026-07-17 手動執行完畢。
 
 ### `tag_categories`（完整 SQL 見 `supabase/2026-07-02_diary.sql` + `2026-07-05_category_sort_order.sql` + `2026-07-09_tag_subtags.sql`）
 
