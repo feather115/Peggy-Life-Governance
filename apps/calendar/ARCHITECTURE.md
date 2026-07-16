@@ -165,7 +165,7 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
   的選中日摘要卡、Day 的當日清單**全部**直接用 `<TimelineItems>`。合併後只剩兩種項目：
   **紀錄卡（record）** 與 **任務卡（task）**。紀錄卡是白卡版型（`THEME.border` 邊框）、
   **時間獨立一行放卡片頂端**（13px 粗體，`formatRecordTime`），由上而下把有的欄位疊出來：
-  顏色點+`title`（僅有標題時顯示顏色點；計時卡 15px、**全天卡 17px**——全天卡沒有時間列，靠大標題做層次）→
+  `title`（計時卡與全天卡皆為 15px，標題前不顯示紀錄顏色點）→
   `description`（計畫備註）→ `note`（今天的感覺，`pre-wrap`）→ ＃`hashtags` pill（深藍
   `hashtagBg`/`hashtagInk`）→ 選項庫 `tags` 中性 chip → 分隔線 → 底部一行（`footerRow`）：
   分類 `diary_tags`（`DiaryTags`，依分類上色）後面同一行接資訊列（每個地點各自一個 📍 span、

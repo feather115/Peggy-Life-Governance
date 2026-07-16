@@ -1,6 +1,6 @@
 // 三個檢視共用的時間軸渲染：Day/Week/Month 都用 <TimelineItems> 渲染整條清單。
 // 事件與日記合併後只剩兩種項目：紀錄（record）與任務（task）。一張紀錄卡把計畫面
-// （顏色點+標題+備註+選項庫標籤）與回顧面（今天的感覺+＃注記+分類標籤+📍👤）疊在一起，
+// （標題+備註+選項庫標籤）與回顧面（今天的感覺+＃注記+分類標籤+📍👤）疊在一起，
 // 有什麼顯示什麼。改這裡一次，三個檢視同時生效。
 import React from 'react';
 import { INTERVAL_UNIT_LABEL, formatRecordTime } from '../utils.js';
@@ -13,11 +13,9 @@ const S = {
   card: { padding: '14px 16px', background: THEME.surface, border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSm, display: 'flex', flexDirection: 'column', gap: 10 },
   allDayCard: { padding: '14px 16px', background: THEME.primarySoft, border: 'none', borderRadius: THEME.radiusSm, display: 'flex', flexDirection: 'column', gap: 10 },
   cardTime: { fontSize: 13, fontWeight: 700, color: THEME.textDark },
-  // 計時卡標題 15px、全天卡標題放大 17px：全天卡沒有時間列，靠大標題做出層次
+  // 計時與全天卡的標題都維持 15px，避免全天標題過度突出
   entryTitle: { fontSize: 15, fontWeight: 700, color: THEME.textDark },
-  allDayTitle: { fontSize: 17, fontWeight: 700, color: THEME.textDark },
   titleRow: { display: 'flex', alignItems: 'center', gap: 8 },
-  dot: { width: 8, height: 8, borderRadius: '50%', flexShrink: 0 },
   note: { fontSize: 13.5, color: THEME.textMuted, lineHeight: 1.5, whiteSpace: 'pre-wrap' },
   hashtagsRow: { display: 'flex', flexWrap: 'wrap', gap: '4px 8px' },
   hashtagChip: { background: THEME.hashtagBg, color: THEME.hashtagInk, fontSize: 12.5, fontWeight: 600, padding: '4px 10px', borderRadius: 999 },
@@ -114,8 +112,7 @@ export default function TimelineItems({ timeline, categories, onRecordClick, onT
               <div>
                 {hasHeader && (
                   <div style={S.titleRow}>
-                    {r.color && <span style={{ ...S.dot, background: r.color }} />}
-                    {r.title && <span style={r.all_day ? S.allDayTitle : S.entryTitle}>{r.title}</span>}
+                    <span style={S.entryTitle}>{r.title}</span>
                   </div>
                 )}
                 {r.description && <div style={{ ...S.note, marginTop: hasHeader ? 4 : 0 }}>{r.description}</div>}
