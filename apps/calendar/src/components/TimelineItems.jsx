@@ -101,7 +101,7 @@ export default function TimelineItems({ timeline, categories, onRecordClick, onT
         const diaryTags = r.diary_tags || [];
         const hashtags = r.hashtags || [];
         const hasMeta = (r.locations || []).length > 0 || (r.people || []).length > 0;
-        const hasHeader = r.color || r.title;
+        const hasHeader = !!r.title;
         const hasBody = r.title || r.description || r.note || hashtags.length > 0 || evTags.length > 0;
         const hasFooter = diaryTags.length > 0 || hasMeta;
         const isEmpty = !hasBody && !hasFooter;
