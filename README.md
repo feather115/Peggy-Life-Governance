@@ -10,8 +10,8 @@ Monorepo，包含三個獨立的 app，各自部署到不同的 Vercel 專案。
 
 每個 app 的設定、開發、部署細節請看各自資料夾裡的 README。
 
-> 想加第三個 app？照 [`docs/new-app-sop.md`](./docs/new-app-sop.md) 的 SOP 做，
-> 會自動跟現有兩個 app 風格一致（目錄結構、Supabase schema 隔離、狀態中樞模式、部署設定）。
+> 想加第四個 app？照 [`docs/new-app-sop.md`](./docs/new-app-sop.md) 的 SOP 做，
+> 會自動跟現有三個 app 風格一致（目錄結構、Supabase schema 隔離、狀態中樞模式、部署設定）。
 
 ## 安裝
 
@@ -80,7 +80,7 @@ git diff --quiet $VERCEL_GIT_PREVIOUS_SHA HEAD -- apps/calendar packages/shared
 |---|---|---|
 | `calorie_tracker` | 飲食卡路里 | 11 張表 + 2 個 RPC (`is_challenge_member`, `find_challenge_by_code`) |
 | `recipe_book` | 食譜紀錄 | `recipes` / `recipe_likes` / `cooking_history` 表 |
-| `calendar` | 個人行事曆 | `events` 表 |
+| `calendar` | 個人行事曆 | `events`（事件＋日記已合併於此）/ `tag_categories` / `tasks` / `event_options` 表 |
 | `shared` | 三個 app 共用 | `line_links`（LINE 身份 ↔ Supabase 帳號對照）+ `user_profiles`（跨 app 共用暱稱，`display_name`/`email`，在任一個 app 設定的暱稱其他 app 立刻看到同一個名字）。`line_links` 第一次 expose 時卡過 `PGRST106`（Supabase 已知 bug：Dashboard/Management API 改的設定不保證同步到 PostgREST 實際讀的 Postgres `authenticator` 角色設定），正確修法是跑 `ALTER ROLE authenticator SET pgrst.db_schemas = '...'` + `NOTIFY pgrst, 'reload config'`（見 [`docs/new-app-sop.md`](./docs/new-app-sop.md) 第 3 節） |
 | `auth` | 共用驗證 | Supabase 內建 `auth.users`，三個 app 共用同一群使用者 |
 | `public` | trigger | 三個獨立的新使用者註冊 trigger function（都綁在 `auth.users` 上，所以留在 public，故意取不同名字避免互相覆蓋）：`handle_new_user`（calorie-tracker）、`handle_new_user_recipe_book`、`handle_new_user_shared_profile` |
