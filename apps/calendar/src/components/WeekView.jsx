@@ -5,15 +5,16 @@ import { THEME } from '../theme.js';
 import TimelineItems from './TimelineItems.jsx';
 
 const S = {
-  panel: { background: THEME.surface, borderRadius: THEME.radius, padding: 14, margin: '6px 20px 20px', boxShadow: THEME.shadow },
-  header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
+  panel: { margin: '6px 20px 20px' },
+  header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 4px', background: THEME.surface, borderRadius: THEME.radiusSm, boxShadow: THEME.shadow },
   navBtn: { border: 'none', background: 'none', cursor: 'pointer', fontSize: 18, color: THEME.textMuted, padding: '4px 10px', outline: 'none' },
   title: { fontSize: 15, fontWeight: 700, color: THEME.textDark },
-  dayRow: (selected) => ({ cursor: 'pointer', padding: '12px 12px', marginTop: 8, background: selected ? THEME.primarySoft : THEME.surfaceAlt2, borderRadius: THEME.radiusSm }),
-  dayHeader: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 },
-  dayLabel: { fontSize: 14, fontWeight: 700, color: THEME.textDark },
-  todayBadge: { fontSize: 11, fontWeight: 700, color: '#fff', background: THEME.primary, padding: '2px 7px', borderRadius: 999 },
-  empty: { fontSize: 13, color: THEME.textFaint },
+  dayRow: (selected) => ({ cursor: 'pointer', marginTop: 12, paddingBottom: 12, background: THEME.surfaceAlt2, borderRadius: THEME.radiusSm, overflow: 'hidden', boxShadow: selected ? `0 0 0 2px ${THEME.primary}` : 'none' }),
+  dayHeader: (dark) => ({ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', marginBottom: 10, background: dark ? THEME.primaryDark : THEME.primarySoft }),
+  dayLabel: (dark) => ({ fontSize: 14, fontWeight: 700, color: dark ? THEME.surface : THEME.textDark }),
+  todayBadge: (dark) => ({ fontSize: 11, fontWeight: 700, color: dark ? THEME.primaryDark : '#fff', background: dark ? THEME.surface : THEME.primary, padding: '2px 7px', borderRadius: 999 }),
+  dayContent: { padding: '0 10px' },
+  empty: { padding: '0 2px', fontSize: 13, color: THEME.textFaint },
 };
 
 export default function WeekView({ anchorKey, onAnchorChange, selectedDateKey, onOpenDay, recordsByDate, categories, tasksByDueDate }) {
@@ -35,20 +36,23 @@ export default function WeekView({ anchorKey, onAnchorChange, selectedDateKey, o
         <button type="button" onClick={() => shiftWeek(1)} style={S.navBtn} aria-label="下一週">›</button>
       </div>
 
-      {weekDays.map((dateKey) => {
+      {weekDays.map((dateKey, index) => {
         const date = parseDateKey(dateKey);
         const timeline = buildDayTimeline(recordsByDate[dateKey], tasksByDueDate?.[dateKey]);
         const isToday = dateKey === today;
         const isSelected = dateKey === selectedDateKey;
+        const darkHeader = index % 2 === 1;
         return (
           <div key={dateKey} style={S.dayRow(isSelected)} onClick={() => onOpenDay(dateKey)}>
-            <div style={S.dayHeader}>
-              <span style={S.dayLabel}>{date.getMonth() + 1}/{date.getDate()} 週{DOW[date.getDay()]}</span>
-              {isToday && <span style={S.todayBadge}>今天</span>}
+            <div style={S.dayHeader(darkHeader)}>
+              <span style={S.dayLabel(darkHeader)}>{date.getMonth() + 1}/{date.getDate()} 週{DOW[date.getDay()]}</span>
+              {isToday && <span style={S.todayBadge(darkHeader)}>今天</span>}
             </div>
-            {timeline.length === 0
-              ? <div style={S.empty}>沒有事件</div>
-              : <TimelineItems timeline={timeline} categories={categories} />}
+            <div style={S.dayContent}>
+              {timeline.length === 0
+                ? <div style={S.empty}>沒有事件</div>
+                : <TimelineItems timeline={timeline} categories={categories} />}
+            </div>
           </div>
         );
       })}

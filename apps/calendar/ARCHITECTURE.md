@@ -179,8 +179,9 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
   `<TimelineItems>` 顯示該天的合併時間軸，**摘要卡裡的項目可以直接點**——紀錄點了直接開
   編輯表單、任務點了跳任務檢視（`onEditRecord`/`onGoToTasks`，`App.jsx` 傳入），不用先繞
   去日檢視；點摘要卡標題列才是 `onOpenDay` 跳日檢視。
-- **`WeekView.jsx`** — 一週 7 天直向列表，每天用 `<TimelineItems>` 顯示紀錄+到期任務
-  合併時間軸（純顯示、不傳 click handler），點某一天呼叫 `onOpenDay` 跳去日檢視。
+- **`WeekView.jsx`** — 一週 7 天直向列表，週導覽是獨立白色區塊；每天的日期標題依序用
+  淺藍、深藍色帶交錯區分，下方用 `<TimelineItems>` 顯示紀錄+到期任務合併時間軸
+  （純顯示、不傳 click handler），點某一天呼叫 `onOpenDay` 跳去日檢視。
 - **`DayView.jsx`** — 單日紀錄+任務合併時間軸（`buildDayTimeline` + `<TimelineItems>`，
   卡片版型見上），任務卡點擊呼叫 `onGoToTasks` 切到任務檢視（不能直接在這裡標記完成——
   完成流程需要選日期，統一在任務檢視操作），可切換前一天/後一天，底部一顆「＋ 新增紀錄」
