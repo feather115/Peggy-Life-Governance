@@ -205,8 +205,9 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
   返回時有差異先 `window.confirm`。`CategoryTagCard` 是內部元件：分類卡右上角一顆小「＋」
   展開輸入框新增標籤（Enter/按鈕送出；名字若已在別分類存在不建重複、直接選起來並提示）；
   標籤 chip 列表下方，若這分類有標籤被選中就列出「標籤名稱 + 細節輸入框」（`tag_details`），
-  只顯示屬於這分類且選中的標籤、取消選取時清掉對應細節不留孤兒 key；細節輸入框 `list` 接原生
-  `<datalist>`，選項是 `useRecords.tagDetailHistory`（同一標籤過去填過的細節，去重、最近的優先）。
+  只顯示屬於這分類且選中的標籤、取消選取時清掉對應細節不留孤兒 key；細節輸入框下方使用
+  自製歷史建議 chip（避免手機瀏覽器不顯示原生 `<datalist>`），聚焦時顯示最近 5 筆、輸入後以
+  包含文字篩選；選項是 `useRecords.tagDetailHistory`（同一標籤過去填過的細節，去重、最近的優先）。
 - **`TimeSelect.jsx`** — 時間選擇元件，`RecordForm.jsx` 使用：預設是
   0:00～23:30、每 30 分鐘一格的 `<select>`（原生 `<input type="time" step="1800">` 在
   多數瀏覽器裡點按鈕還是以 1 分鐘為單位滾動，`step` 屬性對 UI 不生效，所以改用真正的

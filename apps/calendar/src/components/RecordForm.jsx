@@ -64,7 +64,10 @@ const S = {
   detailList: { display: 'flex', flexDirection: 'column', gap: 6, marginTop: 10 },
   detailRow: { display: 'flex', alignItems: 'center', gap: 8 },
   detailTagLabel: { flexShrink: 0, fontSize: 12, fontWeight: 700, color: THEME.primary, maxWidth: 90, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
-  detailInput: { flex: 1, minWidth: 0, boxSizing: 'border-box', border: 'none', borderBottom: `1px dashed ${THEME.textFaint}`, background: 'transparent', padding: '3px 2px', fontSize: 12, color: THEME.textDark, outline: 'none' },
+  detailInputWrap: { flex: 1, minWidth: 0 },
+  detailInput: { width: '100%', minWidth: 0, boxSizing: 'border-box', border: 'none', borderBottom: `1px dashed ${THEME.textFaint}`, background: 'transparent', padding: '3px 2px', fontSize: 12, color: THEME.textDark, outline: 'none' },
+  detailSuggestions: { display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 6 },
+  detailSuggestionChip: { border: `1px dashed ${THEME.border}`, background: THEME.surfaceAlt, cursor: 'pointer', padding: '4px 9px', borderRadius: 999, fontSize: 11, color: THEME.textDark },
 };
 
 // 新增紀錄時預設開始時間：選定日期的早上 9 點
@@ -72,6 +75,41 @@ function defaultStartValue(dateKey) {
   const d = dateKey ? new Date(dateKey) : new Date();
   d.setHours(9, 0, 0, 0);
   return toDatetimeLocalValue(d.toISOString());
+}
+
+function DetailInput({ value, history, onChange }) {
+  const [focused, setFocused] = useState(false);
+  const query = value.trim();
+  const suggestions = history.filter((item) => !query || item.includes(query)).slice(0, 5);
+
+  return (
+    <div style={S.detailInputWrap}>
+      <input
+        type="text"
+        style={S.detailInput}
+        value={value}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="細節（選填）"
+      />
+      {focused && suggestions.length > 0 && (
+        <div style={S.detailSuggestions}>
+          {suggestions.map((item) => (
+            <button
+              key={item}
+              type="button"
+              style={S.detailSuggestionChip}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => onChange(item)}
+            >
+              {item}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 // 一張分類卡片：分類名稱 + 右上角小「+」新增標籤按鈕 + 標籤 chip 清單（貼在 diary_tags）。
@@ -126,24 +164,15 @@ function CategoryTagCard({ category, allCategories, selectedTags, onToggleTag, o
       {categoryTagNames.some((t) => selectedTags.includes(t)) && (
         <div style={S.detailList}>
           {categoryTagNames.filter((t) => selectedTags.includes(t)).map((tag) => {
-            const historyId = `tagdetail-${encodeURIComponent(tag)}`;
             const history = tagDetailHistory?.get(tag) || [];
             return (
               <div key={tag} style={S.detailRow}>
                 <span style={S.detailTagLabel}>{tag}</span>
-                <input
-                  type="text"
-                  style={S.detailInput}
+                <DetailInput
                   value={tagDetails[tag] || ''}
-                  onChange={(e) => onSetTagDetail(tag, e.target.value)}
-                  placeholder="細節（選填）"
-                  list={history.length > 0 ? historyId : undefined}
+                  history={history}
+                  onChange={(value) => onSetTagDetail(tag, value)}
                 />
-                {history.length > 0 && (
-                  <datalist id={historyId}>
-                    {history.map((h) => <option key={h} value={h} />)}
-                  </datalist>
-                )}
               </div>
             );
           })}
