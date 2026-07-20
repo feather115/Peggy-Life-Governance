@@ -262,7 +262,7 @@ export default function RecipeForm({ recipe, onSave, onCancel, onDelete }) {
                 value={importText}
                 onChange={(e) => setImportText(e.target.value)}
                 style={{ ...S.textarea, minHeight: 140, fontFamily: 'monospace', fontSize: 12 }}
-                placeholder={'貼上食譜 JSON，例如：\n{\n  "title": "番茄炒蛋",\n  "category": ["家常菜"],\n  "ingredients": [\n    { "name": "蛋", "amount": "3 顆", "is_base": true },\n    { "name": "番茄", "amount": "200 g" }\n  ],\n  "steps": ["蛋打散加鹽", "番茄切塊下鍋"],\n  "notes": ["小火慢炒"],\n  "parameters": { "火力": "中小火" }\n}'}
+                placeholder={'貼上食譜 JSON，例如：\n{\n  "title": "番茄炒蛋",\n  "category": ["家常菜"],\n  "yield_info": ["2 人份", "約 1 盤"],\n  "ingredients": [\n    { "name": "蛋", "amount": "3 顆", "is_base": true },\n    { "name": "番茄", "amount": "200 g" }\n  ],\n  "steps": ["蛋打散加鹽", "番茄切塊下鍋"],\n  "notes": ["小火慢炒"],\n  "parameters": { "火力": "中小火" }\n}'}
               />
               {importError && <div style={{ ...S.errorBox, marginTop: 8 }}>{importError}</div>}
               <button type="button" onClick={applyImport} style={{ ...S.addBtn, width: '100%', marginTop: 8, borderStyle: 'solid', background: '#FFF3EB' }}>
