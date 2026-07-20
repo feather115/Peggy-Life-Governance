@@ -52,7 +52,7 @@ Supabase ⇄ db.js ⇄ useAppData.js ⇄ App.jsx ⇄ components/*
 | **食物庫面板 / 新增、編輯自訂食物表單**（含品牌、備註、AI搜尋、份數選擇） | `src/components/FoodSheet.jsx` |
 | **編輯「今天已加入」的某筆餐點** | `src/components/EditMealItemSheet.jsx` |
 | **今日頁的餐點顯示**（品牌、三大營養素、✏編輯按鈕） | `src/components/TodayTab.jsx` |
-| **JSON 匯入面板**（也支援 brand/note 欄位） | `src/components/ImportSheet.jsx` |
+| **JSON 匯入面板**（支援 unit/serving、brand、note 欄位） | `src/components/ImportSheet.jsx` |
 | **進階面板**（斷食/原因標籤、AI摘要產生） | `src/components/AdvancedSheet.jsx` |
 | **記錄原因標籤顏色 / 月曆彩色點** | `src/components/SettingsTab.jsx` + `src/components/ReportsTab.jsx` + `src/selectors.js` |
 | **報表頁的飲食歷史搜尋 / 依餐別統計 / 複製進菜單** | `src/components/FoodHistoryCard.jsx` |

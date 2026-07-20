@@ -46,8 +46,8 @@ export default function ImportSheet({ app, onClose }) {
       </div>
       <div style={{ margin: '4px 18px 8px', background: '#F6FAF7', borderRadius: 14, padding: '10px 12px' }}>
         <div style={{ fontSize: 11, fontWeight: 800, color: '#6E8B7C', marginBottom: 4 }}>支援格式</div>
-        <div style={{ fontSize: 11, color: '#9bb0a3', fontWeight: 700, lineHeight: 1.6, fontFamily: 'monospace' }}>[{`{"name":"雞腿便當","cal":680,"p":35,"c":70,"f":22,"brand":"7-11","note":"去冰半糖"}`}]</div>
-        <div style={{ fontSize: 10, color: '#bcccc2', fontWeight: 600, marginTop: 4 }}>brand / note 選填</div>
+        <div style={{ fontSize: 11, color: '#9bb0a3', fontWeight: 700, lineHeight: 1.6, fontFamily: 'monospace' }}>[{`{"name":"雞腿便當","unit":"1 份","cal":680,"p":35,"c":70,"f":22,"brand":"7-11","note":"去冰半糖"}`}]</div>
+        <div style={{ fontSize: 10, color: '#bcccc2', fontWeight: 600, marginTop: 4 }}>unit / brand / note 選填</div>
       </div>
       <div className="ps" style={{ flex: 1, overflowY: 'auto', padding: '0 18px 20px', display: 'flex', flexDirection: 'column', gap: 8 }}>
         <textarea value={text} onChange={(e) => { setText(e.target.value); setError(''); setSuccess(0); }} placeholder="貼上 JSON…" style={{ width: '100%', flex: 1, minHeight: 140, border: 'none', background: '#F6FAF7', borderRadius: 16, padding: '12px 14px', fontSize: 16, fontWeight: 600, color: '#234034', fontFamily: 'monospace', resize: 'none', lineHeight: 1.6 }} />

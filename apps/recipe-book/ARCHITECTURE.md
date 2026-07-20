@@ -140,7 +140,6 @@ Supabase ⇄ db.js ⇄ useRecipes.js ⇄ App.jsx ⇄ components/*
   - INSERT / UPDATE / DELETE（只給 `authenticated`）：`auth.uid() = user_id` ——只能改自己的食譜。
 - **訪客模式**：`Root.jsx` 提供「以訪客身分瀏覽」按鈕（不登入），App.jsx 把 `userId = null` 傳給 `useRecipes`，hook 跳過 `loadCookRecords`、`TabBar` 隱藏「行事曆」分頁。
 - **分享狀態**：`is_shared` 由 `RecipeForm.jsx` 編輯頁面的 checkbox 控制（用 `saveRecipe` 一起 update）。
-- **JSON 匯入**：`RecipeForm.jsx` 支援以字串或陣列形式匯入 `yield_info`；介面範例使用陣列呈現多筆份量/產出資訊。
 - **Catalog 擁有權篩選**：登入者可勾選 `我的私房 / 我已分享 / 大家分享` 三種類別（**多選**，`useRecipes.ownershipFilter` 是 `Set`，`toggleOwnership()` 切換並存進 `localStorage` 記住偏好），`filterRecipes` 用 `ownershipSet + currentUserId` 過濾；訪客因 RLS 天生只拿得到 `others_shared`。
 - **按讚與喜愛排序**：`recipe_likes` 表存按讚紀錄，`useRecipes` 算出 `likeCounts` / `myLikedSet`。RecipeDetail 顯示按讚數＋按讚按鈕（擁有者只見數字、訪客只見數字、登入者可 toggle）；catalog 卡片右上角顯示 ❤️ N 計數；`filterRecipes` 把我喜愛的食譜排在每個分頁的最前面。
 - **「誰按讚」顯示名字**：`shared.user_profiles`（`display_name`/`email`，見下方「暱稱跨
