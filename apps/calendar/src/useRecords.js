@@ -105,6 +105,26 @@ export function useRecords(userId) {
     setRecords((prev) => prev.map((r) => ({ ...r, diary_tags: (r.diary_tags || []).filter((t) => !tagSet.has(t)) })));
   }, []);
 
+  const renameTagDetailEverywhere = useCallback(async (tag, oldDetail, newDetail) => {
+    const affected = records.filter((r) => r.tag_details?.[tag] === oldDetail);
+    if (affected.length === 0) return;
+    const updated = await Promise.all(affected.map((r) => db.updateRecord(r.id, {
+      tag_details: { ...r.tag_details, [tag]: newDetail },
+    })));
+    setRecords((prev) => prev.map((r) => updated.find((u) => u.id === r.id) || r));
+  }, [records]);
+
+  const removeTagDetailEverywhere = useCallback(async (tag, detail) => {
+    const affected = records.filter((r) => r.tag_details?.[tag] === detail);
+    if (affected.length === 0) return;
+    const updated = await Promise.all(affected.map((r) => {
+      const nextDetails = { ...r.tag_details };
+      delete nextDetails[tag];
+      return db.updateRecord(r.id, { tag_details: nextDetails });
+    }));
+    setRecords((prev) => prev.map((r) => updated.find((u) => u.id === r.id) || r));
+  }, [records]);
+
   const goToday = useCallback(() => {
     const t = todayKey();
     setAnchorKey(t);
@@ -126,5 +146,6 @@ export function useRecords(userId) {
     goToday, openDay,
     createRecord, updateRecord, deleteRecord, renameFieldValue,
     renameDiaryTagEverywhere, removeDiaryTagsEverywhere,
+    renameTagDetailEverywhere, removeTagDetailEverywhere,
   };
 }

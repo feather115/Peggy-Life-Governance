@@ -267,7 +267,9 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
   **主標籤/子標籤改名會同步改寫舊紀錄**：`useDiaryTags.js` 的 `renameTagInCategory`/
   `renameSubTag` 呼叫 `recordSync.renameTag()`（實作是 `useRecords.renameDiaryTagEverywhere`）——
   紀錄 `diary_tags` 陣列裡的字串、`tag_details` 的 key 一起換成新名字，避免孤兒標籤；
-  前端 `Promise.all` 迴圈更新，不是資料庫層級的 cascade。
+  前端 `Promise.all` 迴圈更新，不是資料庫層級的 cascade。展開主標籤後也會依主標籤／子標籤
+  分組列出 `tagDetailHistory`，細節可點名稱改名或按 × 刪除；`useRecords` 會同步更新所有符合的
+  歷史紀錄 `tag_details`，更新後建議清單隨 `records` 重新計算。
 - **`ManageOptions.jsx`** — 管理地點、人名與事件標籤（設定頁的另一個子頁，管的是
   `event_options` 選項庫，跟 `ManageTags.jsx` 管的日記分類是兩套獨立機制）。三個
   區塊：地點、和誰（人名）、事件標籤（每個標籤卡片內含子標籤列表 + 新增子標籤輸入列）。

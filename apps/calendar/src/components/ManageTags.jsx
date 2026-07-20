@@ -36,6 +36,12 @@ const S = {
   subNameInput: { width: 64, fontSize: 13, color: THEME.textDark, border: 'none', background: 'transparent', outline: 'none' },
   subMoveBtn: (disabled) => ({ border: 'none', background: 'none', cursor: disabled ? 'default' : 'pointer', color: disabled ? THEME.textFaint : THEME.textMuted, fontSize: 12, lineHeight: 1, padding: '2px 3px', outline: 'none' }),
   subRemove: { cursor: 'pointer', color: THEME.textMuted, fontSize: 13, padding: '0 4px', opacity: 0.8 },
+  detailsSection: { margin: '10px 0 2px 24px', paddingTop: 8, borderTop: `1px solid ${THEME.border}` },
+  detailsTitle: { fontSize: 11, fontWeight: 700, color: THEME.textMuted, marginBottom: 6 },
+  detailsWrap: { display: 'flex', flexWrap: 'wrap', gap: 6 },
+  detailChip: { display: 'inline-flex', alignItems: 'center', gap: 4, background: THEME.surface, border: `1px dashed ${THEME.border}`, borderRadius: 999, padding: '4px 6px 4px 10px' },
+  detailName: { fontSize: 12, color: THEME.textDark, cursor: 'text' },
+  detailNameInput: { width: 80, fontSize: 12, color: THEME.textDark, border: 'none', background: 'transparent', outline: 'none' },
   addPill: { display: 'inline-flex', alignItems: 'center', alignSelf: 'flex-start', border: `1px dashed ${THEME.textFaint}`, borderRadius: 999, padding: '5px 12px', fontSize: 13, color: THEME.textMuted, cursor: 'pointer', background: 'transparent' },
   addSubInput: { width: 80, fontSize: 13, color: THEME.textDark, border: `1px solid ${THEME.textFaint}`, borderRadius: 999, padding: '4px 10px', outline: 'none', background: THEME.surface },
   addTagPill: { display: 'inline-flex', alignItems: 'center', alignSelf: 'flex-start', border: `1px dashed ${THEME.textFaint}`, borderRadius: 999, padding: '8px 14px', fontSize: 14, color: THEME.textMuted, cursor: 'pointer', background: 'transparent', marginTop: 4 },
@@ -84,8 +90,35 @@ function InlineName({ name, spanStyle, inputStyle, onCommit }) {
   );
 }
 
+function DetailHistory({ tag, details, onRename, onRemove }) {
+  if (details.length === 0) return null;
+  return (
+    <div style={S.detailsSection}>
+      <div style={S.detailsTitle}>{tag}的細節歷史</div>
+      <div style={S.detailsWrap}>
+        {details.map((detail) => (
+          <div key={detail} style={S.detailChip}>
+            <InlineName
+              name={detail}
+              spanStyle={S.detailName}
+              inputStyle={S.detailNameInput}
+              onCommit={(val) => { onRename(detail, val); return null; }}
+            />
+            <span
+              style={S.subRemove}
+              onClick={() => {
+                if (window.confirm(`確定刪除「${detail}」？所有使用這個細節的歷史紀錄都會同步清除。`)) onRemove(detail);
+              }}
+            >×</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // 一個主標籤：標籤列（▲▼、名字、子標籤數 badge、收合箭頭、×）＋展開後的子標籤 chip 區。
-function TagBox({ tag, isFirst, isLast, allCategories, actions }) {
+function TagBox({ tag, isFirst, isLast, allCategories, tagDetailHistory, actions }) {
   const [expanded, setExpanded] = useState(false);
   const [addingSub, setAddingSub] = useState(false);
   const [subDraft, setSubDraft] = useState('');
@@ -125,41 +158,52 @@ function TagBox({ tag, isFirst, isLast, allCategories, actions }) {
       </div>
 
       {expanded && (
-        <div style={S.subsWrap}>
-          {tag.subs.map((sub, i) => (
-            <div key={sub} style={S.subChip}>
-              <button type="button" style={S.subMoveBtn(i === 0)} disabled={i === 0} onClick={() => actions.onMoveSub(sub, -1)} aria-label="子標籤左移">‹</button>
-              <InlineName
-                name={sub}
-                spanStyle={S.subName}
-                inputStyle={S.subNameInput}
-                onCommit={(val) => { const err = checkRename(val); if (err) return err; actions.onRenameSub(sub, val); return null; }}
+        <>
+          <div style={S.subsWrap}>
+            {tag.subs.map((sub, i) => (
+              <div key={sub} style={S.subChip}>
+                <button type="button" style={S.subMoveBtn(i === 0)} disabled={i === 0} onClick={() => actions.onMoveSub(sub, -1)} aria-label="子標籤左移">‹</button>
+                <InlineName
+                  name={sub}
+                  spanStyle={S.subName}
+                  inputStyle={S.subNameInput}
+                  onCommit={(val) => { const err = checkRename(val); if (err) return err; actions.onRenameSub(sub, val); return null; }}
+                />
+                <button type="button" style={S.subMoveBtn(i === tag.subs.length - 1)} disabled={i === tag.subs.length - 1} onClick={() => actions.onMoveSub(sub, 1)} aria-label="子標籤右移">›</button>
+                <span style={S.subRemove} onClick={() => actions.onRemoveSub(sub)}>×</span>
+              </div>
+            ))}
+            {addingSub ? (
+              <input
+                autoFocus
+                style={S.addSubInput}
+                value={subDraft}
+                placeholder="新子標籤"
+                onChange={(e) => { setSubDraft(e.target.value); setSubHint(''); }}
+                onBlur={submitSub}
+                onKeyDown={(e) => { if (e.nativeEvent.isComposing) return; if (e.key === 'Enter') submitSub(); if (e.key === 'Escape') { setAddingSub(false); setSubDraft(''); setSubHint(''); } }}
               />
-              <button type="button" style={S.subMoveBtn(i === tag.subs.length - 1)} disabled={i === tag.subs.length - 1} onClick={() => actions.onMoveSub(sub, 1)} aria-label="子標籤右移">›</button>
-              <span style={S.subRemove} onClick={() => actions.onRemoveSub(sub)}>×</span>
-            </div>
-          ))}
-          {addingSub ? (
-            <input
-              autoFocus
-              style={S.addSubInput}
-              value={subDraft}
-              placeholder="新子標籤"
-              onChange={(e) => { setSubDraft(e.target.value); setSubHint(''); }}
-              onBlur={submitSub}
-              onKeyDown={(e) => { if (e.nativeEvent.isComposing) return; if (e.key === 'Enter') submitSub(); if (e.key === 'Escape') { setAddingSub(false); setSubDraft(''); setSubHint(''); } }}
+            ) : (
+              <div style={S.addPill} onClick={() => setAddingSub(true)}>+ 新增</div>
+            )}
+            {subHint && <div style={S.hint}>{subHint}</div>}
+          </div>
+          {[tag.name, ...tag.subs].map((name) => (
+            <DetailHistory
+              key={name}
+              tag={name}
+              details={tagDetailHistory.get(name) || []}
+              onRename={(oldDetail, newDetail) => actions.onRenameDetail(name, oldDetail, newDetail)}
+              onRemove={(detail) => actions.onRemoveDetail(name, detail)}
             />
-          ) : (
-            <div style={S.addPill} onClick={() => setAddingSub(true)}>+ 新增</div>
-          )}
-          {subHint && <div style={S.hint}>{subHint}</div>}
-        </div>
+          ))}
+        </>
       )}
     </div>
   );
 }
 
-function CategoryCard({ category, allCategories, onRename, onDelete, onAddTag, onRemoveTag, onMoveTagHere, onMoveTagInCategory, onRenameTag, onAddSub, onRenameSub, onRemoveSub, onMoveSub, onMoveUp, onMoveDown, canMoveUp, canMoveDown }) {
+function CategoryCard({ category, allCategories, tagDetailHistory, onRename, onDelete, onAddTag, onRemoveTag, onMoveTagHere, onMoveTagInCategory, onRenameTag, onAddSub, onRenameSub, onRemoveSub, onMoveSub, onRenameDetail, onRemoveDetail, onMoveUp, onMoveDown, canMoveUp, canMoveDown }) {
   const [expanded, setExpanded] = useState(true);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [addingTag, setAddingTag] = useState(false);
@@ -225,6 +269,7 @@ function CategoryCard({ category, allCategories, onRename, onDelete, onAddTag, o
               isFirst={i === 0}
               isLast={i === category.tags.length - 1}
               allCategories={allCategories}
+              tagDetailHistory={tagDetailHistory}
               actions={{
                 onMove: (dir) => onMoveTagInCategory(tag.name, dir),
                 onRename: (val) => onRenameTag(tag.name, val),
@@ -233,6 +278,8 @@ function CategoryCard({ category, allCategories, onRename, onDelete, onAddTag, o
                 onRenameSub: (oldSub, newSub) => onRenameSub(tag.name, oldSub, newSub),
                 onRemoveSub: (sub) => onRemoveSub(tag.name, sub),
                 onMoveSub: (sub, dir) => onMoveSub(tag.name, sub, dir),
+                onRenameDetail,
+                onRemoveDetail,
               }}
             />
           ))}
@@ -269,7 +316,7 @@ function CategoryCard({ category, allCategories, onRename, onDelete, onAddTag, o
   );
 }
 
-export default function ManageTags({ categories, onRenameCategory, onDeleteCategory, onAddTag, onRemoveTag, onMoveTag, onMoveTagInCategory, onRenameTag, onAddSubTag, onRenameSubTag, onRemoveSubTag, onMoveSubTag, onAddCategory, onMoveCategory, onClose }) {
+export default function ManageTags({ categories, tagDetailHistory, onRenameCategory, onDeleteCategory, onAddTag, onRemoveTag, onMoveTag, onMoveTagInCategory, onRenameTag, onAddSubTag, onRenameSubTag, onRemoveSubTag, onMoveSubTag, onRenameTagDetail, onRemoveTagDetail, onAddCategory, onMoveCategory, onClose }) {
   const [newCategoryInput, setNewCategoryInput] = useState('');
 
   const submitNewCategory = () => {
@@ -292,6 +339,7 @@ export default function ManageTags({ categories, onRenameCategory, onDeleteCateg
             key={cat.id}
             category={cat}
             allCategories={categories}
+            tagDetailHistory={tagDetailHistory}
             onRename={(name) => onRenameCategory(cat.id, name)}
             onDelete={() => onDeleteCategory(cat.id)}
             onAddTag={(tag) => onAddTag(cat.id, tag)}
@@ -303,6 +351,8 @@ export default function ManageTags({ categories, onRenameCategory, onDeleteCateg
             onRenameSub={(parent, oldSub, newSub) => onRenameSubTag(cat.id, parent, oldSub, newSub)}
             onRemoveSub={(parent, sub) => onRemoveSubTag(cat.id, parent, sub)}
             onMoveSub={(parent, sub, direction) => onMoveSubTag(cat.id, parent, sub, direction)}
+            onRenameDetail={onRenameTagDetail}
+            onRemoveDetail={onRemoveTagDetail}
             onMoveUp={() => onMoveCategory(cat.id, -1)}
             onMoveDown={() => onMoveCategory(cat.id, 1)}
             canMoveUp={i > 0}

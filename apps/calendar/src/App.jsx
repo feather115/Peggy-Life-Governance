@@ -166,6 +166,9 @@ export default function App({ session, onSignOut }) {
             onRenameSubTag={diaryTags.renameSubTag}
             onRemoveSubTag={diaryTags.removeSubTag}
             onMoveSubTag={diaryTags.moveSubTag}
+            tagDetailHistory={rec.tagDetailHistory}
+            onRenameTagDetail={rec.renameTagDetailEverywhere}
+            onRemoveTagDetail={rec.removeTagDetailEverywhere}
             onAddCategory={diaryTags.addCategory}
             onMoveCategory={diaryTags.moveCategory}
             onClose={() => setOverlay({ type: 'settings' })}
