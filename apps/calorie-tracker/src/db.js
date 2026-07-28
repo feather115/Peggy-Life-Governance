@@ -281,6 +281,21 @@ export async function createChallenge(userId, { name, startDate, endDate }) {
   throw new Error('產生邀請碼失敗，請重試');
 }
 
+export async function repeatChallenge(sourceChallengeId, { name, startDate, endDate }) {
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const { data, error } = await supabase.rpc('repeat_challenge', {
+      p_source_challenge_id: sourceChallengeId,
+      p_name: name,
+      p_start_date: startDate,
+      p_end_date: endDate,
+      p_invite_code: genInviteCode(),
+    });
+    if (!error) return data;
+    if (error.code !== '23505') throw error;
+  }
+  throw new Error('產生邀請碼失敗，請重試');
+}
+
 export async function joinChallengeByCode(userId, code) {
   // Query via RPC (security definer) because non-members cannot read the challenges table due to RLS restrictions
   const { data: rows, error } = await supabase.rpc('find_challenge_by_code', { p_code: code });

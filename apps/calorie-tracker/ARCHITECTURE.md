@@ -291,7 +291,7 @@ SET pgrst.db_schemas = '...'` + `NOTIFY pgrst, 'reload config'`，見根目錄
 ## 挑戰功能（Weight Challenge）細節
 
 ### 兩種角色
-- **建立者**：可以改名稱、改結束日期、結束挑戰、刪除挑戰
+- **建立者**：可以改名稱、改結束日期、結束挑戰、刪除挑戰；挑戰結束後可用「原班人馬再來一局」複製全部成員
 - **一般成員**：可以登記體重、退出挑戰
 
 > 「管理員」不是獨立角色 — 誰建立挑戰，誰就是該挑戰的建立者。一個人可以同時是 A 挑戰的建立者、B 挑戰的成員。
@@ -299,6 +299,11 @@ SET pgrst.db_schemas = '...'` + `NOTIFY pgrst, 'reload config'`，見根目錄
 ### 結束 vs 刪除
 - **結束挑戰**：`status` 從 `active` 變 `ended`，自動標記冠軍。挑戰會從主畫面移到「🗂 歷史挑戰」摺疊區，預設不渲染完整挑戰內容；展開歷史並選取場次後，才以同一個 `ChallengeView` 顯示結束前的排行榜、頒獎台與每週戰績，預覽上方的「回到挑戰」會清除歷史選取並返回進行中的挑戰或歷史清單，**所有資料保留**。
 - **刪除挑戰**：`ON DELETE CASCADE` 把成員、體重紀錄整批清掉，**無法復原**。
+
+### 原班人馬再來一局
+- 只有已結束挑戰的建立者看得到按鈕。表單預填「原挑戰名稱 再來一局」、今天開始，並沿用上一局的挑戰天數；建立者可修改後再建立。
+- `db.js` 呼叫 `repeat_challenge()` RPC。RPC 會再次確認呼叫者是上一局建立者且挑戰已結束，再於同一個 transaction 建立新挑戰並複製全部 `challenge_members`（包含成員顏色）；不複製任何 `weight_entries`。
+- 由 `SECURITY DEFINER` RPC 執行跨使用者成員複製，沒有放寬 `challenge_members` 原本「只能新增自己」的 RLS policy。函式只授權 `authenticated` 執行，並驗證日期與邀請碼格式。
 
 ### 體重登記
 - 體重欄填的是「從挑戰開始到現在的差值（公斤）」，減重用負數。
@@ -349,6 +354,7 @@ CASCADE 會把對應的成員關聯與體重紀錄一併清掉。`active` 的挑
 | `2026-06-28_food_usage.sql` | 建立 `food_usage` 表（食物庫排序用），已併入最新版 `schema.sql` |
 | `2026-06-28_tag_def_colors.sql` | 幫 `tag_defs` 加 `color` 欄位，讓記錄原因標籤可自訂顏色並顯示在報表月曆 |
 | `2026-06-28_schema_isolation.sql` | ⭐ 把 11 張表 + 2 個 RPC function 從 public 搬到 calorie_tracker schema；重建跨表 RLS policy；更新 handle_new_user trigger function；並授權給 PostgREST 及 service_role。跑這支前一定要先去 Settings → API → Exposed schemas 加 calorie_tracker |
+| `2026-07-28_repeat_challenge.sql` | 新增 `repeat_challenge()` RPC，讓已結束挑戰的建立者建立新局並直接複製上一局全部成員 |
 
 > 全新環境直接照順序整段貼上跑一次即可；如果是延續舊環境，只需要補跑「還沒跑過」的那幾支（看 Supabase 有沒有對應欄位/function 判斷）。
 >
@@ -375,6 +381,7 @@ CASCADE 會把對應的成員關聯與體重紀錄一併清掉。`active` 的挑
 | `deleteTagDef(type, id)` | 刪標籤定義（含清前端殘留） |
 | `clearAll()` | 清除全部日記錄與自訂食物 |
 | `createChallenge({ name, startDate, endDate })` | 建挑戰，產生邀請碼，自己自動成員 |
+| `repeatChallenge(sourceChallengeId, { name, startDate, endDate })` | 從已結束挑戰建立新局，上一局全部成員直接加入 |
 | `joinChallenge(code)` | 用邀請碼加入挑戰 |
 | `leaveChallenge(id)` | 退出挑戰（自己的紀錄會被刪） |
 | `updateChallenge(id, patch)` | 改 `name` / `startDate` / `endDate`（RLS 限建立者） |

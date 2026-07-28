@@ -33,8 +33,9 @@ const getWeeklyChangeColor = (change) => {
 };
 
 export default function ChallengeTab({ app }) {
-  const { challenges, userId, joinChallenge, createChallenge, leaveChallenge, updateChallenge, endChallenge, deleteChallenge, submitWeightEntry, removeWeightEntry, setMemberColor } = app;
+  const { challenges, userId, joinChallenge, createChallenge, repeatChallenge, leaveChallenge, updateChallenge, endChallenge, deleteChallenge, submitWeightEntry, removeWeightEntry, setMemberColor } = app;
   const [createOpen, setCreateOpen] = useState(false);
+  const [repeatSource, setRepeatSource] = useState(null);
   const [selectedId, setSelectedId] = useState(null);
   const [showEnded, setShowEnded] = useState(false);
 
@@ -52,7 +53,7 @@ export default function ChallengeTab({ app }) {
     <div style={{ padding: '6px 18px 20px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
         <div style={{ fontSize: 24, fontWeight: 900, color: '#234034' }}>🏆 挑戰</div>
-        <button onClick={() => setCreateOpen(true)} style={{ border: 'none', background: '#2E8B5E', color: '#fff', fontWeight: 800, fontSize: 13, padding: '8px 14px', borderRadius: 14, cursor: 'pointer' }}>＋ 新增 / 加入</button>
+        <button onClick={() => { setRepeatSource(null); setCreateOpen(true); }} style={{ border: 'none', background: '#2E8B5E', color: '#fff', fontWeight: 800, fontSize: 13, padding: '8px 14px', borderRadius: 14, cursor: 'pointer' }}>＋ 新增 / 加入</button>
       </div>
       <div style={{ fontSize: 14, color: '#6E8B7C', fontWeight: 700 }}>跟朋友一起減重，看誰先甩肉成功</div>
 
@@ -89,6 +90,7 @@ export default function ChallengeTab({ app }) {
             onEnd={endChallenge}
             onDelete={deleteChallenge}
             onLeave={leaveChallenge}
+            onRepeat={() => { setRepeatSource(current); setCreateOpen(true); }}
             onSetColor={setMemberColor}
           />}
 
@@ -112,9 +114,17 @@ export default function ChallengeTab({ app }) {
       )}
 
       {createOpen && <ChallengeCreateSheet
-        onClose={() => setCreateOpen(false)}
-        onCreate={async (payload) => { await createChallenge(payload); setCreateOpen(false); }}
+        onClose={() => { setCreateOpen(false); setRepeatSource(null); }}
+        onCreate={async (payload) => {
+          const newId = repeatSource
+            ? await repeatChallenge(repeatSource.id, payload)
+            : await createChallenge(payload);
+          if (newId) setSelectedId(newId);
+          setCreateOpen(false);
+          setRepeatSource(null);
+        }}
         onJoin={async (code) => { await joinChallenge(code); setCreateOpen(false); }}
+        repeatSource={repeatSource}
       />}
     </div>
   );
@@ -131,7 +141,7 @@ function EmptyState({ onOpen }) {
   );
 }
 
-function ChallengeView({ challenge, myUserId, onSubmitEntry, onRemoveEntry, onUpdate, onEnd, onDelete, onLeave, onSetColor }) {
+function ChallengeView({ challenge, myUserId, onSubmitEntry, onRemoveEntry, onUpdate, onEnd, onDelete, onLeave, onRepeat, onSetColor }) {
   const isCreator = challenge.creatorUserId === myUserId;
   const isActive = challenge.status === 'active';
   const lb = useMemo(() => computeLeaderboard(challenge, myUserId), [challenge, myUserId]);
@@ -264,6 +274,9 @@ function ChallengeView({ challenge, myUserId, onSubmitEntry, onRemoveEntry, onUp
         )}
 
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: isCreator && isActive ? 12 : 0 }}>
+          {isCreator && !isActive && (
+            <button onClick={onRepeat} style={primaryBtn}>原班人馬再來一局</button>
+          )}
           {isCreator && isActive && (
             <button onClick={async () => {
               if (!confirm('確定結束這個挑戰嗎？冠軍會被自動決定。')) return;

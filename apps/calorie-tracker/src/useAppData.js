@@ -10,7 +10,7 @@
 //    action  toggleTag, saveDayNote, addMeal, removeMeal, editMeal,
 //            addCustomFood, removeCustomFood, updateCustomFood, importFoods,
 //            addTagDef, updateTagColor, deleteTagDef, clearAll,
-//            createChallenge, joinChallenge, leaveChallenge, updateChallenge,
+//            createChallenge, repeatChallenge, joinChallenge, leaveChallenge, updateChallenge,
 //            endChallenge, deleteChallenge, submitWeightEntry, removeWeightEntry, setMemberColor
 //  Internal: touchFood (called by addMeal/addCustomFood/updateCustomFood to keep food_usage sorting fresh)
 // ============================================================
@@ -218,9 +218,16 @@ export function useAppData(userId) {
 
   // ── Weight Challenge actions ────────────────────────────────
   const createChallenge = useCallback(async (payload) => {
-    await db.createChallenge(userId, payload);
+    const challengeId = await db.createChallenge(userId, payload);
     await reloadChallenges();
+    return challengeId;
   }, [userId, reloadChallenges]);
+
+  const repeatChallenge = useCallback(async (sourceChallengeId, payload) => {
+    const challengeId = await db.repeatChallenge(sourceChallengeId, payload);
+    await reloadChallenges();
+    return challengeId;
+  }, [reloadChallenges]);
 
   const joinChallenge = useCallback(async (code) => {
     await db.joinChallengeByCode(userId, code);
@@ -269,7 +276,7 @@ export function useAppData(userId) {
     goalCal, goalP, goalC, goalF,
     setGoalCal, setGoalP, setGoalC, setGoalF,
     challenges,
-    createChallenge, joinChallenge, leaveChallenge, updateChallenge, endChallenge, deleteChallenge,
+    createChallenge, repeatChallenge, joinChallenge, leaveChallenge, updateChallenge, endChallenge, deleteChallenge,
     submitWeightEntry, removeWeightEntry, setMemberColor,
     userId,
     fastingTagDefs, otherTagDefs,
