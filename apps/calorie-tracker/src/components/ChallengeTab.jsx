@@ -38,14 +38,15 @@ export default function ChallengeTab({ app }) {
   const [selectedId, setSelectedId] = useState(null);
   const [showEnded, setShowEnded] = useState(false);
 
-  // Filter inside the memo — filtering outside would create new arrays every render and defeat the memo
+  // 已結束挑戰只有在歷史區展開後，才允許成為目前顯示的挑戰
   const { active, ended, current } = useMemo(() => {
     const act = challenges.filter(c => c.status === 'active');
     const end = challenges.filter(c => c.status === 'ended');
-    // Default to select the first active challenge
-    const cur = (selectedId && challenges.find(c => c.id === selectedId)) || act[0] || end[0] || null;
+    const selected = selectedId && challenges.find(c => c.id === selectedId);
+    const selectedVisible = selected?.status === 'active' || (showEnded && selected?.status === 'ended');
+    const cur = (selectedVisible && selected) || act[0] || null;
     return { active: act, ended: end, current: cur };
-  }, [selectedId, challenges]);
+  }, [selectedId, challenges, showEnded]);
 
   return (
     <div style={{ padding: '6px 18px 20px' }}>
