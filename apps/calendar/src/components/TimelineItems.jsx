@@ -63,7 +63,7 @@ function MetaRow({ locations, people }) {
         <span key={loc} style={S.metaItem}><span style={S.metaIcon}>📍</span>{loc}</span>
       ))}
       {ppl.length > 0 && (
-        <span style={S.metaItem}><span style={S.metaIcon}>👤</span>{ppl.join('、')}</span>
+        <span style={S.metaItem}><span style={S.metaIcon}>👤</span>{ppl.join(', ')}</span>
       )}
     </div>
   );

@@ -169,7 +169,7 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
   `description`（計畫備註）→ `note`（今天的感覺，`pre-wrap`）→ ＃`hashtags` pill（深藍
   `hashtagBg`/`hashtagInk`）→ 選項庫 `tags` 中性 chip → 分隔線 → 底部一行（`footerRow`）：
   分類 `diary_tags`（`DiaryTags`，依分類上色）後面同一行接資訊列（每個地點各自一個 📍 span、
-  所有同伴合併成一個 👤 span 並完整顯示，共用 `<MetaRow>`）。分隔線只在下段有內容時出現；
+  所有同伴合併成一個 👤 span、以 `, ` 分隔並完整顯示，共用 `<MetaRow>`）。分隔線只在下段有內容時出現；
   什麼都沒有的紀錄顯示「✎ 這則紀錄還沒有內容」。任務卡是虛線邊框 + ☐ + 「任務 · 每 X 一次」。
   `onRecordClick`/`onTaskClick` 是選填 prop：有傳項目才可點（Day/Month 用，直接開編輯），
   沒傳就純顯示（Week 用，整個日列本身已經可點）。
