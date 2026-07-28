@@ -72,6 +72,13 @@ export default function ChallengeTab({ app }) {
             </div>
           )}
 
+          {current?.status === 'ended' && (
+            <button onClick={() => setSelectedId(null)}
+              style={{ border: 'none', background: 'transparent', color: '#2E8B5E', fontWeight: 900, fontSize: 14, padding: '14px 2px 0', cursor: 'pointer' }}>
+              ‹ 回到挑戰
+            </button>
+          )}
+
           {current && <ChallengeView
             key={current.id}
             challenge={current}
