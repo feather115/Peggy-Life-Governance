@@ -52,7 +52,7 @@ export function DiaryTags({ record, categories, fallback, onTint = false }) {
   );
 }
 
-// 📍 一個地點一個 span、👤 同伴合併一個 span（設計稿的底部資訊列）
+// 📍 一個地點一個 span、👤 同伴全部合併在一個 span（設計稿的底部資訊列）
 function MetaRow({ locations, people }) {
   const locs = locations || [];
   const ppl = people || [];
@@ -63,7 +63,7 @@ function MetaRow({ locations, people }) {
         <span key={loc} style={S.metaItem}><span style={S.metaIcon}>📍</span>{loc}</span>
       ))}
       {ppl.length > 0 && (
-        <span style={S.metaItem}><span style={S.metaIcon}>👤</span>{ppl.slice(0, 3).join('、')}{ppl.length > 3 ? ` +${ppl.length - 3}` : ''}</span>
+        <span style={S.metaItem}><span style={S.metaIcon}>👤</span>{ppl.join('、')}</span>
       )}
     </div>
   );
