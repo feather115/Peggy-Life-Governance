@@ -198,7 +198,8 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
   **計畫**（標題——新增模式輸入時列出過去相同標題建議，點擊帶入標題+顏色；7 色顏色選擇器；
   選項庫標籤 `PeopleSelect`；備註 `description`）與 **回顧 · 心情**（今天的感覺 `note`；
   ＃快速注記 `hashtags`——Enter/「加入」變深藍 chip、＃由系統加、前導 #/＃ 會被剝掉、重複
-  不再加；依分類分組的標籤選擇卡片 `CategoryTagCard`，選取狀態存 `diary_tags`）。
+  不再加；chip 內的左右按鈕可前後調整陣列順序，儲存後保留；依分類分組的標籤選擇卡片
+  `CategoryTagCard`，選取狀態存 `diary_tags`）。
   **回顧區可收合**：已有回顧內容、或這筆 `start_at` 在現在之前（過期＝可回顧）時預設展開，
   否則收起成一顆「＋ 補上心情 / 回顧」按鈕——對應「行程過了再補心情」的心智。
   「儲存」固定在 header 右側、返回鍵在左上，**未儲存變更防呆**：mount 記欄位 JSON 快照，

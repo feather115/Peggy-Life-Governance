@@ -44,7 +44,7 @@ const S = {
   hashtagLabel: { fontSize: 13, fontWeight: 700, color: THEME.textMuted, margin: '12px 0 8px' },
   hashtagChips: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 },
   hashtagChip: { display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: THEME.hashtagInk, background: THEME.hashtagBg, padding: '4px 10px', borderRadius: 999 },
-  hashtagRemove: { cursor: 'pointer', fontSize: 14, lineHeight: 1, opacity: 0.6 },
+  hashtagAction: (disabled = false) => ({ border: 'none', background: 'none', cursor: disabled ? 'default' : 'pointer', padding: 0, color: 'inherit', fontSize: 14, lineHeight: 1, opacity: disabled ? 0.2 : 0.6 }),
   hashtagRow: { display: 'flex', gap: 8 },
   hashtagAddBtn: { border: 'none', cursor: 'pointer', padding: '0 16px', borderRadius: THEME.radiusSm, background: THEME.hashtagBg, color: THEME.hashtagInk, fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0 },
   // 分類標籤卡
@@ -284,6 +284,15 @@ export default function RecordForm({ record, defaultDateKey, allRecords = [], ca
     setHashtagDraft('');
     if (h && !hashtags.includes(h)) setHashtags([...hashtags, h]);
   };
+  const moveHashtag = (index, offset) => {
+    setHashtags((prev) => {
+      const target = index + offset;
+      if (target < 0 || target >= prev.length) return prev;
+      const next = [...prev];
+      [next[index], next[target]] = [next[target], next[index]];
+      return next;
+    });
+  };
 
   const handleSave = async () => {
     setError('');
@@ -447,10 +456,35 @@ export default function RecordForm({ record, defaultDateKey, allRecords = [], ca
               <div style={S.hashtagLabel}>＃ 快速注記</div>
               {hashtags.length > 0 && (
                 <div style={S.hashtagChips}>
-                  {hashtags.map((h) => (
+                  {hashtags.map((h, index) => (
                     <span key={h} style={S.hashtagChip}>
                       ＃{h}
-                      <span style={S.hashtagRemove} onClick={() => setHashtags(hashtags.filter((x) => x !== h))}>×</span>
+                      <button
+                        type="button"
+                        style={S.hashtagAction(index === 0)}
+                        disabled={index === 0}
+                        aria-label={`將「${h}」往前移`}
+                        onClick={() => moveHashtag(index, -1)}
+                      >
+                        ←
+                      </button>
+                      <button
+                        type="button"
+                        style={S.hashtagAction(index === hashtags.length - 1)}
+                        disabled={index === hashtags.length - 1}
+                        aria-label={`將「${h}」往後移`}
+                        onClick={() => moveHashtag(index, 1)}
+                      >
+                        →
+                      </button>
+                      <button
+                        type="button"
+                        style={S.hashtagAction()}
+                        aria-label={`移除「${h}」`}
+                        onClick={() => setHashtags(hashtags.filter((x) => x !== h))}
+                      >
+                        ×
+                      </button>
                     </span>
                   ))}
                 </div>
