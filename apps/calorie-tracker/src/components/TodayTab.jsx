@@ -5,7 +5,7 @@ import { todayKey, dkFrom, parseDk, dateLabel, greeting, pct, emptyDay } from '.
 import { dayTotals, ringInfo } from '../selectors.js';
 import EditMealItemSheet from './EditMealItemSheet.jsx';
 
-export default function TodayTab({ app, selectedDate, setSelectedDate, onOpenSheet, onOpenImport, onOpenAdvanced }) {
+export default function TodayTab({ app, selectedDate, setSelectedDate, onOpenSheet, onOpenAdvanced }) {
   const { days, goalCal, goalP, goalC, goalF, fastingTagDefs, otherTagDefs, removeMeal, editMeal, displayName } = app;
   const [editing, setEditing] = useState(null); // { mealKey, mealLabel, item } | null
 
@@ -65,7 +65,6 @@ export default function TodayTab({ app, selectedDate, setSelectedDate, onOpenShe
       <div style={{ background: '#fff', borderRadius: 28, padding: '24px 20px 20px', marginTop: 12, boxShadow: '0 14px 32px -18px rgba(46,139,94,.4)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
           <div style={{ fontSize: 14, color: '#6E8B7C', fontWeight: 700 }}>每日消耗進度</div>
-          <button onClick={onOpenImport} title="匯入 JSON" style={{ border: 'none', background: '#F6FAF7', color: '#2E8B5E', fontWeight: 900, fontSize: 13, padding: '5px 10px', borderRadius: 14, cursor: 'pointer', fontFamily: 'monospace' }}>{'{ }'}</button>
         </div>
         <div style={{ position: 'relative', width: 190, height: 190, margin: '6px auto' }}>
           <svg width="190" height="190" viewBox="0 0 100 100">

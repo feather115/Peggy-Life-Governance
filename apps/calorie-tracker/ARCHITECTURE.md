@@ -7,7 +7,7 @@
 ## 一句話總覽
 
 Vite + React 單頁 App（顯示名稱「TY Calorie Tracker」），資料存在 Supabase（Postgres）。
-畫面分四個分頁（今日 / 報表 / 挑戰 / 設定）＋ 五個彈出面板（食物庫 / JSON匯入 / 進階 / 新增挑戰 / 編輯餐點）。
+畫面分四個分頁（今日 / 報表 / 挑戰 / 設定）＋ 四個彈出面板（食物庫〔內含手動輸入 / JSON 輸入切換〕/ 進階 / 新增挑戰 / 編輯餐點）。
 **所有資料操作集中在 `useAppData.js`，所有畫面在 `components/`，所有數學在 `selectors.js`。**
 還有一層 **`api/`**：Vercel serverless functions，給「AI 食物搜尋」「AI 當日摘要」「LINE 登入」用，金鑰只活在伺服器端，永遠不會打包進前端。
 App 可以用 LIFF 連結包進 LINE 裡開（見下方「LINE 整合」），也可以單純當網頁用。
@@ -49,10 +49,9 @@ Supabase ⇄ db.js ⇄ useAppData.js ⇄ App.jsx ⇄ components/*
 | **體重折線圖**（SVG） | `src/components/WeightChart.jsx` |
 | **挑戰資料操作**（建立/加入/更新/結束/刪除/登記） | `src/db.js` + `src/useAppData.js` |
 | **排行榜計算 / 剩餘天數** | `src/selectors.js` → `computeLeaderboard()`, `daysLeft()` |
-| **食物庫面板 / 新增、編輯自訂食物表單**（含品牌、備註、AI搜尋、份數選擇） | `src/components/FoodSheet.jsx` |
+| **食物庫面板 / 新增、編輯自訂食物表單**（含品牌、備註、AI搜尋、JSON 輸入、份數選擇） | `src/components/FoodSheet.jsx` |
 | **編輯「今天已加入」的某筆餐點** | `src/components/EditMealItemSheet.jsx` |
 | **今日頁的餐點顯示**（品牌、三大營養素、✏編輯按鈕） | `src/components/TodayTab.jsx` |
-| **JSON 匯入面板**（支援 unit/serving、brand、note 欄位） | `src/components/ImportSheet.jsx` |
 | **進階面板**（斷食/原因標籤、AI摘要產生） | `src/components/AdvancedSheet.jsx` |
 | **記錄原因標籤顏色 / 月曆彩色點** | `src/components/SettingsTab.jsx` + `src/components/ReportsTab.jsx` + `src/selectors.js` |
 | **報表頁的飲食歷史搜尋 / 依餐別統計 / 複製進菜單** | `src/components/FoodHistoryCard.jsx` |
@@ -90,7 +89,7 @@ Supabase ⇄ db.js ⇄ useAppData.js ⇄ App.jsx ⇄ components/*
 
 ### 畫面（`src/components/`）
 - `TodayTab` / `ReportsTab` / `ChallengeTab` / `SettingsTab` — 四個分頁
-- `FoodSheet` / `ImportSheet` / `AdvancedSheet` / `ChallengeCreateSheet` / `EditMealItemSheet` — 五個底部彈出面板
+- `FoodSheet` / `AdvancedSheet` / `ChallengeCreateSheet` / `EditMealItemSheet` — 四個底部彈出面板
 - `FoodHistoryCard` — 報表頁裡的飲食歷史卡片（搜尋/依餐別統計/編輯/複製進菜單）
 - `WeightChart` — 挑戰用的多人折線圖（SVG）
 - `TabBar` — 底部分頁列

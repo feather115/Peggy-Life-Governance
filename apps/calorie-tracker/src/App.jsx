@@ -9,7 +9,6 @@ import ReportsTab from './components/ReportsTab.jsx';
 import SettingsTab from './components/SettingsTab.jsx';
 import ChallengeTab from './components/ChallengeTab.jsx';
 import FoodSheet from './components/FoodSheet.jsx';
-import ImportSheet from './components/ImportSheet.jsx';
 import AdvancedSheet from './components/AdvancedSheet.jsx';
 
 function Centered({ children, color = '#6E8B7C' }) {
@@ -23,13 +22,12 @@ export default function App({ session, onSignOut }) {
   const [tab, setTab] = useState('today');
   const [selectedDate, setSelectedDate] = useState(todayKey());
   const [sheetMeal, setSheetMeal] = useState(null);    // Which meal's food sheet is open (null = closed)
-  const [importOpen, setImportOpen] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
 
   if (!app.loaded) return <Centered>載入中…</Centered>;
   if (app.loadError) return <Centered color="#B91C1C">載入失敗：{app.loadError}</Centered>;
 
-  const changeTab = (t) => { setTab(t); setSheetMeal(null); setImportOpen(false); setAdvancedOpen(false); };
+  const changeTab = (t) => { setTab(t); setSheetMeal(null); setAdvancedOpen(false); };
   const openDateInToday = (dateKey) => {
     setSelectedDate(dateKey);
     changeTab('today');
@@ -40,7 +38,7 @@ export default function App({ session, onSignOut }) {
       <div className="ps" style={{ flex: 1, overflowY: 'auto', paddingTop: 8 }}>
         {tab === 'today' && (
           <TodayTab app={app} selectedDate={selectedDate} setSelectedDate={setSelectedDate}
-            onOpenSheet={setSheetMeal} onOpenImport={() => setImportOpen(true)} onOpenAdvanced={() => setAdvancedOpen(true)} />
+            onOpenSheet={setSheetMeal} onOpenAdvanced={() => setAdvancedOpen(true)} />
         )}
         {tab === 'reports' && <ReportsTab app={app} onSelectDate={openDateInToday} />}
         {tab === 'challenge' && <ChallengeTab app={app} />}
@@ -50,7 +48,6 @@ export default function App({ session, onSignOut }) {
       <TabBar tab={tab} onTab={changeTab} />
 
       {sheetMeal && <FoodSheet app={app} selectedDate={selectedDate} mealKey={sheetMeal} onClose={() => setSheetMeal(null)} />}
-      {importOpen && <ImportSheet app={app} onClose={() => setImportOpen(false)} />}
       {advancedOpen && <AdvancedSheet app={app} selectedDate={selectedDate} onClose={() => setAdvancedOpen(false)} />}
     </div>
   );

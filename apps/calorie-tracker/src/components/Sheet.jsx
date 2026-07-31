@@ -1,4 +1,4 @@
-// Shared bottom sheet wrapper (used by food library, JSON import, and advanced settings)
+// Shared bottom sheet wrapper (used by food library, advanced settings, and other modal sheets)
 // Fixed to window bottom, centered, max-width 520, with semi-transparent backdrop and top handle
 import React from 'react';
 import { createPortal } from 'react-dom';
