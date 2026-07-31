@@ -161,12 +161,12 @@ export function useAppData(userId) {
     return nf;
   }, [userId, touchFood]);
 
-  // Bulk import (used for JSON import), returns the count of successfully imported items
+  // Bulk import (used for JSON import), returns the successfully imported food objects
   const importFoods = useCallback(async (list) => {
     const added = [];
     for (const v of list) added.push(await db.addCustomFood(userId, v));
     setCustomFoods((prev) => [...prev, ...added]);
-    return added.length;
+    return added;
   }, [userId]);
 
   // ── Tag definitions (adding/deleting in Settings page) ─────────────────────────

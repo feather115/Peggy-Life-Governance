@@ -162,10 +162,20 @@ export default function FoodSheet({ app, selectedDate, mealKey, onClose }) {
         });
       });
       if (valid.length === 0) { setJsonError('沒找到有效食物，請確認有 name 和 cal'); return; }
-      const count = await importFoods(valid);
-      setJsonSuccess(count);
+      const addedFoods = await importFoods(valid);
+      await Promise.all(addedFoods.map((fo) => addMeal(selectedDate, mealKey, {
+        foodRef: fo.id,
+        name: fo.name,
+        brand: fo.brand || '',
+        unit: fo.unit,
+        cal: fo.cal,
+        p: fo.p,
+        c: fo.c,
+        f: fo.f,
+      })));
+      setJsonSuccess(addedFoods.length);
       setJsonError('');
-      showToast(`已匯入 ${count} 筆食物`);
+      showToast(`已加入 ${addedFoods.length} 筆到${mealLabel}`);
     } catch (e) {
       setJsonError('匯入失敗：' + (e.message || ''));
     }
@@ -319,8 +329,8 @@ export default function FoodSheet({ app, selectedDate, mealKey, onClose }) {
               <textarea value={jsonText} onChange={(e) => { setJsonText(e.target.value); setJsonError(''); setJsonSuccess(0); }} placeholder="貼上 JSON…"
                 style={{ width: '100%', minHeight: 180, marginTop: 12, border: 'none', background: '#F6FAF7', borderRadius: 16, padding: '12px 14px', fontSize: 16, fontWeight: 600, color: '#234034', fontFamily: 'monospace', resize: 'none', lineHeight: 1.6 }} />
               {jsonError && <div style={{ marginTop: 10, background: '#FEE2E2', borderRadius: 12, padding: '10px 12px', fontSize: 13, fontWeight: 700, color: '#B91C1C' }}>{jsonError}</div>}
-              {jsonSuccess > 0 && <div style={{ marginTop: 10, background: '#DCFCE7', borderRadius: 12, padding: '10px 12px', fontSize: 13, fontWeight: 800, color: '#15803D' }}>成功匯入 {jsonSuccess} 筆食物</div>}
-              <button onClick={importJsonFoods} style={{ width: '100%', marginTop: 12, border: 'none', background: '#2E8B5E', color: '#fff', fontWeight: 900, fontSize: 14, padding: 14, borderRadius: 16, cursor: 'pointer' }}>匯入到食物庫</button>
+              {jsonSuccess > 0 && <div style={{ marginTop: 10, background: '#DCFCE7', borderRadius: 12, padding: '10px 12px', fontSize: 13, fontWeight: 800, color: '#15803D' }}>成功匯入並加入 {jsonSuccess} 筆食物到{mealLabel}</div>}
+              <button onClick={importJsonFoods} style={{ width: '100%', marginTop: 12, border: 'none', background: '#2E8B5E', color: '#fff', fontWeight: 900, fontSize: 14, padding: 14, borderRadius: 16, cursor: 'pointer' }}>匯入到食物庫並加入{mealLabel}</button>
             </>
           )}
         </div>

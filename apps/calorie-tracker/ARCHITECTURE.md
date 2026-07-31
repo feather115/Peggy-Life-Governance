@@ -372,7 +372,7 @@ CASCADE 會把對應的成員關聯與體重紀錄一併清掉。`active` 的挑
 | `removeCustomFood(id)` | 刪自訂食物 |
 | `updateCustomFood(id, food)` | 改自訂食物定義（名稱/品牌/份量/卡路里/營養素/備註），不影響歷史記錄 |
 | `editMeal(date, mealKey, itemId, patch)` | 編輯已加入的某筆餐點（名稱/品牌/份量/卡路里/營養素），只改那一筆 |
-| `importFoods(list)` | 批次匯入，回傳成功筆數 |
+| `importFoods(list)` | 批次匯入，回傳成功新增的食物清單 |
 | `toggleTag(date, tagId, makeActive)` | 某天開/關一個標籤 |
 | `saveDayNote(date, note)` | 存當日 AI 摘要 |
 | `addTagDef(type, label)` | 新增標籤定義 |
