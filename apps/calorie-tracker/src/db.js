@@ -215,7 +215,7 @@ export async function loadMyChallenges(userId) {
   // Fetch all challenges including related data in one query
   const { data: rows, error } = await supabase
     .from('challenges')
-    .select('id,name,start_date,end_date,status,winner_user_id,creator_user_id,invite_code,created_at,challenge_members(user_id,joined_at,color),weight_entries(id,user_id,kg_diff,week_label,recorded_at)')
+    .select('id,name,start_date,end_date,status,winner_user_id,creator_user_id,invite_code,created_at,challenge_members(user_id,joined_at,color),weight_entries(id,user_id,kg_diff,start_weight,current_weight,week_label,recorded_at)')
     .in('id', ids)
     .order('created_at', { ascending: false });
   if (error) throw error;
@@ -256,6 +256,8 @@ export async function loadMyChallenges(userId) {
     })),
     entries: (c.weight_entries || []).map(e => ({
       id: e.id, userId: e.user_id, kgDiff: Number(e.kg_diff),
+      startWeight: e.start_weight === null ? null : Number(e.start_weight),
+      currentWeight: e.current_weight === null ? null : Number(e.current_weight),
       weekLabel: e.week_label, recordedAt: e.recorded_at,
     })),
   }));
@@ -347,14 +349,20 @@ export async function deleteChallenge(challengeId) {
   if (error) throw error;
 }
 
-export async function upsertWeightEntry(userId, { challengeId, kgDiff, weekLabel }) {
+export async function upsertWeightEntry(userId, { challengeId, kgDiff, startWeight, currentWeight, weekLabel }) {
   // (challenge_id, user_id, week_label) is unique — a single upsert covers both "first entry this week" and "overwrite this week's entry"
   const { data, error } = await supabase.from('weight_entries').upsert({
-    challenge_id: challengeId, user_id: userId, kg_diff: kgDiff, week_label: weekLabel,
+    challenge_id: challengeId, user_id: userId, kg_diff: kgDiff,
+    start_weight: startWeight ?? null, current_weight: currentWeight ?? null, week_label: weekLabel,
     recorded_at: new Date().toISOString(),
   }, { onConflict: 'challenge_id,user_id,week_label' }).select('*').single();
   if (error) throw error;
-  return { id: data.id, userId, kgDiff: Number(data.kg_diff), weekLabel: data.week_label, recordedAt: data.recorded_at };
+  return {
+    id: data.id, userId, kgDiff: Number(data.kg_diff),
+    startWeight: data.start_weight === null ? null : Number(data.start_weight),
+    currentWeight: data.current_weight === null ? null : Number(data.current_weight),
+    weekLabel: data.week_label, recordedAt: data.recorded_at,
+  };
 }
 
 export async function deleteWeightEntry(entryId) {

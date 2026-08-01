@@ -15,6 +15,10 @@ function fmtKgDiff(v) {
   if (v === null || v === undefined) return '尚未登記';
   return `${v > 0 ? '+' : ''}${v.toFixed(1)} kg`;
 }
+function fmtWeight(v) {
+  if (v === null || v === undefined) return '—';
+  return `${v.toFixed(1)} kg`;
+}
 const diffColor = (v) => v === null ? '#9bb0a3' : v < 0 ? '#2E8B5E' : '#D9544F';
 const rankColor = (r) => r === 1 ? '#E8A13C' : r === 2 ? '#9bb0a3' : r === 3 ? '#A06B3B' : '#9bb0a3';
 
@@ -416,6 +420,8 @@ function ColorPicker({ current, onPick }) {
 
 function EntryForm({ challenge, myUserId, onSubmit, onRemove }) {
   const [kg, setKg] = useState('');
+  const [startWeight, setStartWeight] = useState('');
+  const [currentWeight, setCurrentWeight] = useState('');
   const [date, setDate] = useState(lastFriday());
   const [msg, setMsg] = useState(null); // {kind:'success'|'error', text}
   const [busy, setBusy] = useState(false);
@@ -424,24 +430,48 @@ function EntryForm({ challenge, myUserId, onSubmit, onRemove }) {
   const myEntries = challenge.entries
     .filter(e => e.userId === myUserId)
     .sort((a, b) => b.weekLabel.localeCompare(a.weekLabel));
+  const latestEntry = myEntries[0] || null;
+  const parsedStartWeight = parseFloat(startWeight);
+  const parsedCurrentWeight = parseFloat(currentWeight);
+  const hasStartWeight = !isNaN(parsedStartWeight);
+  const hasCurrentWeight = !isNaN(parsedCurrentWeight);
+  const assistedKgDiff = hasStartWeight && hasCurrentWeight ? Math.round((parsedCurrentWeight - parsedStartWeight) * 10) / 10 : null;
 
   const startEdit = (e) => {
     setEditingWeek(e.weekLabel);
     setKg(String(e.kgDiff));
+    setStartWeight(e.startWeight === null ? '' : String(e.startWeight));
+    setCurrentWeight(e.currentWeight === null ? '' : String(e.currentWeight));
     setDate(e.weekLabel);
     setMsg(null);
   };
-  const cancelEdit = () => { setEditingWeek(null); setKg(''); setDate(lastFriday()); setMsg(null); };
+  const cancelEdit = () => {
+    setEditingWeek(null);
+    setKg('');
+    setStartWeight('');
+    setCurrentWeight('');
+    setDate(lastFriday());
+    setMsg(null);
+  };
 
   const submit = async () => {
-    const n = parseFloat(kg);
+    const manualKgDiff = parseFloat(kg);
+    const n = !isNaN(manualKgDiff) ? manualKgDiff : assistedKgDiff;
     if (isNaN(n)) { setMsg({ kind:'error', text:'請輸入有效數字（例如 -2.5）' }); return; }
     setBusy(true);
     try {
       // The date remains fixed to the original week_label when editing to avoid duplicate additions when changing the date
-      await onSubmit({ challengeId: challenge.id, kgDiff: n, weekLabel: editingWeek || date });
+      await onSubmit({
+        challengeId: challenge.id,
+        kgDiff: n,
+        startWeight: hasStartWeight ? parsedStartWeight : null,
+        currentWeight: hasCurrentWeight ? parsedCurrentWeight : null,
+        weekLabel: editingWeek || date,
+      });
       setMsg({ kind:'success', text:`✓ 已${editingWeek ? '更新' : '記錄'} ${n > 0 ? '+' : ''}${n} kg` });
       setKg('');
+      setStartWeight('');
+      setCurrentWeight('');
       setEditingWeek(null);
       setTimeout(() => setMsg(null), 2500);
     } catch (e) {
@@ -455,6 +485,43 @@ function EntryForm({ challenge, myUserId, onSubmit, onRemove }) {
     <div style={{ marginTop: 16, background: '#fff', borderRadius: 20, padding: '20px 18px', boxShadow: '0 10px 24px -18px rgba(46,139,94,.5)' }}>
       <div style={{ fontSize: 16, fontWeight: 900, color: '#234034', marginBottom: 4 }}>📝 本週登記</div>
       <div style={{ fontSize: 12, color: '#6E8B7C', fontWeight: 600, marginBottom: 14, lineHeight: 1.6 }}>從挑戰開始到現在的體重差值（減重用負數，例如 -2.5）</div>
+
+      <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
+        <div style={{ flex: 1, minWidth: 0, background: '#F6FAF7', borderRadius: 14, padding: '10px 12px' }}>
+          <div style={{ fontSize: 11, fontWeight: 900, color: '#6E8B7C', letterSpacing: 1 }}>起始體重</div>
+          <div style={{ fontSize: 18, fontWeight: 900, color: '#234034', marginTop: 4 }}>{fmtWeight(latestEntry?.startWeight ?? null)}</div>
+        </div>
+        <div style={{ flex: 1, minWidth: 0, background: '#F6FAF7', borderRadius: 14, padding: '10px 12px' }}>
+          <div style={{ fontSize: 11, fontWeight: 900, color: '#6E8B7C', letterSpacing: 1 }}>當前體重</div>
+          <div style={{ fontSize: 18, fontWeight: 900, color: '#234034', marginTop: 4 }}>{fmtWeight(latestEntry?.currentWeight ?? null)}</div>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 12 }}>
+        <div style={{ flex: 1, minWidth: 130 }}>
+          <div style={{ fontSize: 11, fontWeight: 900, color: '#6E8B7C', letterSpacing: 1, marginBottom: 6 }}>起始體重（選填）</div>
+          <input type="text" inputMode="decimal" value={startWeight} onChange={(e) => { if (/^\d*\.?\d*$/.test(e.target.value)) setStartWeight(e.target.value); }} placeholder="60.0"
+            style={{ width: '100%', border: 'none', background: '#F6FAF7', borderRadius: 14, padding: '14px 15px', fontSize: 16, fontWeight: 700, color: '#234034' }} />
+        </div>
+        <div style={{ flex: 1, minWidth: 130 }}>
+          <div style={{ fontSize: 11, fontWeight: 900, color: '#6E8B7C', letterSpacing: 1, marginBottom: 6 }}>當前體重（選填）</div>
+          <input type="text" inputMode="decimal" value={currentWeight} onChange={(e) => { if (/^\d*\.?\d*$/.test(e.target.value)) setCurrentWeight(e.target.value); }} placeholder="57.5"
+            style={{ width: '100%', border: 'none', background: '#F6FAF7', borderRadius: 14, padding: '14px 15px', fontSize: 16, fontWeight: 700, color: '#234034' }} />
+        </div>
+      </div>
+
+      <div style={{ marginBottom: 12, background: '#F6FAF7', borderRadius: 14, padding: '10px 12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 900, color: '#6E8B7C', letterSpacing: 1 }}>一鍵協助計算</div>
+            <div style={{ fontSize: 13, fontWeight: 800, color: assistedKgDiff === null ? '#9bb0a3' : diffColor(assistedKgDiff), marginTop: 4 }}>
+              {assistedKgDiff === null ? '兩個體重都填了才會自動算差值' : `自動差值：${assistedKgDiff > 0 ? '+' : ''}${assistedKgDiff.toFixed(1)} kg`}
+            </div>
+          </div>
+          <button type="button" disabled={assistedKgDiff === null} onClick={() => setKg(String(assistedKgDiff))}
+            style={{ border: 'none', background: assistedKgDiff === null ? '#DCE3DE' : '#EAF5EE', color: assistedKgDiff === null ? '#9bb0a3' : '#2E8B5E', fontWeight: 900, fontSize: 13, padding: '10px 12px', borderRadius: 12, cursor: assistedKgDiff === null ? 'not-allowed' : 'pointer', flexShrink: 0 }}>帶入差值</button>
+        </div>
+      </div>
 
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 12 }}>
         <div style={{ flex: 1, minWidth: 130 }}>
@@ -487,7 +554,14 @@ function EntryForm({ challenge, myUserId, onSubmit, onRemove }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 320, overflowY: 'auto' }}>
             {myEntries.map(e => (
               <div key={e.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '9px 12px', background: editingWeek === e.weekLabel ? '#EAF5EE' : '#F6FAF7', borderRadius: 10 }}>
-                <span style={{ fontSize: 13, color: '#6E8B7C', fontWeight: 600 }}>{e.weekLabel}</span>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div style={{ fontSize: 13, color: '#6E8B7C', fontWeight: 600 }}>{e.weekLabel}</div>
+                  {(e.startWeight !== null || e.currentWeight !== null) && (
+                    <div style={{ fontSize: 11, color: '#9bb0a3', fontWeight: 700, marginTop: 2 }}>
+                      起 {fmtWeight(e.startWeight)} / 今 {fmtWeight(e.currentWeight)}
+                    </div>
+                  )}
+                </div>
                 <span style={{ fontSize: 16, fontWeight: 900, color: diffColor(e.kgDiff) }}>{fmtKgDiff(e.kgDiff)}</span>
                 <div style={{ display: 'flex', gap: 4 }}>
                   <button onClick={() => startEdit(e)} style={{ border: 'none', background: '#fff', color: '#6E8B7C', width: 26, height: 26, borderRadius: '50%', cursor: 'pointer', fontSize: 13 }}>✏</button>

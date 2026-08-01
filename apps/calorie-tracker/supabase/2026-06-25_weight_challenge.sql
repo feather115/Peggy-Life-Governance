@@ -35,6 +35,8 @@ create table if not exists public.weight_entries (
   challenge_id uuid not null references public.challenges(id) on delete cascade,
   user_id      uuid not null references auth.users(id) on delete cascade,
   kg_diff      numeric not null,
+  start_weight numeric,
+  current_weight numeric,
   week_label   date not null,
   recorded_at  timestamptz not null default now(),
   unique (challenge_id, user_id, week_label)
