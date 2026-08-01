@@ -153,7 +153,7 @@ function ChallengeView({ challenge, myUserId, onSubmitEntry, onRemoveEntry, onUp
     <div>
       {/* Banner */}
       <div style={{ background: '#fff', borderRadius: 24, padding: '20px 22px', marginTop: 14, boxShadow: '0 14px 32px -18px rgba(46,139,94,.4)' }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
               {isActive ? (
@@ -165,13 +165,15 @@ function ChallengeView({ challenge, myUserId, onSubmitEntry, onRemoveEntry, onUp
                 <span style={{ fontSize: 11, fontWeight: 900, letterSpacing: 1, color: '#9bb0a3' }}>已結束</span>
               )}
             </div>
-            <div style={{ fontSize: 24, fontWeight: 900, color: '#234034', lineHeight: 1.2 }}>{challenge.name}</div>
+            <div style={{ fontSize: 22, fontWeight: 900, color: '#234034', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{challenge.name}</div>
             <div style={{ fontSize: 13, color: '#6E8B7C', fontWeight: 600, marginTop: 4 }}>{dateLabel(challenge.startDate)} → {dateLabel(challenge.endDate)}</div>
           </div>
           {isActive && (
-            <div style={{ textAlign: 'right', flexShrink: 0 }}>
-              <div style={{ fontSize: 42, fontWeight: 900, lineHeight: 1, color: dlColor }}>{dl}</div>
-              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1, color: '#9bb0a3' }}>天後結束</div>
+            <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+              <div style={{ background: '#F6FAF7', borderRadius: 14, padding: '8px 10px', minWidth: 64, textAlign: 'center' }}>
+                <div style={{ fontSize: 24, fontWeight: 900, lineHeight: 1, color: dlColor }}>{dl}</div>
+                <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1, color: '#9bb0a3', marginTop: 2 }}>天後結束</div>
+              </div>
             </div>
           )}
         </div>
@@ -507,7 +509,7 @@ function EndedChallengeCard({ challenge, myUserId, onSelect, active }) {
     <div style={{ background: '#fff', borderRadius: 14, padding: '14px 16px', boxShadow: '0 10px 24px -18px rgba(46,139,94,.5)', border: active ? '2px solid #2E8B5E' : '2px solid transparent', cursor: 'pointer' }} onClick={onSelect}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 15, fontWeight: 800, color: '#234034' }}>{challenge.name}</div>
+          <div style={{ fontSize: 15, fontWeight: 800, color: '#234034', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{challenge.name}</div>
           <div style={{ fontSize: 12, color: '#9bb0a3', marginTop: 2 }}>{dateLabel(challenge.startDate)} → {dateLabel(challenge.endDate)}</div>
         </div>
         <div style={{ textAlign: 'right' }}>
