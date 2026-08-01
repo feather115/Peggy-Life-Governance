@@ -312,7 +312,7 @@ SET pgrst.db_schemas = '...'` + `NOTIFY pgrst, 'reload config'`，見根目錄
 - **排行榜排序用 `week_label` 不是 `recordedAt`**——`week_label` 代表「哪一週」，`recordedAt` 是「寫入資料庫的時間」。如果用 SQL 一次性補登多筆歷史資料（例如幫朋友手動 insert 過去半年的紀錄），這些筆的 `recordedAt` 幾乎同一時間，用它排序會抓錯「最新一筆」。`selectors.js` 的 `computeLeaderboard()` 已修正為比較 `week_label` 字串大小，同時會計算最新一週與前一週的差值（`weeklyChange`），並在排行榜與頒獎台下方顯示如「比上週 -0.7 kg」的動態差值反饋。
 - **輸入框有 `±` 切換鈕**——某些 Android 手機的數字鍵盤打不出負號，`ChallengeTab.jsx` 的 `EntryForm` 把輸入框換成 `inputMode="decimal"` 文字框，並在旁邊加一個按鈕直接反轉正負號，不用靠鍵盤打 `-`。
 - **登記紀錄可編輯**——`EntryForm` 顯示「全部」歷史登記（不只最近幾筆），每筆旁邊有 ✏ 編輯按鈕：點了會把數值帶回表單、鎖住日期欄位（避免改日期變成新增一筆），送出後會 upsert 覆蓋原本那筆。
-- **起始體重 / 當前體重是選填輔助欄位**——存在 `weight_entries.start_weight`、`weight_entries.current_weight`，主要是幫使用者自己核對數字與一鍵換算 `kg_diff`；沒填也能照舊只記差值，舊資料不回補。
+- **起始體重 / 當前體重是選填輔助欄位**——存在 `weight_entries.start_weight`、`weight_entries.current_weight`，前端在 `ChallengeTab.jsx` 另外拆出一張 `體重紀錄（選填）` 卡片，提供「協助帶入」與「修改體重」兩個按鈕；沒填也能照舊只記差值，舊資料不回補。
 
 ### 邀請碼
 - 建立挑戰時自動生 6 碼。若撞名最多重試 5 次（unique violation `23505`）。

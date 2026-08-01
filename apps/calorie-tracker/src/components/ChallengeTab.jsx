@@ -436,6 +436,8 @@ function EntryForm({ challenge, myUserId, onSubmit, onRemove }) {
   const hasStartWeight = !isNaN(parsedStartWeight);
   const hasCurrentWeight = !isNaN(parsedCurrentWeight);
   const assistedKgDiff = hasStartWeight && hasCurrentWeight ? Math.round((parsedCurrentWeight - parsedStartWeight) * 10) / 10 : null;
+  const activeWeekLabel = editingWeek || date;
+  const activeEntry = myEntries.find((e) => e.weekLabel === activeWeekLabel) || null;
 
   const startEdit = (e) => {
     setEditingWeek(e.weekLabel);
@@ -452,6 +454,30 @@ function EntryForm({ challenge, myUserId, onSubmit, onRemove }) {
     setCurrentWeight('');
     setDate(lastFriday());
     setMsg(null);
+  };
+
+  const persistWeights = async () => {
+    const manualKgDiff = parseFloat(kg);
+    const baseKgDiff = !isNaN(manualKgDiff) ? manualKgDiff : assistedKgDiff ?? activeEntry?.kgDiff ?? null;
+    if (!hasStartWeight && !hasCurrentWeight) { setMsg({ kind:'error', text:'請先填起始體重或當前體重' }); return; }
+    if (baseKgDiff === null || isNaN(baseKgDiff)) { setMsg({ kind:'error', text:'請先填公斤差值，或同時填起始體重與當前體重' }); return; }
+    setBusy(true);
+    try {
+      await onSubmit({
+        challengeId: challenge.id,
+        kgDiff: baseKgDiff,
+        startWeight: hasStartWeight ? parsedStartWeight : null,
+        currentWeight: hasCurrentWeight ? parsedCurrentWeight : null,
+        weekLabel: activeWeekLabel,
+      });
+      if (isNaN(manualKgDiff) && assistedKgDiff !== null) setKg(String(assistedKgDiff));
+      setMsg({ kind:'success', text:'✓ 已更新體重紀錄' });
+      setTimeout(() => setMsg(null), 2500);
+    } catch (e) {
+      setMsg({ kind:'error', text: e.message || '更新失敗' });
+    } finally {
+      setBusy(false);
+    }
   };
 
   const submit = async () => {
@@ -482,97 +508,94 @@ function EntryForm({ challenge, myUserId, onSubmit, onRemove }) {
   };
 
   return (
-    <div style={{ marginTop: 16, background: '#fff', borderRadius: 20, padding: '20px 18px', boxShadow: '0 10px 24px -18px rgba(46,139,94,.5)' }}>
-      <div style={{ fontSize: 16, fontWeight: 900, color: '#234034', marginBottom: 4 }}>📝 本週登記</div>
-      <div style={{ fontSize: 12, color: '#6E8B7C', fontWeight: 600, marginBottom: 14, lineHeight: 1.6 }}>從挑戰開始到現在的體重差值（減重用負數，例如 -2.5）</div>
+    <>
+      <div style={{ marginTop: 16, background: '#fff', borderRadius: 20, padding: '20px 18px', boxShadow: '0 10px 24px -18px rgba(46,139,94,.5)' }}>
+        <div style={{ fontSize: 16, fontWeight: 900, color: '#234034', marginBottom: 4 }}>⚖️ 體重紀錄（選填）</div>
+        <div style={{ fontSize: 12, color: '#6E8B7C', fontWeight: 600, marginBottom: 14, lineHeight: 1.6 }}>可另外記起始體重與當前體重，幫你核對數字並協助換算公斤差值</div>
 
-      <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
-        <div style={{ flex: 1, minWidth: 0, background: '#F6FAF7', borderRadius: 14, padding: '10px 12px' }}>
-          <div style={{ fontSize: 11, fontWeight: 900, color: '#6E8B7C', letterSpacing: 1 }}>起始體重</div>
-          <div style={{ fontSize: 18, fontWeight: 900, color: '#234034', marginTop: 4 }}>{fmtWeight(latestEntry?.startWeight ?? null)}</div>
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 12 }}>
+          <div style={{ flex: 1, minWidth: 130 }}>
+            <div style={{ fontSize: 11, fontWeight: 900, color: '#6E8B7C', letterSpacing: 1, marginBottom: 6 }}>起始體重（選填）</div>
+            <input type="text" inputMode="decimal" value={startWeight} onChange={(e) => { if (/^\d*\.?\d*$/.test(e.target.value)) setStartWeight(e.target.value); }} placeholder="60.0"
+              style={{ width: '100%', border: 'none', background: '#F6FAF7', borderRadius: 14, padding: '14px 15px', fontSize: 16, fontWeight: 700, color: '#234034' }} />
+          </div>
+          <div style={{ flex: 1, minWidth: 130 }}>
+            <div style={{ fontSize: 11, fontWeight: 900, color: '#6E8B7C', letterSpacing: 1, marginBottom: 6 }}>當前體重（選填）</div>
+            <input type="text" inputMode="decimal" value={currentWeight} onChange={(e) => { if (/^\d*\.?\d*$/.test(e.target.value)) setCurrentWeight(e.target.value); }} placeholder="57.5"
+              style={{ width: '100%', border: 'none', background: '#F6FAF7', borderRadius: 14, padding: '14px 15px', fontSize: 16, fontWeight: 700, color: '#234034' }} />
+          </div>
         </div>
-        <div style={{ flex: 1, minWidth: 0, background: '#F6FAF7', borderRadius: 14, padding: '10px 12px' }}>
-          <div style={{ fontSize: 11, fontWeight: 900, color: '#6E8B7C', letterSpacing: 1 }}>當前體重</div>
-          <div style={{ fontSize: 18, fontWeight: 900, color: '#234034', marginTop: 4 }}>{fmtWeight(latestEntry?.currentWeight ?? null)}</div>
+
+        <div style={{ marginBottom: 12, background: '#F6FAF7', borderRadius: 14, padding: '10px 12px' }}>
+          <div style={{ fontSize: 11, fontWeight: 900, color: '#6E8B7C', letterSpacing: 1 }}>一鍵協助計算</div>
+          <div style={{ fontSize: 13, fontWeight: 800, color: assistedKgDiff === null ? '#9bb0a3' : diffColor(assistedKgDiff), marginTop: 4 }}>
+            {assistedKgDiff === null ? '兩個體重都填了才會自動算差值' : `自動差值：${assistedKgDiff > 0 ? '+' : ''}${assistedKgDiff.toFixed(1)} kg`}
+          </div>
+        </div>
+
+        {msg && <div style={{ padding: '10px 14px', borderRadius: 12, marginBottom: 12, fontSize: 13, fontWeight: 700, color: msg.kind === 'success' ? '#15803D' : '#B91C1C', background: msg.kind === 'success' ? '#DCFCE7' : '#FEE2E2' }}>{msg.text}</div>}
+
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button type="button" disabled={assistedKgDiff === null} onClick={() => setKg(String(assistedKgDiff))}
+            style={{ flex: 1, border: 'none', background: assistedKgDiff === null ? '#DCE3DE' : '#EAF5EE', color: assistedKgDiff === null ? '#9bb0a3' : '#2E8B5E', fontWeight: 900, fontSize: 13, padding: '12px 12px', borderRadius: 12, cursor: assistedKgDiff === null ? 'not-allowed' : 'pointer' }}>協助帶入</button>
+          <button type="button" onClick={persistWeights} disabled={busy}
+            style={{ flex: 1, border: 'none', background: busy ? '#C7D6CC' : '#2E8B5E', color: '#fff', fontWeight: 900, fontSize: 13, padding: '12px 12px', borderRadius: 12, cursor: 'pointer' }}>{busy ? '儲存中…' : '修改體重'}</button>
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 12 }}>
-        <div style={{ flex: 1, minWidth: 130 }}>
-          <div style={{ fontSize: 11, fontWeight: 900, color: '#6E8B7C', letterSpacing: 1, marginBottom: 6 }}>起始體重（選填）</div>
-          <input type="text" inputMode="decimal" value={startWeight} onChange={(e) => { if (/^\d*\.?\d*$/.test(e.target.value)) setStartWeight(e.target.value); }} placeholder="60.0"
-            style={{ width: '100%', border: 'none', background: '#F6FAF7', borderRadius: 14, padding: '14px 15px', fontSize: 16, fontWeight: 700, color: '#234034' }} />
-        </div>
-        <div style={{ flex: 1, minWidth: 130 }}>
-          <div style={{ fontSize: 11, fontWeight: 900, color: '#6E8B7C', letterSpacing: 1, marginBottom: 6 }}>當前體重（選填）</div>
-          <input type="text" inputMode="decimal" value={currentWeight} onChange={(e) => { if (/^\d*\.?\d*$/.test(e.target.value)) setCurrentWeight(e.target.value); }} placeholder="57.5"
-            style={{ width: '100%', border: 'none', background: '#F6FAF7', borderRadius: 14, padding: '14px 15px', fontSize: 16, fontWeight: 700, color: '#234034' }} />
-        </div>
-      </div>
+      <div style={{ marginTop: 16, background: '#fff', borderRadius: 20, padding: '20px 18px', boxShadow: '0 10px 24px -18px rgba(46,139,94,.5)' }}>
+        <div style={{ fontSize: 16, fontWeight: 900, color: '#234034', marginBottom: 4 }}>📝 本週登記</div>
+        <div style={{ fontSize: 12, color: '#6E8B7C', fontWeight: 600, marginBottom: 14, lineHeight: 1.6 }}>從挑戰開始到現在的體重差值（減重用負數，例如 -2.5）</div>
 
-      <div style={{ marginBottom: 12, background: '#F6FAF7', borderRadius: 14, padding: '10px 12px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-          <div>
-            <div style={{ fontSize: 11, fontWeight: 900, color: '#6E8B7C', letterSpacing: 1 }}>一鍵協助計算</div>
-            <div style={{ fontSize: 13, fontWeight: 800, color: assistedKgDiff === null ? '#9bb0a3' : diffColor(assistedKgDiff), marginTop: 4 }}>
-              {assistedKgDiff === null ? '兩個體重都填了才會自動算差值' : `自動差值：${assistedKgDiff > 0 ? '+' : ''}${assistedKgDiff.toFixed(1)} kg`}
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 12 }}>
+          <div style={{ flex: 1, minWidth: 130 }}>
+            <div style={{ fontSize: 11, fontWeight: 900, color: '#6E8B7C', letterSpacing: 1, marginBottom: 6 }}>公斤差值</div>
+            <div style={{ display: 'flex', alignItems: 'stretch', gap: 6 }}>
+              {/* 有些手機鍵盤打不出負號，所以用按鈕切換正負，不用打字也行 */}
+              <button type="button" onClick={() => setKg((v) => v.startsWith('-') ? v.slice(1) : v ? `-${v}` : '-')}
+                style={{ width: 44, border: 'none', background: '#EAF5EE', color: '#2E8B5E', fontWeight: 900, fontSize: 20, borderRadius: 12, cursor: 'pointer', flexShrink: 0 }}>±</button>
+              <input type="text" inputMode="decimal" value={kg} onChange={(e) => { if (/^-?\d*\.?\d*$/.test(e.target.value)) setKg(e.target.value); }} placeholder="-2.5"
+                style={{ flex: 1, minWidth: 0, border: 'none', background: '#F6FAF7', borderRadius: 14, padding: '14px 8px', fontSize: 22, fontWeight: 900, color: '#234034', textAlign: 'center' }} />
             </div>
           </div>
-          <button type="button" disabled={assistedKgDiff === null} onClick={() => setKg(String(assistedKgDiff))}
-            style={{ border: 'none', background: assistedKgDiff === null ? '#DCE3DE' : '#EAF5EE', color: assistedKgDiff === null ? '#9bb0a3' : '#2E8B5E', fontWeight: 900, fontSize: 13, padding: '10px 12px', borderRadius: 12, cursor: assistedKgDiff === null ? 'not-allowed' : 'pointer', flexShrink: 0 }}>帶入差值</button>
-        </div>
-      </div>
-
-      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 12 }}>
-        <div style={{ flex: 1, minWidth: 130 }}>
-          <div style={{ fontSize: 11, fontWeight: 900, color: '#6E8B7C', letterSpacing: 1, marginBottom: 6 }}>公斤差值</div>
-          <div style={{ display: 'flex', alignItems: 'stretch', gap: 6 }}>
-            {/* 有些手機鍵盤打不出負號，所以用按鈕切換正負，不用打字也行 */}
-            <button type="button" onClick={() => setKg((v) => v.startsWith('-') ? v.slice(1) : v ? `-${v}` : '-')}
-              style={{ width: 44, border: 'none', background: '#EAF5EE', color: '#2E8B5E', fontWeight: 900, fontSize: 20, borderRadius: 12, cursor: 'pointer', flexShrink: 0 }}>±</button>
-            <input type="text" inputMode="decimal" value={kg} onChange={(e) => { if (/^-?\d*\.?\d*$/.test(e.target.value)) setKg(e.target.value); }} placeholder="-2.5"
-              style={{ flex: 1, minWidth: 0, border: 'none', background: '#F6FAF7', borderRadius: 14, padding: '14px 8px', fontSize: 22, fontWeight: 900, color: '#234034', textAlign: 'center' }} />
+          <div style={{ flex: 1, minWidth: 130 }}>
+            <div style={{ fontSize: 11, fontWeight: 900, color: '#6E8B7C', letterSpacing: 1, marginBottom: 6 }}>日期（週五）</div>
+            <input type="date" value={date} onChange={(e) => setDate(e.target.value)} disabled={!!editingWeek}
+              style={{ width: '100%', border: 'none', background: editingWeek ? '#EEF4F0' : '#F6FAF7', borderRadius: 14, padding: '14px 15px', fontSize: 16, fontWeight: 700, color: editingWeek ? '#9bb0a3' : '#234034' }} />
           </div>
         </div>
-        <div style={{ flex: 1, minWidth: 130 }}>
-          <div style={{ fontSize: 11, fontWeight: 900, color: '#6E8B7C', letterSpacing: 1, marginBottom: 6 }}>日期（週五）</div>
-          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} disabled={!!editingWeek}
-            style={{ width: '100%', border: 'none', background: editingWeek ? '#EEF4F0' : '#F6FAF7', borderRadius: 14, padding: '14px 15px', fontSize: 16, fontWeight: 700, color: editingWeek ? '#9bb0a3' : '#234034' }} />
+
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button onClick={submit} disabled={busy} style={{ flex: 1, border: 'none', background: busy ? '#C7D6CC' : '#2E8B5E', color: '#fff', fontWeight: 900, fontSize: 15, padding: 14, borderRadius: 14, cursor: 'pointer' }}>{busy ? '送出中…' : editingWeek ? '更新記錄' : '送出記錄'}</button>
+          {editingWeek && <button onClick={cancelEdit} style={{ border: 'none', background: '#F0F3F1', color: '#6E8B7C', fontWeight: 800, fontSize: 14, padding: '14px 18px', borderRadius: 14, cursor: 'pointer' }}>取消</button>}
         </div>
-      </div>
 
-      {msg && <div style={{ padding: '10px 14px', borderRadius: 12, marginBottom: 12, fontSize: 13, fontWeight: 700, color: msg.kind === 'success' ? '#15803D' : '#B91C1C', background: msg.kind === 'success' ? '#DCFCE7' : '#FEE2E2' }}>{msg.text}</div>}
-
-      <div style={{ display: 'flex', gap: 10 }}>
-        <button onClick={submit} disabled={busy} style={{ flex: 1, border: 'none', background: busy ? '#C7D6CC' : '#2E8B5E', color: '#fff', fontWeight: 900, fontSize: 15, padding: 14, borderRadius: 14, cursor: 'pointer' }}>{busy ? '送出中…' : editingWeek ? '更新記錄' : '送出記錄'}</button>
-        {editingWeek && <button onClick={cancelEdit} style={{ border: 'none', background: '#F0F3F1', color: '#6E8B7C', fontWeight: 800, fontSize: 14, padding: '14px 18px', borderRadius: 14, cursor: 'pointer' }}>取消</button>}
-      </div>
-
-      {myEntries.length > 0 && (
-        <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid #EEF4F0' }}>
-          <div style={{ fontSize: 11, fontWeight: 900, letterSpacing: 1, color: '#9bb0a3', marginBottom: 10 }}>我的登記紀錄（{myEntries.length} 筆）</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 320, overflowY: 'auto' }}>
-            {myEntries.map(e => (
-              <div key={e.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '9px 12px', background: editingWeek === e.weekLabel ? '#EAF5EE' : '#F6FAF7', borderRadius: 10 }}>
-                <div style={{ minWidth: 0, flex: 1 }}>
-                  <div style={{ fontSize: 13, color: '#6E8B7C', fontWeight: 600 }}>{e.weekLabel}</div>
-                  {(e.startWeight !== null || e.currentWeight !== null) && (
-                    <div style={{ fontSize: 11, color: '#9bb0a3', fontWeight: 700, marginTop: 2 }}>
-                      起 {fmtWeight(e.startWeight)} / 今 {fmtWeight(e.currentWeight)}
-                    </div>
-                  )}
+        {myEntries.length > 0 && (
+          <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid #EEF4F0' }}>
+            <div style={{ fontSize: 11, fontWeight: 900, letterSpacing: 1, color: '#9bb0a3', marginBottom: 10 }}>我的登記紀錄（{myEntries.length} 筆）</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 320, overflowY: 'auto' }}>
+              {myEntries.map(e => (
+                <div key={e.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '9px 12px', background: editingWeek === e.weekLabel ? '#EAF5EE' : '#F6FAF7', borderRadius: 10 }}>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div style={{ fontSize: 13, color: '#6E8B7C', fontWeight: 600 }}>{e.weekLabel}</div>
+                    {(e.startWeight !== null || e.currentWeight !== null) && (
+                      <div style={{ fontSize: 11, color: '#9bb0a3', fontWeight: 700, marginTop: 2 }}>
+                        起 {fmtWeight(e.startWeight)} / 今 {fmtWeight(e.currentWeight)}
+                      </div>
+                    )}
+                  </div>
+                  <span style={{ fontSize: 16, fontWeight: 900, color: diffColor(e.kgDiff) }}>{fmtKgDiff(e.kgDiff)}</span>
+                  <div style={{ display: 'flex', gap: 4 }}>
+                    <button onClick={() => startEdit(e)} style={{ border: 'none', background: '#fff', color: '#6E8B7C', width: 26, height: 26, borderRadius: '50%', cursor: 'pointer', fontSize: 13 }}>✏</button>
+                    <button onClick={async () => { if (confirm('刪除這筆紀錄？')) { if (editingWeek === e.weekLabel) cancelEdit(); await onRemove(e.id); } }} style={{ border: 'none', background: '#fff', color: '#bcccc2', width: 26, height: 26, borderRadius: '50%', cursor: 'pointer', fontSize: 15, lineHeight: 1 }}>×</button>
+                  </div>
                 </div>
-                <span style={{ fontSize: 16, fontWeight: 900, color: diffColor(e.kgDiff) }}>{fmtKgDiff(e.kgDiff)}</span>
-                <div style={{ display: 'flex', gap: 4 }}>
-                  <button onClick={() => startEdit(e)} style={{ border: 'none', background: '#fff', color: '#6E8B7C', width: 26, height: 26, borderRadius: '50%', cursor: 'pointer', fontSize: 13 }}>✏</button>
-                  <button onClick={async () => { if (confirm('刪除這筆紀錄？')) { if (editingWeek === e.weekLabel) cancelEdit(); await onRemove(e.id); } }} style={{ border: 'none', background: '#fff', color: '#bcccc2', width: 26, height: 26, borderRadius: '50%', cursor: 'pointer', fontSize: 15, lineHeight: 1 }}>×</button>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </>
   );
 }
 
