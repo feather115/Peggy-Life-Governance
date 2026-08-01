@@ -424,7 +424,8 @@ function EntryForm({ challenge, myUserId, onSubmit, onRemove, onSetWeights }) {
   const [startWeight, setStartWeight] = useState('');
   const [currentWeight, setCurrentWeight] = useState('');
   const [date, setDate] = useState(lastFriday());
-  const [msg, setMsg] = useState(null); // {kind:'success'|'error', text}
+  const [weightMsg, setWeightMsg] = useState(null); // {kind:'success'|'error', text}
+  const [entryMsg, setEntryMsg] = useState(null); // {kind:'success'|'error', text}
   const [busy, setBusy] = useState(false);
   const [editingWeek, setEditingWeek] = useState(null); // Which week is currently being edited (identified by week_label to avoid duplicate additions when changing the date)
 
@@ -447,29 +448,27 @@ function EntryForm({ challenge, myUserId, onSubmit, onRemove, onSetWeights }) {
     setEditingWeek(e.weekLabel);
     setKg(String(e.kgDiff));
     setDate(e.weekLabel);
-    setMsg(null);
+    setEntryMsg(null);
   };
   const cancelEdit = () => {
     setEditingWeek(null);
     setKg('');
-    setStartWeight('');
-    setCurrentWeight('');
     setDate(lastFriday());
-    setMsg(null);
+    setEntryMsg(null);
   };
 
   const persistWeights = async () => {
-    if (!hasStartWeight && !hasCurrentWeight) { setMsg({ kind:'error', text:'請先填起始體重或當前體重' }); return; }
+    if (!hasStartWeight && !hasCurrentWeight) { setWeightMsg({ kind:'error', text:'請先填起始體重或當前體重' }); return; }
     setBusy(true);
     try {
       await onSetWeights(challenge.id, {
         startWeight: hasStartWeight ? parsedStartWeight : null,
         currentWeight: hasCurrentWeight ? parsedCurrentWeight : null,
       });
-      setMsg({ kind:'success', text:'✓ 已更新體重紀錄' });
-      setTimeout(() => setMsg(null), 2500);
+      setWeightMsg({ kind:'success', text:'✓ 已更新體重紀錄' });
+      setTimeout(() => setWeightMsg(null), 2500);
     } catch (e) {
-      setMsg({ kind:'error', text: e.message || '更新失敗' });
+      setWeightMsg({ kind:'error', text: e.message || '更新失敗' });
     } finally {
       setBusy(false);
     }
@@ -478,7 +477,7 @@ function EntryForm({ challenge, myUserId, onSubmit, onRemove, onSetWeights }) {
   const submit = async () => {
     const manualKgDiff = parseFloat(kg);
     const n = !isNaN(manualKgDiff) ? manualKgDiff : assistedKgDiff;
-    if (isNaN(n)) { setMsg({ kind:'error', text:'請輸入有效數字（例如 -2.5）' }); return; }
+    if (isNaN(n)) { setEntryMsg({ kind:'error', text:'請輸入有效數字（例如 -2.5）' }); return; }
     setBusy(true);
     try {
       // The date remains fixed to the original week_label when editing to avoid duplicate additions when changing the date
@@ -487,14 +486,12 @@ function EntryForm({ challenge, myUserId, onSubmit, onRemove, onSetWeights }) {
         kgDiff: n,
         weekLabel: editingWeek || date,
       });
-      setMsg({ kind:'success', text:`✓ 已${editingWeek ? '更新' : '記錄'} ${n > 0 ? '+' : ''}${n} kg` });
+      setEntryMsg({ kind:'success', text:`✓ 已${editingWeek ? '更新' : '記錄'} ${n > 0 ? '+' : ''}${n} kg` });
       setKg('');
-      setStartWeight('');
-      setCurrentWeight('');
       setEditingWeek(null);
-      setTimeout(() => setMsg(null), 2500);
+      setTimeout(() => setEntryMsg(null), 2500);
     } catch (e) {
-      setMsg({ kind:'error', text: e.message || '送出失敗' });
+      setEntryMsg({ kind:'error', text: e.message || '送出失敗' });
     } finally {
       setBusy(false);
     }
@@ -526,7 +523,7 @@ function EntryForm({ challenge, myUserId, onSubmit, onRemove, onSetWeights }) {
           </div>
         </div>
 
-        {msg && <div style={{ padding: '10px 14px', borderRadius: 12, marginBottom: 12, fontSize: 13, fontWeight: 700, color: msg.kind === 'success' ? '#15803D' : '#B91C1C', background: msg.kind === 'success' ? '#DCFCE7' : '#FEE2E2' }}>{msg.text}</div>}
+        {weightMsg && <div style={{ padding: '10px 14px', borderRadius: 12, marginBottom: 12, fontSize: 13, fontWeight: 700, color: weightMsg.kind === 'success' ? '#15803D' : '#B91C1C', background: weightMsg.kind === 'success' ? '#DCFCE7' : '#FEE2E2' }}>{weightMsg.text}</div>}
 
         <div style={{ display: 'flex', gap: 10 }}>
           <button type="button" disabled={assistedKgDiff === null} onClick={() => setKg(String(assistedKgDiff))}
@@ -557,6 +554,8 @@ function EntryForm({ challenge, myUserId, onSubmit, onRemove, onSetWeights }) {
               style={{ width: '100%', border: 'none', background: editingWeek ? '#EEF4F0' : '#F6FAF7', borderRadius: 14, padding: '14px 15px', fontSize: 16, fontWeight: 700, color: editingWeek ? '#9bb0a3' : '#234034' }} />
           </div>
         </div>
+
+        {entryMsg && <div style={{ padding: '10px 14px', borderRadius: 12, marginBottom: 12, fontSize: 13, fontWeight: 700, color: entryMsg.kind === 'success' ? '#15803D' : '#B91C1C', background: entryMsg.kind === 'success' ? '#DCFCE7' : '#FEE2E2' }}>{entryMsg.text}</div>}
 
         <div style={{ display: 'flex', gap: 10 }}>
           <button onClick={submit} disabled={busy} style={{ flex: 1, border: 'none', background: busy ? '#C7D6CC' : '#2E8B5E', color: '#fff', fontWeight: 900, fontSize: 15, padding: 14, borderRadius: 14, cursor: 'pointer' }}>{busy ? '送出中…' : editingWeek ? '更新記錄' : '送出記錄'}</button>
