@@ -37,7 +37,7 @@ const getWeeklyChangeColor = (change) => {
 };
 
 export default function ChallengeTab({ app }) {
-  const { challenges, userId, joinChallenge, createChallenge, repeatChallenge, leaveChallenge, updateChallenge, endChallenge, deleteChallenge, submitWeightEntry, removeWeightEntry, setMemberColor } = app;
+  const { challenges, userId, joinChallenge, createChallenge, repeatChallenge, leaveChallenge, updateChallenge, endChallenge, deleteChallenge, submitWeightEntry, removeWeightEntry, setMemberColor, setMemberWeights } = app;
   const [createOpen, setCreateOpen] = useState(false);
   const [repeatSource, setRepeatSource] = useState(null);
   const [selectedId, setSelectedId] = useState(null);
@@ -96,6 +96,7 @@ export default function ChallengeTab({ app }) {
             onLeave={leaveChallenge}
             onRepeat={() => { setRepeatSource(current); setCreateOpen(true); }}
             onSetColor={setMemberColor}
+            onSetWeights={setMemberWeights}
           />}
 
           {ended.length > 0 && (
@@ -145,7 +146,7 @@ function EmptyState({ onOpen }) {
   );
 }
 
-function ChallengeView({ challenge, myUserId, onSubmitEntry, onRemoveEntry, onUpdate, onEnd, onDelete, onLeave, onRepeat, onSetColor }) {
+function ChallengeView({ challenge, myUserId, onSubmitEntry, onRemoveEntry, onUpdate, onEnd, onDelete, onLeave, onRepeat, onSetColor, onSetWeights }) {
   const isCreator = challenge.creatorUserId === myUserId;
   const isActive = challenge.status === 'active';
   const lb = useMemo(() => computeLeaderboard(challenge, myUserId), [challenge, myUserId]);
@@ -266,7 +267,7 @@ function ChallengeView({ challenge, myUserId, onSubmitEntry, onRemoveEntry, onUp
       {challenge.entries.length > 0 && <ProgressChartCard challenge={challenge} myUserId={myUserId} onSetColor={onSetColor} />}
 
       {/* 本週登記 */}
-      {isActive && <EntryForm challenge={challenge} myUserId={myUserId} onSubmit={onSubmitEntry} onRemove={onRemoveEntry} />}
+      {isActive && <EntryForm challenge={challenge} myUserId={myUserId} onSubmit={onSubmitEntry} onRemove={onRemoveEntry} onSetWeights={onSetWeights} />}
 
       {/* 管理 / 退出 */}
       <div style={{ marginTop: 16, background: '#fff', borderRadius: 18, padding: '16px 18px', boxShadow: '0 10px 24px -18px rgba(46,139,94,.5)' }}>
@@ -418,7 +419,7 @@ function ColorPicker({ current, onPick }) {
   );
 }
 
-function EntryForm({ challenge, myUserId, onSubmit, onRemove }) {
+function EntryForm({ challenge, myUserId, onSubmit, onRemove, onSetWeights }) {
   const [kg, setKg] = useState('');
   const [startWeight, setStartWeight] = useState('');
   const [currentWeight, setCurrentWeight] = useState('');
@@ -430,20 +431,21 @@ function EntryForm({ challenge, myUserId, onSubmit, onRemove }) {
   const myEntries = challenge.entries
     .filter(e => e.userId === myUserId)
     .sort((a, b) => b.weekLabel.localeCompare(a.weekLabel));
-  const latestEntry = myEntries[0] || null;
+  const me = challenge.members.find((m) => m.userId === myUserId) || null;
   const parsedStartWeight = parseFloat(startWeight);
   const parsedCurrentWeight = parseFloat(currentWeight);
   const hasStartWeight = !isNaN(parsedStartWeight);
   const hasCurrentWeight = !isNaN(parsedCurrentWeight);
   const assistedKgDiff = hasStartWeight && hasCurrentWeight ? Math.round((parsedCurrentWeight - parsedStartWeight) * 10) / 10 : null;
-  const activeWeekLabel = editingWeek || date;
-  const activeEntry = myEntries.find((e) => e.weekLabel === activeWeekLabel) || null;
+
+  React.useEffect(() => {
+    setStartWeight(me?.startWeight === null || me?.startWeight === undefined ? '' : String(me.startWeight));
+    setCurrentWeight(me?.currentWeight === null || me?.currentWeight === undefined ? '' : String(me.currentWeight));
+  }, [me?.startWeight, me?.currentWeight, challenge.id]);
 
   const startEdit = (e) => {
     setEditingWeek(e.weekLabel);
     setKg(String(e.kgDiff));
-    setStartWeight(e.startWeight === null ? '' : String(e.startWeight));
-    setCurrentWeight(e.currentWeight === null ? '' : String(e.currentWeight));
     setDate(e.weekLabel);
     setMsg(null);
   };
@@ -457,20 +459,13 @@ function EntryForm({ challenge, myUserId, onSubmit, onRemove }) {
   };
 
   const persistWeights = async () => {
-    const manualKgDiff = parseFloat(kg);
-    const baseKgDiff = !isNaN(manualKgDiff) ? manualKgDiff : assistedKgDiff ?? activeEntry?.kgDiff ?? null;
     if (!hasStartWeight && !hasCurrentWeight) { setMsg({ kind:'error', text:'請先填起始體重或當前體重' }); return; }
-    if (baseKgDiff === null || isNaN(baseKgDiff)) { setMsg({ kind:'error', text:'請先填公斤差值，或同時填起始體重與當前體重' }); return; }
     setBusy(true);
     try {
-      await onSubmit({
-        challengeId: challenge.id,
-        kgDiff: baseKgDiff,
+      await onSetWeights(challenge.id, {
         startWeight: hasStartWeight ? parsedStartWeight : null,
         currentWeight: hasCurrentWeight ? parsedCurrentWeight : null,
-        weekLabel: activeWeekLabel,
       });
-      if (isNaN(manualKgDiff) && assistedKgDiff !== null) setKg(String(assistedKgDiff));
       setMsg({ kind:'success', text:'✓ 已更新體重紀錄' });
       setTimeout(() => setMsg(null), 2500);
     } catch (e) {
@@ -490,8 +485,6 @@ function EntryForm({ challenge, myUserId, onSubmit, onRemove }) {
       await onSubmit({
         challengeId: challenge.id,
         kgDiff: n,
-        startWeight: hasStartWeight ? parsedStartWeight : null,
-        currentWeight: hasCurrentWeight ? parsedCurrentWeight : null,
         weekLabel: editingWeek || date,
       });
       setMsg({ kind:'success', text:`✓ 已${editingWeek ? '更新' : '記錄'} ${n > 0 ? '+' : ''}${n} kg` });
@@ -578,11 +571,6 @@ function EntryForm({ challenge, myUserId, onSubmit, onRemove }) {
                 <div key={e.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '9px 12px', background: editingWeek === e.weekLabel ? '#EAF5EE' : '#F6FAF7', borderRadius: 10 }}>
                   <div style={{ minWidth: 0, flex: 1 }}>
                     <div style={{ fontSize: 13, color: '#6E8B7C', fontWeight: 600 }}>{e.weekLabel}</div>
-                    {(e.startWeight !== null || e.currentWeight !== null) && (
-                      <div style={{ fontSize: 11, color: '#9bb0a3', fontWeight: 700, marginTop: 2 }}>
-                        起 {fmtWeight(e.startWeight)} / 今 {fmtWeight(e.currentWeight)}
-                      </div>
-                    )}
                   </div>
                   <span style={{ fontSize: 16, fontWeight: 900, color: diffColor(e.kgDiff) }}>{fmtKgDiff(e.kgDiff)}</span>
                   <div style={{ display: 'flex', gap: 4 }}>

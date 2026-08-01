@@ -169,8 +169,8 @@ SET pgrst.db_schemas = '...'` + `NOTIFY pgrst, 'reload config'`，見根目錄
 | `day_tags` | 當天啟用了哪些標籤（多對多） | 刪標籤定義會 CASCADE 自動清掉 |
 | `meal_items` | 每筆吃下去的食物（**快照**） | 存當下的 name/cal/p/c/f，原食物刪了也不影響歷史 |
 | `challenges` | 減重挑戰本體 | 含 invite_code (6 碼)、creator_user_id、status |
-| `challenge_members` | 誰加入了哪場挑戰（多對多） | 用 RLS function `is_challenge_member` 控管成員可見性；`color` 欄位存成員自訂顏色 |
-| `weight_entries` | 每週體重差值記錄 | `(challenge_id, user_id, week_label)` 唯一；同週再登記會 upsert；`start_weight` / `current_weight` 為選填 |
+| `challenge_members` | 誰加入了哪場挑戰（多對多） | 用 RLS function `is_challenge_member` 控管成員可見性；`color` 欄位存成員自訂顏色；`start_weight` / `current_weight` 為選填 |
+| `weight_entries` | 每週體重差值記錄 | `(challenge_id, user_id, week_label)` 唯一；同週再登記會 upsert |
 | `food_usage` | 每個食物上次被選用/新增/編輯的時間 | `(user_id, food_ref)` 主鍵；`food_ref` 是內建食物的 id（如 `'egg'`）或 `custom_foods.id` |
 | ~~`line_links`~~ | ~~LINE 使用者 ↔ 既有帳號的對照~~ | **已搬到 `shared` schema**（見上方「Schema 隔離」），跟 recipe-book、calendar 共用；不再是這個 app 專屬的表 |
 
@@ -312,7 +312,7 @@ SET pgrst.db_schemas = '...'` + `NOTIFY pgrst, 'reload config'`，見根目錄
 - **排行榜排序用 `week_label` 不是 `recordedAt`**——`week_label` 代表「哪一週」，`recordedAt` 是「寫入資料庫的時間」。如果用 SQL 一次性補登多筆歷史資料（例如幫朋友手動 insert 過去半年的紀錄），這些筆的 `recordedAt` 幾乎同一時間，用它排序會抓錯「最新一筆」。`selectors.js` 的 `computeLeaderboard()` 已修正為比較 `week_label` 字串大小，同時會計算最新一週與前一週的差值（`weeklyChange`），並在排行榜與頒獎台下方顯示如「比上週 -0.7 kg」的動態差值反饋。
 - **輸入框有 `±` 切換鈕**——某些 Android 手機的數字鍵盤打不出負號，`ChallengeTab.jsx` 的 `EntryForm` 把輸入框換成 `inputMode="decimal"` 文字框，並在旁邊加一個按鈕直接反轉正負號，不用靠鍵盤打 `-`。
 - **登記紀錄可編輯**——`EntryForm` 顯示「全部」歷史登記（不只最近幾筆），每筆旁邊有 ✏ 編輯按鈕：點了會把數值帶回表單、鎖住日期欄位（避免改日期變成新增一筆），送出後會 upsert 覆蓋原本那筆。
-- **起始體重 / 當前體重是選填輔助欄位**——存在 `weight_entries.start_weight`、`weight_entries.current_weight`，前端在 `ChallengeTab.jsx` 另外拆出一張 `體重紀錄（選填）` 卡片，提供「協助帶入」與「修改體重」兩個按鈕；沒填也能照舊只記差值，舊資料不回補。
+- **起始體重 / 當前體重是選填輔助欄位**——存在 `challenge_members.start_weight`、`challenge_members.current_weight`，前端在 `ChallengeTab.jsx` 另外拆出一張 `體重紀錄（選填）` 卡片；這兩個值跟每週登記完全分開，進入挑戰時直接讀上次保存的值，只有點「協助帶入」才會拿來換算 `kg_diff`。
 
 ### 邀請碼
 - 建立挑戰時自動生 6 碼。若撞名最多重試 5 次（unique violation `23505`）。
@@ -356,7 +356,7 @@ CASCADE 會把對應的成員關聯與體重紀錄一併清掉。`active` 的挑
 | `2026-06-28_tag_def_colors.sql` | 幫 `tag_defs` 加 `color` 欄位，讓記錄原因標籤可自訂顏色並顯示在報表月曆 |
 | `2026-06-28_schema_isolation.sql` | ⭐ 把 11 張表 + 2 個 RPC function 從 public 搬到 calorie_tracker schema；重建跨表 RLS policy；更新 handle_new_user trigger function；並授權給 PostgREST 及 service_role。跑這支前一定要先去 Settings → API → Exposed schemas 加 calorie_tracker |
 | `2026-07-28_repeat_challenge.sql` | 新增 `repeat_challenge()` RPC，讓已結束挑戰的建立者建立新局並直接複製上一局全部成員 |
-| `2026-08-01_weight_entry_optional_weights.sql` | 幫 `weight_entries` 加 `start_weight`、`current_weight` 兩個選填欄位，供本週登記輔助計算用 |
+| `2026-08-01_challenge_member_optional_weights.sql` | 幫 `challenge_members` 加 `start_weight`、`current_weight` 兩個選填欄位，獨立保存挑戰者體重資訊 |
 
 > 全新環境直接照順序整段貼上跑一次即可；如果是延續舊環境，只需要補跑「還沒跑過」的那幾支（看 Supabase 有沒有對應欄位/function 判斷）。
 >
@@ -389,9 +389,10 @@ CASCADE 會把對應的成員關聯與體重紀錄一併清掉。`active` 的挑
 | `updateChallenge(id, patch)` | 改 `name` / `startDate` / `endDate`（RLS 限建立者） |
 | `endChallenge(id, winnerUserId)` | 結束挑戰並記錄冠軍 |
 | `deleteChallenge(id)` | 整場刪除（CASCADE 清掉成員與紀錄） |
-| `submitWeightEntry({ challengeId, kgDiff, startWeight, currentWeight, weekLabel })` | 登記/更新某週體重差值，可附選填體重欄位 |
+| `submitWeightEntry({ challengeId, kgDiff, weekLabel })` | 登記/更新某週體重差值 |
 | `removeWeightEntry(entryId)` | 刪除一筆體重紀錄 |
 | `setMemberColor(challengeId, colorHex)` | 改自己在這個挑戰裡的顯示顏色（`colorHex` 傳 `null` 恢復預設） |
+| `setMemberWeights(challengeId, { startWeight, currentWeight })` | 改自己在這個挑戰裡保存的起始體重 / 當前體重 |
 
 > 還有一個內部用的 `touchFood(foodRef)`（非直接匯出給元件呼叫，`addMeal`/`addCustomFood`/`updateCustomFood` 內部會自動觸發）：記錄某個食物剛被選用/新增/編輯，更新 `food_usage`，讓食物庫排序即時反映。
 

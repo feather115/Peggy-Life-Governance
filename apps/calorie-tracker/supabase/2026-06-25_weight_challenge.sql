@@ -25,6 +25,8 @@ create table if not exists public.challenge_members (
   user_id      uuid not null references auth.users(id) on delete cascade,
   joined_at    timestamptz not null default now(),
   color        text,
+  start_weight numeric,
+  current_weight numeric,
   primary key (challenge_id, user_id)
 );
 create index if not exists challenge_members_user_idx on public.challenge_members (user_id);
@@ -35,8 +37,6 @@ create table if not exists public.weight_entries (
   challenge_id uuid not null references public.challenges(id) on delete cascade,
   user_id      uuid not null references auth.users(id) on delete cascade,
   kg_diff      numeric not null,
-  start_weight numeric,
-  current_weight numeric,
   week_label   date not null,
   recorded_at  timestamptz not null default now(),
   unique (challenge_id, user_id, week_label)
