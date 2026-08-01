@@ -28,22 +28,17 @@ export default function FoodSheet({ app, selectedDate, mealKey, onClose }) {
     }, 1500);
   };
 
-  const isMid = mealKey === 'midnight';
   const mealLabel = MEALS_DEF.find((m) => m.key === mealKey)?.label || '';
 
-  // Food list: built-in + custom; sorted by calories ascending for midnight meal, other meals sorted by "last used/added/edited" timestamp descending (most recent on top).
+  // Food list: built-in + custom; sorted by "last used/added/edited" timestamp descending (most recent on top).
   let list = [...FOODS, ...customFoods];
-  if (isMid) {
-    list = [...list].sort((a, b) => a.cal - b.cal);
-  } else {
-    list = [...list].sort((a, b) => {
-      const ta = foodUsage[a.id], tb = foodUsage[b.id];
-      if (ta && tb) return tb.localeCompare(ta);
-      if (ta) return -1;
-      if (tb) return 1;
-      return 0;
-    });
-  }
+  list = [...list].sort((a, b) => {
+    const ta = foodUsage[a.id], tb = foodUsage[b.id];
+    if (ta && tb) return tb.localeCompare(ta);
+    if (ta) return -1;
+    if (tb) return 1;
+    return 0;
+  });
   const kw = search.trim().toLowerCase();
   if (kw) list = list.filter((fo) => [fo.name, fo.brand, fo.note].some((s) => s && s.toLowerCase().includes(kw)));
 
@@ -204,13 +199,6 @@ export default function FoodSheet({ app, selectedDate, mealKey, onClose }) {
           <button onClick={onClose} style={{ border: 'none', background: formOpen ? '#F0F3F1' : '#2E8B5E', color: formOpen ? '#6E8B7C' : '#fff', fontWeight: 800, fontSize: 14, padding: '8px 16px', borderRadius: 18, cursor: 'pointer' }}>跳出</button>
         </div>
       </div>
-
-      {isMid && (
-        <div style={{ margin: '4px 18px 0', background: '#FFF6E6', borderRadius: 14, padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 16 }}>🌙</span>
-          <div style={{ fontSize: 13, fontWeight: 800, color: '#8B5A00' }}>宵夜挑輕一點吧，已按低卡排序</div>
-        </div>
-      )}
 
       {!formOpen && (
         <div className="ps" style={{ flex: 1, overflowY: 'auto', padding: '6px 16px 20px' }}>
