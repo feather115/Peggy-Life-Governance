@@ -474,9 +474,9 @@ function EntryForm({ challenge, myUserId, onSubmit, onRemove, onSetWeights }) {
     }
   };
 
-  const submit = async () => {
+  const submit = async (assistedValue = null) => {
     const manualKgDiff = parseFloat(kg);
-    const n = !isNaN(manualKgDiff) ? manualKgDiff : assistedKgDiff;
+    const n = assistedValue ?? (!isNaN(manualKgDiff) ? manualKgDiff : assistedKgDiff);
     if (isNaN(n)) { setEntryMsg({ kind:'error', text:'請輸入有效數字（例如 -2.5）' }); return; }
     setBusy(true);
     try {
@@ -526,8 +526,8 @@ function EntryForm({ challenge, myUserId, onSubmit, onRemove, onSetWeights }) {
         {weightMsg && <div style={{ padding: '10px 14px', borderRadius: 12, marginBottom: 12, fontSize: 13, fontWeight: 700, color: weightMsg.kind === 'success' ? '#15803D' : '#B91C1C', background: weightMsg.kind === 'success' ? '#DCFCE7' : '#FEE2E2' }}>{weightMsg.text}</div>}
 
         <div style={{ display: 'flex', gap: 10 }}>
-          <button type="button" disabled={assistedKgDiff === null} onClick={() => setKg(String(assistedKgDiff))}
-            style={{ flex: 1, border: 'none', background: assistedKgDiff === null ? '#DCE3DE' : '#EAF5EE', color: assistedKgDiff === null ? '#9bb0a3' : '#2E8B5E', fontWeight: 900, fontSize: 13, padding: '12px 12px', borderRadius: 12, cursor: assistedKgDiff === null ? 'not-allowed' : 'pointer' }}>協助帶入</button>
+          <button type="button" disabled={assistedKgDiff === null || busy} onClick={() => submit(assistedKgDiff)}
+            style={{ flex: 1, border: 'none', background: assistedKgDiff === null || busy ? '#DCE3DE' : '#EAF5EE', color: assistedKgDiff === null || busy ? '#9bb0a3' : '#2E8B5E', fontWeight: 900, fontSize: 13, padding: '12px 12px', borderRadius: 12, cursor: assistedKgDiff === null || busy ? 'not-allowed' : 'pointer' }}>{busy ? '送出中…' : '協助帶入並送出'}</button>
           <button type="button" onClick={persistWeights} disabled={busy}
             style={{ flex: 1, border: 'none', background: busy ? '#C7D6CC' : '#2E8B5E', color: '#fff', fontWeight: 900, fontSize: 13, padding: '12px 12px', borderRadius: 12, cursor: 'pointer' }}>{busy ? '儲存中…' : '修改體重'}</button>
         </div>
@@ -558,7 +558,7 @@ function EntryForm({ challenge, myUserId, onSubmit, onRemove, onSetWeights }) {
         {entryMsg && <div style={{ padding: '10px 14px', borderRadius: 12, marginBottom: 12, fontSize: 13, fontWeight: 700, color: entryMsg.kind === 'success' ? '#15803D' : '#B91C1C', background: entryMsg.kind === 'success' ? '#DCFCE7' : '#FEE2E2' }}>{entryMsg.text}</div>}
 
         <div style={{ display: 'flex', gap: 10 }}>
-          <button onClick={submit} disabled={busy} style={{ flex: 1, border: 'none', background: busy ? '#C7D6CC' : '#2E8B5E', color: '#fff', fontWeight: 900, fontSize: 15, padding: 14, borderRadius: 14, cursor: 'pointer' }}>{busy ? '送出中…' : editingWeek ? '更新記錄' : '送出記錄'}</button>
+          <button onClick={() => submit()} disabled={busy} style={{ flex: 1, border: 'none', background: busy ? '#C7D6CC' : '#2E8B5E', color: '#fff', fontWeight: 900, fontSize: 15, padding: 14, borderRadius: 14, cursor: 'pointer' }}>{busy ? '送出中…' : editingWeek ? '更新記錄' : '送出記錄'}</button>
           {editingWeek && <button onClick={cancelEdit} style={{ border: 'none', background: '#F0F3F1', color: '#6E8B7C', fontWeight: 800, fontSize: 14, padding: '14px 18px', borderRadius: 14, cursor: 'pointer' }}>取消</button>}
         </div>
 
