@@ -10,18 +10,53 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import * as db from './db.js';
 import { groupRecordsByDate, todayKey } from './utils.js';
 
+const VIEW_STATE_KEY_PREFIX = 'ty-calendar:view-state:';
+const VALID_VIEWS = new Set(['month', 'week', 'day', 'tasks']);
+
+function isDateKey(value) {
+  return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value);
+}
+
+function readViewState(userId) {
+  const today = todayKey();
+  const fallback = { view: 'day', anchorKey: today, selectedDateKey: today };
+  if (typeof window === 'undefined' || !userId) return fallback;
+  try {
+    const saved = JSON.parse(window.localStorage.getItem(`${VIEW_STATE_KEY_PREFIX}${userId}`) || 'null');
+    if (!saved || typeof saved !== 'object') return fallback;
+    return {
+      view: VALID_VIEWS.has(saved.view) ? saved.view : fallback.view,
+      anchorKey: isDateKey(saved.anchorKey) ? saved.anchorKey : fallback.anchorKey,
+      selectedDateKey: isDateKey(saved.selectedDateKey) ? saved.selectedDateKey : fallback.selectedDateKey,
+    };
+  } catch {
+    return fallback;
+  }
+}
+
 export function useRecords(userId) {
+  const [initialViewState] = useState(() => readViewState(userId));
   const [records, setRecords] = useState([]);
   const [loaded, setLoaded] = useState(false);
   const [loadError, setLoadError] = useState('');
 
   // 檢視模式（月/週/日）——預設開日檢視，開啟 app 直接看「今天要幹嘛」比看整個月曆有用
-  const [view, setView] = useState('day');
+  const [view, setView] = useState(initialViewState.view);
   // anchorKey：目前檢視「翻頁翻到哪」（月檢視=哪個月、週檢視=哪一週、日檢視=哪一天）
-  const [anchorKey, setAnchorKey] = useState(todayKey());
+  const [anchorKey, setAnchorKey] = useState(initialViewState.anchorKey);
   // selectedDateKey：目前「選中/聚焦」的單一天——月檢視點日期只會改這個（不會離開月檢視），
   // 下方的當日摘要卡跟著這個走；日檢視顯示的也是這一天。兩者分開才能做到「翻月曆不會失去選中的那天」。
-  const [selectedDateKey, setSelectedDateKey] = useState(todayKey());
+  const [selectedDateKey, setSelectedDateKey] = useState(initialViewState.selectedDateKey);
+
+  // 記住目前頁籤與日期位置，重新整理後回到使用者上次離開的畫面。
+  useEffect(() => {
+    if (typeof window === 'undefined' || !userId) return;
+    try {
+      window.localStorage.setItem(`${VIEW_STATE_KEY_PREFIX}${userId}`, JSON.stringify({ view, anchorKey, selectedDateKey }));
+    } catch {
+      // 儲存空間被停用時不影響行事曆使用。
+    }
+  }, [userId, view, anchorKey, selectedDateKey]);
 
   useEffect(() => {
     let cancel = false;

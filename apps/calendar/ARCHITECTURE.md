@@ -95,9 +95,9 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
   在這裡接線**：把 `useRecords.renameDiaryTagEverywhere` / `removeDiaryTagsEverywhere`
   傳進去，分類標籤改名/刪除才能同步過去紀錄的 `diary_tags`。
 - **`src/useRecords.js`** — ⭐ **紀錄狀態中樞**（事件與日記合併後的單一實體）。載入紀錄、
-  `recordsByDate`（依 `start_at` 本地日期分組）、`view`（月/週/日/任務，**預設 `'day'`**——
+  `recordsByDate`（依 `start_at`～`end_at` 涵蓋的本地日期分組）、`view`（月/週/日/任務，**預設 `'day'`**——
   開 app 直接看「今天要幹嘛」）、`anchorKey`（翻頁翻到哪個月/週/天）、`selectedDateKey`
-  （月檢視選中的單一天，跟 `anchorKey` 分開存，翻月曆不會弄丟選中的日期）、
+  （月檢視選中的單一天，跟 `anchorKey` 分開存，翻月曆不會弄丟選中的日期；檢視分頁與兩個日期會依使用者寫入 localStorage，重新整理後還原）、
   `openDay(dateKey)`（月/週檢視點下去統一走這條：對齊 anchor + selected + 切到日檢視）、
   紀錄 CRUD（`createRecord`/`updateRecord`/`deleteRecord`）、`renameFieldValue(field, …)`
   （選項庫改名時改寫過去紀錄的 `locations`/`people`/`tags`，都是 text[]）、`tagDetailHistory`
