@@ -64,13 +64,30 @@ export function formatTime(isoString) {
   return `${h}:${m}`;
 }
 
-// 把紀錄依 start_at 換算成「本地日期」分組成 { dateKey: [records...] }，組內依開始時間排序
+// 把紀錄依 start_at～end_at 換算成「本地日期」分組成 { dateKey: [records...] }，組內依開始時間排序。
+// 結束日期採包含語意，讓跨日／多日行程在每一天都能被月、週、日檢視找到。
 export function groupRecordsByDate(records) {
   const map = {};
   records.forEach((r) => {
-    const key = dateKeyFrom(new Date(r.start_at));
-    if (!map[key]) map[key] = [];
-    map[key].push(r);
+    const start = new Date(r.start_at);
+    const startKey = dateKeyFrom(start);
+    const end = r.end_at ? new Date(r.end_at) : start;
+    const endKey = dateKeyFrom(end);
+    const cursor = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+    const last = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+
+    while (cursor <= last) {
+      const key = dateKeyFrom(cursor);
+      if (!map[key]) map[key] = [];
+      map[key].push(r);
+      cursor.setDate(cursor.getDate() + 1);
+    }
+
+    // 避免不完整或反向時間資料讓紀錄完全消失。
+    if (startKey !== endKey && start > end) {
+      if (!map[startKey]) map[startKey] = [];
+      map[startKey].push(r);
+    }
   });
   Object.values(map).forEach((list) => list.sort((a, b) => new Date(a.start_at) - new Date(b.start_at)));
   return map;

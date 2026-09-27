@@ -150,7 +150,7 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
   在清單裡的順序固定分配一個強調色，不是存在資料庫裡的欄位）。
 - **`src/utils.js`** — 日期字串轉換（`dateKeyFrom`/`parseDateKey`）、月曆格線
   （`getMonthDays`）、週的 7 天（`getWeekDays`）、紀錄分組（`groupRecordsByDate`，依
-  `start_at` 本地日期）、`formatRecordTime(record)`（計時卡的 HH:mm，有 `end_at` 顯示區間）、
+  `start_at`～`end_at` 涵蓋的每個本地日期分組（結束日期包含在內）、`formatRecordTime(record)`（計時卡的 HH:mm，有 `end_at` 顯示區間）、
   `buildDayTimeline(records, tasksDueToday)`（把某天的紀錄+到期任務合併成一條依時間排序的
   時間軸，Month/Week/Day 三個檢視共用同一個函式，行為才會一致；紀錄排序 key 用
   `formatTime()` 轉本地時間——`start_at` 是 UTC 字串，直接 slice 會拿到 UTC 時刻而錯位）、
