@@ -176,6 +176,16 @@ export async function updateMealItem(id, patch) {
     cal: Number(data.cal), p: Number(data.p), c: Number(data.c), f: Number(data.f) };
 }
 
+// ── clear all（設定頁「清除全部」）─────────────────────────────
+// 直接依 user_id 刪（day_tags / meal_items 由 FK cascade 一起刪；food_usage 是排序紀錄，跟著清），
+// 不依賴前端載入了哪些資料，也不用把幾百個 id 塞進網址。標籤定義與目標設定保留。
+export async function clearAllData(userId) {
+  for (const table of ['day_records', 'custom_foods', 'food_usage']) {
+    const { error } = await supabase.from(table).delete().eq('user_id', userId);
+    if (error) throw error;
+  }
+}
+
 // ── day note ──────────────────────────────────────────────────
 export async function saveDayNote(userId, date, note) {
   const recordId = await ensureDayRecord(userId, date);

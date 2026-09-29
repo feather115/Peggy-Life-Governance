@@ -385,7 +385,7 @@ CASCADE 會把對應的成員關聯與體重紀錄一併清掉。`active` 的挑
 | `addTagDef(type, label)` | 新增標籤定義 |
 | `updateTagColor(type, id, color)` | 更新標籤顏色（目前 UI 主要用在記錄原因標籤） |
 | `deleteTagDef(type, id)` | 刪標籤定義（含清前端殘留） |
-| `clearAll()` | 清除全部日記錄與自訂食物 |
+| `clearAll()` | 清除全部日記錄、自訂食物與食物排序紀錄（`db.clearAllData` 直接依 `user_id` 刪，不依賴前端載入了哪些資料；失敗會丟錯、畫面不清空） |
 | `createChallenge({ name, startDate, endDate })` | 建挑戰，產生邀請碼，自己自動成員 |
 | `repeatChallenge(sourceChallengeId, { name, startDate, endDate })` | 從已結束挑戰建立新局，上一局全部成員直接加入 |
 | `joinChallenge(code)` | 用邀請碼加入挑戰 |

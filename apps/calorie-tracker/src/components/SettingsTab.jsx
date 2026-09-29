@@ -65,7 +65,11 @@ export default function SettingsTab({ app, session, onSignOut }) {
       setConfirmClear(false);
       return;
     }
-    await clearAll();
+    try {
+      await clearAll();
+    } catch (e) {
+      alertError('清除', e);
+    }
     setConfirmClear(false);
   };
 

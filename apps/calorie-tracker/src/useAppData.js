@@ -16,7 +16,6 @@
 // ============================================================
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { supabase } from './supabase.js';
 import * as db from './db.js';
 import { emptyDay } from './utils.js';
 
@@ -215,16 +214,11 @@ export function useAppData(userId) {
 
   // ── Clear all data (retains tag definitions and goals) ──────────────────
   const clearAll = useCallback(async () => {
-    const ids = Object.values(days).map((d) => d.recordId).filter(Boolean);
-    if (ids.length) await supabase.from('day_records').delete().in('id', ids);
-    const cfIds = customFoods.map((f) => f.id);
-    if (cfIds.length) await supabase.from('custom_foods').delete().in('id', cfIds);
-    // Sorting records go with the foods/meals — clear them too so food_usage doesn't keep orphan refs
-    await supabase.from('food_usage').delete().eq('user_id', userId);
+    await db.clearAllData(userId);
     setDays({});
     setCustomFoods([]);
     setFoodUsage({});
-  }, [days, customFoods, userId]);
+  }, [userId]);
 
   // ── Weight Challenge actions ────────────────────────────────
   const createChallenge = useCallback(async (payload) => {
