@@ -134,11 +134,19 @@ export function useRecords(userId) {
     setRecords((prev) => prev.map((r) => updated.find((u) => u.id === r.id) || r));
   }, [records]);
 
-  // 分類標籤（含子標籤）被刪掉時，從紀錄的 diary_tags 拿掉（比照原本行為：只更新本地 state）
-  const removeDiaryTagsEverywhere = useCallback((tagSet) => {
+  // 分類標籤（含子標籤）被刪掉時，從所有引用它的紀錄拿掉：diary_tags 的字串、tag_details 的 key
+  // 兩邊都清，並跟改名一樣寫回 DB（只改本地 state 的話，重新整理後標籤又會出現）
+  const removeDiaryTagsEverywhere = useCallback(async (tagSet) => {
     if (!tagSet || tagSet.size === 0) return;
-    setRecords((prev) => prev.map((r) => ({ ...r, diary_tags: (r.diary_tags || []).filter((t) => !tagSet.has(t)) })));
-  }, []);
+    const affected = records.filter((r) => (r.diary_tags || []).some((t) => tagSet.has(t)));
+    if (affected.length === 0) return;
+    const updated = await Promise.all(affected.map((r) => {
+      const nextDetails = { ...(r.tag_details || {}) };
+      tagSet.forEach((t) => { delete nextDetails[t]; });
+      return db.updateRecord(r.id, { diary_tags: r.diary_tags.filter((t) => !tagSet.has(t)), tag_details: nextDetails });
+    }));
+    setRecords((prev) => prev.map((r) => updated.find((u) => u.id === r.id) || r));
+  }, [records]);
 
   const renameTagDetailEverywhere = useCallback(async (tag, oldDetail, newDetail) => {
     const affected = records.filter((r) => r.tag_details?.[tag] === oldDetail);

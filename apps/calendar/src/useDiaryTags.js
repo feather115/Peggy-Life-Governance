@@ -36,7 +36,7 @@ export function findTagOwner(categories, name) {
 }
 
 // recordSync：{ renameTag(oldTag, newTag), removeTags(Set<string>) }——把分類標籤的改名/刪除
-// 同步到過去紀錄的 diary_tags（實作在 useRecords）。
+// 同步到過去紀錄的 diary_tags / tag_details 並寫回 DB（實作在 useRecords，兩個都是 async）。
 export function useDiaryTags(userId, recordSync) {
   const [categories, setCategories] = useState([]);
   const [loaded, setLoaded] = useState(false);
@@ -87,7 +87,7 @@ export function useDiaryTags(userId, recordSync) {
     setCategories((prev) => prev.filter((c) => c.id !== categoryId));
     // 被刪掉分類底下的標籤（含子標籤），從既有紀錄的 diary_tags 也拿掉，避免殘留孤兒標籤
     const removedTags = new Set(((categories.find((c) => c.id === categoryId)?.tags) || []).flatMap((t) => [t.name, ...t.subs]));
-    recordSync.removeTags(removedTags);
+    await recordSync.removeTags(removedTags);
   }, [categories, recordSync]);
 
   const moveCategory = useCallback(async (categoryId, direction) => {
@@ -163,7 +163,7 @@ export function useDiaryTags(userId, recordSync) {
     if (!cat || !removing) return;
     await saveTags(categoryId, cat.tags.filter((t) => t.name !== tag));
     // 這個標籤（含子標籤）如果被用在既有紀錄上，一併移除
-    recordSync.removeTags(new Set([removing.name, ...removing.subs]));
+    await recordSync.removeTags(new Set([removing.name, ...removing.subs]));
   }, [categories, saveTags, recordSync]);
 
   // ---- 子標籤 ----
@@ -187,7 +187,7 @@ export function useDiaryTags(userId, recordSync) {
     const cat = categories.find((c) => c.id === categoryId);
     if (!cat) return;
     await saveTags(categoryId, cat.tags.map((t) => (t.name === parentTag ? { ...t, subs: t.subs.filter((s) => s !== sub) } : t)));
-    recordSync.removeTags(new Set([sub]));
+    await recordSync.removeTags(new Set([sub]));
   }, [categories, saveTags, recordSync]);
 
   const moveSubTag = useCallback(async (categoryId, parentTag, sub, direction) => {

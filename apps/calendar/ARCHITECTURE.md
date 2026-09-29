@@ -93,7 +93,7 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
   選單資料來自 `useOptions()` 的 `menus`，傳給 `RecordForm`；紀錄存檔後呼叫
   `opts.ensureNames()` 把新出現的名字自動補進選項庫。**`useDiaryTags` 的 `recordSync`
   在這裡接線**：把 `useRecords.renameDiaryTagEverywhere` / `removeDiaryTagsEverywhere`
-  傳進去，分類標籤改名/刪除才能同步過去紀錄的 `diary_tags`。
+  傳進去，分類標籤改名/刪除才能同步過去紀錄的 `diary_tags` / `tag_details`（並寫回 DB）。
 - **`src/useRecords.js`** — ⭐ **紀錄狀態中樞**（事件與日記合併後的單一實體）。載入紀錄、
   `recordsByDate`（依 `start_at`～`end_at` 涵蓋的本地日期分組）、`view`（月/週/日/任務，**預設 `'day'`**——
   開 app 直接看「今天要幹嘛」）、`anchorKey`（翻頁翻到哪個月/週/天）、`selectedDateKey`
@@ -104,7 +104,8 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
   （`Map<tag, string[]>`，把所有紀錄裡每個分類標籤填過的細節文字去重、依 `start_at` 新到舊排序，
   給 `RecordForm` 的細節輸入框當 `<datalist>`）、以及給 `useDiaryTags` 用的
   `renameDiaryTagEverywhere` / `removeDiaryTagsEverywhere`（分類標籤改名/刪除同步到紀錄的
-  `diary_tags`；刪除比照原本行為只更新本地 state）。
+  `diary_tags` 與 `tag_details`，兩者都會寫回 DB——刪除以前只改本地 state，重新整理後標籤又會
+  出現，2026-09-29 改成跟改名一樣寫回）。
 - **`src/useDiaryTags.js`** — ⭐ **日記分類標籤字彙狀態中樞**（`tag_categories` 表）。
   **只管標籤分類本身**（不含紀錄）：載入分類、分類/標籤管理（新增分類、改名、刪除、
   新增/刪除/改名/排序主標籤與子標籤——`addSubTag`/`renameSubTag`/`removeSubTag`/`moveSubTag`）。
