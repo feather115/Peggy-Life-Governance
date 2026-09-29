@@ -111,14 +111,19 @@ export async function deleteTagDef(id) {
 
 // ── custom foods ──────────────────────────────────────────────
 export async function addCustomFood(userId, food) {
-  const { data, error } = await supabase.from('custom_foods').insert({
+  const [nf] = await addCustomFoods(userId, [food]);
+  return nf;
+}
+// 一次新增多筆（JSON 匯入用）：單一 insert，全部成功或全部失敗
+export async function addCustomFoods(userId, foods) {
+  const { data, error } = await supabase.from('custom_foods').insert(foods.map((food) => ({
     user_id: userId, name: food.name, unit: food.unit,
     brand: food.brand || null, note: food.note || null,
     cal: food.cal, p: food.p, c: food.c, f: food.f,
-  }).select('*').single();
+  }))).select('*');
   if (error) throw error;
-  return { id: data.id, name: data.name, unit: data.unit, brand: data.brand || '', note: data.note || '',
-    cal: Number(data.cal), p: Number(data.p), c: Number(data.c), f: Number(data.f), custom: true };
+  return data.map((d) => ({ id: d.id, name: d.name, unit: d.unit, brand: d.brand || '', note: d.note || '',
+    cal: Number(d.cal), p: Number(d.p), c: Number(d.c), f: Number(d.f), custom: true }));
 }
 // Only updates the custom_foods definition; previously recorded historical meal items are snapshots and will not be affected.
 export async function updateCustomFood(id, food) {

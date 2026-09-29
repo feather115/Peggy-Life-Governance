@@ -170,10 +170,10 @@ export function useAppData(userId) {
     return nf;
   }, [userId, touchFood]);
 
-  // Bulk import (used for JSON import), returns the successfully imported food objects
+  // Bulk import (used for JSON import), returns the imported food objects.
+  // 單一 insert：一次 request、全部成功或全部失敗（不會匯入一半、畫面卻沒更新）
   const importFoods = useCallback(async (list) => {
-    const added = [];
-    for (const v of list) added.push(await db.addCustomFood(userId, v));
+    const added = await db.addCustomFoods(userId, list);
     setCustomFoods((prev) => [...prev, ...added]);
     return added;
   }, [userId]);
