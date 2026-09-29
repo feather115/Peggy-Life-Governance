@@ -155,7 +155,8 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
   時間軸，Month/Week/Day 三個檢視共用同一個函式，行為才會一致；紀錄排序 key 用
   `formatTime()` 轉本地時間——`start_at` 是 UTC 字串，直接 slice 會拿到 UTC 時刻而錯位）、
   `addInterval(dateKey, value, unit)` / `diffDays(a, b)`（任務的到期日運算）、
-  `<input type="datetime-local">` 字串轉換。
+  `<input type="datetime-local">` 字串轉換。測試在旁邊的 `utils.test.js`（根目錄 `npm test`
+  跑 vitest，用本地時間建測資，不受執行環境時區影響）。
 
 ### 畫面（`src/components/`）
 - **`ViewTabs.jsx`** — 月/週/日/任務四個 tab + 「今天」按鈕（`view==='tasks'` 時不顯示，
@@ -521,6 +522,8 @@ client 工廠）。
 npm install            # 第一次（在 monorepo 根目錄）
 npm run dev:calendar   # 開發（http://localhost:3457）
 npm run build:calendar # 打包到 apps/calendar/dist/
+npm test               # 根目錄跑 vitest（含 src/utils.test.js）
+npm run lint           # 根目錄跑 eslint（React hooks 規則）
 ```
 
 需要先建立 `.env`（見 README 或 `.env.example`）。基本功能只要

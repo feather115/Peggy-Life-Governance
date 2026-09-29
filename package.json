@@ -12,6 +12,13 @@
     "dev:calendar": "npm run dev -w calendar",
     "build:calorie-tracker": "npm run build -w calorie-tracker",
     "build:recipe-book": "npm run build -w recipe-book",
-    "build:calendar": "npm run build -w calendar"
+    "build:calendar": "npm run build -w calendar",
+    "test": "vitest run",
+    "lint": "eslint ."
+  },
+  "devDependencies": {
+    "eslint": "^10.11.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "vitest": "^5.0.2"
   }
 }

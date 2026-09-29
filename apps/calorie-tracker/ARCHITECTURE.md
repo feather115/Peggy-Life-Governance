@@ -86,6 +86,7 @@ Supabase ⇄ db.js ⇄ useAppData.js ⇄ App.jsx ⇄ components/*
 - **`src/constants.js`** — 食物庫、餐別、星期。
 - **`src/utils.js`** — 日期轉換、問候語、百分比、空白日結構。
 - **`src/selectors.js`** — 把原始資料算成畫面數字（總熱量、報表、連續天數）。
+  測試在旁邊的 `selectors.test.js`（根目錄 `npm test` 跑 vitest），改算法先跑一次。
 
 ### 畫面（`src/components/`）
 - `TodayTab` / `ReportsTab` / `ChallengeTab` / `SettingsTab` — 四個分頁
@@ -406,6 +407,8 @@ npx vite               # 開發（http://localhost:3456）
 npx vite build         # 打包到 dist/
 npx vite preview       # 預覽打包結果
 ```
+
+測試與 lint 在 monorepo 根目錄跑：`npm test`（vitest，測 `selectors.js`）、`npm run lint`（React hooks 規則）。
 
 需要先建立 `.env`（見 README 或 `.env.example`）。基本功能只要 `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY`；AI 功能要 `GROQ_API_KEY`；LINE 登入要 `VITE_LIFF_ID`/`LINE_CHANNEL_ID`/`SUPABASE_SERVICE_ROLE_KEY`（見上方「LINE 整合細節」）。沒設定的功能會自動跳過，不影響其他部分。
 

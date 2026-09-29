@@ -91,6 +91,8 @@ npm run dev:calendar
 或進到本資料夾跑 `npm run dev`（預設 port 3457，跟 calorie-tracker 的 3456、
 recipe-book 的 5173 不衝突，可以三個一起開）。
 
+測試與 lint 也在根目錄跑：`npm test`（vitest，含 `src/utils.test.js`）、`npm run lint`。
+
 ---
 
 ## 部署到 Vercel

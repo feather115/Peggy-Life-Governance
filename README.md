@@ -31,6 +31,18 @@ npm run dev:calendar
 
 或直接進到 `apps/<app>` 資料夾跑 `npm run dev`。
 
+## 測試與 lint
+
+```bash
+npm test        # vitest：純函式測試（*.test.js，放在被測檔案旁邊）
+npm run lint    # eslint：只開 React hooks 的兩條規則（rules-of-hooks、exhaustive-deps）
+```
+
+都在根目錄跑，一次涵蓋三個 app 和 `packages/shared`。目前只測不碰 React / Supabase 的純函式
+（calorie-tracker 的 `selectors.js`、calendar 的 `utils.js`），日期、排序這類容易出錯的邏輯
+改完先跑 `npm test`。lint 設定在根目錄 `eslint.config.mjs`，刻意不開整包 recommended，
+避免為了風格規則大改既有程式碼。
+
 ## 部署到 Vercel
 
 每個 app 各自建立獨立的 Vercel 專案，連到同一個 GitHub repo，並在專案設定的

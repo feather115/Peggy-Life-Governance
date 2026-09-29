@@ -53,6 +53,8 @@ npx vite
 | `npx vite` | 開發伺服器（會即時更新） |
 | `npx vite build` | 打包成靜態檔到 `dist/` |
 | `npx vite preview` | 預覽打包結果 |
+| `npm test`（根目錄） | 跑 vitest 單元測試（含 `src/selectors.test.js`） |
+| `npm run lint`（根目錄） | 跑 eslint 的 React hooks 規則 |
 
 ---
 
