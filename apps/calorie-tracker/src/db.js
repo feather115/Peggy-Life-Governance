@@ -24,6 +24,10 @@ export async function loadAll(userId) {
       .eq('user_id', userId).order('date', { ascending: false })),
     supabase.from('food_usage').select('food_ref,last_used_at').eq('user_id', userId),
   ]);
+  // 任何一個查詢失敗就整個丟錯（畫面顯示「載入失敗」）：當成空資料顯示，使用者會以為紀錄不見了，
+  // 設定還會被當成預設值
+  const failed = [settingsRes, profileRes, tagsRes, foodsRes, usageRes].find((r) => r.error);
+  if (failed) throw failed.error;
 
   const foodUsage = {};
   (usageRes.data || []).forEach(u => { foodUsage[u.food_ref] = u.last_used_at; });

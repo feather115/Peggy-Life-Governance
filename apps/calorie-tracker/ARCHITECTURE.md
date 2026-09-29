@@ -79,7 +79,7 @@ Supabase ⇄ db.js ⇄ useAppData.js ⇄ App.jsx ⇄ components/*
 - **`src/Root.jsx`** — 看有沒有設定 `.env`、有沒有登入，決定顯示 `ConfigMissing` / `Auth` / `App`。
 - **`src/App.jsx`** — 主外殼。載入 `useAppData`，管理 UI 狀態（目前分頁、選取日期、哪個面板開著），把分頁與面板組起來。
 - **`src/useAppData.js`** — ⭐ **狀態中樞**。所有資料（days/foods/goals/tags）與改資料的動作都在這。元件透過它操作資料。
-- **`src/db.js`** — Supabase 的純 CRUD 函式，一個動作一個 function。**所有寫入都會檢查 `error` 並 throw**，由呼叫端（`useAppData`）決定怎麼處理——不要新增「默默吞掉錯誤」的寫入，否則會出現「畫面改了、DB 沒改、重整又跳回來」的鬼影。`loadAll()` 的 `day_records`（每天一筆、無限成長）用 `@peggy-life/shared` 的 `fetchAll` 分頁抓完——PostgREST 單次最多回 1000 筆，超過的會被靜默截掉（約 2.7 年後就會碰到）。
+- **`src/db.js`** — Supabase 的純 CRUD 函式，一個動作一個 function。**所有寫入都會檢查 `error` 並 throw**，由呼叫端（`useAppData`）決定怎麼處理——不要新增「默默吞掉錯誤」的寫入，否則會出現「畫面改了、DB 沒改、重整又跳回來」的鬼影。`loadAll()` 的任何一個查詢失敗都會整個丟錯（`App` 顯示「載入失敗」）——不能把失敗當成空資料/預設值顯示，否則使用者以為紀錄不見，設定還會被預設值覆蓋。`loadAll()` 的 `day_records`（每天一筆、無限成長）用 `@peggy-life/shared` 的 `fetchAll` 分頁抓完——PostgREST 單次最多回 1000 筆，超過的會被靜默截掉（約 2.7 年後就會碰到）。
 - **`src/supabase.js`** — 建立 Supabase client；`supabaseReady` 判斷有沒有設定金鑰。
 
 ### 無狀態工具
@@ -369,7 +369,7 @@ CASCADE 會把對應的成員關聯與體重紀錄一併清掉。`active` 的挑
 
 | 動作 | 做什麼 |
 |---|---|
-| `setGoalCal/P/C/F(n)` | 改目標（自動 debounce 存回） |
+| `setGoalCal/P/C/F(n)` | 改目標（debounce 0.5 秒自動存回；只有值跟 DB 不同才寫，載入時不回寫、載入失敗也不會把預設值寫回去——靠 `useAppData` 的 `savedSettingsRef`） |
 | `addMeal(date, mealKey, snapshot)` | 加一筆餐點 |
 | `removeMeal(date, mealKey, itemId)` | 刪一筆餐點 |
 | `addCustomFood(food)` | 新增自訂食物，回傳新食物 |

@@ -15,10 +15,12 @@
 //  Internal: touchFood (called by addMeal/addCustomFood/updateCustomFood to keep food_usage sorting fresh)
 // ============================================================
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from './supabase.js';
 import * as db from './db.js';
 import { emptyDay } from './utils.js';
+
+const settingsKey = (s) => JSON.stringify([s.goalCal, s.goalP, s.goalC, s.goalF, s.displayName]);
 
 export function useAppData(userId) {
   const [days, setDays] = useState({});
@@ -34,11 +36,15 @@ export function useAppData(userId) {
   const [loadError, setLoadError] = useState('');
   const [challenges, setChallenges] = useState([]);
   const [foodUsage, setFoodUsage] = useState({}); // { [foodRef]: last_used_at } — Used for sorting the food library
+  // 最後一次跟 DB 一致的設定值（settingsKey 字串）；null = 還沒成功載入。
+  // 自動存檔只在目前值跟它不同時才寫：不會一載入就回寫，載入失敗時也不會把預設值蓋回 DB。
+  const savedSettingsRef = useRef(null);
 
   // ── Initial load (after login or switching user) ────────────────────────
   useEffect(() => {
     let cancel = false;
     setLoaded(false);
+    savedSettingsRef.current = null;
     // Failure to load challenges is non-fatal (schema might not be created yet); other data will display normally.
     Promise.all([
       db.loadAll(userId),
@@ -52,6 +58,7 @@ export function useAppData(userId) {
         setCustomFoods(data.customFoods); setDays(data.days);
         setFoodUsage(data.foodUsage || {});
         setChallenges(chList || []);
+        savedSettingsRef.current = settingsKey({ ...data, displayName: data.displayName || '' });
         setLoaded(true);
       })
       .catch((e) => { setLoadError(e.message || '載入失敗'); setLoaded(true); });
@@ -65,13 +72,16 @@ export function useAppData(userId) {
   }, [userId]);
 
   // ── Goal changes: debounced for 0.5 seconds before saving (to avoid calling APIs on every keystroke) ──
+  // 只在使用者真的改過（跟 savedSettingsRef 不同）才存
   useEffect(() => {
-    if (!loaded) return;
+    const key = settingsKey({ goalCal, goalP, goalC, goalF, displayName });
+    if (savedSettingsRef.current === null || key === savedSettingsRef.current) return;
     const t = setTimeout(() => {
+      savedSettingsRef.current = key;
       db.saveSettings(userId, { goalCal, goalP, goalC, goalF, displayName }).catch(() => {});
     }, 500);
     return () => clearTimeout(t);
-  }, [goalCal, goalP, goalC, goalF, displayName, loaded, userId]);
+  }, [goalCal, goalP, goalC, goalF, displayName, userId]);
 
   // ── Tag toggle (enable/disable a tag for a specific day) ────────────────────
   const toggleTag = useCallback(async (date, tagId, makeActive) => {
