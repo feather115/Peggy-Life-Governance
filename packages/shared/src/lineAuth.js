@@ -7,11 +7,17 @@
 //    import { supabase } from './supabase.js';
 //    export const { initLiff, lineAutoLogin, ... } = createLineAuth(supabase);
 //
+//  另外提供兩個 React hook，讓三個 app 的 Root.jsx / 設定頁 LineLinker 只負責畫面：
+//    useSession()          — Root.jsx：拿 session（沒登入且在 LINE 裡會先試自動登入）
+//    useLineLinked(key)    — 設定頁：LINE 連結狀態（含 localStorage 快取）與連結動作
+//
 //  @line/liff 用動態 import：只有「有設 VITE_LIFF_ID 且 user agent 看起來是 LINE
 //  in-app browser」才會下載 liff SDK。一般瀏覽器（含桌機）完全不載入，主 bundle 變小、
 //  首次載入變快。判斷邏輯跟載入後再檢查 isInClient() 等價——isInClient() 為 false 時
 //  自動登入/帳號連結本來就全都不會發生，所以 UA 不含 Line 時直接跳過不會少功能。
 // ============================================================
+
+import { useEffect, useState } from 'react';
 
 export function createLineAuth(supabase) {
   let liff = null; // 動態載入後的 liff instance；null = 沒載（沒設 LIFF_ID 或不在 LINE 裡）
@@ -128,5 +134,79 @@ export function createLineAuth(supabase) {
     }
   }
 
-  return { initLiff, lineAutoLogin, canLinkLine, retryLineAuthorization, linkLineAccount, checkLineLinked };
+  // Root.jsx 用：啟動時拿 Supabase session；沒登入且在 LINE App 裡開時先試 LINE 自動登入，
+  // 之後持續跟著 onAuthStateChange 更新。回傳 { session, ready, lineDebug }，
+  // lineDebug 是自動登入失敗的原因（登入頁最下面的除錯灰字，方便在手機上定位問題）。
+  function useSession() {
+    const [session, setSession] = useState(null);
+    const [ready, setReady] = useState(false);
+    const [lineDebug, setLineDebug] = useState('');
+
+    useEffect(() => {
+      if (!supabase) { setReady(true); return; } // .env 沒設定，Root 會顯示 ConfigMissing
+      let cancel = false;
+      supabase.auth.getSession().then(async ({ data }) => {
+        if (data.session) { if (!cancel) { setSession(data.session); setReady(true); } return; }
+        const result = await lineAutoLogin();
+        if (!result.ok && !cancel) setLineDebug(result.reason || '');
+        const { data: data2 } = await supabase.auth.getSession();
+        if (!cancel) { setSession(data2.session); setReady(true); }
+      });
+      const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
+      return () => { cancel = true; sub.subscription.unsubscribe(); };
+    }, []);
+
+    return { session, ready, lineDebug };
+  }
+
+  // 設定頁「連結 LINE 帳號」的狀態與動作（三個 app 的 LineLinker 共用，各 app 只負責畫面）。
+  // linked：null = 還不確定（還沒查完、也沒有本地快取）；true/false = 確定的狀態。
+  // 查到 true 就快取到 localStorage（cacheKey 每個 app 不同），重開 app 先用快取顯示「已連結」，
+  // 不會因為查詢還沒回來、或暫時失敗（例如網路不穩）就閃一下「連結」按鈕。
+  // msg：'' | 'success' | 錯誤訊息。
+  function useLineLinked(cacheKey) {
+    const [busy, setBusy] = useState(false);
+    const [msg, setMsg] = useState('');
+    const [linked, setLinked] = useState(() => {
+      try {
+        return localStorage.getItem(cacheKey) === '1' ? true : null;
+      } catch {
+        return null;
+      }
+    });
+
+    useEffect(() => {
+      let cancel = false;
+      checkLineLinked().then((result) => {
+        if (cancel || result === null) return; // 查不到明確結果（沒 session／網路失敗／後端錯誤），保留原本的狀態，不要誤判成「沒連結」
+        setLinked(result);
+        try {
+          if (result) localStorage.setItem(cacheKey, '1');
+          else localStorage.removeItem(cacheKey);
+        } catch {}
+      });
+      return () => { cancel = true; };
+    }, [cacheKey]);
+
+    const link = async () => {
+      setBusy(true); setMsg('');
+      try {
+        await linkLineAccount();
+        setLinked(true);
+        try { localStorage.setItem(cacheKey, '1'); } catch {}
+        setMsg('success');
+      } catch (e) {
+        setMsg(e.message || '連結失敗');
+      } finally {
+        setBusy(false);
+      }
+    };
+
+    return { linked, busy, msg, link };
+  }
+
+  return {
+    initLiff, lineAutoLogin, canLinkLine, retryLineAuthorization, linkLineAccount, checkLineLinked,
+    useSession, useLineLinked,
+  };
 }

@@ -84,6 +84,7 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
 ### 核心
 - **`src/main.jsx`** — 進入點，呼叫 `initLiff()` 完成後掛載 `<Root/>`。
 - **`src/Root.jsx`** — 檢查 `.env` → 執行 LINE 自動登入 / Email 登入驗證 → 已登入則載入 `<App/>`。
+  session 與 LINE 自動登入邏輯在 `useSession()`（`liff.js` 匯出，三 app 共用），Root 只決定畫面。
 - **`src/App.jsx`** — 520px 置中外殼，同時載入 `useRecords()` + `useDiaryTags()` + `useTasks()` + `useOptions()`。
   所有覆蓋畫面（紀錄/任務表單、設定、管理標籤/選項）用**單一 `overlay` state 物件**管理
   （`null | { type: 'record'|'task', mode, ... } | { type: 'settings' } |
@@ -139,9 +140,9 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
 - **`src/supabase.js`** — re-export `@peggy-life/shared` 的 supabase client（`schema: 'calendar'`）。
 - **`src/liff.js`** — 薄殼：把本 app 的 supabase client 綁進
   `@peggy-life/shared/lineAuth` 的 `createLineAuth()`（三個 app 共用同一份 LINE 邏輯，
-  要改行為去 `packages/shared/src/lineAuth.js` 改）。提供 `initLiff()`、`lineAutoLogin()`、
-  `canLinkLine()`、`linkLineAccount()`、`checkLineLinked()`（給 `Settings.jsx` 的
-  `LineLinker` 用，任何瀏覽器都能查）。**`@line/liff` 是動態 import**：只有「有設
+  要改行為去 `packages/shared/src/lineAuth.js` 改）。匯出 `initLiff()`、`canLinkLine()`、
+  `retryLineAuthorization()`，以及兩個 hook：`useSession()`（`Root.jsx` 用）、
+  `useLineLinked(cacheKey)`（給 `Settings.jsx` 的 `LineLinker` 用，連結狀態任何瀏覽器都能查）。**`@line/liff` 是動態 import**：只有「有設
   `VITE_LIFF_ID` 且 user agent 含 `Line/`（LINE in-app browser）」才會下載 liff SDK
   （獨立 chunk 約 119kB），一般瀏覽器完全不載入，主 bundle 變小。行為跟載入後再檢查
   等價——`isInClient()` 為 false 時所有 LINE 功能本來就不會啟動。
@@ -246,7 +247,8 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
   人名與事件標籤」一列（切到 `ManageOptions.jsx`）和**「登出」一列**
   （紅字置中，登出按鈕從主畫面 header 移過來的，跟 calorie-tracker/recipe-book 的
   設定頁一致），之後有新設定項目直接加在清單裡。
-  **`LineLinker`** 的連結狀態邏輯（跟其他兩個 app 共用同一套設計）：`checkLineLinked()`
+  **`LineLinker`** 只負責畫面，連結狀態邏輯是三個 app 共用的 `useLineLinked('calendar:line-linked')`
+  （`packages/shared/src/lineAuth.js`）：`checkLineLinked()`
   查到 `true` 就寫進 `localStorage`（key `calendar:line-linked`），下次開 app 先用快取
   顯示「已連結」，查詢還沒回來或暫時失敗（回傳 `null`）都不會覆蓋掉快取，避免畫面
   閃一下「未連結」又跳回「已連結」；「連結 LINE 帳號」按鈕只有 `canLinkLine()` 為

@@ -76,7 +76,7 @@ apps/<app-name>/
 |---|---|---|
 | `createAppSupabase({ schema })` | `src/supabase.js` | 建立綁定自己 schema 的 supabase client（見第 4 節）。**一個 app 只建一個 client**，shared 刻意不提供預先建好的預設 client——以前有，造成每個 app 都存在兩個 GoTrueClient 搶同一個 storage key，console 狂噴警告 |
 | `supabaseReady` | `src/supabase.js` | `.env` 是否已設定，`Root.jsx` 用它決定要不要顯示 `ConfigMissing` |
-| `createLineAuth(supabase)` | `src/lineAuth.js` | LINE LIFF 的**全部**前端邏輯（init / 自動登入 / 帳號連結 / 連結狀態 / 重新授權），含 `@line/liff` 動態 import（一般瀏覽器不下載 SDK）。各 app 的 `src/liff.js` 只是它的 14 行薄殼（見第 9 節） |
+| `createLineAuth(supabase)` | `src/lineAuth.js` | LINE LIFF 的**全部**前端邏輯（init / 自動登入 / 帳號連結 / 連結狀態 / 重新授權），含 `@line/liff` 動態 import（一般瀏覽器不下載 SDK），以及 `useSession()`（`Root.jsx` 的 session + LINE 自動登入）/ `useLineLinked(cacheKey)`（設定頁 `LineLinker` 的狀態）兩個 hook。各 app 的 `src/liff.js` 只是它的薄殼（見第 9 節） |
 | `ConfigMissing.jsx` | `src/ConfigMissing.jsx` | `.env` 沒設定時的提示畫面 |
 | — | `supabase/*.sql` | **`shared` schema 的 migration**（`line_links`、`user_profiles`），跨 app 共用的表的 SQL 放這裡，不放任何單一 app 的 `supabase/` 資料夾 |
 
@@ -286,7 +286,7 @@ export function getSupabaseAdmin() {
 > import monorepo 其他 package）。改任何一份就要 `cp` 同步到其他 app。唯一允許不同的
 > 是 `_supabaseAdmin.js` 裡 `getSupabaseAdmin()` 指向的 schema 名稱。
 > 前端的 `src/liff.js` 則沒有這個問題——邏輯集中在 `packages/shared/src/lineAuth.js`，
-> 各 app 只放 14 行薄殼。
+> 各 app 只放十幾行的薄殼。
 
 ### 9.1 Email/密碼登入
 
@@ -301,10 +301,14 @@ export function getSupabaseAdmin() {
 
 - **`src/liff.js`** — 不要自己寫！LINE 前端邏輯只有一份，在
   `packages/shared/src/lineAuth.js` 的 `createLineAuth(supabase)`，新 app 的 liff.js
-  只是薄殼（照抄任一現有 app 的 `src/liff.js`，14 行）。factory 提供：
+  只是薄殼（照抄任一現有 app 的 `src/liff.js`）。factory 提供：
+  - `useSession()` — `Root.jsx` 用的 hook：啟動時拿 session；沒登入就先呼叫下面的
+    `lineAutoLogin()`，失敗原因以 `lineDebug` 回傳（`Root` 傳給 `Auth.jsx` 顯示）；之後跟著
+    `onAuthStateChange` 更新。`Root.jsx` 只負責決定畫面，照抄任一現有 app 的即可。
+    沒設 `VITE_LIFF_ID` 時 LINE 部分自動跳過，所以**不做 LINE 的 app 也用它**當登入初始化
   - `initLiff()` — app 啟動時呼叫一次 `liff.init({ liffId })`（`VITE_LIFF_ID` 沒設就
     直接 return，整段功能靜默跳過，不影響一般網頁使用）
-  - `lineAutoLogin()` — 只有 `liff.isInClient() && liff.isLoggedIn()` 才會嘗試：
+  - `lineAutoLogin()`（factory 內部給 `useSession` 用，`liff.js` 不必匯出）— 只有 `liff.isInClient() && liff.isLoggedIn()` 才會嘗試：
     `liff.getIDToken()` 拿 ID token → POST `/api/line-login` → 用回傳的 `tokenHash`
     呼叫 `supabase.auth.verifyOtp({ token_hash, type: 'magiclink' })` 換成真正的
     session。回傳 `{ ok, reason }`，`reason` 是給除錯用的診斷字串，失敗时**不要**
@@ -325,7 +329,7 @@ export function getSupabaseAdmin() {
 跟自動登入是分開的功能：使用者先用 email 登入現有帳號，再「連結 LINE」，之後從
 LINE 開啟就會直接登入**這個**帳號，而不是自動登入產生的新帳號。
 
-- **`src/liff.js`** 再加三個函式：
+- **`src/liff.js`** 再匯出 `canLinkLine` 與 `useLineLinked`（後者內部用到下面的 `linkLineAccount` / `checkLineLinked`）：
   - `canLinkLine()` — `!!VITE_LIFF_ID && liff.isInClient() && liff.isLoggedIn()`，
     只有在 LINE App 裡打開才 true，一般瀏覽器打開看不到「連結」按鈕
   - `linkLineAccount()` — 帶著目前登入的 `accessToken` + LINE `idToken` 一起
@@ -356,11 +360,11 @@ LINE 開啟就會直接登入**這個**帳號，而不是自動登入產生的�
   ```
 - **`NicknameEditor`**（內部元件）：輸入框 + 儲存按鈕，讀寫 `shared.user_profiles`（見
   9.5）。存的值只有跟上次載入不同才能按儲存，避免手滑重複打 API。
-- **`LineLinker`**（內部元件）：
+- **`LineLinker`**（內部元件，只寫畫面；狀態用 `const { linked, busy, msg, link } = useLineLinked('<app>:line-linked')`）：
   - `linked === true` → 顯示「✅ 已連結 LINE 帳號」
   - `linked === null`（還沒查完/查失敗）且 `!canLinkLine()` → 什麼都不顯示
   - `!linked && canLinkLine()` → 顯示「🔗 連結 LINE 帳號」按鈕
-  - **連結狀態要快取到 `localStorage`**（key 例如 `<app>:line-linked`）：`checkLineLinked()`
+  - **連結狀態會快取到 `localStorage`**（`useLineLinked` 已經做好，key 例如 `<app>:line-linked`）：`checkLineLinked()`
     查到 `true` 才寫入快取，重開 app 先用快取顯示「已連結」，避免查詢還沒回來、或
     暫時網路失敗時畫面閃一下「未連結」又跳回「已連結」
 - **登出按鈕**

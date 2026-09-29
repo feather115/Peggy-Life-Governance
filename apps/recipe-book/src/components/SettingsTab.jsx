@@ -1,6 +1,6 @@
 // Settings tab: account email, nickname, LINE account linking, sign out.
 import React, { useEffect, useState } from 'react';
-import { canLinkLine, checkLineLinked, linkLineAccount } from '../liff.js';
+import { canLinkLine, useLineLinked } from '../liff.js';
 
 export default function SettingsTab({ session, myDisplayName, onSetDisplayName, onSignOut }) {
   const [nameInput, setNameInput] = useState(myDisplayName);
@@ -71,45 +71,9 @@ export default function SettingsTab({ session, myDisplayName, onSetDisplayName, 
 
 const LINE_LINKED_CACHE_KEY = 'recipe-book:line-linked';
 
-// 連結狀態邏輯跟 calorie-tracker/calendar 的 LineLinker 一致：查到 true 就快取到
-// localStorage，重開 app 先用快取顯示「已連結」，避免查詢還沒回來、或暫時失敗時誤判成「沒連結」。
+// 連結狀態邏輯（含 localStorage 快取）在 @peggy-life/shared/lineAuth 的 useLineLinked，三個 app 共用，這裡只負責畫面。
 function LineLinker() {
-  const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState('');
-  const [linked, setLinked] = useState(() => {
-    try {
-      return localStorage.getItem(LINE_LINKED_CACHE_KEY) === '1' ? true : null;
-    } catch {
-      return null;
-    }
-  });
-
-  useEffect(() => {
-    let cancel = false;
-    checkLineLinked().then((result) => {
-      if (cancel || result === null) return;
-      setLinked(result);
-      try {
-        if (result) localStorage.setItem(LINE_LINKED_CACHE_KEY, '1');
-        else localStorage.removeItem(LINE_LINKED_CACHE_KEY);
-      } catch {}
-    });
-    return () => { cancel = true; };
-  }, []);
-
-  const link = async () => {
-    setBusy(true); setMsg('');
-    try {
-      await linkLineAccount();
-      setLinked(true);
-      try { localStorage.setItem(LINE_LINKED_CACHE_KEY, '1'); } catch {}
-      setMsg('success');
-    } catch (e) {
-      setMsg(e.message || '連結失敗');
-    } finally {
-      setBusy(false);
-    }
-  };
+  const { linked, busy, msg, link } = useLineLinked(LINE_LINKED_CACHE_KEY);
 
   if (linked) {
     return (

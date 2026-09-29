@@ -1,34 +1,19 @@
 // Root component: decides whether to show the "missing configuration prompt / login page / main app".
-// Listens to Supabase auth status change, and passes the session to the App after login.
-import React, { useState, useEffect } from 'react';
+// session 取得、LINE 自動登入、auth 狀態監聽都在 @peggy-life/shared/lineAuth 的 useSession（三個 app 共用），
+// 這裡只決定要顯示哪個畫面。
+import React, { useState } from 'react';
 import { supabase, supabaseReady } from './supabase.js';
-import { lineAutoLogin } from './liff.js';
+import { useSession } from './liff.js';
 import Auth from './components/Auth.jsx';
 import App from './App.jsx';
 import ConfigMissing from '@peggy-life/shared/ConfigMissing.jsx';
 
 export default function Root() {
-  const [session, setSession] = useState(null);
-  const [ready, setReady] = useState(false);
-  const [lineDebug, setLineDebug] = useState('');
+  const { session, ready, lineDebug } = useSession();
   const [guest, setGuest] = useState(false);
 
-  useEffect(() => {
-    if (!supabaseReady) { setReady(true); return; }
-    let cancel = false;
-    supabase.auth.getSession().then(async ({ data }) => {
-      if (data.session) { if (!cancel) { setSession(data.session); setReady(true); } return; }
-      const result = await lineAutoLogin();
-      if (!result.ok && !cancel) setLineDebug(result.reason || '');
-      const { data: data2 } = await supabase.auth.getSession();
-      if (!cancel) { setSession(data2.session); setReady(true); }
-    });
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
-      setSession(s);
-      if (s) setGuest(false);
-    });
-    return () => { cancel = true; sub.subscription.unsubscribe(); };
-  }, []);
+  // 登入後自動離開訪客模式（原本寫在 onAuthStateChange 裡；render 中依條件調整 state 是 React 允許的寫法）
+  if (session && guest) setGuest(false);
 
   if (!supabaseReady) return <ConfigMissing appName="TY Recipe Book App" />;
   if (!ready) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6E8B7C', fontWeight: 700 }}>初始化…</div>;

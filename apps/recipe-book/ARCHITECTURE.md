@@ -60,14 +60,16 @@ Supabase ⇄ db.js ⇄ useRecipes.js ⇄ App.jsx ⇄ components/*
 ### 核心
 - **`src/main.jsx`** — 進入點，呼叫 `initLiff()` 完成後掛載 `<Root/>`。
 - **`src/Root.jsx`** — 檢查 `.env` → 執行 LINE 自動登入 / Auth 驗證 → 已登入則載入 `<App/>`。
+  session 與 LINE 自動登入邏輯在 `useSession()`（`liff.js` 匯出，三 app 共用）；Root 自己只多管訪客模式的
+  `guest` state（登入後在 render 時自動把 `guest` 設回 false）。
 - **`src/App.jsx`** — 行動載具外殼（`maxWidth: 520`），載入 `useRecipes()` 並切換 `RecipeCatalog` / `RecipeDetail`。
 - **`src/useRecipes.js`** — ⭐ **狀態中樞**。載入食譜、搜尋/分類篩選、catalog ↔ detail 導覽（含 URL 同步 `?recipe=xxx`）、
   按讚 `likeCounts`/`myLikedSet`/`likerNamesByRecipe`（誰按讚的名字清單，見下方設計重點）。
 - **`src/liff.js`** — 薄殼：把本 app 的 supabase client 綁進 `@peggy-life/shared/lineAuth`
   的 `createLineAuth()`（三個 app 共用同一份 LINE 邏輯，要改行為去 `packages/shared/src/lineAuth.js`
-  改）。提供 `initLiff()`、`lineAutoLogin()`、`canLinkLine()`、`retryLineAuthorization()`
-  （重新跳 LINE 授權同意畫面，`Auth.jsx` 用）、`linkLineAccount()`、`checkLineLinked()`
-  （給 `SettingsTab.jsx` 的 `LineLinker` 用）。**`@line/liff` 是動態 import**：只有「有設
+  改）。匯出 `initLiff()`、`canLinkLine()`、`retryLineAuthorization()`
+  （重新跳 LINE 授權同意畫面，`Auth.jsx` 用），以及兩個 hook：`useSession()`（`Root.jsx` 用）、
+  `useLineLinked(cacheKey)`（給 `SettingsTab.jsx` 的 `LineLinker` 用）。**`@line/liff` 是動態 import**：只有「有設
   `VITE_LIFF_ID` 且 user agent 含 `Line/`」才會下載 liff SDK，一般瀏覽器完全不載入。
 - **`src/db.js`** — Supabase 的純 CRUD 函式（食譜 CRUD、按讚、料理紀錄、`loadDisplayNames`/`updateDisplayName`）。
   **所有寫入都會檢查 `error` 並 throw**，由呼叫端（`useRecipes`）決定怎麼處理（跟 calorie-tracker 的 db.js 同一條規則）。
@@ -85,7 +87,7 @@ Supabase ⇄ db.js ⇄ useRecipes.js ⇄ App.jsx ⇄ components/*
   登入的假 email 遮罩成 `LINE: U1234...wxyz`）、暱稱輸入框+儲存（呼叫 `useRecipes.js` 的
   `setMyDisplayName`，寫入 `shared.user_profiles.display_name`——**跨 app 共用**，在
   calorie-tracker 設過的暱稱這裡看得到，反過來也一樣，見下方「暱稱跨 app 共用」）、
-  `LineLinker`（內部元件，跟 calorie-tracker/calendar 的 `LineLinker` 同一套設計：
+  `LineLinker`（內部元件，只負責畫面；狀態邏輯是三個 app 共用的 `useLineLinked`：
   `checkLineLinked()` 查到已連結會快取進 `localStorage`，避免畫面閃爍；「連結 LINE
   帳號」按鈕只有 `canLinkLine()` 為 true 才顯示）、登出按鈕。
 

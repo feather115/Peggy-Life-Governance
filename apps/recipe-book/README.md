@@ -100,6 +100,8 @@ src/
 ---
 
 ## 近期更新 (Recent Updates)
+- **登入初始化與 LINE 連結狀態改用共用 hook** (2026-09-29)：
+  - `Root.jsx` 的 session 取得 / LINE 自動登入、設定頁 `LineLinker` 的連結狀態邏輯，改用 `packages/shared/src/lineAuth.js` 的 `useSession()` / `useLineLinked()`（三個 app 共用同一份），畫面與行為不變。
 - **料理紀錄分頁載入** (2026-09-29)：
   - `loadCookRecords` 改用 `@peggy-life/shared` 的 `fetchAll` 分頁抓完。Supabase 單次查詢最多回 1000 筆、超過會被靜默截掉，料理紀錄累積超過 1000 筆後最舊的紀錄原本會從行事曆消失。
 - **食譜表單優化：支援編輯食材分區與品牌** (2026-06-28)：

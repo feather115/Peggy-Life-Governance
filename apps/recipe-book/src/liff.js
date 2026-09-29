@@ -6,9 +6,8 @@ import { supabase } from './supabase.js';
 
 export const {
   initLiff,
-  lineAutoLogin,
   canLinkLine,
   retryLineAuthorization,
-  linkLineAccount,
-  checkLineLinked,
+  useSession,
+  useLineLinked,
 } = createLineAuth(supabase);

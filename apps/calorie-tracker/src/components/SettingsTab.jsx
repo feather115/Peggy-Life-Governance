@@ -1,10 +1,10 @@
 // Settings tab: account/sign out, profile (nickname + change password), daily goal, tags management, data clearing
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { FOODS } from '../constants.js';
 import { totalRecordedDays } from '../selectors.js';
 import { alertError } from '../utils.js';
 import { supabase } from '../supabase.js';
-import { canLinkLine, checkLineLinked, linkLineAccount } from '../liff.js';
+import { canLinkLine, useLineLinked } from '../liff.js';
 
 const TAG_COLORS = ['#E8A13C', '#D9544F', '#EC4899', '#8B5CF6', '#4361EE', '#5FA8D3', '#14B8A6', '#2E8B5E'];
 
@@ -195,48 +195,9 @@ const LINE_LINKED_CACHE_KEY = 'calorie-tracker:line-linked';
 
 // Link LINE Account: shows current link status (checked on mount, works in any browser),
 // and offers the "connect" button only when opened within the LINE App and not yet linked.
-//
-// linked state: null = 還不確定（初次載入、還沒查完，也還沒有本地快取）
-//               true/false = 確定的狀態
-// 一旦查到 true 就快取到 localStorage，之後重開 app 會先用快取顯示「已連結」，
-// 不會因為查詢還沒回來、或查詢暫時失敗（例如網路不穩），就閃一下「連結」按鈕。
+// 連結狀態邏輯（含 localStorage 快取）在 @peggy-life/shared/lineAuth 的 useLineLinked，三個 app 共用，這裡只負責畫面。
 function LineLinker() {
-  const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState('');
-  const [linked, setLinked] = useState(() => {
-    try {
-      return localStorage.getItem(LINE_LINKED_CACHE_KEY) === '1' ? true : null;
-    } catch {
-      return null;
-    }
-  });
-
-  useEffect(() => {
-    let cancel = false;
-    checkLineLinked().then((result) => {
-      if (cancel || result === null) return; // 查不到明確結果（沒 session／網路失敗／後端錯誤），保留原本的狀態，不要誤判成「沒連結」
-      setLinked(result);
-      try {
-        if (result) localStorage.setItem(LINE_LINKED_CACHE_KEY, '1');
-        else localStorage.removeItem(LINE_LINKED_CACHE_KEY);
-      } catch {}
-    });
-    return () => { cancel = true; };
-  }, []);
-
-  const link = async () => {
-    setBusy(true); setMsg('');
-    try {
-      await linkLineAccount();
-      setLinked(true);
-      try { localStorage.setItem(LINE_LINKED_CACHE_KEY, '1'); } catch {}
-      setMsg('success');
-    } catch (e) {
-      setMsg(e.message || '連結失敗');
-    } finally {
-      setBusy(false);
-    }
-  };
+  const { linked, busy, msg, link } = useLineLinked(LINE_LINKED_CACHE_KEY);
 
   if (linked) {
     return (

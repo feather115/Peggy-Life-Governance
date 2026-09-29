@@ -64,7 +64,7 @@ Supabase ⇄ db.js ⇄ useAppData.js ⇄ App.jsx ⇄ components/*
 | **登入判斷 / 設定缺失提示 / LINE 自動登入觸發點** | `src/Root.jsx` |
 | **分頁切換 / 哪個面板開著 / App 外層高度（影響分頁列是否固定）** | `src/App.jsx` |
 | **LIFF 初始化、LINE 自動登入、帳號連結** | `src/liff.js`（薄殼，邏輯在 `packages/shared/src/lineAuth.js`，三 app 共用） |
-| **設定頁「連結 LINE 帳號」按鈕** | `src/components/SettingsTab.jsx` → `LineLinker` |
+| **設定頁「連結 LINE 帳號」按鈕** | `src/components/SettingsTab.jsx` → `LineLinker`（畫面）；狀態邏輯在 `packages/shared/src/lineAuth.js` 的 `useLineLinked` |
 | **AI 食物搜尋 / AI 當日摘要 / LINE 登入驗證的伺服器端邏輯** | `api/*.js`（見下方「AI 功能」「LINE 整合」） |
 | **Supabase 連線金鑰 / AI / LINE 相關環境變數** | `.env`（複製 `.env.example`） |
 | **資料庫建表 SQL（飲食 App 基本表）** | `supabase/schema.sql` |
@@ -79,7 +79,7 @@ Supabase ⇄ db.js ⇄ useAppData.js ⇄ App.jsx ⇄ components/*
 
 ### 核心
 - **`src/main.jsx`** — 進入點，只把 `<Root/>` 掛上去。幾乎不會改。
-- **`src/Root.jsx`** — 看有沒有設定 `.env`、有沒有登入，決定顯示 `ConfigMissing` / `Auth` / `App`。
+- **`src/Root.jsx`** — 看有沒有設定 `.env`、有沒有登入，決定顯示 `ConfigMissing` / `Auth` / `App`。session 取得、LINE 自動登入、auth 狀態監聽都在 `useSession()`（`liff.js` 匯出，邏輯在 `packages/shared/src/lineAuth.js`，三 app 共用），Root 只管畫面。
 - **`src/App.jsx`** — 主外殼。載入 `useAppData`，管理 UI 狀態（目前分頁、選取日期、哪個面板開著），把分頁與面板組起來。
 - **`src/useAppData.js`** — ⭐ **狀態中樞**。所有資料（days/foods/goals/tags）與改資料的動作都在這。元件透過它操作資料。
 - **`src/db.js`** — Supabase 的純 CRUD 函式，一個動作一個 function。**所有寫入都會檢查 `error` 並 throw**，由呼叫端（`useAppData`）決定怎麼處理——不要新增「默默吞掉錯誤」的寫入，否則會出現「畫面改了、DB 沒改、重整又跳回來」的鬼影。`loadAll()` 的任何一個查詢失敗都會整個丟錯（`App` 顯示「載入失敗」）——不能把失敗當成空資料/預設值顯示，否則使用者以為紀錄不見，設定還會被預設值覆蓋。`loadAll()` 的 `day_records`（每天一筆、無限成長）用 `@peggy-life/shared` 的 `fetchAll` 分頁抓完——PostgREST 單次最多回 1000 筆，超過的會被靜默截掉（約 2.7 年後就會碰到）。
@@ -103,7 +103,10 @@ Supabase ⇄ db.js ⇄ useAppData.js ⇄ App.jsx ⇄ components/*
 ### LINE 整合 + AI 功能（`src/liff.js` + `api/`）
 - **`src/liff.js`** — 薄殼：把本 app 的 supabase client 綁進 `@peggy-life/shared/lineAuth`
   的 `createLineAuth()`（三個 app 共用同一份 LINE 邏輯，要改行為去 `packages/shared/src/lineAuth.js` 改）。
-  提供 `initLiff()`、`lineAutoLogin()`、`canLinkLine()`、`linkLineAccount()`、`checkLineLinked()`。
+  匯出 `initLiff()`、`canLinkLine()`、`retryLineAuthorization()`，以及兩個 hook：`useSession()`（`Root.jsx` 用：
+  拿 session，沒登入且在 LINE 裡先試 `lineAutoLogin()`）、`useLineLinked(cacheKey)`（`SettingsTab.jsx` 的 `LineLinker`
+  用：連結狀態＋ localStorage 快取＋連結動作）。`lineAutoLogin()` / `linkLineAccount()` / `checkLineLinked()`
+  只在 factory 內部被這兩個 hook 呼叫，不再從 `liff.js` 匯出。
   **`@line/liff` 是動態 import**：只有「有設 `VITE_LIFF_ID` 且 user agent 含 `Line/`」才會下載
   liff SDK（獨立 chunk 約 116kB），一般瀏覽器完全不載入，主 bundle 變小。
 - **`api/_groq.js`** — 呼叫 Groq Chat Completions 的最底層共用函式。
@@ -268,7 +271,7 @@ SET pgrst.db_schemas = '...'` + `NOTIFY pgrst, 'reload config'`，見根目錄
    - 有連結 → 用那個帳號的 email 產生登入連結。
    - 沒連結 → 用 `line-${sub}@line.invalid` 這個固定格式的信箱建一個新帳號（第一次見到這個 LINE 使用者）。
 4. 用 Supabase admin 的 `generateLink({ type: 'magiclink' })` 產生一次性憑證（`hashed_token`），前端用 `supabase.auth.verifyOtp({ token_hash, type: 'magiclink' })` 直接換成真正的 session——**全程不需要 email/密碼**。若使用者還沒設定暱稱，會順便把 LINE 顯示名稱填進 `shared.user_profiles`（暱稱的正牌存放處，見「暱稱跨 app 共用」；只在空白時填，不會蓋掉自訂暱稱）。
-5. 任何一步失敗都會把原因記在 `Root.jsx` 的 `lineDebug` state，顯示在登入頁最下面一行灰字，方便在沒有電腦除錯工具的情況下定位問題（例如 scope 沒開、channel 還沒發布等）。
+5. 任何一步失敗都會把原因記在 `useSession()` 回傳的 `lineDebug`（`Root.jsx` 傳給 `Auth`），顯示在登入頁最下面一行灰字，方便在沒有電腦除錯工具的情況下定位問題（例如 scope 沒開、channel 還沒發布等）。
 
 ### 帳號連結（`linkLineAccount()`，設定頁「🔗 連結 LINE 帳號」）
 - 只有在 LINE App 裡、且已經用某個帳號登入時才會顯示這個按鈕（`canLinkLine()`）。
