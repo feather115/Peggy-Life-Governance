@@ -1,3 +1,4 @@
+import { fetchAll } from '@peggy-life/shared';
 import { supabase } from './supabase.js';
 
 // ── helpers ────────────────────────────────────────────────────
@@ -12,14 +13,15 @@ async function ensureDayRecord(userId, date) {
 
 // ── full load ──────────────────────────────────────────────────
 export async function loadAll(userId) {
-  const [settingsRes, profileRes, tagsRes, foodsRes, daysRes, usageRes] = await Promise.all([
+  const [settingsRes, profileRes, tagsRes, foodsRes, dayRows, usageRes] = await Promise.all([
     supabase.from('user_settings').select('*').eq('user_id', userId).maybeSingle(),
     // 暱稱是跨 app 共用的（shared.user_profiles），不是這裡的 user_settings.display_name
     supabase.schema('shared').from('user_profiles').select('display_name').eq('user_id', userId).maybeSingle(),
     supabase.from('tag_defs').select('*').eq('user_id', userId).order('sort_order'),
     supabase.from('custom_foods').select('*').eq('user_id', userId).order('created_at'),
-    supabase.from('day_records').select('id,date,day_note,day_tags(tag_def_id),meal_items(*)')
-      .eq('user_id', userId).order('date', { ascending: false }),
+    // 每天一筆、無限成長，用 fetchAll 分頁抓完（單次查詢超過 1000 筆會被靜默截掉）；(user_id, date) 唯一，排序穩定
+    fetchAll(() => supabase.from('day_records').select('id,date,day_note,day_tags(tag_def_id),meal_items(*)')
+      .eq('user_id', userId).order('date', { ascending: false })),
     supabase.from('food_usage').select('food_ref,last_used_at').eq('user_id', userId),
   ]);
 
@@ -36,7 +38,7 @@ export async function loadAll(userId) {
   }));
 
   const days = {};
-  for (const dr of (daysRes.data || [])) {
+  for (const dr of dayRows) {
     const meals = { breakfast:[], lunch:[], dinner:[], snack:[], midnight:[] };
     for (const mi of dr.meal_items || []) {
       meals[mi.meal_key]?.push({

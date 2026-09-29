@@ -71,6 +71,7 @@ Supabase ⇄ db.js ⇄ useRecipes.js ⇄ App.jsx ⇄ components/*
   `VITE_LIFF_ID` 且 user agent 含 `Line/`」才會下載 liff SDK，一般瀏覽器完全不載入。
 - **`src/db.js`** — Supabase 的純 CRUD 函式（食譜 CRUD、按讚、料理紀錄、`loadDisplayNames`/`updateDisplayName`）。
   **所有寫入都會檢查 `error` 並 throw**，由呼叫端（`useRecipes`）決定怎麼處理（跟 calorie-tracker 的 db.js 同一條規則）。
+  `loadCookRecords` 用 `@peggy-life/shared` 的 `fetchAll` 分頁抓完（料理紀錄無限成長，PostgREST 單次最多回 1000 筆，超過會被靜默截掉）。
 - **`src/supabase.js`** — re-export `@peggy-life/shared` 的 supabase client（`schema: 'recipe_book'`）。
 
 ### 畫面與組件（`src/components/`）

@@ -79,7 +79,7 @@ Supabase ⇄ db.js ⇄ useAppData.js ⇄ App.jsx ⇄ components/*
 - **`src/Root.jsx`** — 看有沒有設定 `.env`、有沒有登入，決定顯示 `ConfigMissing` / `Auth` / `App`。
 - **`src/App.jsx`** — 主外殼。載入 `useAppData`，管理 UI 狀態（目前分頁、選取日期、哪個面板開著），把分頁與面板組起來。
 - **`src/useAppData.js`** — ⭐ **狀態中樞**。所有資料（days/foods/goals/tags）與改資料的動作都在這。元件透過它操作資料。
-- **`src/db.js`** — Supabase 的純 CRUD 函式，一個動作一個 function。**所有寫入都會檢查 `error` 並 throw**，由呼叫端（`useAppData`）決定怎麼處理——不要新增「默默吞掉錯誤」的寫入，否則會出現「畫面改了、DB 沒改、重整又跳回來」的鬼影。
+- **`src/db.js`** — Supabase 的純 CRUD 函式，一個動作一個 function。**所有寫入都會檢查 `error` 並 throw**，由呼叫端（`useAppData`）決定怎麼處理——不要新增「默默吞掉錯誤」的寫入，否則會出現「畫面改了、DB 沒改、重整又跳回來」的鬼影。`loadAll()` 的 `day_records`（每天一筆、無限成長）用 `@peggy-life/shared` 的 `fetchAll` 分頁抓完——PostgREST 單次最多回 1000 筆，超過的會被靜默截掉（約 2.7 年後就會碰到）。
 - **`src/supabase.js`** — 建立 Supabase client；`supabaseReady` 判斷有沒有設定金鑰。
 
 ### 無狀態工具

@@ -1,4 +1,5 @@
 // Pure fetch functions for Supabase; components do not communicate with the database directly, but use the state/actions returned by useRecipes.
+import { fetchAll } from '@peggy-life/shared';
 import { supabase } from './supabase.js';
 import { normalizeRecipe } from './utils.js';
 
@@ -107,15 +108,16 @@ export async function updateDisplayName(userId, displayName) {
   return data;
 }
 
+// 料理紀錄會無限成長，用 fetchAll 分頁抓完（單次查詢超過 1000 筆會被靜默截掉）；
+// id 當最後排序鍵，分頁順序才穩定。
 export async function loadCookRecords(userId) {
-  const { data, error } = await supabase
+  return fetchAll(() => supabase
     .from('cooking_history')
     .select('id, user_id, recipe_id, cooked_date, created_at, notes')
     .eq('user_id', userId)
     .order('cooked_date', { ascending: false })
-    .order('created_at', { ascending: true });
-  if (error) throw error;
-  return data || [];
+    .order('created_at', { ascending: true })
+    .order('id', { ascending: true }));
 }
 
 export async function addCookRecord(userId, cookedOn, recipeId) {

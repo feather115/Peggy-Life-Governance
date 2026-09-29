@@ -190,6 +190,10 @@ Supabase ⇄ db.js ⇄ use<Domain>.js ⇄ Root.jsx/App.jsx ⇄ components/*
   - **所有寫入都要檢查 `error` 並 throw**，由狀態中樞決定怎麼處理。不要默默吞錯——
     吞掉的下場是「畫面刪了、DB 沒刪、重整又長回來」的鬼影（calorie-tracker 踩過，
     2026-07-05 整輪修掉）
+  - **會無限成長的表**（每天一筆、每次使用一筆）用 `@peggy-life/shared` 的
+    `fetchAll(() => query)` 分頁抓完：PostgREST 單次查詢最多回傳 Supabase 的 Max rows
+    （預設 1000）筆，超過的部分會被靜默截掉、不會報錯。`order` 最後要補主鍵（例如
+    `.order('id')`），分頁之間才不會重複或漏資料（參考 calendar `db.js` 的 `loadRecords`）
   - 「查了再寫」一律改成**單一 upsert**（表上有 unique constraint 就用
     `.upsert(row, { onConflict: '...' })`）：少一趟 round-trip，也沒有 select-then-insert
     的 race window

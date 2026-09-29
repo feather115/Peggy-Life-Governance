@@ -128,7 +128,8 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
   **跟其他 hook 不同：載入失敗不擋整個 app**——選單退化成純文字輸入，`loadError`
   只在設定頁的維護頁顯示（例如 migration 還沒跑）。
 - **`src/db.js`** — Supabase 的純查詢函式：events（合併後的紀錄，`loadRecords`/`createRecord`/
-  `updateRecord`/`deleteRecord`，`RECORD_COLUMNS` 是計畫面+回顧面欄位聯集）、tag_categories
+  `updateRecord`/`deleteRecord`，`RECORD_COLUMNS` 是計畫面+回顧面欄位聯集；`loadRecords` 用
+  `@peggy-life/shared` 的 `fetchAll` 分頁抓完，見下方「一次載入使用者所有資料」）、tag_categories
   （`loadCategories`/`createCategories`/`updateCategory`/`deleteCategory`）、tasks
   （`loadTasks`/`createTask`/`updateTask`/`deleteTask`）、event_options
   （`loadOptions`/`createOptions`/`updateOption`/`deleteOption`）、使用者暱稱
@@ -451,9 +452,12 @@ createAppSupabase({ schema: 'calendar' })
   合併前日記另存 `entry_date`/`time` 字串，已在 2026-07-15 migration 以 Asia/Taipei 換算併入 `start_at`。
 - **全天紀錄的 `start_at`** 存的是「選定日期的本地午夜」轉成的 UTC 時間戳，`all_day=true`
   時 UI 不顯示時間。
-- **一次載入使用者所有資料**（`loadRecords`/`loadCategories` 都沒有分頁或日期範圍過濾）——
-  刻意的簡化決定，個人行事曆資料量小，不值得為 v1 加分頁複雜度。
+- **一次載入使用者所有資料**（`loadRecords`/`loadCategories` 都沒有日期範圍過濾）——
+  刻意的簡化決定，個人行事曆資料量小，不值得為 v1 加範圍查詢的複雜度。
   如果之後資料量大到影響效能，再改成依月份/週範圍查詢。
+  但 **`loadRecords` 一定要用 `fetchAll` 分頁**：PostgREST 單次最多回 1000 筆（Supabase 預設
+  Max rows），超過的會被靜默截掉；又因為是依 `start_at` 升冪排序，被截掉的會是**最新**的紀錄。
+  排序最後補 `id`，同一時間開始的紀錄分頁順序才穩定。
 - **新使用者的預設分類是應用層邏輯，不是資料庫 trigger** — `useDiaryTags.js` 載入完
   `tag_categories` 後如果是空的才會呼叫 `createCategories` 種預設值，只會發生一次
   （種完之後 `tag_categories` 就不是空的了）。

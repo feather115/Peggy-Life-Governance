@@ -1,4 +1,5 @@
 // Supabase 的純查詢函式，元件不直接打資料庫，一律透過 useRecords 拿到的 state/actions。
+import { fetchAll } from '@peggy-life/shared';
 import { supabase } from './supabase.js';
 
 // 「紀錄」＝合併後的單一實體（events 表）：計畫面欄位（title/color/description/tags）+
@@ -22,14 +23,15 @@ const RECORD_COLUMNS = [
   'created_at',
 ].join(', ');
 
+// 紀錄會無限成長，用 fetchAll 分頁抓完（單次查詢超過 1000 筆會被靜默截掉，而且升冪排序
+// 截掉的是「最新」的紀錄）；id 當第二排序鍵，同一時間開始的紀錄分頁順序才穩定。
 export async function loadRecords(userId) {
-  const { data, error } = await supabase
+  return fetchAll(() => supabase
     .from('events')
     .select(RECORD_COLUMNS)
     .eq('user_id', userId)
-    .order('start_at', { ascending: true });
-  if (error) throw error;
-  return data || [];
+    .order('start_at', { ascending: true })
+    .order('id', { ascending: true }));
 }
 
 export async function createRecord(userId, payload) {
