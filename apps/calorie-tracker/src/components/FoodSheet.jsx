@@ -17,15 +17,15 @@ export default function FoodSheet({ app, selectedDate, mealKey, onClose }) {
   const [jsonSuccess, setJsonSuccess] = useState(0);
   const [qtyMap, setQtyMap] = useState({}); // Currently selected servings for each food, defaults to 1
   const [search, setSearch] = useState('');
-  const [toastMsg, setToastMsg] = useState('');
+  const [toast, setToast] = useState(null); // { message, isError } | null
   const toastTimerRef = useRef(null);
 
-  const showToast = (message) => {
+  const showToast = (message, isError = false) => {
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-    setToastMsg(message);
+    setToast({ message, isError });
     toastTimerRef.current = setTimeout(() => {
-      setToastMsg('');
-    }, 1500);
+      setToast(null);
+    }, isError ? 3000 : 1500);
   };
 
   const mealLabel = MEALS_DEF.find((m) => m.key === mealKey)?.label || '';
@@ -77,14 +77,20 @@ export default function FoodSheet({ app, selectedDate, mealKey, onClose }) {
   const round1 = (n) => Math.round(n * 10) / 10;
 
   // Add existing food (multiplies nutritional values by current servings, builds a snapshot, and passes it to app.addMeal)
-  const pick = (fo) => {
+  // 寫入成功才顯示「已加入」；失敗顯示錯誤並保留份數，方便重試
+  const pick = async (fo) => {
     const qty = getQtyNum(fo.id);
     if (isNaN(qty) || qty <= 0) return;
-    addMeal(selectedDate, mealKey, {
-      foodRef: fo.id, name: fo.name, brand: fo.brand || '',
-      unit: qty === 1 ? fo.unit : `${qty} × ${fo.unit}`,
-      cal: Math.round(fo.cal * qty), p: round1((fo.p || 0) * qty), c: round1((fo.c || 0) * qty), f: round1((fo.f || 0) * qty),
-    });
+    try {
+      await addMeal(selectedDate, mealKey, {
+        foodRef: fo.id, name: fo.name, brand: fo.brand || '',
+        unit: qty === 1 ? fo.unit : `${qty} × ${fo.unit}`,
+        cal: Math.round(fo.cal * qty), p: round1((fo.p || 0) * qty), c: round1((fo.c || 0) * qty), f: round1((fo.f || 0) * qty),
+      });
+    } catch (e) {
+      showToast(`加入失敗：${e.message || '請稍後再試'}`, true);
+      return;
+    }
     setQtyRaw(fo.id, 1);
     showToast(`已加入 ${fo.name}`);
   };
@@ -121,16 +127,24 @@ export default function FoodSheet({ app, selectedDate, mealKey, onClose }) {
   const save = async () => {
     if (!canSave) return;
     const payload = { name: form.name.trim(), brand: form.brand.trim(), note: form.note.trim(), unit: form.unit.trim() || '1 份', cal: Math.round(fcn), p: parseFloat(form.p) || 0, c: parseFloat(form.c) || 0, f: parseFloat(form.f) || 0 };
-    if (editingId) {
-      await updateCustomFood(editingId, payload);
-      showToast(`已更新 ${payload.name}`);
-    } else {
-      const nf = await addCustomFood(payload);
-      await addMeal(selectedDate, mealKey, { foodRef: nf.id, name: nf.name, brand: nf.brand, unit: nf.unit, cal: nf.cal, p: nf.p, c: nf.c, f: nf.f });
-      showToast(`已加入 ${payload.name}`);
+    let nf = null;
+    try {
+      if (editingId) await updateCustomFood(editingId, payload);
+      else nf = await addCustomFood(payload);
+    } catch (e) {
+      showToast(`儲存失敗：${e.message || '請稍後再試'}`, true);
+      return;
     }
+    // 食物已經存進食物庫就先關表單（留著的話再按一次儲存會重複建立），再加入餐點
     setEditingId(null);
     setFormOpen(false);
+    if (!nf) { showToast(`已更新 ${payload.name}`); return; }
+    try {
+      await addMeal(selectedDate, mealKey, { foodRef: nf.id, name: nf.name, brand: nf.brand, unit: nf.unit, cal: nf.cal, p: nf.p, c: nf.c, f: nf.f });
+      showToast(`已加入 ${payload.name}`);
+    } catch (e) {
+      showToast(`已存進食物庫，但加入${mealLabel}失敗：${e.message || '請稍後再試'}`, true);
+    }
   };
 
   const importJsonFoods = async () => {
@@ -178,16 +192,16 @@ export default function FoodSheet({ app, selectedDate, mealKey, onClose }) {
 
   return (
     <Sheet onBackdrop={onClose} height="min(76vh, 720px)" zIndex={10}>
-      {toastMsg && (
+      {toast && (
         <div style={{
           position: 'absolute', top: 58, left: '50%', transform: 'translateX(-50%)',
-          background: '#2E8B5E', color: '#fff',
+          background: toast.isError ? '#D9544F' : '#2E8B5E', color: '#fff',
           padding: '8px 16px', borderRadius: 20, zIndex: 100,
           fontWeight: 800, fontSize: 13, boxShadow: '0 8px 24px rgba(46,139,94,.3)',
           pointerEvents: 'none', display: 'flex', alignItems: 'center', gap: 6
         }}>
-          <span>✓</span>
-          <span>{toastMsg}</span>
+          <span>{toast.isError ? '!' : '✓'}</span>
+          <span>{toast.message}</span>
         </div>
       )}
       <div style={{ padding: '8px 20px 6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -238,7 +252,7 @@ export default function FoodSheet({ app, selectedDate, mealKey, onClose }) {
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 'none' }}>
                   {fo.custom && <button onClick={() => startEdit(fo)} style={{ border: 'none', background: '#fff', color: '#6E8B7C', width: 28, height: 28, borderRadius: '50%', cursor: 'pointer', fontSize: 13 }}>✏</button>}
-                  {fo.custom && <button onClick={() => removeCustomFood(fo.id)} style={{ border: 'none', background: '#fff', color: '#bcccc2', width: 28, height: 28, borderRadius: '50%', cursor: 'pointer', fontSize: 14, lineHeight: 1 }}>×</button>}
+                  {fo.custom && <button onClick={() => removeCustomFood(fo.id).catch((e) => showToast(`刪除失敗：${e.message || '請稍後再試'}`, true))} style={{ border: 'none', background: '#fff', color: '#bcccc2', width: 28, height: 28, borderRadius: '50%', cursor: 'pointer', fontSize: 14, lineHeight: 1 }}>×</button>}
                   <button onClick={() => pick(fo)} disabled={isNaN(getQtyNum(fo.id)) || getQtyNum(fo.id) <= 0}
                     style={{ border: 'none', background: (isNaN(getQtyNum(fo.id)) || getQtyNum(fo.id) <= 0) ? '#bcccc2' : '#2E8B5E', color: '#fff', width: 34, height: 34, borderRadius: '50%', cursor: (isNaN(getQtyNum(fo.id)) || getQtyNum(fo.id) <= 0) ? 'not-allowed' : 'pointer', fontSize: 18, lineHeight: 1, fontWeight: 700 }}>＋</button>
                 </div>

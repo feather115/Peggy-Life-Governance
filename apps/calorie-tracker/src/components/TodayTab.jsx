@@ -1,7 +1,7 @@
 // "Today" tab: date switcher, calorie ring, macronutrients, five meal cards, AI summary, and advanced entries
 import React, { useState } from 'react';
 import { MEALS_DEF } from '../constants.js';
-import { todayKey, dkFrom, parseDk, dateLabel, greeting, pct, emptyDay } from '../utils.js';
+import { todayKey, dkFrom, parseDk, dateLabel, greeting, pct, emptyDay, alertError } from '../utils.js';
 import { dayTotals, ringInfo } from '../selectors.js';
 import EditMealItemSheet from './EditMealItemSheet.jsx';
 
@@ -125,7 +125,7 @@ export default function TodayTab({ app, selectedDate, setSelectedDate, onOpenShe
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
                 <span style={{ fontSize: 14, fontWeight: 800, color: '#234034' }}>{Math.round(Number(it.cal) || 0)}</span>
                 <button onClick={() => setEditing({ mealKey: meal.key, mealLabel: meal.label, item: it })} style={{ border: 'none', background: '#EAF5EE', color: '#6E8B7C', width: 25, height: 25, borderRadius: '50%', cursor: 'pointer', fontSize: 12 }}>✏</button>
-                <button onClick={() => removeMeal(selectedDate, meal.key, it.id)} style={{ border: 'none', background: '#EAF5EE', color: '#9bb0a3', width: 25, height: 25, borderRadius: '50%', cursor: 'pointer', fontSize: 15, lineHeight: 1 }}>×</button>
+                <button onClick={() => removeMeal(selectedDate, meal.key, it.id).catch((e) => alertError('刪除', e))} style={{ border: 'none', background: '#EAF5EE', color: '#9bb0a3', width: 25, height: 25, borderRadius: '50%', cursor: 'pointer', fontSize: 15, lineHeight: 1 }}>×</button>
               </div>
             </div>
           ))}

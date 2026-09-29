@@ -4,7 +4,7 @@
 import React, { useState, useMemo } from 'react';
 import { MEALS_DEF } from '../constants.js';
 import { buildFoodHistory, mealTypeBreakdown } from '../selectors.js';
-import { dateLabel } from '../utils.js';
+import { dateLabel, alertError } from '../utils.js';
 import EditMealItemSheet from './EditMealItemSheet.jsx';
 
 export default function FoodHistoryCard({ app }) {
@@ -26,7 +26,12 @@ export default function FoodHistoryCard({ app }) {
 
   const copyToMenu = async (entry, entryKey) => {
     const it = entry.item;
-    await addCustomFood({ name: it.name, brand: it.brand || '', note: '', unit: it.unit, cal: it.cal, p: it.p || 0, c: it.c || 0, f: it.f || 0 });
+    try {
+      await addCustomFood({ name: it.name, brand: it.brand || '', note: '', unit: it.unit, cal: it.cal, p: it.p || 0, c: it.c || 0, f: it.f || 0 });
+    } catch (e) {
+      alertError('加入食物庫', e);
+      return;
+    }
     setCopiedKey(entryKey);
     setTimeout(() => setCopiedKey(null), 2000);
   };

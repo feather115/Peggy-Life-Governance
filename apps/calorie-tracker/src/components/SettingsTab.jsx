@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { FOODS } from '../constants.js';
 import { totalRecordedDays } from '../selectors.js';
+import { alertError } from '../utils.js';
 import { supabase } from '../supabase.js';
 import { canLinkLine, checkLineLinked, linkLineAccount } from '../liff.js';
 
@@ -39,13 +40,23 @@ export default function SettingsTab({ app, session, onSignOut }) {
   const submitFasting = async () => {
     const label = addFastingInput.trim();
     if (!label) return;
-    await addTagDef('fasting', label);
+    try {
+      await addTagDef('fasting', label);
+    } catch (e) {
+      alertError('新增標籤', e);
+      return;
+    }
     setAddFastingInput('');
   };
   const submitOther = async () => {
     const label = addOtherInput.trim();
     if (!label) return;
-    await addTagDef('other', label, addOtherColor);
+    try {
+      await addTagDef('other', label, addOtherColor);
+    } catch (e) {
+      alertError('新增標籤', e);
+      return;
+    }
     setAddOtherInput('');
   };
   const doClear = async () => {
@@ -107,11 +118,11 @@ export default function SettingsTab({ app, session, onSignOut }) {
       <div style={{ background: '#fff', borderRadius: 24, padding: '20px 18px', marginTop: 12, boxShadow: '0 10px 24px -18px rgba(46,139,94,.5)' }}>
         <div style={{ fontSize: 16, fontWeight: 900, color: '#234034', marginBottom: 16 }}>標籤管理</div>
         <TagGroup title="⏱ 斷食標籤" titleColor="#4361EE" chipBg="#E8EDFF" chipColor="#4361EE" delColor="#8899DD"
-          tags={fastingTagDefs} onDelete={(id) => deleteTagDef('fasting', id)}
+          tags={fastingTagDefs} onDelete={(id) => deleteTagDef('fasting', id).catch((e) => alertError('刪除標籤', e))}
           input={addFastingInput} setInput={setAddFastingInput} onAdd={submitFasting} addBg="#4361EE" placeholder="新增斷食標籤…" />
         <div style={{ height: 20 }} />
         <TagGroup title="🏷 記錄原因標籤" titleColor="#C4780A" chipBg="#FFF3DC" chipColor="#8B5A00" delColor="#D4923E"
-          tags={otherTagDefs} onDelete={(id) => deleteTagDef('other', id)}
+          tags={otherTagDefs} onDelete={(id) => deleteTagDef('other', id).catch((e) => alertError('刪除標籤', e))}
           onColor={(id, color) => updateTagColor('other', id, color)}
           input={addOtherInput} setInput={setAddOtherInput} onAdd={submitOther} addBg={addOtherColor} placeholder="新增標籤（如：聚餐、旅行）…"
           color={addOtherColor} setColor={setAddOtherColor} />
@@ -150,7 +161,7 @@ function TagGroup({ title, titleColor, chipBg, chipColor, delColor, tags, onDele
             {onColor && editingColorId === mt.id && (
               <ColorSwatches
                 current={mt.color || '#E8A13C'}
-                onPick={async (next) => { await onColor(mt.id, next); setEditingColorId(null); }}
+                onPick={async (next) => { try { await onColor(mt.id, next); setEditingColorId(null); } catch (e) { alertError('更新顏色', e); } }}
               />
             )}
           </div>

@@ -45,3 +45,8 @@ export function emptyDay() {
     tags: { activeTags: [] },
   };
 }
+
+// 寫入失敗時的共用提示：不要默默失敗（畫面看起來只會像「沒反應」）
+export function alertError(action, e) {
+  alert(`${action}失敗：${e?.message || '請稍後再試'}`);
+}

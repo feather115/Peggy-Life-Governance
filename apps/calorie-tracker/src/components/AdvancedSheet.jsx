@@ -1,6 +1,6 @@
 // Advanced sheet: toggles fasting/other tags for the day, edits daily AI summary (saves automatically on close).
 import React, { useState } from 'react';
-import { dateLabel, emptyDay } from '../utils.js';
+import { dateLabel, emptyDay, alertError } from '../utils.js';
 import { dayTotals } from '../selectors.js';
 import { MEALS_DEF } from '../constants.js';
 import Sheet from './Sheet.jsx';
@@ -15,9 +15,20 @@ export default function AdvancedSheet({ app, selectedDate, onClose }) {
   const [aiError, setAiError] = useState('');
 
   // Write the summary back to the database upon closing.
+  // 存檔失敗讓使用者選：留下來重試，或放棄這次修改直接關（不能卡在關不掉的面板）
   const close = async () => {
-    if (note !== (curDay.dayNote || '')) await saveDayNote(selectedDate, note);
+    if (note !== (curDay.dayNote || '')) {
+      try {
+        await saveDayNote(selectedDate, note);
+      } catch (e) {
+        if (!confirm(`摘要儲存失敗（${e.message || '請稍後再試'}），仍要關閉嗎？這次的修改不會保留。`)) return;
+      }
+    }
     onClose();
+  };
+
+  const toggle = (id, active) => {
+    toggleTag(selectedDate, id, !active).catch((e) => alertError('標籤更新', e));
   };
 
   // Passes today's food log + goals to AI to generate a comment, overwriting the textarea below (which can still be manually edited before saving).
@@ -60,10 +71,10 @@ export default function AdvancedSheet({ app, selectedDate, onClose }) {
       </div>
       <div className="ps" style={{ flex: 1, overflowY: 'auto', padding: '4px 18px 28px' }}>
         <TagToggleGroup title="⏱ 斷食" hint="今天的斷食方式，可複選" tags={fastingTagDefs} activeTags={activeTags} activeBg="#4361EE"
-          onToggle={(id, active) => toggleTag(selectedDate, id, !active)} />
+          onToggle={toggle} />
         <div style={{ height: 24 }} />
         <TagToggleGroup title="🏷 記錄原因" hint="聚餐、外食等特殊情況，可複選" tags={otherTagDefs} activeTags={activeTags} activeBg="#E8A13C" useTagColor
-          onToggle={(id, active) => toggleTag(selectedDate, id, !active)} />
+          onToggle={toggle} />
         <div style={{ height: 24 }} />
         <div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>

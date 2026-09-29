@@ -1,7 +1,7 @@
 // "Challenge" tab: weight loss competition (multiplayer invitation code, podium, leaderboard, weekly progress chart, weekly check-in, history)
 import React, { useState, useMemo } from 'react';
 import { daysLeft, computeLeaderboard, myRankIn, lastFriday, memberColor, MEMBER_PALETTE } from '../selectors.js';
-import { dateLabel } from '../utils.js';
+import { dateLabel, alertError } from '../utils.js';
 import ChallengeCreateSheet from './ChallengeCreateSheet.jsx';
 import WeightChart from './WeightChart.jsx';
 
@@ -288,19 +288,19 @@ function ChallengeView({ challenge, myUserId, onSubmitEntry, onRemoveEntry, onUp
             <button onClick={async () => {
               if (!confirm('確定結束這個挑戰嗎？冠軍會被自動決定。')) return;
               const winner = lb.find(x => x.kgDiff !== null);
-              await onEnd(challenge.id, winner ? winner.userId : null);
+              await onEnd(challenge.id, winner ? winner.userId : null).catch((e) => alertError('結束挑戰', e));
             }} style={primaryBtn}>結束挑戰</button>
           )}
           {isCreator && (
             <button onClick={async () => {
               if (!confirm('完全刪除這個挑戰？所有人的記錄都會消失，無法復原。')) return;
-              await onDelete(challenge.id);
+              await onDelete(challenge.id).catch((e) => alertError('刪除挑戰', e));
             }} style={dangerBtn}>刪除挑戰</button>
           )}
           {!isCreator && (
             <button onClick={async () => {
               if (!confirm('退出這個挑戰嗎？你的記錄會被刪除。')) return;
-              await onLeave(challenge.id);
+              await onLeave(challenge.id).catch((e) => alertError('退出挑戰', e));
             }} style={dangerBtn}>退出挑戰</button>
           )}
         </div>
@@ -401,7 +401,7 @@ function ProgressChartCard({ challenge, myUserId, onSetColor }) {
       {pickerOpen && (
         <ColorPicker
           current={memberColor(challenge, myUserId)}
-          onPick={async (hex) => { await onSetColor(challenge.id, hex); setPickerOpen(false); }}
+          onPick={async (hex) => { try { await onSetColor(challenge.id, hex); setPickerOpen(false); } catch (e) { alertError('更新顏色', e); } }}
         />
       )}
     </div>
@@ -574,7 +574,7 @@ function EntryForm({ challenge, myUserId, onSubmit, onRemove, onSetWeights }) {
                   <span style={{ fontSize: 16, fontWeight: 900, color: diffColor(e.kgDiff) }}>{fmtKgDiff(e.kgDiff)}</span>
                   <div style={{ display: 'flex', gap: 4 }}>
                     <button onClick={() => startEdit(e)} style={{ border: 'none', background: '#fff', color: '#6E8B7C', width: 26, height: 26, borderRadius: '50%', cursor: 'pointer', fontSize: 13 }}>✏</button>
-                    <button onClick={async () => { if (confirm('刪除這筆紀錄？')) { if (editingWeek === e.weekLabel) cancelEdit(); await onRemove(e.id); } }} style={{ border: 'none', background: '#fff', color: '#bcccc2', width: 26, height: 26, borderRadius: '50%', cursor: 'pointer', fontSize: 15, lineHeight: 1 }}>×</button>
+                    <button onClick={async () => { if (confirm('刪除這筆紀錄？')) { if (editingWeek === e.weekLabel) cancelEdit(); await onRemove(e.id).catch((err) => alertError('刪除紀錄', err)); } }} style={{ border: 'none', background: '#fff', color: '#bcccc2', width: 26, height: 26, borderRadius: '50%', cursor: 'pointer', fontSize: 15, lineHeight: 1 }}>×</button>
                   </div>
                 </div>
               ))}

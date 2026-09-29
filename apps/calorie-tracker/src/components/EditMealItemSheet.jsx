@@ -2,6 +2,7 @@
 // Only updates this specific record; does not affect food library definitions or historical records of other days.
 import React, { useState } from 'react';
 import Sheet from './Sheet.jsx';
+import { alertError } from '../utils.js';
 
 export default function EditMealItemSheet({ item, mealLabel, onSave, onClose }) {
   const [form, setForm] = useState({
@@ -23,6 +24,8 @@ export default function EditMealItemSheet({ item, mealLabel, onSave, onClose }) 
         cal: Math.round(fcn), p: parseFloat(form.p) || 0, c: parseFloat(form.c) || 0, f: parseFloat(form.f) || 0,
       });
       onClose();
+    } catch (e) {
+      alertError('儲存', e);
     } finally {
       setBusy(false);
     }

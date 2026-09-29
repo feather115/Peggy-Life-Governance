@@ -23,6 +23,9 @@ Supabase ⇄ db.js ⇄ useAppData.js ⇄ App.jsx ⇄ components/*
 
 - 元件**不會**直接呼叫 `db.js`。元件拿到 `app`（= `useAppData()` 的回傳），呼叫上面的動作（如 `app.addMeal(...)`）。
 - `useAppData` 負責：打 API（`db.js`）+ 更新前端 state，兩件事一起做。
+- 寫入動作失敗會 throw，**元件呼叫時一定要接住錯誤並提示**（`FoodSheet` 用紅色 toast，其餘用
+  `utils.js` 的 `alertError(action, e)`），不要讓 Promise rejection 默默消失——不然畫面看起來只是「沒反應」，
+  或更糟：先顯示「已加入」但其實沒寫進去。成功訊息一律等寫入完成才顯示。
 - 純計算（總熱量、報表長條圖、月曆）放在 `selectors.js`，不碰 state、不碰 API。
 
 ---
@@ -84,13 +87,13 @@ Supabase ⇄ db.js ⇄ useAppData.js ⇄ App.jsx ⇄ components/*
 
 ### 無狀態工具
 - **`src/constants.js`** — 食物庫、餐別、星期。
-- **`src/utils.js`** — 日期轉換、問候語、百分比、空白日結構。
+- **`src/utils.js`** — 日期轉換、問候語、百分比、空白日結構、寫入失敗的共用提示 `alertError()`。
 - **`src/selectors.js`** — 把原始資料算成畫面數字（總熱量、報表、連續天數）。
   測試在旁邊的 `selectors.test.js`（根目錄 `npm test` 跑 vitest），改算法先跑一次。
 
 ### 畫面（`src/components/`）
 - `TodayTab` / `ReportsTab` / `ChallengeTab` / `SettingsTab` — 四個分頁
-- `FoodSheet` / `AdvancedSheet` / `ChallengeCreateSheet` / `EditMealItemSheet` — 四個底部彈出面板
+- `FoodSheet` / `AdvancedSheet` / `ChallengeCreateSheet` / `EditMealItemSheet` — 四個底部彈出面板（`AdvancedSheet` 關閉時才存當日摘要；存檔失敗會問要不要放棄修改直接關，不會卡住關不掉）
 - `FoodHistoryCard` — 報表頁裡的飲食歷史卡片（搜尋/依餐別統計/編輯/複製進菜單）
 - `WeightChart` — 挑戰用的多人折線圖（SVG）
 - `TabBar` — 底部分頁列
