@@ -154,8 +154,8 @@ Supabase ⇄ db.js ⇄ useRecipes.js ⇄ App.jsx ⇄ components/*
 - **暱稱跨 app 共用**：`shared.user_profiles` 是 calorie-tracker / recipe-book / calendar
   共用的暱稱表（跟 `shared.line_links` 同一個概念），在任一個 app 改暱稱，其他 app 立刻
   看到同一個名字。這個 app 自己的 `recipe_book.user_settings` 表（`2026-07-04_recipe_book_user_settings.sql`
-  建的）**已經不再使用**，是被 `shared.user_profiles` 取代前的第一版做法，留著沒刪
-  純粹因為刪一張空表不值得為此再寫一支 migration，之後如果要徹底清乾淨可以連表一起砍。
+  建的）是被 `shared.user_profiles` 取代前的第一版做法，已由 `2026-09-29_drop_user_settings.sql`
+  連同它的註冊 trigger 一起刪除。
   詳細設計見 `apps/calorie-tracker/ARCHITECTURE.md` 的「暱稱跨 app 共用」章節（權威說明
   放在那邊，因為 calorie-tracker 的挑戰賽排行榜是第一個依賴這張表的功能）。
 - **`ingredients` 支援兩種格式**：新格式是物件陣列 `[{ name, amount, ... }]`，舊格式是 `{ name: amount }` 物件。`utils.js` 的 `parseIngredients()` 統一處理。
@@ -175,13 +175,15 @@ UNIQUE `(user_id, recipe_id)` — 同一人對同一食譜只能按一次。
 RLS：select 對任何人（含 anon）開放，讓按讚總數所有人都看得到；insert/delete 只能對自己的列。
 前端 `loadAllLikes()` 一次抓全部，client 端 group 出 `likeCounts: Map<recipeId, number>` 和 `myLikedSet: Set<recipeId>`。資料小、量不會爆，不值得加 RPC。
 
-### `user_settings`（`supabase/2026-07-04_recipe_book_user_settings.sql`）— **已停用，不要再用**
+### `user_settings`（`supabase/2026-07-04_recipe_book_user_settings.sql`）— **已刪除（2026-09-29）**
 
 這張表是暱稱功能的第一版，只在 recipe-book 自己的 schema 裡，跟 calorie-tracker 的暱稱
 是兩份互不相通的資料。上線沒多久就改成跨 app 共用的 `shared.user_profiles`（見上方「暱稱
-跨 app 共用」），現在 `db.js` 已經不會再讀寫這張表了。表本身、它的 `on_auth_user_created_recipe_book`
-trigger、`public.handle_new_user_recipe_book()` function 都還留著（刪一張空表不值得
-再寫一支 migration），如果之後要徹底清乾淨可以連 trigger 一起砍。
+跨 app 共用」），`db.js` 早就不讀寫這張表。`supabase/2026-09-29_drop_user_settings.sql` 把表、
+它的 `on_auth_user_created_recipe_book` trigger、`public.handle_new_user_recipe_book()` function
+一起刪掉——**trigger 一定要跟表同一個 transaction 刪**，只刪表的話 trigger 會在每次新增使用者時
+找不到表而失敗，三個 app 的註冊（含 LINE 第一次登入）會一起壞。這張表的 RLS 還允許任何登入者讀
+全部列（含 email），刪掉也少一個 email 外洩點。
 
 ### `cooking_history`（`supabase/2026-06-28_recipe_cook_records.sql`）
 
@@ -239,8 +241,9 @@ LINE，其他 app 就能即時識別並支援 LINE 自動免密碼登入。
 | `2026-07-04_recipe_book_user_settings.sql` | 建 `recipe_book.user_settings` 表（暱稱/email 第一版，**現已停用**，見上方說明） |
 | `packages/shared/supabase/2026-07-06_shared_user_profiles.sql` | 建 `shared.user_profiles`（跨 app 共用暱稱，取代上一支），這個 app 的「誰按讚」跟 `SettingsTab.jsx` 的暱稱都改讀寫這張表 |
 | `packages/shared/supabase/2026-07-06_user_profiles_service_role_grant.sql` | 補 `shared.user_profiles` 對 `service_role` 的表權限（LINE 首次登入的暱稱 seed 需要） |
+| `2026-09-29_drop_user_settings.sql` | 清理：刪已停用的 `recipe_book.user_settings` 與它的註冊 trigger/function。⚠️ 要排在 `packages/shared/supabase/2026-07-06_shared_user_profiles.sql` **之後**才能跑（那支的 backfill 會 join 這裡刪掉的表/欄位；全新環境也可以直接略過） |
 
-> 新環境順序：`schema.sql` → 在 Supabase Exposed schemas 加 `recipe_book` → `2026-06-28_schema_isolation.sql` → `2026-06-28_recipe_cook_records.sql` → `2026-06-28_recipe_ownership.sql` → `2026-06-28_recipe_rls_hotfix.sql` → `2026-06-28_recipe_likes.sql` → `2026-07-04_recipe_book_user_settings.sql`（可省略，已停用，但為了 `shared_user_profiles` 的 backfill 邏輯還是建議跑）→ `packages/shared/supabase/2026-07-06_shared_user_profiles.sql`。
+> 新環境順序：`schema.sql` → 在 Supabase Exposed schemas 加 `recipe_book` → `2026-06-28_schema_isolation.sql` → `2026-06-28_recipe_cook_records.sql` → `2026-06-28_recipe_ownership.sql` → `2026-06-28_recipe_rls_hotfix.sql` → `2026-06-28_recipe_likes.sql` → `2026-07-04_recipe_book_user_settings.sql`（可省略，已停用，但為了 `shared_user_profiles` 的 backfill 邏輯還是建議跑）→ `packages/shared/supabase/2026-07-06_shared_user_profiles.sql` →（可略過）`2026-09-29_drop_user_settings.sql`。
 
 ---
 

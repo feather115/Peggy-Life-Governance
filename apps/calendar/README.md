@@ -61,6 +61,8 @@ npm install
    - [`supabase/2026-07-15_merge_diary_into_events.sql`](./supabase/2026-07-15_merge_diary_into_events.sql)
      （**事件與日記合併**：日記併入 `events`、時間以 Asia/Taipei 換算成 `start_at`、
      `diary_entries` 改名備份成 `diary_entries_bak`。**跑完前新版程式碼會查不到新欄位**）
+   - [`supabase/2026-09-29_drop_diary_entries_bak.sql`](./supabase/2026-09-29_drop_diary_entries_bak.sql)
+     （刪掉合併時留下的備份表；會先檢查每一筆都已在 `events`，對不上就報錯不刪）
 3. **Integrations → Data API → Settings → Exposed schemas** 加上 `calendar`（如果還沒加），
    儲存後等 30 秒。如果加完還是回 `PGRST106`/`Invalid schema`，這是 Supabase 平台已知
    問題，去 SQL Editor 跑 `ALTER ROLE authenticator SET pgrst.db_schemas = '...'` +

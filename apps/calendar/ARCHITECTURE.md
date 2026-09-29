@@ -381,6 +381,8 @@ createAppSupabase({ schema: 'calendar' })
 `note`/`hashtags`/`locations`）。合併時整批 `insert into events`（時間以 Asia/Taipei 換算成
 `start_at`、原 `tags` 搬進 `diary_tags`）。migration 尾端把這張表**改名備份成
 `diary_entries_bak`**（不直接 drop）；此收尾段已於 2026-07-17 手動執行完畢。
+備份表由 `2026-09-29_drop_diary_entries_bak.sql` 刪除（刪之前會檢查備份表每一筆在 `events`
+都有同使用者、同 `created_at` 的對應，對不上就報錯不刪）。
 
 ### `tag_categories`（完整 SQL 見 `supabase/2026-07-02_diary.sql` + `2026-07-05_category_sort_order.sql` + `2026-07-09_tag_subtags.sql`）
 
@@ -490,8 +492,9 @@ createAppSupabase({ schema: 'calendar' })
 | `2026-07-10_diary_hashtags.sql` | `diary_entries` 加 `hashtags text[]` 欄位（＃快速注記） |
 | `2026-07-10_diary_title.sql` | `diary_entries` 加 `title text` 欄位（日記標題，配合新版當日排版） |
 | **`2026-07-15_merge_diary_into_events.sql`** | **事件與日記合併**：`events` 加 `note`/`locations`/`diary_tags`/`tag_details`/`hashtags`、`title` 放寬可空、舊 `location` 併進 `locations`；把 `diary_entries` 整批以 Asia/Taipei 換算時間 `insert into events`；尾端（註解、需手動）把 `diary_entries` 改名成 `diary_entries_bak`、drop 舊 `location` 欄位 |
+| `2026-09-29_drop_diary_entries_bak.sql` | 清理：確認 `diary_entries_bak` 每一筆在 `events` 都找得到對應後刪掉備份表（對不上就報錯不刪；表不存在就略過） |
 
-> 新環境依序跑上表（`schema.sql` 起、按日期）到 `2026-07-15_merge_diary_into_events.sql`。
+> 新環境依序跑上表（`schema.sql` 起、按日期）到最後一支（全新環境沒有備份表，最後一支會自動略過）。
 > `2026-07-02_diary.sql` 之後那串 `diary_*` migration 仍要照跑（合併 migration 假設
 > `diary_entries` 已是最終欄位結構才做搬移）。之後有新欄位/新表再依日期新增檔案，格式跟
 > 其他 app 一致：`YYYY-MM-DD_描述.sql`。

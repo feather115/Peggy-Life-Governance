@@ -99,7 +99,7 @@ git diff --quiet $VERCEL_GIT_PREVIOUS_SHA HEAD -- apps/calendar packages/shared
 | `calendar` | 個人行事曆 | `events`（事件＋日記已合併於此）/ `tag_categories` / `tasks` / `event_options` 表 |
 | `shared` | 三個 app 共用 | `line_links`（LINE 身份 ↔ Supabase 帳號對照）+ `user_profiles`（跨 app 共用暱稱，`display_name`/`email`，在任一個 app 設定的暱稱其他 app 立刻看到同一個名字）。`line_links` 第一次 expose 時卡過 `PGRST106`（Supabase 已知 bug：Dashboard/Management API 改的設定不保證同步到 PostgREST 實際讀的 Postgres `authenticator` 角色設定），正確修法是跑 `ALTER ROLE authenticator SET pgrst.db_schemas = '...'` + `NOTIFY pgrst, 'reload config'`（見 [`docs/new-app-sop.md`](./docs/new-app-sop.md) 第 3 節） |
 | `auth` | 共用驗證 | Supabase 內建 `auth.users`，三個 app 共用同一群使用者 |
-| `public` | trigger | 三個獨立的新使用者註冊 trigger function（都綁在 `auth.users` 上，所以留在 public，故意取不同名字避免互相覆蓋）：`handle_new_user`（calorie-tracker）、`handle_new_user_recipe_book`、`handle_new_user_shared_profile` |
+| `public` | trigger | 獨立的新使用者註冊 trigger function（都綁在 `auth.users` 上，所以留在 public，故意取不同名字避免互相覆蓋）：`handle_new_user`（calorie-tracker）、`handle_new_user_shared_profile`。recipe-book 原本的 `handle_new_user_recipe_book` 由 `apps/recipe-book/supabase/2026-09-29_drop_user_settings.sql` 連同已停用的 `recipe_book.user_settings` 一起刪除（trigger 一定要跟表一起刪，否則之後新註冊會失敗） |
 
 ### 第一次設定 Supabase（完整順序）
 
@@ -121,6 +121,11 @@ git diff --quiet $VERCEL_GIT_PREVIOUS_SHA HEAD -- apps/calendar packages/shared
    - `packages/shared/supabase/2026-07-06_shared_user_profiles.sql`（建 `shared.user_profiles`
      表，跨 app 共用暱稱；backfill 要 join `calorie_tracker.user_settings` 和
      `recipe_book.user_settings`，所以要排在上面兩個 app 的 migration 都跑完之後）
+   - 最後才跑三支 2026-09-29 的清理 migration（刪已停用的表/欄位，全新環境也可以直接略過）：
+     `apps/calorie-tracker/supabase/2026-09-29_drop_user_settings_display_name.sql`、
+     `apps/recipe-book/supabase/2026-09-29_drop_user_settings.sql`、
+     `apps/calendar/supabase/2026-09-29_drop_diary_entries_bak.sql`。前兩支刪掉的正是上面
+     `shared_user_profiles` backfill 要 join 的表/欄位，**一定要排在它後面**
 3. 到 **Integrations → Data API → Settings**，在 **Exposed schemas** 加入 `calorie_tracker`、`recipe_book`、`calendar`、`shared`，按 Save
 4. 如果加完之後前端還是回 `Invalid schema` / `PGRST106`，這是 Supabase 平台已知 bug，Dashboard
    設定不保證同步到 PostgREST。在 SQL Editor 跑：

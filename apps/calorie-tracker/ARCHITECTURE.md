@@ -169,7 +169,7 @@ SET pgrst.db_schemas = '...'` + `NOTIFY pgrst, 'reload config'`，見根目錄
 
 | 表 | 用途 | 重點 |
 |---|---|---|
-| `user_settings` | 每人的卡路里/營養素目標 | 一人一列；`display_name` 欄位**已停用**，暱稱改存 `shared.user_profiles`（見下方「暱稱跨 app 共用」） |
+| `user_settings` | 每人的卡路里/營養素目標 | 一人一列；舊的 `display_name` 欄位已由 `2026-09-29_drop_user_settings_display_name.sql` 刪除，暱稱存 `shared.user_profiles`（見下方「暱稱跨 app 共用」） |
 | `tag_defs` | 標籤定義（斷食 / 記錄原因） | `type` 區分兩類；`color` 給記錄原因標籤在月曆上畫彩色點 |
 | `custom_foods` | 使用者自訂食物 | `brand`/`note` 為選填欄位 |
 | `day_records` | 每天一筆主記錄 | `(user_id, date)` 唯一 |
@@ -207,8 +207,9 @@ SET pgrst.db_schemas = '...'` + `NOTIFY pgrst, 'reload config'`，見根目錄
     互相看得到 `display_name`」的 policy；`shared.user_profiles` 直接開放給所有登入
     使用者互相讀取（`to authenticated using (true)`），因為 recipe-book 的「誰按讚」
     功能沒有 calorie-tracker 這種「分組」概念，暱稱本身也不是敏感資料，統一開放比較
-    簡單。舊 policy 沒有主動刪，但已經沒有查詢會用到（`user_settings.display_name`
-    這個欄位本身還在，只是不會再被讀寫，等哪天要徹底清乾淨可以連欄位一起砍）。
+    簡單。舊 policy 與 `user_settings.display_name` 欄位已由
+    `supabase/2026-09-29_drop_user_settings_display_name.sql` 刪除（那條 policy 最後只剩讓同挑戰成員
+    互相讀到彼此的目標設定與 email，沒有功能在用）。
   - **暱稱顯示後備** — 排行榜顯示名稱優先用 `display_name`，沒設就用 `email` 的 `@` 前綴（例如 `@feather115`），兩者都沒有才顯示「未命名」。邏輯在 `db.js` 的 `loadMyChallenges()` 裡的 `resolveName()`。
   - **新使用者的 `shared.user_profiles` 種子列** — 由獨立的 `public.handle_new_user_shared_profile()`
     trigger 負責（`on_auth_user_created_shared_profile`），跟這個 app 自己的
@@ -364,6 +365,7 @@ CASCADE 會把對應的成員關聯與體重紀錄一併清掉。`active` 的挑
 | `2026-06-28_schema_isolation.sql` | ⭐ 把 11 張表 + 2 個 RPC function 從 public 搬到 calorie_tracker schema；重建跨表 RLS policy；更新 handle_new_user trigger function；並授權給 PostgREST 及 service_role。跑這支前一定要先去 Settings → API → Exposed schemas 加 calorie_tracker |
 | `2026-07-28_repeat_challenge.sql` | 新增 `repeat_challenge()` RPC，讓已結束挑戰的建立者建立新局並直接複製上一局全部成員 |
 | `2026-08-01_challenge_member_optional_weights.sql` | 幫 `challenge_members` 加 `start_weight`、`current_weight` 兩個選填欄位，獨立保存挑戰者體重資訊 |
+| `2026-09-29_drop_user_settings_display_name.sql` | 清理：刪 `user_settings.display_name`（暱稱早已改存 `shared.user_profiles`）與 policy "co-members can read display_name"。⚠️ 要排在 `packages/shared/supabase/2026-07-06_shared_user_profiles.sql` **之後**才能跑（那支的 backfill 會 join 這裡刪掉的表/欄位；全新環境也可以直接略過） |
 
 > 全新環境直接照順序整段貼上跑一次即可；如果是延續舊環境，只需要補跑「還沒跑過」的那幾支（看 Supabase 有沒有對應欄位/function 判斷）。
 >

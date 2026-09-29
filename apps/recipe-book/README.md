@@ -39,8 +39,10 @@ npm install
    backfill 要 join 兩邊的表）
 11. 再貼 [`packages/shared/supabase/2026-07-06_user_profiles_service_role_grant.sql`](../../packages/shared/supabase/2026-07-06_user_profiles_service_role_grant.sql) → **Run**
    （補 `shared.user_profiles` 對 `service_role` 的權限，LINE 首次登入自動帶入暱稱需要）
-12. 左側 **Settings → API**，複製 `Project URL` 和 `anon public` key
-13. 複製 `.env.example` 成 `.env`，填入：
+12. （可略過）再貼 [`supabase/2026-09-29_drop_user_settings.sql`](./supabase/2026-09-29_drop_user_settings.sql) → **Run**
+   （刪掉第 9 步那張已停用的表和它的註冊 trigger；一定要在第 10 步之後跑）
+13. 左側 **Settings → API**，複製 `Project URL` 和 `anon public` key
+14. 複製 `.env.example` 成 `.env`，填入：
    ```
    VITE_SUPABASE_URL=https://你的專案.supabase.co
    VITE_SUPABASE_ANON_KEY=eyJ...
@@ -100,6 +102,8 @@ src/
 ---
 
 ## 近期更新 (Recent Updates)
+- **清掉已停用的 `recipe_book.user_settings`** (2026-09-29)：
+  - 新增 `supabase/2026-09-29_drop_user_settings.sql`，把暱稱第一版的表連同 `auth.users` 上的註冊 trigger / function 一起刪除（需在 Supabase SQL Editor 手動執行）。
 - **登入初始化與 LINE 連結狀態改用共用 hook** (2026-09-29)：
   - `Root.jsx` 的 session 取得 / LINE 自動登入、設定頁 `LineLinker` 的連結狀態邏輯，改用 `packages/shared/src/lineAuth.js` 的 `useSession()` / `useLineLinked()`（三個 app 共用同一份），畫面與行為不變。
 - **料理紀錄分頁載入** (2026-09-29)：
