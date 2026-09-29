@@ -157,7 +157,8 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
   `buildDayTimeline(records, tasksDueToday)`（把某天的紀錄+到期任務合併成一條依時間排序的
   時間軸，Month/Week/Day 三個檢視共用同一個函式，行為才會一致；紀錄排序 key 用
   `formatTime()` 轉本地時間——`start_at` 是 UTC 字串，直接 slice 會拿到 UTC 時刻而錯位）、
-  `addInterval(dateKey, value, unit)` / `diffDays(a, b)`（任務的到期日運算）、
+  `addInterval(dateKey, value, unit)` / `diffDays(a, b)`（任務的到期日運算；以月為單位時日期超過
+  目標月天數就停在月底，1/31 + 1 個月 → 2/28，不會溢位成 3/3）、
   `<input type="datetime-local">` 字串轉換。測試在旁邊的 `utils.test.js`（根目錄 `npm test`
   跑 vitest，用本地時間建測資，不受執行環境時區影響）。
 
@@ -441,7 +442,10 @@ createAppSupabase({ schema: 'calendar' })
   `confirmComplete()` 呼叫 `utils.addInterval(doneDate, intervalValue, intervalUnit)`
   算出 `next_due`，直接連同 `last_done`、`history` 一起 update。如果之後要在其他地方
   （例如伺服器端排程）也需要算這個邏輯，記得 `addInterval` 的邏輯要一併搬過去，不要
-  假設資料庫會自動處理。
+  假設資料庫會自動處理。月底規則：日期超過目標月天數就停在月底（2026-09-29 修正前 `setMonth`
+  會溢位，1/31 完成的月任務下次到期日變成 3/3；修正前已寫進 DB 的 `next_due` 不會自動改正，
+  下次標記完成後才會用新規則重算）。下次到期日是從「完成日」往後推，所以 1/31 → 2/28 之後
+  若在 2/28 完成，再下一次是 3/28，不會跳回 3/31。
 - **標籤沒有正規化成獨立表** — `tag_categories.tags` 直接存文字陣列，紀錄的 `diary_tags`
   也是文字陣列存標籤字串本身（不是外鍵 ID）。優點是 CRUD 簡單；代價是「改標籤名稱」等於
   「這個標籤在所有地方都變成新字串」——所以改名/刪除時 `useDiaryTags` 透過 `recordSync`

@@ -143,12 +143,16 @@ function addDaysToKey(dateKey, n) {
 }
 
 // 依間隔單位把 dateKey 往後推 value 個單位，算出下次到期日
+// 以月為單位時，日期超過目標月天數就停在月底（1/31 + 1 個月 → 2/28，閏年 2/29）；
+// 直接 setMonth 會溢位到下個月（1/31 → 3/3）
 export function addInterval(dateKey, value, unit) {
   if (unit === 'day') return addDaysToKey(dateKey, value);
   if (unit === 'week') return addDaysToKey(dateKey, value * 7);
   const d = parseDateKey(dateKey);
-  d.setMonth(d.getMonth() + value);
-  return dateKeyFrom(d);
+  const target = new Date(d.getFullYear(), d.getMonth() + value, 1);
+  const lastDay = new Date(target.getFullYear(), target.getMonth() + 1, 0).getDate();
+  target.setDate(Math.min(d.getDate(), lastDay));
+  return dateKeyFrom(target);
 }
 
 // a - b 的天數差（a 比 b 晚幾天，可能是負數）

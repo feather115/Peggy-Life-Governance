@@ -40,6 +40,14 @@ describe('週期任務日期運算', () => {
     expect(addInterval('2026-12-15', 1, 'month')).toBe('2027-01-15');
   });
 
+  it('addInterval 以月為單位時，日期超過目標月天數就停在月底，不溢位到下個月', () => {
+    expect(addInterval('2026-01-31', 1, 'month')).toBe('2026-02-28');
+    expect(addInterval('2028-01-31', 1, 'month')).toBe('2028-02-29'); // 閏年
+    expect(addInterval('2026-08-31', 1, 'month')).toBe('2026-09-30');
+    expect(addInterval('2026-12-31', 2, 'month')).toBe('2027-02-28');
+    expect(addInterval('2026-01-30', 12, 'month')).toBe('2027-01-30');
+  });
+
   it('diffDays 回傳 a 比 b 晚幾天', () => {
     expect(diffDays('2026-10-01', '2026-09-29')).toBe(2);
     expect(diffDays('2026-09-29', '2026-10-01')).toBe(-2);
