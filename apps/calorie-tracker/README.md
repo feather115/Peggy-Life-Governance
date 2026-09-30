@@ -62,7 +62,7 @@ npx vite
 
 ## 樣式
 
-色票在 [`src/theme.css`](./src/theme.css)（CSS 變數，元件用 `var(--text)` 取值；中性色三個 app 共用，只有主色是本 app 的森林綠），全域樣式（字型、焦點環、按壓回饋、reduced-motion）在共用的 `packages/shared/src/base.css`，頁首、清單、按鈕、輸入框等元件樣式在共用的 `packages/shared/src/ui.js`（三個 app 同一種東西只長一種樣子）。細節見 [`ARCHITECTURE.md`](./ARCHITECTURE.md)「樣式與設計 tokens」。
+色票在 [`src/theme.css`](./src/theme.css)（CSS 變數，元件用 `var(--text)` 取值；底色、線、文字帶本 app 的淡綠色調，主色森林綠 `#29774F`；語意色三個 app 共用），全域樣式（字型、焦點環、按壓回饋、reduced-motion）在共用的 `packages/shared/src/base.css`，頁首、清單、按鈕、輸入框等元件樣式在共用的 `packages/shared/src/ui.js`（三個 app 同一種東西只長一種樣子）。細節見 [`ARCHITECTURE.md`](./ARCHITECTURE.md)「樣式與設計 tokens」。
 
 ## 部署
 

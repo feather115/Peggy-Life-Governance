@@ -80,7 +80,7 @@ Supabase ⇄ db.js ⇄ useAppData.js ⇄ App.jsx ⇄ components/*
 
 ## 樣式與設計 tokens
 
-- **色票 = CSS 變數**：`src/theme.css` 的 `:root` 定義本 app 的色票（`--bg / --surface / --text / --text-muted / --text-faint / --primary / --line / --danger …`）與陰影（`--shadow-card / --shadow-nav / --shadow-sheet / --shadow-float`）。元件 inline style 一律寫 `'var(--text)'`，**不要再寫死色碼**；要換色只改 `theme.css`。三個 app 變數名相同；**中性色（底色、線、文字）與語意色三個 app 共用同一組暖白色票**，只有主色不同（綠 `#29774F` / 橘棕 / 藍）。
+- **色票 = CSS 變數**：`src/theme.css` 的 `:root` 定義本 app 的色票（`--bg / --surface / --text / --text-muted / --text-faint / --primary / --line / --danger …`）與陰影（`--shadow-card / --shadow-nav / --shadow-sheet / --shadow-float`）。元件 inline style 一律寫 `'var(--text)'`，**不要再寫死色碼**；要換色只改 `theme.css`。三個 app 變數名相同；**中性色（底色、線、文字）各 app 帶自己的色調、語意色三個 app 共用**（元件樣式一致，只有色系不同）：綠底 `#EAF5EE` ＋ `#29774F` / 拿鐵底 `#F6EEE6` ＋咖啡棕 `#7B4A2D` / 霧藍底 `#EEF2F7` ＋ `#3F6AA1`。
 - **卡片不加陰影**：`--shadow-card` 是 1px 邊線（`0 0 0 1px var(--line)`），分頁列上緣 `--shadow-nav` 也是一條線；只有浮在上層的東西（面板、toast）用 `--shadow-float`。
 - **共用元件樣式**：頁首、分組清單、按鈕、膠囊、分段切換、輸入框、stepper 都用 `@peggy-life/shared/ui` 的 `UI`（用法見 `docs/new-app-sop.md` 第 6 節），本 app 的 `S` 只放位置、寬度與特有元件（熱量環、長條圖、月曆、頒獎台）。字型是 Figtree（`index.html` 載 400/500/600）＋系統中文字型。
 - **共用全域樣式**：`packages/shared/src/base.css`（由 `main.jsx` import）— reset、`:focus-visible` 焦點環（`--ring`）、按鈕按壓回饋、`prefers-reduced-motion`、`.tap`（把小按鈕點擊範圍撐到 ≥44px，不影響版面）、`.ps`（隱藏捲軸）。因為 inline style 優先級高於 CSS，**元件裡不可再寫 `outline: 'none'`**，否則焦點環會被蓋掉。

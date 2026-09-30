@@ -9,7 +9,7 @@ import { UI } from './ui.js';
 
 const APPS = [
   { key: 'calorie', name: '飲食卡路里', desc: '記錄每天吃了什麼', icon: 'flame', color: '#29774F', liffId: import.meta.env.VITE_LIFF_ID_CALORIE },
-  { key: 'recipe', name: '食譜本', desc: '收藏與分享食譜', icon: 'book', color: '#9F4F2F', liffId: import.meta.env.VITE_LIFF_ID_RECIPE },
+  { key: 'recipe', name: '食譜本', desc: '收藏與分享食譜', icon: 'book', color: '#7B4A2D', liffId: import.meta.env.VITE_LIFF_ID_RECIPE },
   { key: 'calendar', name: '行事曆', desc: '行程、日記與週期任務', icon: 'calendar', color: '#3F6AA1', liffId: import.meta.env.VITE_LIFF_ID_CALENDAR },
 ];
 

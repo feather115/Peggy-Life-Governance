@@ -84,7 +84,7 @@ Vercel 會用本資料夾的 `package.json` 自動偵測 Vite，不影響其他 
 ```
 src/
 ├── main.jsx                       # 進入點（初始化 LINE LIFF；import shared base.css + theme.css）
-├── theme.css                      # 色票 / 陰影（CSS 變數；中性色三個 app 共用，主色暖橘棕）
+├── theme.css                      # 色票 / 陰影（CSS 變數；拿鐵底 + 咖啡棕主色）
 ├── Root.jsx                       # config check + LIFF / Auth 登入閘口，登入後交給 App
 ├── App.jsx                        # 520px 行動外殼 + 載入 recipes 與 view 導覽切換
 ├── supabase.js                    # re-export 共用 supabase client
@@ -105,6 +105,7 @@ src/
 ---
 
 ## 近期更新 (Recent Updates)
+- **恢復各 app 自己的底色** (2026-09-30)：元件樣式維持三個 app 一致，但底色、線、文字改回各自的色調；本 app 改成拿鐵底 `#F6EEE6` ＋咖啡棕主色 `#7B4A2D`（原陶土紅 `#9F4F2F`），深色模式也帶暖咖啡色調。
 - **三個 app 介面統一改版** (2026-09-30)：
   - 中性色、字型（Figtree）、字級 / 圓角 / 字重規格三個 app 一致，只有主色不同；卡片改用 1px 邊線、不加陰影。頁首、清單、按鈕、輸入框改用共用的 `packages/shared/src/ui.js`，底部分頁列改用共用的 `BottomTabs`。
   - 食譜頁：頁首改成「食譜」＋食譜數，登出鈕移到設定頁（訪客才在頁首顯示「登入」）；沒有圖片的食譜用名稱第一個字當佔位（原本 🍳）；新增食譜改成右下 FAB。

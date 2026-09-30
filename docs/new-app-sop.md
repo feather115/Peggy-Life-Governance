@@ -223,8 +223,9 @@ Supabase ⇄ db.js ⇄ use<Domain>.js ⇄ Root.jsx/App.jsx ⇄ components/*
   --success / --success-ink / --success-bg / --danger / --danger-ink / --danger-bg / --warning-ink / --warning-bg /
   --scrim / --shadow-card / --shadow-nav / --shadow-sheet / --shadow-float`），`main.jsx` 依序 import
   `@peggy-life/shared/base.css` 和 `./theme.css`。inline style 寫 `'var(--text)'`，**不要寫死色碼**。
-  - **中性色（底色、線、文字）三個 app 是同一組暖灰**，只有 `--primary*` 主色不同（綠 `#29774F` / 橘棕 `#9F4F2F` /
-    藍 `#3F6AA1`）；新 app 整組中性色照抄，只換主色
+  - **每個 app 有自己的色系**：中性色（底色、線、文字）帶該 app 的色調，主色 `--primary*` 也不同（綠底 `#EAF5EE` ＋ `#29774F` /
+    拿鐵底 `#F6EEE6` ＋咖啡棕 `#7B4A2D` / 霧藍底 `#EEF2F7` ＋ `#3F6AA1`）；語意色（info / success / danger / warning）三個 app 共用。
+    新 app 挑一個主色，底色用主色的極淡色調，線、文字灰階也往同色調偏；元件樣式照共用的 `ui.js`，不另外畫
   - 卡片不加陰影：`--shadow-card` 是 1px 邊線（`0 0 0 1px var(--line)`）；浮在上層的東西（FAB、面板、toast）才用 `--shadow-float`
   - `--primary / --info / --danger / --success` 是**實心底色**（上面放白字）；**當字色用寫 `*-ink`**
   - theme.css 要同時給**淺色與深色**兩組值（`@media (prefers-color-scheme: dark)` 區塊，深色的 `*-ink` 要比較亮）
