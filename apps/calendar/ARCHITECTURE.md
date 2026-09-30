@@ -168,7 +168,7 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
 
 ### 無狀態工具
 - **`src/theme.js`** — 視覺常數集中地：`THEME`（配色/圓角/陰影）、`EVENT_COLORS`
-  （事件顏色選項，7 色）、`categoryAccentForTag(tag, categories)`（日記標籤依所屬分類
+  （事件顏色的 7 個預設色；紀錄也可以存任意自訂色碼，見 RecordForm）、`categoryAccentForTag(tag, categories)`（日記標籤依所屬分類
   在清單裡的順序固定分配一個強調色，不是存在資料庫裡的欄位）。
 - **`src/utils.js`** — 日期字串轉換（`dateKeyFrom`/`parseDateKey`）、月曆格線
   （`getMonthDays`）、週的 7 天（`getWeekDays`）、紀錄分組（`groupRecordsByDate`，依
@@ -220,7 +220,9 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
   **最上面是標題**（新增模式輸入時列出過去相同標題建議，點擊帶入標題+顏色），接著是時間區
   （全天開關、開始/結束時間，日期 `<input type="date">` + `TimeSelect`）+
   地點/和誰（`HistoryFields.jsx` 的 `PeopleSelect` 多選，地點與和誰同一套）。下面分兩區：
-  **計畫**（7 色顏色選擇器；
+  **計畫**（顏色：7 個預設色 + 最後一個彩虹圈「自訂」（疊一個透明的原生 `<input type="color">` 色盤），
+  下方「色碼」欄可直接打 `#RRGGBB`（沒打 # 也行，`normalizeHex()` 統一存成大寫，才跟預設色比對得到；
+  打到一半不合法時顯示提示、離開欄位就恢復成目前顏色）；
   選項庫標籤 `PeopleSelect`；備註 `description`）與 **回顧 · 心情**（今天的感覺 `note`；
   ＃快速注記 `hashtags`——Enter/「加入」變深藍 chip、＃由系統加、前導 #/＃ 會被剝掉、重複
   不再加；chip 內的左右按鈕可前後調整陣列順序，儲存後保留；依分類分組的標籤選擇卡片

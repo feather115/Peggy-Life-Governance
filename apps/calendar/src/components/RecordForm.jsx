@@ -25,8 +25,15 @@ const S = {
   suggestions: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 },
   suggestionChip: { cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, background: THEME.surfaceAlt, padding: '5px 10px 5px 8px', borderRadius: 999, fontSize: 12, color: THEME.textDark },
   suggestionDot: { width: 8, height: 8, borderRadius: '50%', flexShrink: 0 },
-  colorsRow: { display: 'flex', gap: 8 },
+  colorsRow: { display: 'flex', flexWrap: 'wrap', gap: 8 },
   colorDot: (selected) => ({ cursor: 'pointer', width: 28, height: 28, borderRadius: '50%', border: selected ? `2px solid ${THEME.textDark}` : '2px solid transparent' }),
+  // 自訂顏色：沒選自訂色時顯示彩虹圈，選了就填上該顏色；裡面疊一個透明的原生色盤 <input type="color">
+  customDot: (selected, color) => ({ position: 'relative', display: 'block', overflow: 'hidden', cursor: 'pointer', width: 28, height: 28, borderRadius: '50%', border: selected ? `2px solid ${THEME.textDark}` : '2px solid transparent', background: selected ? color : 'conic-gradient(#E53935, #FDD835, #43A047, #1E88E5, #8E24AA, #E53935)' }),
+  customInput: { position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer', border: 'none', padding: 0 },
+  hexRow: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginTop: 10 },
+  hexLabel: { fontSize: 13, color: THEME.textMuted },
+  hexInput: { width: 110, boxSizing: 'border-box', border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSmInner, padding: '8px 10px', fontSize: 14, color: THEME.textDark, background: THEME.surface, fontVariantNumeric: 'tabular-nums', textTransform: 'uppercase' },
+  hexHint: { fontSize: 12, color: THEME.error },
   toggleRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 },
   toggleLabel: { fontSize: 14, color: THEME.textDark, fontWeight: 600 },
   toggleTrack: (on) => ({ width: 44, height: 26, borderRadius: 13, background: on ? THEME.primary : THEME.textFaint, position: 'relative', cursor: 'pointer' }),
@@ -200,12 +207,19 @@ function CategoryTagCard({ category, allCategories, selectedTags, onToggleTag, o
   );
 }
 
+// 色碼輸入：接受有沒有 # 的 6 碼十六進位，統一存成大寫 #RRGGBB（跟 EVENT_COLORS 同格式才比對得到）
+function normalizeHex(value) {
+  const m = /^#?([0-9a-fA-F]{6})$/.exec(value.trim());
+  return m ? `#${m[1].toUpperCase()}` : null;
+}
+
 export default function RecordForm({ record, defaultDateKey, allRecords = [], categories = [], locationHistory = [], peopleHistory = [], tagOptions = [], onSave, onDelete, onCancel, onAddTag, tagDetailHistory }) {
   const isEdit = !!record;
 
   // 計畫面
   const [title, setTitle] = useState(record?.title || '');
   const [color, setColor] = useState(record?.color || EVENT_COLORS[0]);
+  const [hexDraft, setHexDraft] = useState(null); // 色碼輸入框編輯中的文字；null＝沒在編輯，顯示目前顏色
   const [tags, setTags] = useState(record?.tags || []);
   const [description, setDescription] = useState(record?.description || '');
   const [locations, setLocations] = useState(record?.locations || []);
@@ -435,6 +449,23 @@ export default function RecordForm({ record, defaultDateKey, allRecords = [], ca
             {EVENT_COLORS.map((c, i) => (
               <button type="button" className="btn-reset" key={c} style={{ ...S.colorDot(color === c), background: c }} aria-label={`顏色 ${i + 1}`} aria-pressed={color === c} onClick={() => setColor(c)} />
             ))}
+            <label style={S.customDot(!EVENT_COLORS.includes(color), color)} title="自訂顏色">
+              <input type="color" aria-label="自訂顏色" style={S.customInput} value={color.toLowerCase()} onChange={(e) => setColor(normalizeHex(e.target.value) || color)} />
+            </label>
+          </div>
+          <div style={S.hexRow}>
+            <span style={S.hexLabel}>色碼</span>
+            <input
+              aria-label="色碼"
+              style={S.hexInput}
+              value={hexDraft ?? color}
+              maxLength={7}
+              placeholder="#E87A24"
+              onFocus={() => setHexDraft(color)}
+              onChange={(e) => { setHexDraft(e.target.value); const hex = normalizeHex(e.target.value); if (hex) setColor(hex); }}
+              onBlur={() => setHexDraft(null)}
+            />
+            {hexDraft !== null && !normalizeHex(hexDraft) && <span style={S.hexHint}>請輸入 6 碼，例如 #E87A24</span>}
           </div>
         </div>
 
