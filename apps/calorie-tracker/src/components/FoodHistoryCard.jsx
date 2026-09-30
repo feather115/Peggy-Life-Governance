@@ -54,13 +54,13 @@ export default function FoodHistoryCard({ app }) {
           <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
             {filtered.map((f) => (
               <div key={f.name} style={{ background: 'var(--surface-alt)', borderRadius: 14, padding: '12px 14px' }}>
-                <div onClick={() => setExpanded(expanded === f.name ? null : f.name)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+                <button type="button" className="btn-reset" aria-expanded={expanded === f.name} onClick={() => setExpanded(expanded === f.name ? null : f.name)} style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
                     <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--text)' }}>{f.name}</div>
                     <div style={{ fontSize: 12, color: 'var(--text-faint)', marginTop: 2, fontWeight: 600 }}>吃過 {f.count} 次 · 最近 {dateLabel(f.lastDate)}</div>
                   </div>
                   <span style={{ fontSize: 12, color: 'var(--primary)', fontWeight: 800, flexShrink: 0 }}>{expanded === f.name ? '收合 ▲' : '看日期 ▼'}</span>
-                </div>
+                </button>
                 {expanded === f.name && (
                   <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--track)', display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 280, overflowY: 'auto' }}>
                     {f.entries.slice().reverse().map((e, i) => {

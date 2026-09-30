@@ -59,7 +59,7 @@ export default function TodayTab({ app, selectedDate, setSelectedDate, onOpenShe
           {isTod && <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--primary)', marginTop: 2 }}>今天</div>}
           {!isTod && <button onClick={() => setSelectedDate(todayKey())} style={{ border: 'none', background: 'var(--primary)', color: '#fff', fontSize: 12, fontWeight: 800, padding: '4px 12px', borderRadius: 12, cursor: 'pointer', marginTop: 3 }}>回到今天</button>}
         </div>
-        <button aria-label="後一天" className="tap" onClick={nextDay} style={{ border: 'none', background: 'var(--surface)', color: 'var(--text)', width: 36, height: 36, borderRadius: '50%', cursor: 'pointer', fontSize: 20, fontWeight: 900, lineHeight: 1, opacity: isTod ? 0.3 : 1, boxShadow: '0 4px 12px -8px rgba(0,0,0,.2)' }}><Icon name="chevron-right" size={14} /></button>
+        <button aria-label="後一天" className="tap" onClick={nextDay} disabled={isTod} style={{ border: 'none', background: 'var(--surface)', color: 'var(--text)', width: 36, height: 36, borderRadius: '50%', cursor: 'pointer', fontSize: 20, fontWeight: 900, lineHeight: 1, opacity: isTod ? 0.3 : 1, boxShadow: '0 4px 12px -8px rgba(0,0,0,.2)' }}><Icon name="chevron-right" size={14} /></button>
       </div>
 
       {/* 卡路里環卡片 */}
@@ -126,7 +126,7 @@ export default function TodayTab({ app, selectedDate, setSelectedDate, onOpenShe
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
                 <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--text)' }}>{Math.round(Number(it.cal) || 0)}</span>
                 <button aria-label="編輯這筆餐點" className="tap" onClick={() => setEditing({ mealKey: meal.key, mealLabel: meal.label, item: it })} style={{ border: 'none', background: 'var(--bg)', color: 'var(--text-muted)', width: 25, height: 25, borderRadius: '50%', cursor: 'pointer', fontSize: 12 }}><Icon name="pencil" size={14} /></button>
-                <button aria-label="刪除這筆餐點" className="tap" onClick={() => removeMeal(selectedDate, meal.key, it.id).catch((e) => alertError('刪除', e))} style={{ border: 'none', background: 'var(--bg)', color: 'var(--text-faint)', width: 25, height: 25, borderRadius: '50%', cursor: 'pointer', fontSize: 15, lineHeight: 1 }}><Icon name="x" size={14} /></button>
+                <button aria-label="刪除這筆餐點" className="tap" onClick={() => { if (confirm(`刪除「${it.name}」？`)) removeMeal(selectedDate, meal.key, it.id).catch((e) => alertError('刪除', e)); }} style={{ border: 'none', background: 'var(--bg)', color: 'var(--text-faint)', width: 25, height: 25, borderRadius: '50%', cursor: 'pointer', fontSize: 15, lineHeight: 1 }}><Icon name="x" size={14} /></button>
               </div>
             </div>
           ))}

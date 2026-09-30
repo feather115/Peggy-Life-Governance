@@ -1,8 +1,10 @@
 // Shared bottom sheet wrapper (used by food library, advanced settings, and other modal sheets)
 // Fixed to window bottom, centered, max-width 520, with semi-transparent backdrop and top handle
 // 無障礙：role=dialog + aria-modal，開啟時焦點移進面板、Esc 關閉、關閉後焦點還給原本的觸發元素
+// 手機返回鍵（Android / LINE）也是關閉面板，不會直接離開 app
 import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { useBackClose } from '@peggy-life/shared/useBackClose';
 
 const openSheets = [];
 
@@ -10,6 +12,7 @@ export default function Sheet({ onBackdrop, height, zIndex = 10, label = '對話
   const panelRef = useRef(null);
   const onCloseRef = useRef(onBackdrop);
   onCloseRef.current = onBackdrop;
+  useBackClose(true, onBackdrop);
 
   useEffect(() => {
     const opener = document.activeElement;

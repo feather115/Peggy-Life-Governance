@@ -161,7 +161,7 @@ function TagGroup({ title, titleColor, chipBg, chipColor, delColor, tags, onDele
             <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: onColor ? (mt.color || chipBg) : chipBg, borderRadius: 12, padding: '5px 6px 5px 8px' }}>
               {onColor && <button onClick={() => setEditingColorId(editingColorId === mt.id ? null : mt.id)} title="選擇標籤顏色" style={{ width: 18, height: 18, borderRadius: '50%', border: '2px solid rgba(255,255,255,.9)', background: mt.color || '#E8A13C', cursor: 'pointer', padding: 0, boxShadow: '0 1px 4px rgba(0,0,0,.15)' }} />}
               <span style={{ fontSize: 13, fontWeight: 800, color: onColor ? '#fff' : chipColor }}>{mt.label}</span>
-              <button aria-label="刪除標籤" className="tap" onClick={() => onDelete(mt.id)} style={{ border: 'none', background: 'none', color: onColor ? 'rgba(255,255,255,.85)' : delColor, cursor: 'pointer', fontSize: 15, lineHeight: 1, padding: 0, width: 18, height: 18, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="x" size={14} /></button>
+              <button aria-label={`刪除標籤「${mt.label}」`} className="tap" onClick={() => { if (confirm(`刪除標籤「${mt.label}」？`)) onDelete(mt.id); }} style={{ border: 'none', background: 'none', color: onColor ? 'rgba(255,255,255,.85)' : delColor, cursor: 'pointer', fontSize: 15, lineHeight: 1, padding: 0, width: 18, height: 18, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="x" size={14} /></button>
             </div>
             {onColor && editingColorId === mt.id && (
               <ColorSwatches

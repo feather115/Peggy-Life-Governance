@@ -85,7 +85,8 @@ Supabase ⇄ db.js ⇄ useAppData.js ⇄ App.jsx ⇄ components/*
 - **表單欄位**：每個 `<input>/<textarea>/<select>` 都要有 `aria-label`（或 `<label>` 包住）；只靠 placeholder 不算。
 - **viewport 不鎖縮放**（無 `maximum-scale` / `user-scalable=no`）；為了避免 iOS 聚焦輸入框自動放大，`base.css` 在觸控裝置把輸入框強制 16px。
 - **字級下限 12px**。
-- **`Sheet.jsx`**：`role="dialog" aria-modal`，開啟時焦點移進面板、`Esc` 關閉（多層時只關最上層）、關閉後焦點還給原觸發元素；新增面板要傳 `label`。
+- **`Sheet.jsx`**：`role="dialog" aria-modal`，開啟時焦點移進面板、`Esc` 關閉（多層時只關最上層）、關閉後焦點還給原觸發元素；新增面板要傳 `label`。**手機返回鍵也會關閉面板**（`@peggy-life/shared/useBackClose`），不會直接離開 app。
+- **刪除都要確認**：今日頁的餐點 ×、食物庫的自訂食物 ×、設定頁的標籤 × 都先 `confirm()`（原本一點就刪，很容易誤觸）。今天時「後一天」按鈕是 `disabled`。
 - **`TabBar.jsx`**：`<nav>` + icon + 文字，`aria-current="page"`，底部留 `env(safe-area-inset-bottom)`（取代原本的假 home-indicator 橫條）。
 
 ## 每個檔案在幹嘛

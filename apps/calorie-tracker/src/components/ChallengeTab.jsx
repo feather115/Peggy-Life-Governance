@@ -591,7 +591,7 @@ function EndedChallengeCard({ challenge, myUserId, onSelect, active }) {
   const lb = computeLeaderboard(challenge, myUserId);
   const winner = lb[0];
   return (
-    <div style={{ background: 'var(--surface)', borderRadius: 14, padding: '14px 16px', boxShadow: 'var(--shadow-card)', border: active ? '2px solid var(--primary)' : '2px solid transparent', cursor: 'pointer' }} onClick={onSelect}>
+    <button type="button" className="btn-reset" aria-pressed={active} style={{ display: 'block', width: '100%', background: 'var(--surface)', borderRadius: 14, padding: '14px 16px', boxShadow: 'var(--shadow-card)', border: active ? '2px solid var(--primary)' : '2px solid transparent' }} onClick={onSelect}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{challenge.name}</div>
@@ -602,7 +602,7 @@ function EndedChallengeCard({ challenge, myUserId, onSelect, active }) {
           <div style={{ fontSize: 14, fontWeight: 800, color: '#E8A13C' }}>🏆 {winner?.name || '—'}</div>
         </div>
       </div>
-    </div>
+    </button>
   );
 }
 
