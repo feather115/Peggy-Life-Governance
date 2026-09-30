@@ -1,0 +1,13 @@
+/* 食譜本：暖橘棕色系色票。文字色皆已驗證在 --surface / --surface-alt / --bg 上 ≥4.5:1。 */
+:root{
+  --bg:#FFF5EE;--surface:#FFFFFF;--surface-alt:#FDF7F4;--sunken:#F0E7E1;
+  --line:#F3DFD4;--line-strong:#DCD3CC;--track:#F3DFD4;
+  --text:#3D281E;--text-muted:#75594C;--text-faint:#7E6153;
+  --primary:#B85008;--primary-soft:#FFF3EB;--on-primary:#FFFFFF;--ring:#B85008;
+  --info:#3A55D8;--info-bg:#E8EDFF;
+  --success:#15803D;--success-bg:#DCFCE7;--danger:#B91C1C;--danger-bg:#FEE2E2;
+  --scrim:rgba(61,40,30,.42);
+  --shadow-card:0 10px 24px -18px rgba(184,80,8,.45);
+  --shadow-nav:0 -4px 20px rgba(61,40,30,.08);
+  --shadow-sheet:0 -12px 40px rgba(61,40,30,.22);
+}

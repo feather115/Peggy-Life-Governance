@@ -8,7 +8,9 @@
     ".": "./src/index.js",
     "./supabase": "./src/supabase.js",
     "./lineAuth": "./src/lineAuth.js",
-    "./ConfigMissing.jsx": "./src/ConfigMissing.jsx"
+    "./ConfigMissing.jsx": "./src/ConfigMissing.jsx",
+    "./Icon.jsx": "./src/Icon.jsx",
+    "./base.css": "./src/base.css"
   },
   "peerDependencies": {
     "@line/liff": "^2.29.0",

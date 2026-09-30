@@ -1,0 +1,38 @@
+/* 三個 app 共用的全域樣式：reset、焦點環、按壓回饋、動態偏好。
+   色票由各 app 的 theme.css 提供（--bg / --text / --primary …），這裡只吃變數，不寫死色碼。 */
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+html{-webkit-text-size-adjust:100%;}
+body{
+  font-family:'Nunito','PingFang TC','Noto Sans TC','Microsoft JhengHei',system-ui,sans-serif;
+  background:var(--bg);color:var(--text);
+  min-height:100vh;min-height:100dvh;
+  -webkit-tap-highlight-color:transparent;
+}
+#root{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;}
+input,button,textarea,select{font-family:inherit;}
+
+/* 鍵盤焦點：只在鍵盤操作時出現（滑鼠點擊不會留下外框） */
+:focus{outline:none;}
+:focus-visible{outline:2px solid var(--ring);outline-offset:2px;}
+input:focus-visible,textarea:focus-visible,select:focus-visible{outline-offset:0;}
+
+button{cursor:pointer;touch-action:manipulation;transition:opacity .15s ease,background-color .15s ease,color .15s ease;}
+button:not(:disabled):active{opacity:.72;}
+button:disabled{cursor:not-allowed;}
+
+/* 視覺上小的按鈕（icon 鈕、×、✏）用這個 class 把點擊範圍撐到 ≥44px，不影響版面 */
+.tap{position:relative;}
+.tap::after{content:'';position:absolute;top:50%;left:50%;width:max(100%,44px);height:max(100%,44px);transform:translate(-50%,-50%);}
+
+/* iOS 在 <16px 的輸入框聚焦時會自動放大頁面；開放縮放後改用 16px 避免這個副作用 */
+@media (pointer:coarse){
+  input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]),select,textarea{font-size:16px!important;}
+}
+
+.ps::-webkit-scrollbar{width:0;height:0;}
+.ps{scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important;}
+}

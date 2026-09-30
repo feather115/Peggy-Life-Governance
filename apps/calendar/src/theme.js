@@ -1,29 +1,29 @@
 // 共用視覺樣式常數（配色、圓角、陰影）+ 事件顏色選項。
-// 對應設計稿的「柔和藍」主題。所有元件的 inline style 都從這裡取值，不要各自硬編色碼。
+// 對應設計稿的「柔和藍」主題。實際色值在 theme.css 的 CSS 變數，這裡只是把變數名包成 JS 常數；所有元件的 inline style 都從這裡取值，不要各自硬編色碼。
 
 export const THEME = {
-  bg: '#EEF2F7',
-  surface: '#FFFFFF',
-  surfaceAlt: '#F4F7FB',
-  surfaceAlt2: '#F7F9FC',
-  primary: '#3D5A80',
-  primaryDark: '#2C4562',
-  primarySoft: '#E3EAF4',
-  textDark: '#1F2D42',
-  textMuted: '#7C8AA0',
-  textFaint: '#B7C0D1',
-  border: '#E7ECF3',
+  bg: 'var(--bg)',
+  surface: 'var(--surface)',
+  surfaceAlt: 'var(--surface-alt)',
+  surfaceAlt2: 'var(--surface-alt2)',
+  primary: 'var(--primary)',
+  primaryDark: 'var(--primary-strong)',
+  primarySoft: 'var(--primary-soft)',
+  textDark: 'var(--text)',
+  textMuted: 'var(--text-muted)',
+  textFaint: 'var(--text-faint)',
+  border: 'var(--line)',
   radius: 20,
   radiusSm: 14,
   radiusSmInner: 11,
-  success: '#15803D',
-  successBg: '#DCFCE7',
-  error: '#B91C1C',
-  errorBg: '#FEE2E2',
-  shadow: '0 1px 3px rgba(31,45,66,0.06), 0 10px 26px rgba(31,45,66,0.08)',
+  success: 'var(--success)',
+  successBg: 'var(--success-bg)',
+  error: 'var(--danger)',
+  errorBg: 'var(--danger-bg)',
+  shadow: 'var(--shadow-card)',
   // ＃快速注記的深藍色（2026-07-10 從暖橘改藍，使用者反饋）
-  hashtagInk: '#2C4562',
-  hashtagBg: '#E3EAF4',
+  hashtagInk: 'var(--primary-strong)',
+  hashtagBg: 'var(--primary-soft)',
 };
 
 // 事件顏色選項（事件表單的顏色選擇器、月/週/日檢視的顏色圓點都用這組）

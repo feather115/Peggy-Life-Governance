@@ -1,0 +1,13 @@
+/* 飲食卡路里：綠色系色票。文字色皆已驗證在 --surface / --bg 上 ≥4.5:1。 */
+:root{
+  --bg:#EAF5EE;--surface:#FFFFFF;--surface-alt:#F6FAF7;--sunken:#F0F3F1;
+  --line:#EEF4F0;--line-strong:#C7D6CC;--track:#DCEDE3;
+  --text:#234034;--text-muted:#4D6858;--text-faint:#5A7566;
+  --primary:#257A50;--primary-soft:#EAF5EE;--on-primary:#FFFFFF;--ring:#257A50;
+  --info:#3A55D8;--info-bg:#E8EDFF;
+  --success:#15803D;--success-bg:#DCFCE7;--danger:#B91C1C;--danger-bg:#FEE2E2;
+  --scrim:rgba(35,64,52,.42);
+  --shadow-card:0 12px 28px -18px rgba(37,122,80,.45);
+  --shadow-nav:0 -4px 20px rgba(35,64,52,.08);
+  --shadow-sheet:0 -12px 40px rgba(35,64,52,.22);
+}
