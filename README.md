@@ -10,6 +10,9 @@ Monorepo，包含三個獨立的 app，各自部署到不同的 Vercel 專案。
 
 每個 app 的設定、開發、部署細節請看各自資料夾裡的 README。
 
+> **設計系統**（設計概念、三個 app 的色系、字型與尺寸規格、共用元件、可及性、改色流程）：[`docs/design-system.md`](./docs/design-system.md)。
+> 一句話：元件長得一模一樣，色系各自不同（飲食卡路里森林綠、食譜本咖啡棕、行事曆霧藍）。
+
 > 想加第四個 app？照 [`docs/new-app-sop.md`](./docs/new-app-sop.md) 的 SOP 做，
 > 會自動跟現有三個 app 風格一致（目錄結構、Supabase schema 隔離、狀態中樞模式、部署設定）。
 

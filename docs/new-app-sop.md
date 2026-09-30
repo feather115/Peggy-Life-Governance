@@ -213,6 +213,8 @@ Supabase ⇄ db.js ⇄ use<Domain>.js ⇄ Root.jsx/App.jsx ⇄ components/*
 
 ## 6. 樣式慣例
 
+> 設計面的完整規範（設計概念、色票角色、三個 app 的色系表、新 app 怎麼推色系、元件選用）在 [`design-system.md`](./design-system.md)；這一節是寫程式時的慣例。
+
 - 全部用 **inline style**，沒有用 CSS-in-JS 套件也沒有 Tailwind
 - 樣式物件宣告在**檔案最外層（module scope）**，變數名一律叫 `S`，不要放在元件函式裡面
   （放函式裡每次 render 都會重新建立物件，是這個專案踩過的效能坑，見
