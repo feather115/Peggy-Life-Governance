@@ -8,12 +8,12 @@ import TimelineItems from './TimelineItems.jsx';
 const S = {
   wrap: { display: 'flex', flexDirection: 'column', minHeight: '100%' },
   header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px 10px' },
-  navBtn: { border: 'none', background: 'none', cursor: 'pointer', fontSize: 18, color: THEME.textMuted, padding: '4px 10px', outline: 'none' },
+  navBtn: { border: 'none', background: 'none', cursor: 'pointer', fontSize: 18, color: THEME.textMuted, padding: '4px 10px' },
   title: { fontSize: 16, fontWeight: 700, color: THEME.textDark },
   list: { flex: 1, padding: '4px 20px 16px' },
   empty: { display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '60px 0', fontSize: 14, color: THEME.textFaint },
   footer: { position: 'sticky', bottom: 0, padding: '14px 20px calc(14px + env(safe-area-inset-bottom))', background: THEME.bg, display: 'flex', gap: 10 },
-  addBtn: { flex: 1, border: 'none', cursor: 'pointer', padding: 13, borderRadius: THEME.radiusSm, background: THEME.primary, color: '#fff', fontSize: 15, fontWeight: 700, outline: 'none' },
+  addBtn: { flex: 1, border: 'none', cursor: 'pointer', padding: 13, borderRadius: THEME.radiusSm, background: THEME.primary, color: '#fff', fontSize: 15, fontWeight: 700 },
 };
 
 export default function DayView({ dateKey, onShiftDay, recordsByDate, categories, tasksByDueDate, onEdit, onCreate, onGoToTasks }) {

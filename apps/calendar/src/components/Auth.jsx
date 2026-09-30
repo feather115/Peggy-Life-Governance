@@ -67,18 +67,18 @@ export default function Auth({ lineDebug }) {
         <form onSubmit={submit}>
           <div style={{ marginBottom: 14 }}>
             <div style={{ fontSize: 13, color: THEME.textMuted, marginBottom: 6 }}>電子郵件</div>
-            <input type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required
-              style={{ width: '100%', boxSizing: 'border-box', border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSm, padding: '11px 12px', fontSize: 15, color: THEME.textDark, background: THEME.surface, outline: 'none' }} />
+            <input aria-label="電子郵件" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required
+              style={{ width: '100%', boxSizing: 'border-box', border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSm, padding: '11px 12px', fontSize: 15, color: THEME.textDark, background: THEME.surface }} />
           </div>
           {mode !== 'forgot' && (
             <div style={{ marginBottom: 14 }}>
               <div style={{ fontSize: 13, color: THEME.textMuted, marginBottom: 6 }}>密碼</div>
-              <input type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6}
-                style={{ width: '100%', boxSizing: 'border-box', border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSm, padding: '11px 12px', fontSize: 15, color: THEME.textDark, background: THEME.surface, outline: 'none' }} />
+              <input aria-label="密碼" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6}
+                style={{ width: '100%', boxSizing: 'border-box', border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSm, padding: '11px 12px', fontSize: 15, color: THEME.textDark, background: THEME.surface }} />
             </div>
           )}
           <button type="submit" disabled={busy}
-            style={{ width: '100%', border: 'none', cursor: 'pointer', padding: 12, borderRadius: THEME.radiusSm, background: THEME.primary, color: '#fff', fontSize: 15, fontWeight: 600, marginBottom: 12, outline: 'none' }}>
+            style={{ width: '100%', border: 'none', cursor: 'pointer', padding: 12, borderRadius: THEME.radiusSm, background: THEME.primary, color: '#fff', fontSize: 15, fontWeight: 600, marginBottom: 12 }}>
             {busy ? '處理中…' : submitLabels[mode]}
           </button>
         </form>
@@ -98,7 +98,7 @@ export default function Auth({ lineDebug }) {
             <span onClick={() => switchMode('signin')} style={{ color: THEME.primary, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>返回登入</span>
           )}
         </div>
-        {lineDebug && <div style={{ marginTop: 16, fontSize: 11, color: THEME.textFaint, fontWeight: 600, lineHeight: 1.6, wordBreak: 'break-word' }}>LINE 自動登入除錯：{lineDebug}</div>}
+        {lineDebug && <div style={{ marginTop: 16, fontSize: 12, color: THEME.textFaint, fontWeight: 600, lineHeight: 1.6, wordBreak: 'break-word' }}>LINE 自動登入除錯：{lineDebug}</div>}
       </div>
     </div>
   );

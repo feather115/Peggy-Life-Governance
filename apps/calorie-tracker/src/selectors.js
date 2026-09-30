@@ -33,7 +33,7 @@ export function ringInfo(consumed, goalCal) {
   if (ratio > 0.9) {
     return { diff, ringColor: '#E8A13C', remainColor: '#8B5A00', remainBg: '#FFF1D6', remainText: `剩下 ${diff} kcal` };
   }
-  return { diff, ringColor: '#2E8B5E', remainColor: '#2E8B5E', remainBg: '#EAF5EE', remainText: `還可以吃 ${diff} kcal` };
+  return { diff, ringColor: 'var(--primary)', remainColor: 'var(--primary)', remainBg: 'var(--bg)', remainText: `還可以吃 ${diff} kcal` };
 }
 
 // Report - Weekly bar chart (past 7 days)
@@ -55,11 +55,11 @@ export function buildWeek(days, goalCal, fastingIds, otherIds) {
   const glb = Math.round((goalCal / maxBC) * chartH);
   const weekBars = weekDays.map((d) => {
     const bh = d.cal > 0 ? Math.max(6, Math.round((d.cal / maxBC) * chartH)) : 6;
-    const bc = d.cal === 0 ? '#E0E5E2' : d.cal <= goalCal ? '#2E8B5E' : d.cal <= goalCal * 1.1 ? '#E8A13C' : '#D9544F';
+    const bc = d.cal === 0 ? '#E0E5E2' : d.cal <= goalCal ? 'var(--primary)' : d.cal <= goalCal * 1.1 ? '#E8A13C' : '#D9544F';
     return {
       cal: d.cal > 0 ? d.cal : '', height: bh + 'px', color: bc, label: d.dow,
-      labelColor: d.isToday ? '#234034' : '#9bb0a3', labelWeight: d.isToday ? '900' : '700',
-      calColor: d.cal > goalCal ? '#D9544F' : '#6E8B7C', hasFast: d.hasFast,
+      labelColor: d.isToday ? 'var(--text)' : 'var(--text-faint)', labelWeight: d.isToday ? '900' : '700',
+      calColor: d.cal > goalCal ? '#D9544F' : 'var(--text-muted)', hasFast: d.hasFast,
     };
   });
   const wRec = weekDays.filter((d) => d.cal > 0);
@@ -85,10 +85,10 @@ export function buildMonth(days, goalCal, fastingIds, otherTagDefs, monthDate = 
     const mt = dayTotals(days[mdk]);
     const mc = Math.round(mt.cal);
     const isFut = mdk > today;
-    let bg = isFut ? '#F8FAF8' : '#F0F3F1';
+    let bg = isFut ? '#F8FAF8' : 'var(--sunken)';
     if (!isFut && mc > 0) {
       mTotalCal += mc; mRecD++; mTP += mt.p; mTC += mt.c; mTF += mt.f;
-      bg = mc <= goalCal ? '#DCEDE3' : mc <= goalCal * 1.1 ? '#FEEFC3' : '#FECACA';
+      bg = mc <= goalCal ? 'var(--track)' : mc <= goalCal * 1.1 ? '#FEEFC3' : '#FECACA';
     }
     const mAT = days[mdk]?.tags?.activeTags || [];
     const mHF = mAT.some((t) => fastingIds.includes(t));
@@ -99,8 +99,8 @@ export function buildMonth(days, goalCal, fastingIds, otherTagDefs, monthDate = 
     const isCur = mdk === today;
     calCells.push({
       empty: false, day: md, dateKey: mdk, isFuture: isFut, bg, hasFast: mHF, hasOther: mHO, otherColors,
-      todayBorder: isCur ? '2px solid #2E8B5E' : '2px solid transparent',
-      textColor: isFut ? '#C5CCC7' : '#234034',
+      todayBorder: isCur ? '2px solid var(--primary)' : '2px solid transparent',
+      textColor: isFut ? '#C5CCC7' : 'var(--text)',
     });
   }
   const mAvg = mRecD > 0 ? Math.round(mTotalCal / mRecD) : 0;
@@ -185,7 +185,7 @@ export function daysLeft(endDate) {
 
 // Member default palette (16 colors designed with distinct hues to avoid visual confusion when multiple members join)
 const MEMBER_PALETTE = [
-  '#2E8B5E', '#4361EE', '#E8A13C', '#5FA8D3',
+  'var(--primary)', 'var(--info)', '#E8A13C', '#5FA8D3',
   '#8B5CF6', '#EC4899', '#10B981', '#D9544F',
   '#F59E0B', '#0EA5E9', '#A855F7', '#84CC16',
   '#F43F5E', '#6366F1', '#14B8A6', '#EAB308',
@@ -202,7 +202,7 @@ export function memberColor(challenge, userId) {
   const m = challenge.members.find(x => x.userId === userId);
   if (m?.color) return m.color;
   const idx = sortedMembers(challenge).findIndex(x => x.userId === userId);
-  return MEMBER_PALETTE[idx % MEMBER_PALETTE.length] || '#9bb0a3';
+  return MEMBER_PALETTE[idx % MEMBER_PALETTE.length] || 'var(--text-faint)';
 }
 
 export { MEMBER_PALETTE };

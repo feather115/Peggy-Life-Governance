@@ -7,7 +7,7 @@ import { THEME } from '../theme.js';
 const SUGGEST_LIMIT = 5;
 
 const S = {
-  input: { width: '100%', boxSizing: 'border-box', border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSm, padding: '11px 12px', fontSize: 15, color: THEME.textDark, background: THEME.surface, outline: 'none' },
+  input: { width: '100%', boxSizing: 'border-box', border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSm, padding: '11px 12px', fontSize: 15, color: THEME.textDark, background: THEME.surface },
   row: { display: 'flex', gap: 8 },
   backBtn: { border: `1px solid ${THEME.border}`, background: THEME.surface, cursor: 'pointer', padding: '0 12px', borderRadius: THEME.radiusSm, fontSize: 12, color: THEME.textMuted, fontWeight: 600, whiteSpace: 'nowrap' },
   chipsWrap: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 },
@@ -67,7 +67,7 @@ export function PeopleSelect({ people, onChange, history, addPlaceholder = 'è¼¸å
       )}
 
       {listMode ? (
-        <select
+        <select aria-label={addPlaceholder}
           autoFocus
           style={S.input}
           value=""
@@ -80,7 +80,7 @@ export function PeopleSelect({ people, onChange, history, addPlaceholder = 'è¼¸å
       ) : (
         <div>
           <div style={S.row}>
-            <input
+            <input aria-label={addPlaceholder}
               type="text"
               style={S.input}
               value={draft}

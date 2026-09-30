@@ -53,8 +53,8 @@ export default function Auth({ lineDebug, onGuest }) {
   };
 
   const msgStyles = {
-    error:   { color: '#B91C1C', bg: '#FEE2E2' },
-    success: { color: '#15803D', bg: '#DCFCE7' },
+    error:   { color: 'var(--danger)', bg: 'var(--danger-bg)' },
+    success: { color: 'var(--success)', bg: 'var(--success-bg)' },
     info:    { color: '#8B5A00', bg: '#FFF6E6' },
   };
   const ms = msgStyles[msgKind];
@@ -89,9 +89,9 @@ export default function Auth({ lineDebug, onGuest }) {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-      <div style={{ background: '#fff', borderRadius: 28, padding: 28, width: '100%', maxWidth: 380, boxShadow: '0 20px 50px -20px rgba(232,122,36,.25)' }}>
-        <div style={{ fontSize: 24, fontWeight: 900, color: '#3D281E', textAlign: 'center' }}>TY Recipe Book</div>
-        <div style={{ fontSize: 14, color: '#8E7568', fontWeight: 700, textAlign: 'center', marginTop: 4, marginBottom: 20 }}>
+      <div style={{ background: 'var(--surface)', borderRadius: 28, padding: 28, width: '100%', maxWidth: 380, boxShadow: 'var(--shadow-card)' }}>
+        <div style={{ fontSize: 24, fontWeight: 900, color: 'var(--text)', textAlign: 'center' }}>TY Recipe Book</div>
+        <div style={{ fontSize: 14, color: 'var(--text-muted)', fontWeight: 700, textAlign: 'center', marginTop: 4, marginBottom: 20 }}>
           {titles[mode]}
         </div>
         {lineHint && (
@@ -113,14 +113,14 @@ export default function Auth({ lineDebug, onGuest }) {
           </div>
         )}
         <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required
-            style={{ border: 'none', background: '#FDF7F4', borderRadius: 14, padding: '14px 16px', fontSize: 16, fontWeight: 700, color: '#3D281E' }} />
+          <input aria-label="Email" type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required
+            style={{ border: 'none', background: 'var(--surface-alt)', borderRadius: 14, padding: '14px 16px', fontSize: 16, fontWeight: 700, color: 'var(--text)' }} />
           {mode !== 'forgot' && (
-            <input type="password" placeholder="密碼（至少 6 字元）" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6}
-              style={{ border: 'none', background: '#FDF7F4', borderRadius: 14, padding: '14px 16px', fontSize: 16, fontWeight: 700, color: '#3D281E' }} />
+            <input aria-label="密碼" type="password" placeholder="密碼（至少 6 字元）" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6}
+              style={{ border: 'none', background: 'var(--surface-alt)', borderRadius: 14, padding: '14px 16px', fontSize: 16, fontWeight: 700, color: 'var(--text)' }} />
           )}
           <button type="submit" disabled={busy}
-            style={{ border: 'none', background: busy ? '#DCD3CC' : '#E87A24', color: '#fff', fontWeight: 900, fontSize: 15, padding: 14, borderRadius: 14, cursor: 'pointer', marginTop: 6 }}>
+            style={{ border: 'none', background: busy ? 'var(--line-strong)' : 'var(--primary)', color: '#fff', fontWeight: 900, fontSize: 15, padding: 14, borderRadius: 14, cursor: 'pointer', marginTop: 6 }}>
             {busy ? '處理中…' : submitLabels[mode]}
           </button>
         </form>
@@ -139,23 +139,23 @@ export default function Auth({ lineDebug, onGuest }) {
           )}
         </div>
         {onGuest && (
-          <div style={{ marginTop: 18, paddingTop: 14, borderTop: '1px solid #F3DFD4' }}>
+          <div style={{ marginTop: 18, paddingTop: 14, borderTop: '1px solid var(--line)' }}>
             <button
               type="button"
               onClick={onGuest}
-              style={{ width: '100%', border: 'none', background: '#FDF7F4', color: '#3D281E', fontWeight: 900, fontSize: 14, padding: 12, borderRadius: 14, cursor: 'pointer' }}
+              style={{ width: '100%', border: 'none', background: 'var(--surface-alt)', color: 'var(--text)', fontWeight: 900, fontSize: 14, padding: 12, borderRadius: 14, cursor: 'pointer' }}
             >
               👀 以訪客身分瀏覽分享的食譜
             </button>
-            <div style={{ marginTop: 8, fontSize: 11, color: '#C5B4AC', fontWeight: 700, textAlign: 'center', lineHeight: 1.5 }}>
+            <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-faint)', fontWeight: 700, textAlign: 'center', lineHeight: 1.5 }}>
               訪客只能看別人分享出來的食譜，無法新增、編輯，也沒有料理行事曆。
             </div>
           </div>
         )}
-        {lineDebug && <div style={{ marginTop: 16, fontSize: 11, color: '#bcccc2', fontWeight: 600, lineHeight: 1.6, wordBreak: 'break-word' }}>LINE 自動登入除錯：{lineDebug}</div>}
+        {lineDebug && <div style={{ marginTop: 16, fontSize: 12, color: 'var(--text-faint)', fontWeight: 600, lineHeight: 1.6, wordBreak: 'break-word' }}>LINE 自動登入除錯：{lineDebug}</div>}
       </div>
     </div>
   );
 }
 
-const linkBtn = { width: '100%', border: 'none', background: 'none', color: '#8E7568', fontWeight: 800, fontSize: 14, cursor: 'pointer', padding: '6px 0' };
+const linkBtn = { width: '100%', border: 'none', background: 'none', color: 'var(--text-muted)', fontWeight: 800, fontSize: 14, cursor: 'pointer', padding: '6px 0' };

@@ -8,7 +8,7 @@ import RecipeForm from './components/RecipeForm.jsx';
 import SettingsTab from './components/SettingsTab.jsx';
 import TabBar from './components/TabBar.jsx';
 
-function Centered({ children, color = '#6E8B7C' }) {
+function Centered({ children, color = 'var(--text-muted)' }) {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, color, fontWeight: 700 }}>
       {children}
@@ -25,7 +25,7 @@ export default function App({ session, onSignOut, onExitGuest }) {
   const [editing, setEditing] = useState(null);
 
   if (!recipes.loaded) return <Centered>載入中…</Centered>;
-  if (recipes.loadError) return <Centered color="#B91C1C">載入失敗：{recipes.loadError}</Centered>;
+  if (recipes.loadError) return <Centered color="var(--danger)">載入失敗：{recipes.loadError}</Centered>;
 
   const handleBack = () => {
     if (backTab === 'calendar') {
@@ -68,7 +68,7 @@ export default function App({ session, onSignOut, onExitGuest }) {
       height: '100vh',
       maxHeight: '100dvh',
       margin: '0 auto',
-      background: '#FFF5EE',
+      background: 'var(--bg)',
       display: 'flex',
       flexDirection: 'column',
       boxShadow: '0 0 60px -20px rgba(0,0,0,.12)',
@@ -133,7 +133,7 @@ export default function App({ session, onSignOut, onExitGuest }) {
             )}
 
             {tab === 'calendar' && recipes.isGuest && (
-              <Centered color="#8E7568">登入後才能使用料理行事曆</Centered>
+              <Centered color="var(--text-muted)">登入後才能使用料理行事曆</Centered>
             )}
 
             {tab === 'settings' && !recipes.isGuest && (

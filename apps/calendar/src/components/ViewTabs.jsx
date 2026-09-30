@@ -22,9 +22,8 @@ const S = {
     fontWeight: 600,
     background: active ? THEME.primary : 'transparent',
     color: active ? '#fff' : THEME.textMuted,
-    outline: 'none',
   }),
-  todayBtn: { border: `1px solid ${THEME.border}`, background: THEME.surface, cursor: 'pointer', padding: '9px 14px', borderRadius: THEME.radiusSm, fontSize: 13, fontWeight: 600, color: THEME.primary, whiteSpace: 'nowrap', outline: 'none' },
+  todayBtn: { border: `1px solid ${THEME.border}`, background: THEME.surface, cursor: 'pointer', padding: '9px 14px', borderRadius: THEME.radiusSm, fontSize: 13, fontWeight: 600, color: THEME.primary, whiteSpace: 'nowrap' },
 };
 
 export default function ViewTabs({ view, onChange, onToday }) {
@@ -32,7 +31,7 @@ export default function ViewTabs({ view, onChange, onToday }) {
     <div style={S.wrap}>
       <div style={S.segment}>
         {TABS.map((t) => (
-          <button key={t.key} type="button" onClick={() => onChange(t.key)} style={S.tab(view === t.key)}>
+          <button key={t.key} type="button" onClick={() => onChange(t.key)} aria-pressed={view === t.key} style={S.tab(view === t.key)}>
             {t.label}
           </button>
         ))}

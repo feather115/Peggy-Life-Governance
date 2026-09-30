@@ -2,6 +2,7 @@
 import React, { useState, useRef } from 'react';
 import { FOODS, MEALS_DEF } from '../constants.js';
 import Sheet from './Sheet.jsx';
+import Icon from '@peggy-life/shared/Icon.jsx';
 
 export default function FoodSheet({ app, selectedDate, mealKey, onClose }) {
   const { customFoods, foodUsage, addMeal, addCustomFood, removeCustomFood, updateCustomFood, importFoods } = app;
@@ -191,11 +192,11 @@ export default function FoodSheet({ app, selectedDate, mealKey, onClose }) {
   };
 
   return (
-    <Sheet onBackdrop={onClose} height="min(76vh, 720px)" zIndex={10}>
+    <Sheet label="食物庫" onBackdrop={onClose} height="min(76vh, 720px)" zIndex={10}>
       {toast && (
         <div style={{
           position: 'absolute', top: 58, left: '50%', transform: 'translateX(-50%)',
-          background: toast.isError ? '#D9544F' : '#2E8B5E', color: '#fff',
+          background: toast.isError ? '#D9544F' : 'var(--primary)', color: '#fff',
           padding: '8px 16px', borderRadius: 20, zIndex: 100,
           fontWeight: 800, fontSize: 13, boxShadow: '0 8px 24px rgba(46,139,94,.3)',
           pointerEvents: 'none', display: 'flex', alignItems: 'center', gap: 6
@@ -205,12 +206,12 @@ export default function FoodSheet({ app, selectedDate, mealKey, onClose }) {
         </div>
       )}
       <div style={{ padding: '8px 20px 6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ fontSize: 18, fontWeight: 900, color: '#234034' }}>加入{mealLabel}</span>
+        <span style={{ fontSize: 18, fontWeight: 900, color: 'var(--text)' }}>加入{mealLabel}</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {formOpen && (
-            <button onClick={save} disabled={!canSave} style={{ border: 'none', background: canSave ? '#2E8B5E' : '#C7D6CC', color: '#fff', fontWeight: 800, fontSize: 14, padding: '8px 16px', borderRadius: 18, cursor: canSave ? 'pointer' : 'not-allowed' }}>{editingId ? '儲存修改' : `儲存並加入${mealLabel}`}</button>
+            <button onClick={save} disabled={!canSave} style={{ border: 'none', background: canSave ? 'var(--primary)' : 'var(--line-strong)', color: '#fff', fontWeight: 800, fontSize: 14, padding: '8px 16px', borderRadius: 18, cursor: canSave ? 'pointer' : 'not-allowed' }}>{editingId ? '儲存修改' : `儲存並加入${mealLabel}`}</button>
           )}
-          <button onClick={onClose} style={{ border: 'none', background: formOpen ? '#F0F3F1' : '#2E8B5E', color: formOpen ? '#6E8B7C' : '#fff', fontWeight: 800, fontSize: 14, padding: '8px 16px', borderRadius: 18, cursor: 'pointer' }}>跳出</button>
+          <button onClick={onClose} style={{ border: 'none', background: formOpen ? 'var(--sunken)' : 'var(--primary)', color: formOpen ? 'var(--text-muted)' : '#fff', fontWeight: 800, fontSize: 14, padding: '8px 16px', borderRadius: 18, cursor: 'pointer' }}>跳出</button>
         </div>
       </div>
 
@@ -218,55 +219,55 @@ export default function FoodSheet({ app, selectedDate, mealKey, onClose }) {
         <div className="ps" style={{ flex: 1, overflowY: 'auto', padding: '6px 16px 20px' }}>
           <div style={{ position: 'relative', marginTop: 7 }}>
             <span style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', fontSize: 14, pointerEvents: 'none' }}>🔍</span>
-            <input type="search" enterKeyHint="search" value={search} onChange={(e) => setSearch(e.target.value)}
+            <input aria-label="搜尋食物" type="search" enterKeyHint="search" value={search} onChange={(e) => setSearch(e.target.value)}
               placeholder="搜尋食物名稱、品牌、備註"
-              style={{ width: '100%', border: 'none', background: '#F0F3F1', borderRadius: 12, padding: '11px 36px', fontSize: 16, fontWeight: 700, color: '#234034' }} />
+              style={{ width: '100%', border: 'none', background: 'var(--sunken)', borderRadius: 12, padding: '11px 36px', fontSize: 16, fontWeight: 700, color: 'var(--text)' }} />
             {search && (
-              <button onClick={() => setSearch('')} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', border: 'none', background: '#fff', color: '#6E8B7C', width: 22, height: 22, borderRadius: '50%', cursor: 'pointer', fontSize: 13, lineHeight: 1 }}>×</button>
+              <button aria-label="清除搜尋" className="tap" onClick={() => setSearch('')} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', border: 'none', background: 'var(--surface)', color: 'var(--text-muted)', width: 22, height: 22, borderRadius: '50%', cursor: 'pointer', fontSize: 13, lineHeight: 1 }}><Icon name="x" size={14} /></button>
             )}
           </div>
           <div style={{ display: 'flex', gap: 8, marginTop: 7 }}>
-            <button onClick={() => openCreateForm('manual')} style={{ flex: 1, border: '2px dashed #B7D5C2', background: '#F6FAF7', borderRadius: 16, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', textAlign: 'left' }}>
-              <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#2E8B5E', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 800, lineHeight: 1, flex: 'none' }}>＋</div>
-              <div><div style={{ fontSize: 14, fontWeight: 800, color: '#234034' }}>新增自訂食物</div><div style={{ fontSize: 12, color: '#6E8B7C', marginTop: 1, fontWeight: 600 }}>手動輸入名稱、卡路里、營養素</div></div>
+            <button onClick={() => openCreateForm('manual')} style={{ flex: 1, border: '2px dashed #B7D5C2', background: 'var(--surface-alt)', borderRadius: 16, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', textAlign: 'left' }}>
+              <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--primary)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 800, lineHeight: 1, flex: 'none' }}>＋</div>
+              <div><div style={{ fontSize: 14, fontWeight: 800, color: 'var(--text)' }}>新增自訂食物</div><div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 1, fontWeight: 600 }}>手動輸入名稱、卡路里、營養素</div></div>
             </button>
-            <button onClick={() => openCreateForm('json')} style={{ flex: '0 0 120px', border: '2px dashed #D6E5DC', background: '#fff', borderRadius: 16, padding: '12px 10px', cursor: 'pointer', textAlign: 'center' }}>
-              <div style={{ fontSize: 18, fontWeight: 900, color: '#2E8B5E', fontFamily: 'monospace' }}>{'{ }'}</div>
-              <div style={{ fontSize: 12, fontWeight: 800, color: '#234034', marginTop: 3 }}>JSON 輸入</div>
+            <button onClick={() => openCreateForm('json')} style={{ flex: '0 0 120px', border: '2px dashed #D6E5DC', background: 'var(--surface)', borderRadius: 16, padding: '12px 10px', cursor: 'pointer', textAlign: 'center' }}>
+              <div style={{ fontSize: 18, fontWeight: 900, color: 'var(--primary)', fontFamily: 'monospace' }}>{'{ }'}</div>
+              <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--text)', marginTop: 3 }}>JSON 輸入</div>
             </button>
           </div>
           {kw && list.length === 0 && (
-            <div style={{ marginTop: 16, textAlign: 'center', fontSize: 13, color: '#9bb0a3', fontWeight: 700 }}>找不到「{search.trim()}」，可以用上面的按鈕新增</div>
+            <div style={{ marginTop: 16, textAlign: 'center', fontSize: 13, color: 'var(--text-faint)', fontWeight: 700 }}>找不到「{search.trim()}」，可以用上面的按鈕新增</div>
           )}
           {list.map((fo) => (
-            <div key={fo.id} style={{ background: '#F6FAF7', borderRadius: 16, padding: '11px 13px', marginTop: 7 }}>
+            <div key={fo.id} style={{ background: 'var(--surface-alt)', borderRadius: 16, padding: '11px 13px', marginTop: 7 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ minWidth: 0, flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ fontSize: 14, fontWeight: 700, color: '#234034' }}>{fo.name}</span>
-                    {fo.brand && <span style={{ fontSize: 11, color: '#6E8B7C', fontWeight: 600 }}>· {fo.brand}</span>}
-                    {fo.custom && <span style={{ fontSize: 10, fontWeight: 800, color: '#2E8B5E', background: '#DCEDE3', padding: '2px 6px', borderRadius: 6 }}>自訂</span>}
+                    <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>{fo.name}</span>
+                    {fo.brand && <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>· {fo.brand}</span>}
+                    {fo.custom && <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--primary)', background: 'var(--track)', padding: '2px 6px', borderRadius: 6 }}>自訂</span>}
                   </div>
-                  <div style={{ fontSize: 12, color: '#9bb0a3', marginTop: 1, fontWeight: 600 }}>{fo.unit} · {fo.cal} kcal</div>
-                  {fo.note && <div style={{ fontSize: 11, color: '#9bb0a3', marginTop: 2, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>📝 {fo.note}</div>}
+                  <div style={{ fontSize: 12, color: 'var(--text-faint)', marginTop: 1, fontWeight: 600 }}>{fo.unit} · {fo.cal} kcal</div>
+                  {fo.note && <div style={{ fontSize: 12, color: 'var(--text-faint)', marginTop: 2, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>📝 {fo.note}</div>}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 'none' }}>
-                  {fo.custom && <button onClick={() => startEdit(fo)} style={{ border: 'none', background: '#fff', color: '#6E8B7C', width: 28, height: 28, borderRadius: '50%', cursor: 'pointer', fontSize: 13 }}>✏</button>}
-                  {fo.custom && <button onClick={() => removeCustomFood(fo.id).catch((e) => showToast(`刪除失敗：${e.message || '請稍後再試'}`, true))} style={{ border: 'none', background: '#fff', color: '#bcccc2', width: 28, height: 28, borderRadius: '50%', cursor: 'pointer', fontSize: 14, lineHeight: 1 }}>×</button>}
-                  <button onClick={() => pick(fo)} disabled={isNaN(getQtyNum(fo.id)) || getQtyNum(fo.id) <= 0}
-                    style={{ border: 'none', background: (isNaN(getQtyNum(fo.id)) || getQtyNum(fo.id) <= 0) ? '#bcccc2' : '#2E8B5E', color: '#fff', width: 34, height: 34, borderRadius: '50%', cursor: (isNaN(getQtyNum(fo.id)) || getQtyNum(fo.id) <= 0) ? 'not-allowed' : 'pointer', fontSize: 18, lineHeight: 1, fontWeight: 700 }}>＋</button>
+                  {fo.custom && <button aria-label="編輯食物" className="tap" onClick={() => startEdit(fo)} style={{ border: 'none', background: 'var(--surface)', color: 'var(--text-muted)', width: 28, height: 28, borderRadius: '50%', cursor: 'pointer', fontSize: 13 }}><Icon name="pencil" size={14} /></button>}
+                  {fo.custom && <button aria-label="刪除食物" className="tap" onClick={() => removeCustomFood(fo.id).catch((e) => showToast(`刪除失敗：${e.message || '請稍後再試'}`, true))} style={{ border: 'none', background: 'var(--surface)', color: 'var(--text-faint)', width: 28, height: 28, borderRadius: '50%', cursor: 'pointer', fontSize: 14, lineHeight: 1 }}><Icon name="x" size={14} /></button>}
+                  <button aria-label={`加入 ${fo.name}`} className="tap" onClick={() => pick(fo)} disabled={isNaN(getQtyNum(fo.id)) || getQtyNum(fo.id) <= 0}
+                    style={{ border: 'none', background: (isNaN(getQtyNum(fo.id)) || getQtyNum(fo.id) <= 0) ? 'var(--text-faint)' : 'var(--primary)', color: '#fff', width: 34, height: 34, borderRadius: '50%', cursor: (isNaN(getQtyNum(fo.id)) || getQtyNum(fo.id) <= 0) ? 'not-allowed' : 'pointer', fontSize: 18, lineHeight: 1, fontWeight: 700 }}><Icon name="plus" size={14} /></button>
                 </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, paddingTop: 8, borderTop: '1px solid #EEF4F0' }}>
-                <span style={{ fontSize: 11, color: '#9bb0a3', fontWeight: 700 }}>份數</span>
-                <button onClick={() => nudgeQty(fo.id, -0.5)} style={{ border: 'none', background: '#fff', color: '#6E8B7C', width: 24, height: 24, borderRadius: '50%', cursor: 'pointer', fontSize: 14, fontWeight: 800, lineHeight: 1 }}>−</button>
-                <input type="number" inputMode="decimal" step="0.1" min="0.1" value={getQtyRaw(fo.id)}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, paddingTop: 8, borderTop: '1px solid var(--line)' }}>
+                <span style={{ fontSize: 12, color: 'var(--text-faint)', fontWeight: 700 }}>份數</span>
+                <button aria-label="減少份數" className="tap" onClick={() => nudgeQty(fo.id, -0.5)} style={{ border: 'none', background: 'var(--surface)', color: 'var(--text-muted)', width: 24, height: 24, borderRadius: '50%', cursor: 'pointer', fontSize: 14, fontWeight: 800, lineHeight: 1 }}>−</button>
+                <input aria-label="份數" type="number" inputMode="decimal" step="0.1" min="0.1" value={getQtyRaw(fo.id)}
                   onChange={(e) => setQtyRaw(fo.id, e.target.value)}
                   onBlur={(e) => { if (e.target.value.trim() === '') return; const n = getQtyNum(fo.id); if (!isNaN(n)) setQtyRaw(fo.id, Math.max(0.1, round1(n))); }}
-                  style={{ width: 48, textAlign: 'center', border: 'none', background: '#fff', borderRadius: 8, padding: '4px 2px', fontSize: 14, fontWeight: 900, color: '#234034' }} />
-                <button onClick={() => nudgeQty(fo.id, 0.5)} style={{ border: 'none', background: '#fff', color: '#6E8B7C', width: 24, height: 24, borderRadius: '50%', cursor: 'pointer', fontSize: 14, fontWeight: 800, lineHeight: 1 }}>＋</button>
-                {!isNaN(getQtyNum(fo.id)) && getQtyNum(fo.id) > 0 && getQtyNum(fo.id) !== 1 && <span style={{ fontSize: 11, color: '#2E8B5E', fontWeight: 700 }}>＝ {Math.round(fo.cal * getQtyNum(fo.id))} kcal</span>}
-                {(isNaN(getQtyNum(fo.id)) || getQtyNum(fo.id) <= 0) && <span style={{ fontSize: 11, color: '#C97B3D', fontWeight: 700 }}>請輸入份數</span>}
+                  style={{ width: 48, textAlign: 'center', border: 'none', background: 'var(--surface)', borderRadius: 8, padding: '4px 2px', fontSize: 14, fontWeight: 900, color: 'var(--text)' }} />
+                <button aria-label="增加份數" className="tap" onClick={() => nudgeQty(fo.id, 0.5)} style={{ border: 'none', background: 'var(--surface)', color: 'var(--text-muted)', width: 24, height: 24, borderRadius: '50%', cursor: 'pointer', fontSize: 14, fontWeight: 800, lineHeight: 1 }}><Icon name="plus" size={14} /></button>
+                {!isNaN(getQtyNum(fo.id)) && getQtyNum(fo.id) > 0 && getQtyNum(fo.id) !== 1 && <span style={{ fontSize: 12, color: 'var(--primary)', fontWeight: 700 }}>＝ {Math.round(fo.cal * getQtyNum(fo.id))} kcal</span>}
+                {(isNaN(getQtyNum(fo.id)) || getQtyNum(fo.id) <= 0) && <span style={{ fontSize: 12, color: '#C97B3D', fontWeight: 700 }}>請輸入份數</span>}
               </div>
             </div>
           ))}
@@ -275,64 +276,64 @@ export default function FoodSheet({ app, selectedDate, mealKey, onClose }) {
 
       {formOpen && (
         <div className="ps" style={{ flex: 1, overflowY: 'auto', padding: '6px 20px 20px' }}>
-          <button onClick={() => { setFormOpen(false); setEditingId(null); }} style={{ border: 'none', background: 'none', color: '#6E8B7C', fontWeight: 800, fontSize: 14, padding: '4px 0', cursor: 'pointer' }}>‹ 回到食物庫</button>
-          {editingId && <div style={{ marginTop: 4, fontSize: 12, color: '#9bb0a3', fontWeight: 700 }}>修改不會影響已經記錄過的歷史餐點</div>}
+          <button onClick={() => { setFormOpen(false); setEditingId(null); }} style={{ border: 'none', background: 'none', color: 'var(--text-muted)', fontWeight: 800, fontSize: 14, padding: '4px 0', cursor: 'pointer' }}>‹ 回到食物庫</button>
+          {editingId && <div style={{ marginTop: 4, fontSize: 12, color: 'var(--text-faint)', fontWeight: 700 }}>修改不會影響已經記錄過的歷史餐點</div>}
           {!editingId && (
             <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-              <button onClick={() => setFormMode('manual')} style={{ flex: 1, border: 'none', background: formMode === 'manual' ? '#2E8B5E' : '#F0F3F1', color: formMode === 'manual' ? '#fff' : '#6E8B7C', fontWeight: 800, fontSize: 13, padding: '10px 12px', borderRadius: 14, cursor: 'pointer' }}>手動輸入</button>
-              <button onClick={() => setFormMode('json')} style={{ flex: 1, border: 'none', background: formMode === 'json' ? '#2E8B5E' : '#F0F3F1', color: formMode === 'json' ? '#fff' : '#6E8B7C', fontWeight: 800, fontSize: 13, padding: '10px 12px', borderRadius: 14, cursor: 'pointer' }}>JSON 輸入</button>
+              <button onClick={() => setFormMode('manual')} style={{ flex: 1, border: 'none', background: formMode === 'manual' ? 'var(--primary)' : 'var(--sunken)', color: formMode === 'manual' ? '#fff' : 'var(--text-muted)', fontWeight: 800, fontSize: 13, padding: '10px 12px', borderRadius: 14, cursor: 'pointer' }}>手動輸入</button>
+              <button onClick={() => setFormMode('json')} style={{ flex: 1, border: 'none', background: formMode === 'json' ? 'var(--primary)' : 'var(--sunken)', color: formMode === 'json' ? '#fff' : 'var(--text-muted)', fontWeight: 800, fontSize: 13, padding: '10px 12px', borderRadius: 14, cursor: 'pointer' }}>JSON 輸入</button>
             </div>
           )}
 
           {formMode === 'manual' && (
             <>
-              <div style={{ marginTop: 10, background: '#F0F3F1', borderRadius: 14, padding: 12 }}>
-                <div style={{ fontSize: 12, fontWeight: 800, color: '#2E8B5E', marginBottom: 6 }}>✨ AI 搜尋（用一句話描述，自動帶入下面欄位）</div>
+              <div style={{ marginTop: 10, background: 'var(--sunken)', borderRadius: 14, padding: 12 }}>
+                <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--primary)', marginBottom: 6 }}>✨ AI 搜尋（用一句話描述，自動帶入下面欄位）</div>
                 <form onSubmit={(e) => { e.preventDefault(); aiSearch(); }} style={{ display: 'flex', gap: 8 }}>
-                  <input type="search" enterKeyHint="search" value={aiQuery} onChange={(e) => setAiQuery(e.target.value)}
+                  <input aria-label="AI 搜尋食物" type="search" enterKeyHint="search" value={aiQuery} onChange={(e) => setAiQuery(e.target.value)}
                     placeholder="例如：7-11 御飯糰 鮭魚"
-                    style={{ flex: 1, minWidth: 0, border: 'none', background: '#fff', borderRadius: 12, padding: '12px 14px', fontSize: 16, fontWeight: 700, color: '#234034' }} />
+                    style={{ flex: 1, minWidth: 0, border: 'none', background: 'var(--surface)', borderRadius: 12, padding: '12px 14px', fontSize: 16, fontWeight: 700, color: 'var(--text)' }} />
                   <button type="submit" disabled={aiBusy || !aiQuery.trim()}
-                    style={{ border: 'none', background: aiBusy ? '#C7D6CC' : '#2E8B5E', color: '#fff', fontWeight: 800, fontSize: 14, padding: '0 16px', borderRadius: 12, cursor: 'pointer', flexShrink: 0 }}>{aiBusy ? '查詢中…' : '搜尋'}</button>
+                    style={{ border: 'none', background: aiBusy ? 'var(--line-strong)' : 'var(--primary)', color: '#fff', fontWeight: 800, fontSize: 14, padding: '0 16px', borderRadius: 12, cursor: 'pointer', flexShrink: 0 }}>{aiBusy ? '查詢中…' : '搜尋'}</button>
                 </form>
-                {aiError && <div style={{ marginTop: 8, fontSize: 12, fontWeight: 700, color: '#B91C1C' }}>{aiError}</div>}
+                {aiError && <div style={{ marginTop: 8, fontSize: 12, fontWeight: 700, color: 'var(--danger)' }}>{aiError}</div>}
               </div>
 
-              <div style={{ marginTop: 14, fontSize: 13, fontWeight: 800, color: '#6E8B7C' }}>食物名稱</div>
-              <input type="text" value={form.name} onChange={setField('name')} placeholder="例如：媽媽的炒飯" style={{ width: '100%', marginTop: 5, border: 'none', background: '#F6FAF7', borderRadius: 12, padding: '12px 14px', fontSize: 16, fontWeight: 700, color: '#234034' }} />
-              <div style={{ marginTop: 12, fontSize: 13, fontWeight: 800, color: '#6E8B7C' }}>品牌（選填）</div>
-              <input type="text" value={form.brand} onChange={setField('brand')} placeholder="例如：7-11" style={{ width: '100%', marginTop: 5, border: 'none', background: '#F6FAF7', borderRadius: 12, padding: '12px 14px', fontSize: 16, fontWeight: 700, color: '#234034' }} />
+              <div style={{ marginTop: 14, fontSize: 13, fontWeight: 800, color: 'var(--text-muted)' }}>食物名稱</div>
+              <input aria-label="食物名稱" type="text" value={form.name} onChange={setField('name')} placeholder="例如：媽媽的炒飯" style={{ width: '100%', marginTop: 5, border: 'none', background: 'var(--surface-alt)', borderRadius: 12, padding: '12px 14px', fontSize: 16, fontWeight: 700, color: 'var(--text)' }} />
+              <div style={{ marginTop: 12, fontSize: 13, fontWeight: 800, color: 'var(--text-muted)' }}>品牌（選填）</div>
+              <input aria-label="品牌" type="text" value={form.brand} onChange={setField('brand')} placeholder="例如：7-11" style={{ width: '100%', marginTop: 5, border: 'none', background: 'var(--surface-alt)', borderRadius: 12, padding: '12px 14px', fontSize: 16, fontWeight: 700, color: 'var(--text)' }} />
               <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
-                <div style={{ flex: 1 }}><div style={{ fontSize: 13, fontWeight: 800, color: '#6E8B7C' }}>份量</div><input type="text" value={form.unit} onChange={setField('unit')} placeholder="1 碗" style={{ width: '100%', marginTop: 5, border: 'none', background: '#F6FAF7', borderRadius: 12, padding: 12, fontSize: 16, fontWeight: 700, color: '#234034' }} /></div>
-                <div style={{ flex: 1 }}><div style={{ fontSize: 13, fontWeight: 800, color: '#6E8B7C' }}>卡路里</div><input type="number" inputMode="numeric" value={form.cal} onChange={setField('cal')} placeholder="450" style={{ width: '100%', marginTop: 5, border: 'none', background: '#F6FAF7', borderRadius: 12, padding: 12, fontSize: 16, fontWeight: 700, color: '#234034' }} /></div>
+                <div style={{ flex: 1 }}><div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-muted)' }}>份量</div><input aria-label="份量" type="text" value={form.unit} onChange={setField('unit')} placeholder="1 碗" style={{ width: '100%', marginTop: 5, border: 'none', background: 'var(--surface-alt)', borderRadius: 12, padding: 12, fontSize: 16, fontWeight: 700, color: 'var(--text)' }} /></div>
+                <div style={{ flex: 1 }}><div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-muted)' }}>卡路里</div><input aria-label="卡路里" type="number" inputMode="numeric" value={form.cal} onChange={setField('cal')} placeholder="450" style={{ width: '100%', marginTop: 5, border: 'none', background: 'var(--surface-alt)', borderRadius: 12, padding: 12, fontSize: 16, fontWeight: 700, color: 'var(--text)' }} /></div>
               </div>
-              <div style={{ marginTop: 14, fontSize: 13, fontWeight: 800, color: '#6E8B7C' }}>三大營養素 (g) · 可留空</div>
+              <div style={{ marginTop: 14, fontSize: 13, fontWeight: 800, color: 'var(--text-muted)' }}>三大營養素 (g) · 可留空</div>
               <div style={{ marginTop: 5, display: 'flex', gap: 8 }}>
-                {[{ key: 'p', label: '蛋白質', color: '#2E8B5E' }, { key: 'c', label: '碳水', color: '#E8A13C' }, { key: 'f', label: '脂肪', color: '#5FA8D3' }].map((m) => (
+                {[{ key: 'p', label: '蛋白質', color: 'var(--primary)' }, { key: 'c', label: '碳水', color: '#E8A13C' }, { key: 'f', label: '脂肪', color: '#5FA8D3' }].map((m) => (
                   <div key={m.key} style={{ flex: 1 }}>
-                    <div style={{ fontSize: 11, fontWeight: 800, color: m.color, marginBottom: 3 }}>{m.label}</div>
-                    <input type="number" inputMode="decimal" value={form[m.key]} onChange={setField(m.key)} placeholder="0" style={{ width: '100%', border: 'none', background: '#F6FAF7', borderRadius: 12, padding: '12px 10px', fontSize: 16, fontWeight: 700, color: '#234034' }} />
+                    <div style={{ fontSize: 12, fontWeight: 800, color: m.color, marginBottom: 3 }}>{m.label}</div>
+                    <input aria-label={m.label} type="number" inputMode="decimal" value={form[m.key]} onChange={setField(m.key)} placeholder="0" style={{ width: '100%', border: 'none', background: 'var(--surface-alt)', borderRadius: 12, padding: '12px 10px', fontSize: 16, fontWeight: 700, color: 'var(--text)' }} />
                   </div>
                 ))}
               </div>
-              <div style={{ marginTop: 14, fontSize: 13, fontWeight: 800, color: '#6E8B7C' }}>備註（選填）</div>
-              <textarea value={form.note} onChange={setField('note')} placeholder="例如：去冰半糖、不要香菜" rows={2}
-                style={{ width: '100%', marginTop: 5, border: 'none', background: '#F6FAF7', borderRadius: 12, padding: '12px 14px', fontSize: 16, fontWeight: 700, color: '#234034', fontFamily: 'inherit', resize: 'none' }} />
+              <div style={{ marginTop: 14, fontSize: 13, fontWeight: 800, color: 'var(--text-muted)' }}>備註（選填）</div>
+              <textarea aria-label="備註" value={form.note} onChange={setField('note')} placeholder="例如：去冰半糖、不要香菜" rows={2}
+                style={{ width: '100%', marginTop: 5, border: 'none', background: 'var(--surface-alt)', borderRadius: 12, padding: '12px 14px', fontSize: 16, fontWeight: 700, color: 'var(--text)', fontFamily: 'inherit', resize: 'none' }} />
             </>
           )}
 
           {!editingId && formMode === 'json' && (
             <>
-              <div style={{ marginTop: 10, background: '#F6FAF7', borderRadius: 14, padding: '10px 12px' }}>
-                <div style={{ fontSize: 11, fontWeight: 800, color: '#6E8B7C', marginBottom: 4 }}>支援格式</div>
-                <div style={{ fontSize: 11, color: '#9bb0a3', fontWeight: 700, lineHeight: 1.6, fontFamily: 'monospace' }}>[{`{"name":"雞腿便當","unit":"1 份","cal":680,"p":35,"c":70,"f":22,"brand":"7-11","note":"去冰半糖"}`}]</div>
-                <div style={{ fontSize: 10, color: '#bcccc2', fontWeight: 600, marginTop: 4 }}>unit / serving / brand / note 選填</div>
+              <div style={{ marginTop: 10, background: 'var(--surface-alt)', borderRadius: 14, padding: '10px 12px' }}>
+                <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 4 }}>支援格式</div>
+                <div style={{ fontSize: 12, color: 'var(--text-faint)', fontWeight: 700, lineHeight: 1.6, fontFamily: 'monospace' }}>[{`{"name":"雞腿便當","unit":"1 份","cal":680,"p":35,"c":70,"f":22,"brand":"7-11","note":"去冰半糖"}`}]</div>
+                <div style={{ fontSize: 12, color: 'var(--text-faint)', fontWeight: 600, marginTop: 4 }}>unit / serving / brand / note 選填</div>
               </div>
-              <textarea value={jsonText} onChange={(e) => { setJsonText(e.target.value); setJsonError(''); setJsonSuccess(0); }} placeholder="貼上 JSON…"
-                style={{ width: '100%', minHeight: 180, marginTop: 12, border: 'none', background: '#F6FAF7', borderRadius: 16, padding: '12px 14px', fontSize: 16, fontWeight: 600, color: '#234034', fontFamily: 'monospace', resize: 'none', lineHeight: 1.6 }} />
-              {jsonError && <div style={{ marginTop: 10, background: '#FEE2E2', borderRadius: 12, padding: '10px 12px', fontSize: 13, fontWeight: 700, color: '#B91C1C' }}>{jsonError}</div>}
-              {jsonSuccess > 0 && <div style={{ marginTop: 10, background: '#DCFCE7', borderRadius: 12, padding: '10px 12px', fontSize: 13, fontWeight: 800, color: '#15803D' }}>成功匯入並加入 {jsonSuccess} 筆食物到{mealLabel}</div>}
-              <button onClick={importJsonFoods} style={{ width: '100%', marginTop: 12, border: 'none', background: '#2E8B5E', color: '#fff', fontWeight: 900, fontSize: 14, padding: 14, borderRadius: 16, cursor: 'pointer' }}>匯入到食物庫並加入{mealLabel}</button>
+              <textarea aria-label="貼上 JSON" value={jsonText} onChange={(e) => { setJsonText(e.target.value); setJsonError(''); setJsonSuccess(0); }} placeholder="貼上 JSON…"
+                style={{ width: '100%', minHeight: 180, marginTop: 12, border: 'none', background: 'var(--surface-alt)', borderRadius: 16, padding: '12px 14px', fontSize: 16, fontWeight: 600, color: 'var(--text)', fontFamily: 'monospace', resize: 'none', lineHeight: 1.6 }} />
+              {jsonError && <div style={{ marginTop: 10, background: 'var(--danger-bg)', borderRadius: 12, padding: '10px 12px', fontSize: 13, fontWeight: 700, color: 'var(--danger)' }}>{jsonError}</div>}
+              {jsonSuccess > 0 && <div style={{ marginTop: 10, background: 'var(--success-bg)', borderRadius: 12, padding: '10px 12px', fontSize: 13, fontWeight: 800, color: 'var(--success)' }}>成功匯入並加入 {jsonSuccess} 筆食物到{mealLabel}</div>}
+              <button onClick={importJsonFoods} style={{ width: '100%', marginTop: 12, border: 'none', background: 'var(--primary)', color: '#fff', fontWeight: 900, fontSize: 14, padding: 14, borderRadius: 16, cursor: 'pointer' }}>匯入到食物庫並加入{mealLabel}</button>
             </>
           )}
         </div>

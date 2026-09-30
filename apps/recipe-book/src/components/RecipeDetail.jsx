@@ -12,43 +12,43 @@ import {
 
 const S = {
   viewDetail: { padding: '6px 18px 20px' },
-  hintBadge: { background: '#FDF7F4', color: '#8E7568', padding: '6px 14px', borderRadius: 20, fontWeight: 800, fontSize: 12, textAlign: 'center', marginBottom: 8 },
-  cookingCard: { background: '#fff', borderRadius: 24, padding: '20px 18px', boxShadow: '0 10px 24px -18px rgba(232,122,36,.3)' },
+  hintBadge: { background: 'var(--surface-alt)', color: 'var(--text-muted)', padding: '6px 14px', borderRadius: 20, fontWeight: 800, fontSize: 12, textAlign: 'center', marginBottom: 8 },
+  cookingCard: { background: 'var(--surface)', borderRadius: 24, padding: '20px 18px', boxShadow: 'var(--shadow-card)' },
   recipeImage: { width: '100%', height: 200, objectFit: 'cover', borderRadius: 16, marginBottom: 14 },
   badgesRow: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 },
-  categoryBadge: { background: '#E87A24', color: '#fff', padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 800 },
-  yieldBadge: { background: '#FDF7F4', color: '#8E7568', padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 800 },
+  categoryBadge: { background: 'var(--primary)', color: '#fff', padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 800 },
+  yieldBadge: { background: 'var(--surface-alt)', color: 'var(--text-muted)', padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 800 },
   titleRow: { display: 'flex', alignItems: 'center', marginBottom: 10 },
-  recipeTitle: { fontSize: 22, fontWeight: 900, color: '#3D281E', margin: 0 },
-  paramsDashboard: { background: '#FDF7F4', borderRadius: 16, padding: 14, marginBottom: 10 },
-  dashboardTitle: { fontSize: 13, fontWeight: 800, color: '#8E7568', marginBottom: 8 },
+  recipeTitle: { fontSize: 22, fontWeight: 900, color: 'var(--text)', margin: 0 },
+  paramsDashboard: { background: 'var(--surface-alt)', borderRadius: 16, padding: 14, marginBottom: 10 },
+  dashboardTitle: { fontSize: 13, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8 },
   dashboardGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 },
-  paramKey: { fontSize: 12, fontWeight: 800, color: '#8E7568' },
-  paramValue: { fontSize: 16, fontWeight: 900, color: '#3D281E' },
-  scaleController: { background: '#FDF7F4', borderRadius: 16, padding: 14, marginBottom: 10 },
-  scaleLabel: { fontSize: 13, fontWeight: 700, color: '#3D281E', marginBottom: 8 },
+  paramKey: { fontSize: 12, fontWeight: 800, color: 'var(--text-muted)' },
+  paramValue: { fontSize: 16, fontWeight: 900, color: 'var(--text)' },
+  scaleController: { background: 'var(--surface-alt)', borderRadius: 16, padding: 14, marginBottom: 10 },
+  scaleLabel: { fontSize: 13, fontWeight: 700, color: 'var(--text)', marginBottom: 8 },
   scaleInputs: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
-  baseName: { fontSize: 14, fontWeight: 800, color: '#3D281E' },
-  weightInput: { border: 'none', background: '#fff', borderRadius: 14, padding: '10px 12px', fontSize: 16, fontWeight: 800, color: '#3D281E', width: 80, outline: 'none' },
-  unitText: { fontSize: 13, color: '#8E7568', fontWeight: 700 },
-  resetBtn: { background: '#E87A24', color: '#fff', border: 'none', borderRadius: 14, padding: '8px 14px', fontSize: 13, fontWeight: 800, cursor: 'pointer' },
-  scaleAlert: { background: '#FFF3EB', color: '#E87A24', borderRadius: 12, padding: '8px 12px', fontSize: 13, fontWeight: 700, marginTop: 8 },
-  sectionDivider: { fontSize: 15, fontWeight: 900, color: '#3D281E', marginTop: 20, marginBottom: 10 },
-  ingredientRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: '#FDF7F4', borderRadius: 14, marginBottom: 6 },
-  ingName: { fontSize: 14, fontWeight: 800, color: '#3D281E' },
-  ingBrand: { fontSize: 11, background: '#E8EDFF', color: '#4361EE', borderRadius: 10, padding: '2px 8px', marginLeft: 6 },
-  ingAmount: { fontSize: 14, fontWeight: 900, color: '#E87A24' },
+  baseName: { fontSize: 14, fontWeight: 800, color: 'var(--text)' },
+  weightInput: { border: 'none', background: 'var(--surface)', borderRadius: 14, padding: '10px 12px', fontSize: 16, fontWeight: 800, color: 'var(--text)', width: 80 },
+  unitText: { fontSize: 13, color: 'var(--text-muted)', fontWeight: 700 },
+  resetBtn: { background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: 14, padding: '8px 14px', fontSize: 13, fontWeight: 800, cursor: 'pointer' },
+  scaleAlert: { background: 'var(--primary-soft)', color: 'var(--primary)', borderRadius: 12, padding: '8px 12px', fontSize: 13, fontWeight: 700, marginTop: 8 },
+  sectionDivider: { fontSize: 15, fontWeight: 900, color: 'var(--text)', marginTop: 20, marginBottom: 10 },
+  ingredientRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: 'var(--surface-alt)', borderRadius: 14, marginBottom: 6 },
+  ingName: { fontSize: 14, fontWeight: 800, color: 'var(--text)' },
+  ingBrand: { fontSize: 12, background: 'var(--info-bg)', color: 'var(--info)', borderRadius: 10, padding: '2px 8px', marginLeft: 6 },
+  ingAmount: { fontSize: 14, fontWeight: 900, color: 'var(--primary)' },
   completedOverlay: { opacity: 0.25, textDecoration: 'line-through' },
   stepsOl: { listStyle: 'none', padding: 0, margin: 0 },
   stepLi: { display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 10 },
-  stepNumber: { width: 28, height: 28, borderRadius: '50%', background: '#E87A24', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, flexShrink: 0 },
-  stepText: { fontSize: 14, fontWeight: 700, color: '#3D281E', lineHeight: 1.6 },
-  noteSection: { background: '#FDF7F4', borderRadius: 16, padding: 14, border: '1px solid #FCDCC7' },
+  stepNumber: { width: 28, height: 28, borderRadius: '50%', background: 'var(--primary)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, flexShrink: 0 },
+  stepText: { fontSize: 14, fontWeight: 700, color: 'var(--text)', lineHeight: 1.6 },
+  noteSection: { background: 'var(--surface-alt)', borderRadius: 16, padding: 14, border: '1px solid #FCDCC7' },
   notesList: { listStyle: 'none', padding: 0, margin: 0 },
   noteLi: { display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 8 },
-  notesBullet: { color: '#E87A24', fontWeight: 800, flexShrink: 0 },
-  notesText: { margin: 0, fontSize: 14, fontWeight: 700, color: '#3D281E', lineHeight: 1.6 },
-  lastCooked: { fontSize: 12, color: '#C5B4AC', fontWeight: 700, textAlign: 'center', marginTop: 16 },
+  notesBullet: { color: 'var(--primary)', fontWeight: 800, flexShrink: 0 },
+  notesText: { margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--text)', lineHeight: 1.6 },
+  lastCooked: { fontSize: 12, color: 'var(--text-faint)', fontWeight: 700, textAlign: 'center', marginTop: 16 },
 };
 
 export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, onEdit, likeCount = 0, isLiked = false, onToggleLike, likerNames = [] }) {
@@ -129,13 +129,13 @@ export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, o
     <div style={S.viewDetail}>
       <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
         {onBack && (
-          <button onClick={onBack} style={{ border: 'none', background: '#fff', color: '#E87A24', fontWeight: 900, fontSize: 14, padding: '8px 16px', borderRadius: 14, cursor: 'pointer', boxShadow: '0 4px 12px -8px rgba(0,0,0,.2)' }}>
+          <button onClick={onBack} style={{ border: 'none', background: 'var(--surface)', color: 'var(--primary)', fontWeight: 900, fontSize: 14, padding: '8px 16px', borderRadius: 14, cursor: 'pointer', boxShadow: '0 4px 12px -8px rgba(0,0,0,.2)' }}>
             ‹ 返回
           </button>
         )}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {isOwner && onEdit && (
-            <button onClick={onEdit} style={{ border: 'none', background: '#E87A24', color: '#fff', fontWeight: 900, fontSize: 13, padding: '8px 14px', borderRadius: 14, cursor: 'pointer' }}>
+            <button onClick={onEdit} style={{ border: 'none', background: 'var(--primary)', color: '#fff', fontWeight: 900, fontSize: 13, padding: '8px 14px', borderRadius: 14, cursor: 'pointer' }}>
               ✏️ 編輯
             </button>
           )}
@@ -167,14 +167,14 @@ export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, o
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
               {isOwner ? (
-                <div style={{ background: '#FDF7F4', padding: '8px 12px', borderRadius: 12, fontSize: 13, fontWeight: 800, color: '#3D281E', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <div style={{ background: 'var(--surface-alt)', padding: '8px 12px', borderRadius: 12, fontSize: 13, fontWeight: 800, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 6 }}>
                   ❤️ {likeCount} 人按讚
-                  <span style={{ fontSize: 11, color: '#8E7568', fontWeight: 700 }}>
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 700 }}>
                     · {recipe.is_shared ? '已分享' : '未分享（按編輯可開啟）'}
                   </span>
                 </div>
               ) : isGuest ? (
-                <div style={{ background: '#FDF7F4', padding: '8px 12px', borderRadius: 12, fontSize: 13, fontWeight: 800, color: '#8E7568' }}>
+                <div style={{ background: 'var(--surface-alt)', padding: '8px 12px', borderRadius: 12, fontSize: 13, fontWeight: 800, color: 'var(--text-muted)' }}>
                   ❤️ {likeCount} 人按讚 · 別人分享的食譜
                 </div>
               ) : (
@@ -184,8 +184,8 @@ export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, o
                   disabled={likeBusy}
                   style={{
                     border: 'none',
-                    background: isLiked ? '#FFE4EC' : '#FDF7F4',
-                    color: isLiked ? '#C2185B' : '#3D281E',
+                    background: isLiked ? '#FFE4EC' : 'var(--surface-alt)',
+                    color: isLiked ? '#C2185B' : 'var(--text)',
                     padding: '8px 14px',
                     borderRadius: 12,
                     fontSize: 13,
@@ -197,16 +197,16 @@ export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, o
                   }}
                 >
                   {isLiked ? '❤️' : '🤍'} {likeCount}
-                  <span style={{ fontSize: 11, fontWeight: 700, color: isLiked ? '#C2185B' : '#8E7568' }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: isLiked ? '#C2185B' : 'var(--text-muted)' }}>
                     {isLiked ? '已加入喜愛' : '加入喜愛'}
                   </span>
                 </button>
               )}
               {likeError && (
-                <div style={{ fontSize: 12, color: '#B91C1C', fontWeight: 800 }}>{likeError}</div>
+                <div style={{ fontSize: 12, color: 'var(--danger)', fontWeight: 800 }}>{likeError}</div>
               )}
               {likerNames.length > 0 && (
-                <div style={{ width: '100%', fontSize: 12, color: '#8E7568', fontWeight: 700 }}>
+                <div style={{ width: '100%', fontSize: 12, color: 'var(--text-muted)', fontWeight: 700 }}>
                   {likerNames.join('、')} 按讚
                 </div>
               )}
@@ -233,7 +233,7 @@ export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, o
               <div style={S.scaleLabel}>⚖️ 依據主食材等比例縮放配方：</div>
               <div style={S.scaleInputs}>
                 <span style={S.baseName}>{baseIng.name}</span>
-                <input
+                <input aria-label={`${baseIng.name} 用量`}
                   type="number"
                   value={currentWeight}
                   onChange={(e) => setCurrentWeight(e.target.value)}

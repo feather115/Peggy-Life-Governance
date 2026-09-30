@@ -1,28 +1,31 @@
 // Four tab buttons at the bottom: Today / Reports / Challenge / Settings
 import React from 'react';
+import Icon from '@peggy-life/shared/Icon.jsx';
 
 const TABS = [
-  { key: 'today',     label: '紀錄' },
-  { key: 'reports',   label: '報表' },
-  { key: 'challenge', label: '挑戰' },
-  { key: 'settings',  label: '設定' },
+  { key: 'today',     label: '紀錄', icon: 'flame' },
+  { key: 'reports',   label: '報表', icon: 'chart' },
+  { key: 'challenge', label: '挑戰', icon: 'trophy' },
+  { key: 'settings',  label: '設定', icon: 'sliders' },
 ];
 
 export default function TabBar({ tab, onTab }) {
   return (
-    <div style={{ flex: 'none', background: '#fff', boxShadow: '0 -4px 20px rgba(0,0,0,.06)' }}>
-      <div style={{ height: 52, display: 'flex', alignItems: 'center', justifyContent: 'space-around' }}>
-        {TABS.map((t) => (
-          <button key={t.key} onClick={() => onTab(t.key)}
-            style={{ border: 'none', background: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, cursor: 'pointer', padding: '4px 16px' }}>
-            <div style={{ width: 5, height: 5, borderRadius: '50%', background: tab === t.key ? '#2E8B5E' : 'transparent' }} />
-            <span style={{ fontSize: 13, fontWeight: 900, color: tab === t.key ? '#2E8B5E' : '#9bb0a3' }}>{t.label}</span>
-          </button>
-        ))}
+    <nav aria-label="主選單" style={{ flex: 'none', background: 'var(--surface)', boxShadow: 'var(--shadow-nav)', paddingBottom: 'env(safe-area-inset-bottom)' }}>
+      <div style={{ display: 'flex', alignItems: 'stretch', justifyContent: 'space-around', padding: '6px 8px 4px' }}>
+        {TABS.map((t) => {
+          const active = tab === t.key;
+          return (
+            <button key={t.key} type="button" onClick={() => onTab(t.key)} aria-current={active ? 'page' : undefined}
+              style={{ flex: 1, minHeight: 52, border: 'none', background: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, color: active ? 'var(--primary)' : 'var(--text-faint)' }}>
+              <span style={{ width: 52, height: 28, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', background: active ? 'var(--primary-soft)' : 'transparent' }}>
+                <Icon name={t.icon} size={20} />
+              </span>
+              <span style={{ fontSize: 12, fontWeight: 900 }}>{t.label}</span>
+            </button>
+          );
+        })}
       </div>
-      <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: 8 }}>
-        <div style={{ width: 128, height: 5, borderRadius: 5, background: 'rgba(35,64,52,.15)' }} />
-      </div>
-    </div>
+    </nav>
   );
 }

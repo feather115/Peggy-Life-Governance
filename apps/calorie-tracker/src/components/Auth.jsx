@@ -50,28 +50,28 @@ export default function Auth({ lineDebug }) {
   };
 
   const msgStyles = {
-    error:   { color: '#B91C1C', bg: '#FEE2E2' },
-    success: { color: '#15803D', bg: '#DCFCE7' },
+    error:   { color: 'var(--danger)', bg: 'var(--danger-bg)' },
+    success: { color: 'var(--success)', bg: 'var(--success-bg)' },
     info:    { color: '#8B5A00', bg: '#FFF6E6' },
   };
   const ms = msgStyles[msgKind];
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-      <div style={{ background: '#fff', borderRadius: 28, padding: 28, width: '100%', maxWidth: 380, boxShadow: '0 20px 50px -20px rgba(46,139,94,.3)' }}>
-        <div style={{ fontSize: 24, fontWeight: 900, color: '#234034', textAlign: 'center' }}>TY Calorie Tracker</div>
-        <div style={{ fontSize: 14, color: '#6E8B7C', fontWeight: 700, textAlign: 'center', marginTop: 4, marginBottom: 20 }}>
+      <div style={{ background: 'var(--surface)', borderRadius: 28, padding: 28, width: '100%', maxWidth: 380, boxShadow: 'var(--shadow-card)' }}>
+        <div style={{ fontSize: 24, fontWeight: 900, color: 'var(--text)', textAlign: 'center' }}>TY Calorie Tracker</div>
+        <div style={{ fontSize: 14, color: 'var(--text-muted)', fontWeight: 700, textAlign: 'center', marginTop: 4, marginBottom: 20 }}>
           {titles[mode]}
         </div>
         <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required
-            style={{ border: 'none', background: '#F6FAF7', borderRadius: 14, padding: '14px 16px', fontSize: 16, fontWeight: 700, color: '#234034' }} />
+          <input aria-label="Email" type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required
+            style={{ border: 'none', background: 'var(--surface-alt)', borderRadius: 14, padding: '14px 16px', fontSize: 16, fontWeight: 700, color: 'var(--text)' }} />
           {mode !== 'forgot' && (
-            <input type="password" placeholder="密碼（至少 6 字元）" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6}
-              style={{ border: 'none', background: '#F6FAF7', borderRadius: 14, padding: '14px 16px', fontSize: 16, fontWeight: 700, color: '#234034' }} />
+            <input aria-label="密碼" type="password" placeholder="密碼（至少 6 字元）" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6}
+              style={{ border: 'none', background: 'var(--surface-alt)', borderRadius: 14, padding: '14px 16px', fontSize: 16, fontWeight: 700, color: 'var(--text)' }} />
           )}
           <button type="submit" disabled={busy}
-            style={{ border: 'none', background: busy ? '#C7D6CC' : '#2E8B5E', color: '#fff', fontWeight: 900, fontSize: 15, padding: 14, borderRadius: 14, cursor: 'pointer', marginTop: 6 }}>
+            style={{ border: 'none', background: busy ? 'var(--line-strong)' : 'var(--primary)', color: '#fff', fontWeight: 900, fontSize: 15, padding: 14, borderRadius: 14, cursor: 'pointer', marginTop: 6 }}>
             {busy ? '處理中…' : submitLabels[mode]}
           </button>
         </form>
@@ -89,10 +89,10 @@ export default function Auth({ lineDebug }) {
             <button onClick={() => switchMode('signin')} style={linkBtn}>‹ 回到登入</button>
           )}
         </div>
-        {lineDebug && <div style={{ marginTop: 16, fontSize: 11, color: '#bcccc2', fontWeight: 600, lineHeight: 1.6, wordBreak: 'break-word' }}>LINE 自動登入除錯：{lineDebug}</div>}
+        {lineDebug && <div style={{ marginTop: 16, fontSize: 12, color: 'var(--text-faint)', fontWeight: 600, lineHeight: 1.6, wordBreak: 'break-word' }}>LINE 自動登入除錯：{lineDebug}</div>}
       </div>
     </div>
   );
 }
 
-const linkBtn = { width: '100%', border: 'none', background: 'none', color: '#6E8B7C', fontWeight: 800, fontSize: 14, cursor: 'pointer', padding: '6px 0' };
+const linkBtn = { width: '100%', border: 'none', background: 'none', color: 'var(--text-muted)', fontWeight: 800, fontSize: 14, cursor: 'pointer', padding: '6px 0' };

@@ -21,21 +21,21 @@ function useEditableList(initialItems, makeEmpty, { minOne = true } = {}) {
 
 const S = {
   view: { padding: '6px 18px 24px' },
-  title: { fontSize: 22, fontWeight: 900, color: '#3D281E', margin: 0 },
-  label: { display: 'block', fontSize: 13, fontWeight: 900, color: '#3D281E', marginBottom: 6, marginTop: 14 },
-  hint: { fontSize: 11, color: '#8E7568', fontWeight: 700, marginTop: 4 },
-  input: { width: '100%', boxSizing: 'border-box', border: 'none', background: '#FDF7F4', borderRadius: 14, padding: '11px 14px', fontSize: 14, fontWeight: 700, color: '#3D281E', outline: 'none' },
-  textarea: { width: '100%', boxSizing: 'border-box', border: 'none', background: '#FDF7F4', borderRadius: 14, padding: '11px 14px', fontSize: 14, fontWeight: 700, color: '#3D281E', outline: 'none', minHeight: 100, lineHeight: 1.6, fontFamily: 'inherit' },
+  title: { fontSize: 22, fontWeight: 900, color: 'var(--text)', margin: 0 },
+  label: { display: 'block', fontSize: 13, fontWeight: 900, color: 'var(--text)', marginBottom: 6, marginTop: 14 },
+  hint: { fontSize: 12, color: 'var(--text-muted)', fontWeight: 700, marginTop: 4 },
+  input: { width: '100%', boxSizing: 'border-box', border: 'none', background: 'var(--surface-alt)', borderRadius: 14, padding: '11px 14px', fontSize: 14, fontWeight: 700, color: 'var(--text)' },
+  textarea: { width: '100%', boxSizing: 'border-box', border: 'none', background: 'var(--surface-alt)', borderRadius: 14, padding: '11px 14px', fontSize: 14, fontWeight: 700, color: 'var(--text)', minHeight: 100, lineHeight: 1.6, fontFamily: 'inherit' },
   row: { display: 'grid', gap: 6, gridTemplateColumns: '1fr 110px 28px', marginBottom: 6, alignItems: 'center' },
   kvRow: { display: 'grid', gap: 6, gridTemplateColumns: '1fr 1fr 28px', marginBottom: 6 },
-  smallInput: { boxSizing: 'border-box', border: 'none', background: '#FDF7F4', borderRadius: 12, padding: '9px 12px', fontSize: 13, fontWeight: 700, color: '#3D281E', outline: 'none' },
-  rowBtn: { border: 'none', background: '#FDF7F4', color: '#C5B4AC', borderRadius: 12, width: 28, height: 30, fontSize: 16, fontWeight: 900, cursor: 'pointer', padding: 0 },
-  addBtn: { border: '1px dashed #E87A24', background: 'transparent', color: '#E87A24', borderRadius: 12, padding: '8px 12px', fontSize: 12, fontWeight: 900, cursor: 'pointer', marginTop: 4 },
-  baseLabel: { display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#8E7568', fontWeight: 800, marginTop: 6 },
+  smallInput: { boxSizing: 'border-box', border: 'none', background: 'var(--surface-alt)', borderRadius: 12, padding: '9px 12px', fontSize: 13, fontWeight: 700, color: 'var(--text)' },
+  rowBtn: { border: 'none', background: 'var(--surface-alt)', color: 'var(--text-faint)', borderRadius: 12, width: 28, height: 30, fontSize: 16, fontWeight: 900, cursor: 'pointer', padding: 0 },
+  addBtn: { border: '1px dashed var(--primary)', background: 'transparent', color: 'var(--primary)', borderRadius: 12, padding: '8px 12px', fontSize: 12, fontWeight: 900, cursor: 'pointer', marginTop: 4 },
+  baseLabel: { display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--text-muted)', fontWeight: 800, marginTop: 6 },
   actions: { display: 'flex', gap: 10, marginTop: 24 },
-  saveBtn: { flex: 1, border: 'none', background: '#E87A24', color: '#fff', borderRadius: 14, padding: '12px 14px', fontSize: 15, fontWeight: 900, cursor: 'pointer' },
-  cancelBtn: { border: 'none', background: '#F0E7E1', color: '#8E7568', borderRadius: 14, padding: '12px 18px', fontSize: 15, fontWeight: 900, cursor: 'pointer' },
-  errorBox: { background: '#FEE2E2', color: '#B91C1C', padding: '10px 12px', borderRadius: 12, fontSize: 13, fontWeight: 800, marginTop: 12 },
+  saveBtn: { flex: 1, border: 'none', background: 'var(--primary)', color: '#fff', borderRadius: 14, padding: '12px 14px', fontSize: 15, fontWeight: 900, cursor: 'pointer' },
+  cancelBtn: { border: 'none', background: 'var(--sunken)', color: 'var(--text-muted)', borderRadius: 14, padding: '12px 18px', fontSize: 15, fontWeight: 900, cursor: 'pointer' },
+  errorBox: { background: 'var(--danger-bg)', color: 'var(--danger)', padding: '10px 12px', borderRadius: 12, fontSize: 13, fontWeight: 800, marginTop: 12 },
 };
 
 function emptyItem(isBase = false) {
@@ -240,32 +240,32 @@ export default function RecipeForm({ recipe, onSave, onCancel, onDelete }) {
   return (
     <div style={S.view}>
       <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-        <button type="button" onClick={onCancel} disabled={busy} style={{ border: 'none', background: '#fff', color: '#E87A24', fontWeight: 900, fontSize: 14, padding: '8px 16px', borderRadius: 14, cursor: 'pointer', boxShadow: '0 4px 12px -8px rgba(0,0,0,.2)' }}>
+        <button type="button" onClick={onCancel} disabled={busy} style={{ border: 'none', background: 'var(--surface)', color: 'var(--primary)', fontWeight: 900, fontSize: 14, padding: '8px 16px', borderRadius: 14, cursor: 'pointer', boxShadow: '0 4px 12px -8px rgba(0,0,0,.2)' }}>
           ‹ 取消
         </button>
         <h1 style={S.title}>{isEdit ? '編輯食譜' : '新增食譜'}</h1>
         <div style={{ width: 64 }} />
       </header>
 
-      <div style={{ background: '#fff', borderRadius: 20, padding: 18, boxShadow: '0 10px 24px -18px rgba(232,122,36,.3)' }}>
+      <div style={{ background: 'var(--surface)', borderRadius: 20, padding: 18, boxShadow: 'var(--shadow-card)' }}>
         <div style={{ marginBottom: 4 }}>
           <button
             type="button"
             onClick={() => { setImportOpen((v) => !v); setImportError(''); }}
-            style={{ border: '1px dashed #8E7568', background: 'transparent', color: '#8E7568', padding: '8px 14px', borderRadius: 12, fontSize: 12, fontWeight: 900, cursor: 'pointer', width: '100%' }}
+            style={{ border: '1px dashed var(--text-muted)', background: 'transparent', color: 'var(--text-muted)', padding: '8px 14px', borderRadius: 12, fontSize: 12, fontWeight: 900, cursor: 'pointer', width: '100%' }}
           >
             {importOpen ? '× 關閉 JSON 匯入' : '📥 用 JSON 匯入（之後仍可編輯）'}
           </button>
           {importOpen && (
             <div style={{ marginTop: 8 }}>
-              <textarea
+              <textarea aria-label="貼上食譜 JSON"
                 value={importText}
                 onChange={(e) => setImportText(e.target.value)}
                 style={{ ...S.textarea, minHeight: 140, fontFamily: 'monospace', fontSize: 12 }}
                 placeholder={'貼上食譜 JSON，例如：\n{\n  "title": "番茄炒蛋",\n  "category": ["家常菜"],\n  "ingredients": [\n    { "name": "蛋", "amount": "3 顆", "is_base": true },\n    { "name": "番茄", "amount": "200 g" }\n  ],\n  "steps": ["蛋打散加鹽", "番茄切塊下鍋"],\n  "notes": ["小火慢炒"],\n  "parameters": { "火力": "中小火" }\n}'}
               />
               {importError && <div style={{ ...S.errorBox, marginTop: 8 }}>{importError}</div>}
-              <button type="button" onClick={applyImport} style={{ ...S.addBtn, width: '100%', marginTop: 8, borderStyle: 'solid', background: '#FFF3EB' }}>
+              <button type="button" onClick={applyImport} style={{ ...S.addBtn, width: '100%', marginTop: 8, borderStyle: 'solid', background: 'var(--primary-soft)' }}>
                 解析並套用到下面的表單
               </button>
               <div style={{ ...S.hint, marginTop: 4 }}>套用後欄位會被填上，你可以在下面繼續編輯，按「建立食譜」才會送出。</div>
@@ -274,25 +274,25 @@ export default function RecipeForm({ recipe, onSave, onCancel, onDelete }) {
         </div>
 
         <label style={{ ...S.label, marginTop: 14 }}>食譜名稱 *</label>
-        <input style={S.input} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="例：番茄炒蛋" />
+        <input aria-label="食譜名稱" style={S.input} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="例：番茄炒蛋" />
 
         <label style={S.label}>分類標籤</label>
-        <input style={S.input} value={categoryText} onChange={(e) => setCategoryText(e.target.value)} placeholder="例：家常菜、快手、便當" />
+        <input aria-label="分類標籤" style={S.input} value={categoryText} onChange={(e) => setCategoryText(e.target.value)} placeholder="例：家常菜、快手、便當" />
         <div style={S.hint}>用逗號或頓號分隔多個標籤</div>
 
         <label style={S.label}>食譜圖片 URL（選填）</label>
-        <input style={S.input} value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://..." />
+        <input aria-label="食譜圖片 URL" style={S.input} value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://..." />
 
         <label style={S.label}>份量 / 產出（選填）</label>
-        <input style={S.input} value={yieldText} onChange={(e) => setYieldText(e.target.value)} placeholder="例：2 人份、約 6 塊" />
+        <input aria-label="份量 / 產出" style={S.input} value={yieldText} onChange={(e) => setYieldText(e.target.value)} placeholder="例：2 人份、約 6 塊" />
         <div style={S.hint}>用逗號或頓號分隔多筆</div>
 
         <label style={S.label}>食材</label>
         {ingredientSections.map((section, secIdx) => (
-          <div key={secIdx} style={{ background: '#FDF7F4', borderRadius: 14, padding: 12, marginBottom: 12, border: '1px solid #F3DFD4' }}>
+          <div key={secIdx} style={{ background: 'var(--surface-alt)', borderRadius: 14, padding: 12, marginBottom: 12, border: '1px solid var(--line)' }}>
             <div style={{ display: 'grid', gap: 6, gridTemplateColumns: '1fr 28px', alignItems: 'center', marginBottom: 8 }}>
-              <input
-                style={{ ...S.smallInput, background: '#fff', fontWeight: 900, color: '#3D281E' }}
+              <input aria-label="分區名稱"
+                style={{ ...S.smallInput, background: 'var(--surface)', fontWeight: 900, color: 'var(--text)' }}
                 value={section.type}
                 onChange={(e) => updateSectionType(secIdx, e.target.value)}
                 placeholder="分區名稱（留空＝未分類，例：主料、醬料、配料）"
@@ -309,12 +309,12 @@ export default function RecipeForm({ recipe, onSave, onCancel, onDelete }) {
             {section.items.map((it, itemIdx) => (
               <div key={itemIdx} style={{ marginBottom: 6 }}>
                 <div style={{ display: 'grid', gap: 6, gridTemplateColumns: '1fr 110px 28px', alignItems: 'center' }}>
-                  <input style={{ ...S.smallInput, background: '#fff' }} value={it.name} onChange={(e) => updateItem(secIdx, itemIdx, { name: e.target.value })} placeholder="食材名稱（如：雞肉）" />
-                  <input style={{ ...S.smallInput, background: '#fff' }} value={it.amount} onChange={(e) => updateItem(secIdx, itemIdx, { amount: e.target.value })} placeholder="份量（如：200g）" />
+                  <input aria-label="食材名稱" style={{ ...S.smallInput, background: 'var(--surface)' }} value={it.name} onChange={(e) => updateItem(secIdx, itemIdx, { name: e.target.value })} placeholder="食材名稱（如：雞肉）" />
+                  <input aria-label="食材份量" style={{ ...S.smallInput, background: 'var(--surface)' }} value={it.amount} onChange={(e) => updateItem(secIdx, itemIdx, { amount: e.target.value })} placeholder="份量（如：200g）" />
                   <button type="button" style={S.rowBtn} onClick={() => removeItem(secIdx, itemIdx)} aria-label="刪除食材">×</button>
                 </div>
                 <div style={{ display: 'grid', gap: 6, gridTemplateColumns: '1fr auto', alignItems: 'center', marginTop: 4 }}>
-                  <input style={{ ...S.smallInput, background: '#fff' }} value={it.brand || ''} onChange={(e) => updateItem(secIdx, itemIdx, { brand: e.target.value })} placeholder="品牌/備註（選填，如：日式）" />
+                  <input aria-label="品牌或備註" style={{ ...S.smallInput, background: 'var(--surface)' }} value={it.brand || ''} onChange={(e) => updateItem(secIdx, itemIdx, { brand: e.target.value })} placeholder="品牌/備註（選填，如：日式）" />
                   <label style={{ ...S.baseLabel, marginTop: 0, whiteSpace: 'nowrap' }}>
                     <input type="radio" checked={!!it.is_base} onChange={() => setBaseItem(secIdx, itemIdx)} /> 主食材
                   </label>
@@ -325,15 +325,15 @@ export default function RecipeForm({ recipe, onSave, onCancel, onDelete }) {
             <button type="button" style={{ ...S.addBtn, marginTop: 8 }} onClick={() => addItem(secIdx)}>+ 新增食材到「{section.type || '未分類'}」</button>
           </div>
         ))}
-        <button type="button" style={{ ...S.addBtn, background: '#FFF3EB' }} onClick={addSection}>＋ 新增食材分區</button>
+        <button type="button" style={{ ...S.addBtn, background: 'var(--primary-soft)' }} onClick={addSection}>＋ 新增食材分區</button>
 
         <label style={S.label}>步驟</label>
         {stepsList.items.map((text, idx) => (
           <div key={idx} style={{ display: 'grid', gap: 6, gridTemplateColumns: '24px 1fr 28px', alignItems: 'start', marginBottom: 6 }}>
-            <div style={{ width: 24, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#E87A24', color: '#fff', borderRadius: '50%', fontSize: 12, fontWeight: 900 }}>
+            <div style={{ width: 24, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--primary)', color: '#fff', borderRadius: '50%', fontSize: 12, fontWeight: 900 }}>
               {idx + 1}
             </div>
-            <textarea
+            <textarea aria-label={`步驟 ${idx + 1}`}
               value={text}
               onChange={(e) => stepsList.set(idx, e.target.value)}
               placeholder={`步驟 ${idx + 1}`}
@@ -348,10 +348,10 @@ export default function RecipeForm({ recipe, onSave, onCancel, onDelete }) {
         <label style={S.label}>心得備註（選填）</label>
         {notesList.items.map((text, idx) => (
           <div key={idx} style={{ display: 'grid', gap: 6, gridTemplateColumns: '24px 1fr 28px', alignItems: 'start', marginBottom: 6 }}>
-            <div style={{ width: 24, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#E87A24', fontSize: 16, fontWeight: 900 }}>
+            <div style={{ width: 24, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)', fontSize: 16, fontWeight: 900 }}>
               ●
             </div>
-            <textarea
+            <textarea aria-label="備註"
               value={text}
               onChange={(e) => notesList.set(idx, e.target.value)}
               placeholder="一條備註（例：小火慢炒避免焦黑）"
@@ -366,8 +366,8 @@ export default function RecipeForm({ recipe, onSave, onCancel, onDelete }) {
         <label style={S.label}>製作參數（選填）</label>
         {paramsList.items.map((row, idx) => (
           <div key={idx} style={S.kvRow}>
-            <input style={S.smallInput} value={row.key} onChange={(e) => paramsList.patch(idx, { key: e.target.value })} placeholder="名稱（例：烤箱溫度）" />
-            <input style={S.smallInput} value={row.value} onChange={(e) => paramsList.patch(idx, { value: e.target.value })} placeholder="值（例：180°C）" />
+            <input aria-label="參數名稱" style={S.smallInput} value={row.key} onChange={(e) => paramsList.patch(idx, { key: e.target.value })} placeholder="名稱（例：烤箱溫度）" />
+            <input aria-label="參數值" style={S.smallInput} value={row.value} onChange={(e) => paramsList.patch(idx, { value: e.target.value })} placeholder="值（例：180°C）" />
             <button type="button" style={S.rowBtn} onClick={() => paramsList.remove(idx)} aria-label="刪除參數">×</button>
           </div>
         ))}
@@ -388,12 +388,12 @@ export default function RecipeForm({ recipe, onSave, onCancel, onDelete }) {
         </div>
 
         {isEdit && onDelete && (
-          <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid #F3DFD4' }}>
+          <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--line)' }}>
             <button
               type="button"
               onClick={handleDelete}
               disabled={busy}
-              style={{ width: '100%', border: 'none', background: confirmDelete ? '#FEE2E2' : '#FDF7F4', color: confirmDelete ? '#B91C1C' : '#8E7568', borderRadius: 14, padding: '12px 14px', fontSize: 13, fontWeight: 900, cursor: 'pointer' }}
+              style={{ width: '100%', border: 'none', background: confirmDelete ? 'var(--danger-bg)' : 'var(--surface-alt)', color: confirmDelete ? 'var(--danger)' : 'var(--text-muted)', borderRadius: 14, padding: '12px 14px', fontSize: 13, fontWeight: 900, cursor: 'pointer' }}
             >
               {confirmDelete ? '⚠️ 確認刪除（無法復原，再按一次）' : '🗑️ 刪除這個食譜'}
             </button>

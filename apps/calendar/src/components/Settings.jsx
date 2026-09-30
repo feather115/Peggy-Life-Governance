@@ -6,7 +6,7 @@ import { loadMyDisplayName, updateDisplayName } from '../db.js';
 
 const S = {
   header: { display: 'flex', alignItems: 'center', gap: 12, padding: 16, background: THEME.surface, borderBottom: `1px solid ${THEME.border}` },
-  backBtn: { border: 'none', background: 'none', cursor: 'pointer', fontSize: 20, color: THEME.textMuted, padding: '2px 6px', outline: 'none' },
+  backBtn: { border: 'none', background: 'none', cursor: 'pointer', fontSize: 20, color: THEME.textMuted, padding: '2px 6px' },
   title: { fontSize: 17, fontWeight: 700, color: THEME.textDark },
   body: { padding: 20, display: 'flex', flexDirection: 'column', gap: 10 },
   row: { cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: THEME.surface, borderRadius: THEME.radiusSm, padding: '16px 18px', boxShadow: THEME.shadow },
@@ -17,14 +17,14 @@ const S = {
   accountEmail: { fontSize: 14, fontWeight: 700, color: THEME.textDark, marginBottom: 14, wordBreak: 'break-all' },
   linkedBadge: { display: 'inline-block', fontSize: 13, fontWeight: 700, color: THEME.success, background: THEME.successBg, padding: '9px 16px', borderRadius: THEME.radiusSmInner },
   linkBtn: { border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700, color: THEME.primary, background: THEME.primarySoft, padding: '9px 16px', borderRadius: THEME.radiusSmInner },
-  linkHint: { fontSize: 11, color: THEME.textFaint, marginTop: 8 },
+  linkHint: { fontSize: 12, color: THEME.textFaint, marginTop: 8 },
   msgSuccess: { marginTop: 8, fontSize: 13, fontWeight: 700, color: THEME.success, background: THEME.successBg, padding: '8px 12px', borderRadius: THEME.radiusSmInner },
   msgError: { marginTop: 8, fontSize: 13, fontWeight: 700, color: THEME.error, background: THEME.errorBg, padding: '8px 12px', borderRadius: THEME.radiusSmInner },
   fieldLabel: { fontSize: 12, color: THEME.textMuted, marginTop: 14, marginBottom: 6 },
   nameRow: { display: 'flex', gap: 8 },
-  nameInput: { flex: 1, boxSizing: 'border-box', border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSmInner, padding: '10px 12px', fontSize: 14, color: THEME.textDark, background: THEME.surface, outline: 'none' },
+  nameInput: { flex: 1, boxSizing: 'border-box', border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSmInner, padding: '10px 12px', fontSize: 14, color: THEME.textDark, background: THEME.surface },
   nameSaveBtn: { border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700, color: '#fff', background: THEME.primary, padding: '0 16px', borderRadius: THEME.radiusSmInner },
-  nameHint: { fontSize: 11, color: THEME.textFaint, marginTop: 6 },
+  nameHint: { fontSize: 12, color: THEME.textFaint, marginTop: 6 },
 };
 
 const LINE_LINKED_CACHE_KEY = 'calendar:line-linked';
@@ -87,7 +87,7 @@ function NicknameEditor({ userId }) {
     <>
       <div style={S.fieldLabel}>暱稱</div>
       <div style={S.nameRow}>
-        <input
+        <input aria-label="暱稱"
           type="text"
           style={S.nameInput}
           value={value}

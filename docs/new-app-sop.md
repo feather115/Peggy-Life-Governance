@@ -57,7 +57,7 @@ apps/<app-name>/
 ├── supabase/
 │   ├── schema.sql            # 第一版建表 SQL（一次跑完）
 │   └── YYYY-MM-DD_*.sql      # 之後的增量 migration，檔名帶日期
-├── index.html                # #root + <script src="/src/main.jsx">
+├── index.html                # #root + <script src="/src/main.jsx">（不放 <style>，樣式在 theme.css + shared/base.css）
 ├── vite.config.js
 ├── package.json
 ├── .env.example
@@ -215,9 +215,20 @@ Supabase ⇄ db.js ⇄ use<Domain>.js ⇄ Root.jsx/App.jsx ⇄ components/*
 - 樣式物件宣告在**檔案最外層（module scope）**，變數名一律叫 `S`，不要放在元件函式裡面
   （放函式裡每次 render 都會重新建立物件，是這個專案踩過的效能坑，見
   `RecipeDetail.jsx` 的 commit history）
-- 互動元素（button）該有的都要加：
-  - `outline: 'none'`（不然點擊後留下瀏覽器預設的黑色 focus 外框）
-  - `cursor: 'pointer'`
+- **色票與全域樣式**：每個 app 有自己的 `src/theme.css`（`:root` 的 CSS 變數，變數名對齊其他 app：
+  `--bg / --surface / --surface-alt / --sunken / --line / --track / --text / --text-muted /
+  --text-faint / --primary / --primary-soft / --on-primary / --ring / --info / --success /
+  --danger / --scrim / --shadow-card / --shadow-nav / --shadow-sheet`），`main.jsx` 依序 import
+  `@peggy-life/shared/base.css` 和 `./theme.css`。inline style 寫 `'var(--text)'`，**不要寫死色碼**。
+  文字色要對 `--surface` / `--bg` 算過對比度 ≥4.5:1。`index.html` 不再放 `<style>`，
+  viewport 不要加 `maximum-scale` / `user-scalable=no`。
+- 互動元素（button）：
+  - **不要寫 `outline: 'none'`**——焦點環由 `base.css` 的 `:focus-visible` 提供，inline 寫了會蓋掉它
+  - `cursor: 'pointer'` 已由 `base.css` 提供，不必再寫
+  - icon-only 按鈕一定要有 `aria-label`；視覺上小於 44px 的按鈕加 `className="tap"`
+  - icon 用 `@peggy-life/shared/Icon.jsx`，不要用 emoji / 文字符號（✏ × ＋）當操作圖示
+  - 每個 `<input>/<textarea>/<select>` 要有 `aria-label`（或 `<label>` 包住），placeholder 不算
+  - 字級不低於 12px
 - **App 外殼固定模式**（三個 app 一致，抄任一個的 `App.jsx`）：
   - 最外層 `maxWidth: 520` 置中（手機優先，桌機看起來像一台手機）
   - `height: '100vh'` + `maxHeight: '100dvh'` + `overflow: 'hidden'`，只讓中間內容區

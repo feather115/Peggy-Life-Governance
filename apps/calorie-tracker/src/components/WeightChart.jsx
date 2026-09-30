@@ -46,8 +46,8 @@ export default function WeightChart({ challenge, highlightUserId = null, selecte
           if (y < PAD.t) return null;
           return (
             <g key={`grid${idx}`}>
-              <line x1={PAD.l} y1={y} x2={W - PAD.r} y2={y} stroke="#EEF4F0" strokeWidth={1} />
-              <text x={PAD.l - 6} y={y + 4} textAnchor="end" fill="#bcccc2" fontSize={10}>{v.toFixed(1)}</text>
+              <line x1={PAD.l} y1={y} x2={W - PAD.r} y2={y} stroke="var(--line)" strokeWidth={1} />
+              <text x={PAD.l - 6} y={y + 4} textAnchor="end" fill="var(--text-faint)" fontSize={10}>{v.toFixed(1)}</text>
             </g>
           );
         })}
@@ -55,8 +55,8 @@ export default function WeightChart({ challenge, highlightUserId = null, selecte
         {/* Zero line */}
         {zY >= PAD.t && zY <= H - PAD.b && (
           <g>
-            <line x1={PAD.l} y1={zY} x2={W - PAD.r} y2={zY} stroke="#9bb0a3" strokeWidth={1.5} strokeDasharray="6,5" opacity={0.6} />
-            <text x={PAD.l - 6} y={zY + 4} textAnchor="end" fill="#9bb0a3" fontSize={10}>0</text>
+            <line x1={PAD.l} y1={zY} x2={W - PAD.r} y2={zY} stroke="var(--text-faint)" strokeWidth={1.5} strokeDasharray="6,5" opacity={0.6} />
+            <text x={PAD.l - 6} y={zY + 4} textAnchor="end" fill="var(--text-faint)" fontSize={10}>0</text>
           </g>
         )}
 
@@ -69,8 +69,8 @@ export default function WeightChart({ challenge, highlightUserId = null, selecte
             const x = xS(i);
             return (
               <g key={`x${i}`}>
-                <line x1={x} y1={H - PAD.b} x2={x} y2={H - PAD.b + 5} stroke="#bcccc2" strokeWidth={1} />
-                <text x={x} y={H - PAD.b + 18} textAnchor="middle" fill="#6E8B7C" fontSize={11} fontWeight={700}>{w.slice(5).replace('-', '/')}</text>
+                <line x1={x} y1={H - PAD.b} x2={x} y2={H - PAD.b + 5} stroke="var(--text-faint)" strokeWidth={1} />
+                <text x={x} y={H - PAD.b + 18} textAnchor="middle" fill="var(--text-muted)" fontSize={11} fontWeight={700}>{w.slice(5).replace('-', '/')}</text>
               </g>
             );
           });
@@ -108,7 +108,7 @@ export default function WeightChart({ challenge, highlightUserId = null, selecte
           if (idx === -1) return null;
           const x = xS(idx);
           return (
-            <line x1={x} y1={PAD.t} x2={x} y2={H - PAD.b} stroke="#2E8B5E" strokeWidth={1.5} strokeDasharray="4,4" pointerEvents="none" />
+            <line x1={x} y1={PAD.t} x2={x} y2={H - PAD.b} stroke="var(--primary)" strokeWidth={1.5} strokeDasharray="4,4" pointerEvents="none" />
           );
         })()}
 

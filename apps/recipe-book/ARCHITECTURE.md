@@ -47,6 +47,7 @@ Supabase ⇄ db.js ⇄ useRecipes.js ⇄ App.jsx ⇄ components/*
 | **新增/編輯食譜表單**（食材分區、步驟、參數、分享 checkbox） | `src/components/RecipeForm.jsx` |
 | **料理行事曆**（月曆、記錄料理、備註） | `src/components/CookCalendar.jsx` |
 | **底部分頁列**（訪客模式會隱藏行事曆/設定） | `src/components/TabBar.jsx` |
+| **色票 / 陰影 / 焦點環等全域樣式** | `src/theme.css`（色票）+ `packages/shared/src/base.css`（共用）|
 | **Email/密碼與 LINE 自動登入閘口** | `src/Root.jsx` |
 | **Email 登入/註冊/重設密碼頁面** | `src/components/Auth.jsx` |
 | **設定頁（暱稱、LINE 帳號連結、登出）** | `src/components/SettingsTab.jsx` |
@@ -54,6 +55,17 @@ Supabase ⇄ db.js ⇄ useRecipes.js ⇄ App.jsx ⇄ components/*
 | **主頁外殼與載入中畫面** | `src/App.jsx` |
 
 ---
+
+## 樣式與設計 tokens
+
+- **色票 = CSS 變數**：`src/theme.css` 的 `:root` 定義本 app 的色票（`--bg / --surface / --text / --text-muted / --text-faint / --primary / --line / --danger …`）與陰影（`--shadow-card / --shadow-nav / --shadow-sheet`）。元件 inline style 一律寫 `'var(--text)'`，**不要再寫死色碼**；要換色只改 `theme.css`。三個 app 變數名相同、色值不同（綠 / 橘棕 / 藍）。
+- **共用全域樣式**：`packages/shared/src/base.css`（由 `main.jsx` import）— reset、`:focus-visible` 焦點環（`--ring`）、按鈕按壓回饋、`prefers-reduced-motion`、`.tap`（把小按鈕點擊範圍撐到 ≥44px，不影響版面）、`.ps`（隱藏捲軸）。因為 inline style 優先級高於 CSS，**元件裡不可再寫 `outline: 'none'`**，否則焦點環會被蓋掉。
+- **對比度**：`--text-muted / --text-faint` 已算過在 `--surface` / `--bg` 上 ≥4.5:1（WCAG AA）。改色票後要重新驗證，不要把淺灰當內文色。
+- **icon**：`@peggy-life/shared/Icon.jsx`（內建線條 SVG，`<Icon name="pencil" />`，`aria-hidden`）。icon-only 按鈕必須加 `aria-label`；小按鈕加 `className="tap"`。內容性 emoji（餐別圖示等）保留，UI 操作符號（✏ × ＋ ‹ ›）用 `Icon`。
+- **表單欄位**：每個 `<input>/<textarea>/<select>` 都要有 `aria-label`（或 `<label>` 包住）；只靠 placeholder 不算。
+- **viewport 不鎖縮放**（無 `maximum-scale` / `user-scalable=no`）；為了避免 iOS 聚焦輸入框自動放大，`base.css` 在觸控裝置把輸入框強制 16px。
+- **字級下限 12px**。
+- **`TabBar.jsx`**：`<nav>` + icon + 文字，`aria-current="page"`，底部留 `env(safe-area-inset-bottom)`。
 
 ## 每個檔案在幹嘛
 

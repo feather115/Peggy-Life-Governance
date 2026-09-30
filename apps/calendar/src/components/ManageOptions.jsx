@@ -6,7 +6,7 @@ import { THEME } from '../theme.js';
 
 const S = {
   header: { display: 'flex', alignItems: 'center', gap: 12, padding: 16, background: THEME.surface, borderBottom: `1px solid ${THEME.border}` },
-  backBtn: { border: 'none', background: 'none', cursor: 'pointer', fontSize: 20, color: THEME.textMuted, padding: '2px 6px', outline: 'none' },
+  backBtn: { border: 'none', background: 'none', cursor: 'pointer', fontSize: 20, color: THEME.textMuted, padding: '2px 6px' },
   title: { fontSize: 17, fontWeight: 700, color: THEME.textDark },
   body: { padding: '20px 20px 48px', display: 'flex', flexDirection: 'column', gap: 28 },
   errorBox: { background: THEME.errorBg, color: THEME.error, padding: '10px 12px', borderRadius: THEME.radiusSm, fontSize: 13, fontWeight: 600 },
@@ -16,12 +16,12 @@ const S = {
   row: (archived) => ({ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: THEME.radiusSm, border: `1px solid ${THEME.border}`, background: THEME.surface, opacity: archived ? 0.5 : 1 }),
   childRow: (archived) => ({ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: THEME.radiusSmInner, border: `1px solid ${THEME.border}`, background: THEME.surfaceAlt, opacity: archived ? 0.5 : 1 }),
   childMark: { color: THEME.textFaint, fontSize: 13, flexShrink: 0 },
-  rowInput: (bold) => ({ flex: 1, minWidth: 0, border: 'none', outline: 'none', fontSize: bold ? 15 : 14, fontWeight: bold ? 600 : 400, color: THEME.textDark, background: 'transparent' }),
+  rowInput: (bold) => ({ flex: 1, minWidth: 0, border: 'none', fontSize: bold ? 15 : 14, fontWeight: bold ? 600 : 400, color: THEME.textDark, background: 'transparent' }),
   usage: { fontSize: 12, color: THEME.textFaint, whiteSpace: 'nowrap' },
   toggleBtn: { border: `1px solid ${THEME.border}`, background: THEME.surface, borderRadius: THEME.radiusSmInner, padding: '5px 10px', fontSize: 12.5, color: THEME.textMuted, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' },
   deleteBtn: { border: 'none', background: 'none', color: THEME.error, cursor: 'pointer', fontSize: 14, padding: '0 2px' },
   addRow: (indent) => ({ display: 'flex', alignItems: 'center', gap: 8, marginTop: indent ? 0 : 10, padding: '8px 12px', borderRadius: THEME.radiusSm, border: `1px dashed ${THEME.textFaint}`, background: indent ? 'transparent' : THEME.surface }),
-  addInput: { flex: 1, minWidth: 0, border: 'none', outline: 'none', fontSize: 14, color: THEME.textDark, background: 'transparent' },
+  addInput: { flex: 1, minWidth: 0, border: 'none', fontSize: 14, color: THEME.textDark, background: 'transparent' },
   tagCard: { border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSm, background: THEME.surface, padding: 10 },
   tagCardTop: (archived) => ({ display: 'flex', alignItems: 'center', gap: 8, opacity: archived ? 0.5 : 1 }),
   children: { display: 'flex', flexDirection: 'column', gap: 6, margin: '10px 0 0 18px' },
@@ -46,7 +46,7 @@ function OptionRow({ option, usage, canDelete, onRename, onToggleArchive, onDele
   return (
     <div style={rowStyle}>
       {variant === 'child' && <span style={S.childMark}>└</span>}
-      <input
+      <input aria-label="編輯名稱"
         type="text"
         style={S.rowInput(variant === 'cardTop')}
         value={draft ?? option.name}
@@ -56,7 +56,7 @@ function OptionRow({ option, usage, canDelete, onRename, onToggleArchive, onDele
       />
       <span style={S.usage}>使用 {usage} 次</span>
       <button type="button" style={S.toggleBtn} onClick={onToggleArchive}>{option.archived ? '恢復' : '封存'}</button>
-      {canDelete && <button type="button" style={S.deleteBtn} title="永久刪除" onClick={onDelete}>🗑</button>}
+      {canDelete && <button aria-label="永久刪除" className="tap" type="button" style={S.deleteBtn} title="永久刪除" onClick={onDelete}>🗑</button>}
     </div>
   );
 }
@@ -72,7 +72,7 @@ function AddRow({ placeholder, onAdd, indent }) {
   return (
     <div style={S.addRow(indent)}>
       {indent && <span style={S.childMark}>└</span>}
-      <input
+      <input aria-label={placeholder}
         type="text"
         style={S.addInput}
         value={draft}

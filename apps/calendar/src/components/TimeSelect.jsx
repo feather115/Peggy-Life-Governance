@@ -11,25 +11,25 @@ for (let h = 0; h < 24; h++) {
 const CUSTOM = '__custom__';
 
 const S = {
-  input: { width: '100%', boxSizing: 'border-box', border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSm, padding: '11px 12px', fontSize: 15, color: THEME.textDark, background: THEME.surface, outline: 'none' },
+  input: { width: '100%', boxSizing: 'border-box', border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSm, padding: '11px 12px', fontSize: 15, color: THEME.textDark, background: THEME.surface },
   row: { display: 'flex', gap: 8 },
   customBtn: { border: `1px solid ${THEME.border}`, background: THEME.surface, cursor: 'pointer', padding: '0 12px', borderRadius: THEME.radiusSm, fontSize: 12, color: THEME.textMuted, fontWeight: 600, whiteSpace: 'nowrap' },
 };
 
-export default function TimeSelect({ value, onChange }) {
+export default function TimeSelect({ value, onChange, label = '時間' }) {
   const [customMode, setCustomMode] = useState(!!value && !OPTIONS.includes(value));
 
   if (customMode) {
     return (
       <div style={S.row}>
-        <input type="time" style={S.input} value={value} onChange={(e) => onChange(e.target.value)} />
+        <input aria-label={label} type="time" style={S.input} value={value} onChange={(e) => onChange(e.target.value)} />
         <button type="button" style={S.customBtn} onClick={() => setCustomMode(false)}>整點/半點</button>
       </div>
     );
   }
 
   return (
-    <select
+    <select aria-label={label}
       style={S.input}
       value={OPTIONS.includes(value) ? value : ''}
       onChange={(e) => {

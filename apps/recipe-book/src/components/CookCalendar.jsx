@@ -9,20 +9,21 @@ import {
   parseDateKey,
   todayKey,
 } from '../utils.js';
+import Icon from '@peggy-life/shared/Icon.jsx';
 
 const S = {
   view: { padding: '6px 18px 24px' },
-  title: { fontSize: 24, fontWeight: 900, color: '#3D281E', lineHeight: 1.2, margin: 0 },
-  status: { fontSize: 13, color: '#E87A24', fontWeight: 700, marginTop: 4, margin: 0 },
-  panel: { background: '#fff', borderRadius: 20, padding: 14, boxShadow: '0 6px 18px -12px rgba(232,122,36,.25)', marginBottom: 12 },
-  monthBtn: { border: 'none', background: '#FDF7F4', color: '#8E7568', width: 36, height: 36, borderRadius: 14, fontSize: 18, fontWeight: 900, cursor: 'pointer', outline: 'none' },
-  monthTitle: { fontSize: 18, fontWeight: 900, color: '#3D281E' },
+  title: { fontSize: 24, fontWeight: 900, color: 'var(--text)', lineHeight: 1.2, margin: 0 },
+  status: { fontSize: 13, color: 'var(--primary)', fontWeight: 700, marginTop: 4, margin: 0 },
+  panel: { background: 'var(--surface)', borderRadius: 20, padding: 14, boxShadow: 'var(--shadow-card)', marginBottom: 12 },
+  monthBtn: { border: 'none', background: 'var(--surface-alt)', color: 'var(--text-muted)', width: 36, height: 36, borderRadius: 14, fontSize: 18, fontWeight: 900, cursor: 'pointer' },
+  monthTitle: { fontSize: 18, fontWeight: 900, color: 'var(--text)' },
   weekGrid: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 6, marginTop: 14 },
-  dow: { textAlign: 'center', fontSize: 12, fontWeight: 900, color: '#C5B4AC' },
+  dow: { textAlign: 'center', fontSize: 12, fontWeight: 900, color: 'var(--text-faint)' },
   dayBtn: {
     minHeight: 58,
-    border: '1px solid #F3DFD4',
-    background: '#fff',
+    border: '1px solid var(--line)',
+    background: 'var(--surface)',
     borderRadius: 14,
     padding: '7px 5px',
     display: 'flex',
@@ -30,32 +31,31 @@ const S = {
     alignItems: 'center',
     gap: 4,
     cursor: 'pointer',
-    outline: 'none',
   },
-  selectedDay: { borderColor: '#E87A24', background: '#FFF3EB' },
+  selectedDay: { borderColor: 'var(--primary)', background: 'var(--primary-soft)' },
   todayDay: { boxShadow: 'inset 0 0 0 2px rgba(232,122,36,.16)' },
-  dayNum: { fontSize: 13, fontWeight: 900, color: '#3D281E' },
-  count: { minWidth: 18, height: 18, borderRadius: 9, background: '#E87A24', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 900 },
-  tinyTitle: { width: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'center', fontSize: 10, fontWeight: 800, color: '#8E7568' },
+  dayNum: { fontSize: 13, fontWeight: 900, color: 'var(--text)' },
+  count: { minWidth: 18, height: 18, borderRadius: 9, background: 'var(--primary)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 900 },
+  tinyTitle: { width: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'center', fontSize: 12, fontWeight: 800, color: 'var(--text-muted)' },
   formRow: { display: 'grid', gridTemplateColumns: '1fr auto', gap: 8, marginTop: 12 },
-  select: { width: '100%', border: 'none', background: '#FDF7F4', borderRadius: 14, padding: '11px 12px', fontSize: 14, fontWeight: 800, color: '#3D281E', outline: 'none' },
-  addBtn: { border: 'none', background: '#E87A24', color: '#fff', borderRadius: 14, padding: '0 16px', fontSize: 14, fontWeight: 900, cursor: 'pointer' },
-  warning: { background: '#FFF3EB', color: '#B45309', borderRadius: 14, padding: '10px 12px', fontSize: 13, fontWeight: 800, lineHeight: 1.5, marginTop: 12 },
-  sectionTitle: { fontSize: 15, fontWeight: 900, color: '#3D281E', marginBottom: 10 },
-  recordRow: { display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderTop: '1px solid #F3DFD4' },
-  recordThumb: { width: 42, height: 42, borderRadius: 12, objectFit: 'cover', background: '#FDF7F4', flexShrink: 0 },
-  placeholder: { width: 42, height: 42, borderRadius: 12, background: '#FDF7F4', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
-  removeBtn: { border: 'none', background: '#FDF7F4', color: '#C5B4AC', width: 30, height: 30, borderRadius: 15, fontSize: 18, lineHeight: 1, cursor: 'pointer', outline: 'none' },
-  empty: { color: '#C5B4AC', fontSize: 14, fontWeight: 700, textAlign: 'center', padding: '18px 4px' },
+  select: { width: '100%', border: 'none', background: 'var(--surface-alt)', borderRadius: 14, padding: '11px 12px', fontSize: 14, fontWeight: 800, color: 'var(--text)' },
+  addBtn: { border: 'none', background: 'var(--primary)', color: '#fff', borderRadius: 14, padding: '0 16px', fontSize: 14, fontWeight: 900, cursor: 'pointer' },
+  warning: { background: 'var(--primary-soft)', color: '#B45309', borderRadius: 14, padding: '10px 12px', fontSize: 13, fontWeight: 800, lineHeight: 1.5, marginTop: 12 },
+  sectionTitle: { fontSize: 15, fontWeight: 900, color: 'var(--text)', marginBottom: 10 },
+  recordRow: { display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderTop: '1px solid var(--line)' },
+  recordThumb: { width: 42, height: 42, borderRadius: 12, objectFit: 'cover', background: 'var(--surface-alt)', flexShrink: 0 },
+  placeholder: { width: 42, height: 42, borderRadius: 12, background: 'var(--surface-alt)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  removeBtn: { border: 'none', background: 'var(--surface-alt)', color: 'var(--text-faint)', width: 30, height: 30, borderRadius: 15, fontSize: 18, lineHeight: 1, cursor: 'pointer' },
+  empty: { color: 'var(--text-faint)', fontSize: 14, fontWeight: 700, textAlign: 'center', padding: '18px 4px' },
   addRecordBtn: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
     width: '100%',
-    border: '1px dashed #E87A24',
-    background: '#FFF3EB',
-    color: '#E87A24',
+    border: '1px dashed var(--primary)',
+    background: 'var(--primary-soft)',
+    color: 'var(--primary)',
     borderRadius: 14,
     padding: '12px',
     fontSize: 14,
@@ -63,7 +63,6 @@ const S = {
     cursor: 'pointer',
     marginTop: 12,
     boxSizing: 'border-box',
-    outline: 'none',
   },
 };
 
@@ -164,16 +163,16 @@ export default function CookCalendar({ recipes, cookRecords, cookRecordError, on
           <h1 style={S.title}>料理行事曆</h1>
           <p style={S.status}>● 已紀錄 {cookRecords.length} 次料理</p>
         </div>
-        <button type="button" onClick={selectToday} style={{ border: 'none', background: '#F0E7E1', color: '#8E7568', fontWeight: 800, fontSize: 13, padding: '8px 14px', borderRadius: 14, cursor: 'pointer', outline: 'none' }}>
+        <button type="button" onClick={selectToday} style={{ border: 'none', background: 'var(--sunken)', color: 'var(--text-muted)', fontWeight: 800, fontSize: 13, padding: '8px 14px', borderRadius: 14, cursor: 'pointer' }}>
           今天
         </button>
       </header>
 
       <section style={S.panel}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <button type="button" onClick={() => shiftMonth(-1)} style={S.monthBtn}>‹</button>
+          <button aria-label="上個月" className="tap" type="button" onClick={() => shiftMonth(-1)} style={S.monthBtn}><Icon name="chevron-left" size={14} /></button>
           <div style={S.monthTitle}>{monthLabel(visibleMonth.getFullYear(), visibleMonth.getMonth())}</div>
-          <button type="button" onClick={() => shiftMonth(1)} style={S.monthBtn}>›</button>
+          <button aria-label="下個月" className="tap" type="button" onClick={() => shiftMonth(1)} style={S.monthBtn}><Icon name="chevron-right" size={14} /></button>
         </div>
 
         <div style={S.weekGrid}>
@@ -234,7 +233,7 @@ export default function CookCalendar({ recipes, cookRecords, cookRecordError, on
                     style={{
                       fontSize: 14,
                       fontWeight: 900,
-                      color: '#3D281E',
+                      color: 'var(--text)',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',
@@ -244,12 +243,12 @@ export default function CookCalendar({ recipes, cookRecords, cookRecordError, on
                     {recipe?.title || '已刪除的料理'}
                   </div>
                   {recipe?.category?.length > 0 && (
-                    <div style={{ fontSize: 11, color: '#8E7568', fontWeight: 800, marginTop: 1 }}>
+                    <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 800, marginTop: 1 }}>
                       {recipe.category.join('、')}
                     </div>
                   )}
                   <div style={{ marginTop: 5 }}>
-                    <input
+                    <input aria-label="新增備註"
                       type="text"
                       placeholder="📝 新增備註（如：微辣、偏甜）..."
                       value={editingNotes[record.id] !== undefined ? editingNotes[record.id] : (record.notes || '')}
@@ -265,12 +264,11 @@ export default function CookCalendar({ recipes, cookRecords, cookRecordError, on
                         width: '100%',
                         border: 'none',
                         background: 'transparent',
-                        borderBottom: '1px dashed #C5B4AC',
+                        borderBottom: '1px dashed var(--text-faint)',
                         padding: '2px 0',
                         fontSize: 12,
-                        color: '#8E7568',
+                        color: 'var(--text-muted)',
                         fontWeight: 700,
-                        outline: 'none',
                         boxSizing: 'border-box',
                       }}
                     />
@@ -288,9 +286,9 @@ export default function CookCalendar({ recipes, cookRecords, cookRecordError, on
             ＋ 記錄料理
           </button>
         ) : (
-          <div style={{ marginTop: 16, borderTop: '1px solid #F3DFD4', paddingTop: 14 }}>
+          <div style={{ marginTop: 16, borderTop: '1px solid var(--line)', paddingTop: 14 }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 8, marginBottom: 12 }}>
-              <input
+              <input aria-label="搜尋料理"
                 type="text"
                 value={recipeQuery}
                 onChange={(e) => setRecipeQuery(e.target.value)}
@@ -306,14 +304,13 @@ export default function CookCalendar({ recipes, cookRecords, cookRecordError, on
                 }}
                 style={{
                   border: 'none',
-                  background: '#F0E7E1',
-                  color: '#8E7568',
+                  background: 'var(--sunken)',
+                  color: 'var(--text-muted)',
                   borderRadius: 14,
                   padding: '0 16px',
                   fontSize: 14,
                   fontWeight: 800,
                   cursor: 'pointer',
-                  outline: 'none',
                 }}
               >
                 收起
@@ -334,26 +331,25 @@ export default function CookCalendar({ recipes, cookRecords, cookRecordError, on
                       justifyContent: 'space-between',
                       width: '100%',
                       border: 'none',
-                      background: '#FDF7F4',
+                      background: 'var(--surface-alt)',
                       borderRadius: 12,
                       padding: '10px 14px',
                       fontSize: 14,
                       fontWeight: 800,
-                      color: '#3D281E',
+                      color: 'var(--text)',
                       cursor: 'pointer',
                       textAlign: 'left',
                       transition: 'background 0.2s',
-                      outline: 'none',
                     }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = '#FFF3EB'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = '#FDF7F4'; }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--primary-soft)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--surface-alt)'; }}
                   >
                     <span>{recipe.title}</span>
-                    <span style={{ fontSize: 12, color: '#E87A24', fontWeight: 900 }}>＋ 加入</span>
+                    <span style={{ fontSize: 12, color: 'var(--primary)', fontWeight: 900 }}>＋ 加入</span>
                   </button>
                 ))}
                 {availableRecipes.length > 8 && (
-                  <div style={{ fontSize: 11, color: '#8E7568', textAlign: 'center', marginTop: 4, fontWeight: 700 }}>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', marginTop: 4, fontWeight: 700 }}>
                     還有 {availableRecipes.length - 8} 道料理，輸入關鍵字以縮小範圍
                   </div>
                 )}

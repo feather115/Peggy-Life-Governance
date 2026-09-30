@@ -118,5 +118,5 @@ Vercel 會用本資料夾的 `package.json` 自動偵測 Vite，不影響其他 
 對齊 calorie-tracker / recipe-book 的慣例：`main.jsx → Root.jsx → App.jsx → components/`，
 紀錄（事件+日記）狀態集中在 `useRecords.js`，日記分類標籤字彙集中在 `useDiaryTags.js`，
 週期性任務狀態集中在 `useTasks.js`，紀錄表單是 `components/RecordForm.jsx`，純函式在
-`utils.js`，配色常數在 `theme.js`，Supabase 查詢在 `db.js`，Supabase client 走共用
+`utils.js`，配色值在 `theme.css`（CSS 變數）、變數名對應的 JS 常數在 `theme.js`，Supabase 查詢在 `db.js`，Supabase client 走共用
 `@peggy-life/shared`。詳細檔案地圖見 [`ARCHITECTURE.md`](./ARCHITECTURE.md)。

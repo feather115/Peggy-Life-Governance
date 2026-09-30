@@ -26,14 +26,14 @@ const S = {
   // 分類標籤 chip 與 📍👤 資訊列同一行（放不下才換行）
   footerRow: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '6px 12px' },
   metaItem: { display: 'inline-flex', alignItems: 'center', gap: 4, fontWeight: 500 },
-  metaIcon: { fontSize: 11 },
+  metaIcon: { fontSize: 12 },
   empty: { fontSize: 13, color: THEME.textFaint },
   taskCard: { display: 'flex', gap: 10, alignItems: 'center', padding: 14, background: THEME.surfaceAlt, borderRadius: THEME.radiusSm, border: `1px dashed ${THEME.border}` },
   taskCheck: { fontSize: 15 },
   taskTitle: { fontSize: 15, fontWeight: 600, color: THEME.textDark },
   taskMeta: { fontSize: 12, color: THEME.textMuted, marginTop: 2 },
   tagChipWrap: { display: 'flex', flexWrap: 'wrap', gap: 6 },
-  diaryTagChip: (accent, onTint) => ({ fontSize: 11, fontWeight: 600, color: accent, background: onTint ? THEME.surface : THEME.primarySoft, padding: '3px 8px', borderRadius: 999 }),
+  diaryTagChip: (accent, onTint) => ({ fontSize: 12, fontWeight: 600, color: accent, background: onTint ? THEME.surface : THEME.primarySoft, padding: '3px 8px', borderRadius: 999 }),
 };
 
 // 分類標籤 chip（有填細節的顯示「標籤：細節」）。onTint=true 用在淺藍底的全天卡片上，

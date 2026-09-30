@@ -16,7 +16,7 @@ export default function Root() {
   if (session && guest) setGuest(false);
 
   if (!supabaseReady) return <ConfigMissing appName="TY Recipe Book App" />;
-  if (!ready) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6E8B7C', fontWeight: 700 }}>初始化…</div>;
+  if (!ready) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontWeight: 700 }}>初始化…</div>;
   if (!session && !guest) return <Auth lineDebug={lineDebug} onGuest={() => setGuest(true)} />;
   return (
     <App

@@ -58,6 +58,10 @@ npx vite
 
 ---
 
+## 樣式
+
+色票在 [`src/theme.css`](./src/theme.css)（CSS 變數，元件用 `var(--text)` 取值），全域樣式（焦點環、按壓回饋、reduced-motion）在共用的 `packages/shared/src/base.css`。細節見 [`ARCHITECTURE.md`](./ARCHITECTURE.md)「樣式與設計 tokens」。
+
 ## 部署
 
 `npx vite build` 後把 `dist/` 丟到任何靜態主機（Vercel / Netlify / GitHub Pages）。

@@ -4,57 +4,57 @@ import { ALL_CATEGORY } from '../utils.js';
 
 const S = {
   viewHome: { padding: '6px 18px 20px' },
-  title: { fontSize: 24, fontWeight: 900, color: '#3D281E', lineHeight: 1.2, margin: 0 },
-  status: { fontSize: 13, color: '#E87A24', fontWeight: 700, marginTop: 4, margin: 0 },
+  title: { fontSize: 24, fontWeight: 900, color: 'var(--text)', lineHeight: 1.2, margin: 0 },
+  status: { fontSize: 13, color: 'var(--primary)', fontWeight: 700, marginTop: 4, margin: 0 },
   search: {
-    width: '100%', border: 'none', background: '#FDF7F4', borderRadius: 14,
-    padding: '12px 16px', fontSize: 15, fontWeight: 700, color: '#3D281E', marginTop: 12,
-    outline: 'none', boxSizing: 'border-box',
+    width: '100%', border: 'none', background: 'var(--surface-alt)', borderRadius: 14,
+    padding: '12px 16px', fontSize: 15, fontWeight: 700, color: 'var(--text)', marginTop: 12,
+    boxSizing: 'border-box',
   },
   tabsContainer: { display: 'flex', gap: 8, overflowX: 'auto', padding: '12px 0' },
   tabInactive: {
-    border: 'none', background: '#FDF7F4', color: '#8E7568', padding: '8px 16px',
+    border: 'none', background: 'var(--surface-alt)', color: 'var(--text-muted)', padding: '8px 16px',
     borderRadius: 20, fontSize: 13, fontWeight: 800, cursor: 'pointer',
     whiteSpace: 'nowrap', flexShrink: 0,
   },
   tabActive: {
-    border: 'none', background: '#E87A24', color: '#fff', padding: '8px 16px',
+    border: 'none', background: 'var(--primary)', color: '#fff', padding: '8px 16px',
     borderRadius: 20, fontSize: 13, fontWeight: 800, cursor: 'pointer',
     whiteSpace: 'nowrap', flexShrink: 0,
   },
   grid: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginTop: 4 },
   card: {
-    background: '#fff', borderRadius: 20, overflow: 'hidden', cursor: 'pointer',
-    boxShadow: '0 6px 18px -12px rgba(232,122,36,.25)',
+    background: 'var(--surface)', borderRadius: 20, overflow: 'hidden', cursor: 'pointer',
+    boxShadow: 'var(--shadow-card)',
   },
   cardImage: { width: '100%', height: 120, objectFit: 'cover', display: 'block' },
   placeholder: {
-    width: '100%', height: 120, background: '#FDF7F4', display: 'flex',
+    width: '100%', height: 120, background: 'var(--surface-alt)', display: 'flex',
     alignItems: 'center', justifyContent: 'center', fontSize: 36,
   },
   cardInfo: { padding: '10px 12px 12px' },
   badge: {
-    fontSize: 11, background: '#FFF5EE', color: '#E87A24', padding: '3px 8px',
+    fontSize: 12, background: 'var(--bg)', color: 'var(--primary)', padding: '3px 8px',
     borderRadius: 10, fontWeight: 800, marginRight: 4, display: 'inline-block',
   },
   likeChip: {
     position: 'absolute', top: 8, right: 8, background: 'rgba(0,0,0,.55)', color: '#fff',
-    padding: '3px 8px', borderRadius: 12, fontSize: 11, fontWeight: 900,
+    padding: '3px 8px', borderRadius: 12, fontSize: 12, fontWeight: 900,
     display: 'flex', alignItems: 'center', gap: 3,
   },
   ownerChips: { display: 'flex', gap: 6, marginTop: 12, marginBottom: 2, flexWrap: 'wrap' },
   ownerChip: {
-    border: 'none', background: '#FDF7F4', color: '#8E7568',
+    border: 'none', background: 'var(--surface-alt)', color: 'var(--text-muted)',
     padding: '8px 12px', borderRadius: 999, fontSize: 12, fontWeight: 800, cursor: 'pointer',
     display: 'flex', alignItems: 'center', gap: 5,
   },
   ownerChipOn: {
-    border: 'none', background: '#3D281E', color: '#fff',
+    border: 'none', background: 'var(--text)', color: '#fff',
     padding: '8px 12px', borderRadius: 999, fontSize: 12, fontWeight: 900, cursor: 'pointer',
     display: 'flex', alignItems: 'center', gap: 5,
   },
-  cardTitle: { fontSize: 14, fontWeight: 900, color: '#3D281E', marginTop: 6, lineHeight: 1.3, margin: 0, marginBlockStart: 6 },
-  empty: { textAlign: 'center', padding: '40px 20px', color: '#C5B4AC', fontSize: 15, fontWeight: 700 },
+  cardTitle: { fontSize: 14, fontWeight: 900, color: 'var(--text)', marginTop: 6, lineHeight: 1.3, margin: 0, marginBlockStart: 6 },
+  empty: { textAlign: 'center', padding: '40px 20px', color: 'var(--text-faint)', fontSize: 15, fontWeight: 700 },
 };
 
 const OWNER_TABS = [
@@ -95,10 +95,10 @@ export default function RecipeCatalog({
           </div>
           <div style={{ display: 'flex', gap: 6 }}>
             {onCreate && (
-              <button onClick={onCreate} style={{ border: 'none', background: '#E87A24', color: '#fff', fontWeight: 900, fontSize: 13, padding: '8px 14px', borderRadius: 14, cursor: 'pointer' }}>＋ 新增</button>
+              <button onClick={onCreate} style={{ border: 'none', background: 'var(--primary)', color: '#fff', fontWeight: 900, fontSize: 13, padding: '8px 14px', borderRadius: 14, cursor: 'pointer' }}>＋ 新增</button>
             )}
             {onSignOut && (
-              <button onClick={onSignOut} style={{ border: 'none', background: '#F0E7E1', color: '#8E7568', fontWeight: 800, fontSize: 13, padding: '8px 14px', borderRadius: 14, cursor: 'pointer' }}>{signOutLabel}</button>
+              <button onClick={onSignOut} style={{ border: 'none', background: 'var(--sunken)', color: 'var(--text-muted)', fontWeight: 800, fontSize: 13, padding: '8px 14px', borderRadius: 14, cursor: 'pointer' }}>{signOutLabel}</button>
             )}
           </div>
         </div>
@@ -123,7 +123,7 @@ export default function RecipeCatalog({
         )}
 
         <div>
-          <input
+          <input aria-label="搜尋食譜"
             value={searchQuery}
             onChange={(e) => onSearchQueryChange(e.target.value)}
             type="text"

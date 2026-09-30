@@ -82,7 +82,7 @@ git diff --quiet $VERCEL_GIT_PREVIOUS_SHA HEAD -- apps/calendar packages/shared
 
 ## 共用套件
 
-- [`packages/shared`](./packages/shared) — `@peggy-life/shared`，提供 Supabase client factory (`createAppSupabase`)、分頁查詢 helper (`fetchAll`，見下)、LINE 整合 (`createLineAuth`，含 `Root.jsx` 用的 `useSession` 與設定頁用的 `useLineLinked` 兩個 hook) 和共用元件 (`ConfigMissing`)
+- [`packages/shared`](./packages/shared) — `@peggy-life/shared`，提供 Supabase client factory (`createAppSupabase`)、分頁查詢 helper (`fetchAll`，見下)、LINE 整合 (`createLineAuth`，含 `Root.jsx` 用的 `useSession` 與設定頁用的 `useLineLinked` 兩個 hook) 和共用元件 / 樣式 (`ConfigMissing`、`Icon`、`base.css` 全域樣式：焦點環、按壓回饋、reduced-motion)
 
 > **會無限成長的表一律用 `fetchAll` 載入**：PostgREST 單次查詢最多回傳 Supabase 的 Max rows（預設 1000）筆，
 > 超過的部分會被**靜默截掉、不會報錯**。目前套用在 calendar `events`、calorie-tracker `day_records`、

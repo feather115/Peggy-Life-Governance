@@ -11,7 +11,7 @@ import ChallengeTab from './components/ChallengeTab.jsx';
 import FoodSheet from './components/FoodSheet.jsx';
 import AdvancedSheet from './components/AdvancedSheet.jsx';
 
-function Centered({ children, color = '#6E8B7C' }) {
+function Centered({ children, color = 'var(--text-muted)' }) {
   return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, color, fontWeight: 700 }}>{children}</div>;
 }
 
@@ -25,7 +25,7 @@ export default function App({ session, onSignOut }) {
   const [advancedOpen, setAdvancedOpen] = useState(false);
 
   if (!app.loaded) return <Centered>載入中…</Centered>;
-  if (app.loadError) return <Centered color="#B91C1C">載入失敗：{app.loadError}</Centered>;
+  if (app.loadError) return <Centered color="var(--danger)">載入失敗：{app.loadError}</Centered>;
 
   const changeTab = (t) => { setTab(t); setSheetMeal(null); setAdvancedOpen(false); };
   const openDateInToday = (dateKey) => {
@@ -34,7 +34,7 @@ export default function App({ session, onSignOut }) {
   };
 
   return (
-    <div style={{ position: 'relative', width: '100%', maxWidth: 520, height: '100vh', maxHeight: '100dvh', margin: '0 auto', background: '#EAF5EE', display: 'flex', flexDirection: 'column', boxShadow: '0 0 60px -20px rgba(0,0,0,.12)', overflow: 'hidden' }}>
+    <div style={{ position: 'relative', width: '100%', maxWidth: 520, height: '100vh', maxHeight: '100dvh', margin: '0 auto', background: 'var(--bg)', display: 'flex', flexDirection: 'column', boxShadow: '0 0 60px -20px rgba(0,0,0,.12)', overflow: 'hidden' }}>
       <div className="ps" style={{ flex: 1, overflowY: 'auto', paddingTop: 8 }}>
         {tab === 'today' && (
           <TodayTab app={app} selectedDate={selectedDate} setSelectedDate={setSelectedDate}

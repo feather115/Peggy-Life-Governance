@@ -212,7 +212,7 @@ export default function App({ session, onSignOut }) {
         <>
           <header style={{ padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: THEME.surface }}>
             <h1 style={{ fontSize: 18, fontWeight: 700, color: THEME.textDark, margin: 0 }}>TY Calendar</h1>
-            <button onClick={() => setOverlay({ type: 'settings' })} aria-label="設定" style={{ border: 'none', background: 'none', color: THEME.textMuted, fontSize: 18, cursor: 'pointer', outline: 'none', lineHeight: 1, padding: 4 }}>⚙</button>
+            <button onClick={() => setOverlay({ type: 'settings' })} aria-label="設定" style={{ border: 'none', background: 'none', color: THEME.textMuted, fontSize: 18, cursor: 'pointer', lineHeight: 1, padding: 4 }}>⚙</button>
           </header>
 
           <ViewTabs view={rec.view} onChange={rec.setView} onToday={rec.goToday} />

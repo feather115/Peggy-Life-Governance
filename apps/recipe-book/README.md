@@ -81,7 +81,8 @@ Vercel 會用本資料夾的 `package.json` 自動偵測 Vite，不影響其他 
 
 ```
 src/
-├── main.jsx                       # 進入點（初始化 LINE LIFF）
+├── main.jsx                       # 進入點（初始化 LINE LIFF；import shared base.css + theme.css）
+├── theme.css                      # 色票 / 陰影（CSS 變數，暖橘棕色系）
 ├── Root.jsx                       # config check + LIFF / Auth 登入閘口，登入後交給 App
 ├── App.jsx                        # 520px 行動外殼 + 載入 recipes 與 view 導覽切換
 ├── supabase.js                    # re-export 共用 supabase client

@@ -6,7 +6,7 @@ import { INTERVAL_UNIT_LABEL, diffDays, parseDateKey, todayKey } from '../utils.
 const S = {
   header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px 10px' },
   title: { fontSize: 16, fontWeight: 700, color: THEME.textDark },
-  addBtn: { border: 'none', cursor: 'pointer', padding: '8px 14px', borderRadius: THEME.radiusSm, background: THEME.primary, color: '#fff', fontSize: 13, fontWeight: 700, outline: 'none' },
+  addBtn: { border: 'none', cursor: 'pointer', padding: '8px 14px', borderRadius: THEME.radiusSm, background: THEME.primary, color: '#fff', fontSize: 13, fontWeight: 700 },
   list: { flex: 1, padding: '4px 20px 16px', display: 'flex', flexDirection: 'column', gap: 10 },
   card: { padding: 14, background: THEME.surfaceAlt2, borderRadius: THEME.radiusSm },
   cardTop: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 },
@@ -16,7 +16,7 @@ const S = {
   status: (color) => ({ fontSize: 13, fontWeight: 700, color, whiteSpace: 'nowrap' }),
   actionsRow: { display: 'flex', gap: 18, marginTop: 10 },
   actionLink: (color) => ({ fontSize: 13, fontWeight: 600, color, cursor: 'pointer' }),
-  notShown: { fontSize: 11, color: THEME.textFaint, marginTop: 8 },
+  notShown: { fontSize: 12, color: THEME.textFaint, marginTop: 8 },
   completeRow: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 10 },
   dateInput: { flex: 1, boxSizing: 'border-box', padding: '9px 10px', borderRadius: THEME.radiusSmInner, border: `1px solid ${THEME.border}`, fontSize: 14, color: THEME.textDark, background: THEME.surface },
   confirmBtn: { border: 'none', cursor: 'pointer', padding: '9px 12px', borderRadius: THEME.radiusSmInner, background: THEME.primary, color: '#fff', fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap' },
@@ -88,7 +88,7 @@ export default function TasksView({ tasks, onEdit, onCreate, onDelete, onConfirm
 
               {isCompleting ? (
                 <div style={S.completeRow}>
-                  <input type="date" style={S.dateInput} value={completeDraft} onChange={(e) => setCompleteDraft(e.target.value)} />
+                  <input aria-label="完成日期" type="date" style={S.dateInput} value={completeDraft} onChange={(e) => setCompleteDraft(e.target.value)} />
                   <button type="button" style={S.confirmBtn} onClick={() => confirmComplete(t)}>確認完成</button>
                   <button type="button" style={S.cancelBtn} onClick={() => setCompletingId(null)}>取消</button>
                 </div>

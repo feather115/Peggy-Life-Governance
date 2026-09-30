@@ -8,51 +8,51 @@ import { findTagOwner } from '../useDiaryTags.js';
 
 const S = {
   header: { display: 'flex', alignItems: 'center', gap: 12, padding: 16, background: THEME.surface, borderBottom: `1px solid ${THEME.border}` },
-  backBtn: { border: 'none', background: 'none', cursor: 'pointer', fontSize: 20, color: THEME.textMuted, padding: '2px 6px', outline: 'none' },
+  backBtn: { border: 'none', background: 'none', cursor: 'pointer', fontSize: 20, color: THEME.textMuted, padding: '2px 6px' },
   title: { fontSize: 17, fontWeight: 700, color: THEME.textDark },
   body: { padding: 20, display: 'flex', flexDirection: 'column', gap: 14 },
   card: { background: THEME.surface, borderRadius: THEME.radius, padding: '14px 16px', boxShadow: THEME.shadow },
   cardTop: { display: 'flex', alignItems: 'center', gap: 8 },
   reorderCol: { display: 'flex', flexDirection: 'column', gap: 2, flexShrink: 0 },
-  reorderBtn: (disabled) => ({ border: 'none', background: 'none', cursor: disabled ? 'default' : 'pointer', color: disabled ? THEME.textFaint : THEME.textMuted, fontSize: 12, lineHeight: 1, padding: 2, outline: 'none' }),
+  reorderBtn: (disabled) => ({ border: 'none', background: 'none', cursor: disabled ? 'default' : 'pointer', color: disabled ? THEME.textFaint : THEME.textMuted, fontSize: 12, lineHeight: 1, padding: 2 }),
   catName: { flex: 1, minWidth: 0, cursor: 'text', fontSize: 15, fontWeight: 700, color: THEME.textDark, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
-  catNameInput: { flex: 1, minWidth: 0, fontSize: 15, fontWeight: 700, color: THEME.textDark, border: 'none', borderBottom: `1px solid ${THEME.primary}`, background: 'transparent', outline: 'none', padding: '0 0 2px' },
+  catNameInput: { flex: 1, minWidth: 0, fontSize: 15, fontWeight: 700, color: THEME.textDark, border: 'none', borderBottom: `1px solid ${THEME.primary}`, background: 'transparent', padding: '0 0 2px' },
   chevronBtn: { cursor: 'pointer', color: THEME.textMuted, fontSize: 13, width: 22, textAlign: 'center', flexShrink: 0, userSelect: 'none' },
   deleteLabel: (confirming) => ({ cursor: 'pointer', fontSize: 12, fontWeight: 600, color: confirming ? THEME.error : THEME.textMuted, whiteSpace: 'nowrap', flexShrink: 0 }),
   tagsWrap: { display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 },
   tagBox: { background: THEME.surfaceAlt, borderRadius: 14, padding: '8px 12px 8px 4px' },
   tagRow: { display: 'flex', alignItems: 'center', gap: 6 },
   tagReorderCol: { display: 'flex', flexDirection: 'column', flexShrink: 0 },
-  tagReorderBtn: (disabled) => ({ border: 'none', background: 'none', cursor: disabled ? 'default' : 'pointer', color: disabled ? THEME.textFaint : THEME.textMuted, fontSize: 14, lineHeight: 1, padding: '6px 9px', outline: 'none' }),
+  tagReorderBtn: (disabled) => ({ border: 'none', background: 'none', cursor: disabled ? 'default' : 'pointer', color: disabled ? THEME.textFaint : THEME.textMuted, fontSize: 14, lineHeight: 1, padding: '6px 9px' }),
   tagName: { flex: 1, minWidth: 0, cursor: 'text', fontSize: 14, fontWeight: 500, color: THEME.textDark, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
-  tagNameInput: { flex: 1, minWidth: 0, fontSize: 14, fontWeight: 500, color: THEME.textDark, border: 'none', borderBottom: `1px solid ${THEME.primary}`, background: 'transparent', outline: 'none' },
-  subBadge: { flexShrink: 0, fontSize: 11, color: THEME.textMuted, background: THEME.primarySoft, borderRadius: 999, padding: '2px 7px' },
+  tagNameInput: { flex: 1, minWidth: 0, fontSize: 14, fontWeight: 500, color: THEME.textDark, border: 'none', borderBottom: `1px solid ${THEME.primary}`, background: 'transparent' },
+  subBadge: { flexShrink: 0, fontSize: 12, color: THEME.textMuted, background: THEME.primarySoft, borderRadius: 999, padding: '2px 7px' },
   tagChevron: { cursor: 'pointer', color: THEME.textMuted, fontSize: 12, width: 18, textAlign: 'center', flexShrink: 0, userSelect: 'none' },
   removeX: { cursor: 'pointer', flexShrink: 0, width: 28, height: 28, borderRadius: '50%', color: THEME.textMuted, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15 },
-  hint: { fontSize: 11, color: THEME.error, marginTop: 4, marginLeft: 6 },
+  hint: { fontSize: 12, color: THEME.error, marginTop: 4, marginLeft: 6 },
   subsWrap: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, margin: '10px 0 2px 24px' },
   subChip: { display: 'inline-flex', alignItems: 'center', gap: 4, background: THEME.surface, border: `1px solid ${THEME.border}`, borderRadius: 999, padding: '4px 6px 4px 10px' },
   subName: { fontSize: 13, color: THEME.textDark, cursor: 'text' },
-  subNameInput: { width: 64, fontSize: 13, color: THEME.textDark, border: 'none', background: 'transparent', outline: 'none' },
-  subMoveBtn: (disabled) => ({ border: 'none', background: 'none', cursor: disabled ? 'default' : 'pointer', color: disabled ? THEME.textFaint : THEME.textMuted, fontSize: 12, lineHeight: 1, padding: '2px 3px', outline: 'none' }),
+  subNameInput: { width: 64, fontSize: 13, color: THEME.textDark, border: 'none', background: 'transparent' },
+  subMoveBtn: (disabled) => ({ border: 'none', background: 'none', cursor: disabled ? 'default' : 'pointer', color: disabled ? THEME.textFaint : THEME.textMuted, fontSize: 12, lineHeight: 1, padding: '2px 3px' }),
   subRemove: { cursor: 'pointer', color: THEME.textMuted, fontSize: 13, padding: '0 4px', opacity: 0.8 },
   detailsSection: { margin: '10px 0 2px 24px', paddingTop: 8, borderTop: `1px solid ${THEME.border}` },
-  detailsTitle: { fontSize: 11, fontWeight: 700, color: THEME.textMuted, marginBottom: 6 },
+  detailsTitle: { fontSize: 12, fontWeight: 700, color: THEME.textMuted, marginBottom: 6 },
   detailsWrap: { display: 'flex', flexWrap: 'wrap', gap: 6 },
   detailChip: { display: 'inline-flex', alignItems: 'center', gap: 4, background: THEME.surface, border: `1px dashed ${THEME.border}`, borderRadius: 999, padding: '4px 6px 4px 10px' },
   detailName: { fontSize: 12, color: THEME.textDark, cursor: 'text' },
-  detailNameInput: { width: 80, fontSize: 12, color: THEME.textDark, border: 'none', background: 'transparent', outline: 'none' },
+  detailNameInput: { width: 80, fontSize: 12, color: THEME.textDark, border: 'none', background: 'transparent' },
   addPill: { display: 'inline-flex', alignItems: 'center', alignSelf: 'flex-start', border: `1px dashed ${THEME.textFaint}`, borderRadius: 999, padding: '5px 12px', fontSize: 13, color: THEME.textMuted, cursor: 'pointer', background: 'transparent' },
-  addSubInput: { width: 80, fontSize: 13, color: THEME.textDark, border: `1px solid ${THEME.textFaint}`, borderRadius: 999, padding: '4px 10px', outline: 'none', background: THEME.surface },
+  addSubInput: { width: 80, fontSize: 13, color: THEME.textDark, border: `1px solid ${THEME.textFaint}`, borderRadius: 999, padding: '4px 10px', background: THEME.surface },
   addTagPill: { display: 'inline-flex', alignItems: 'center', alignSelf: 'flex-start', border: `1px dashed ${THEME.textFaint}`, borderRadius: 999, padding: '8px 14px', fontSize: 14, color: THEME.textMuted, cursor: 'pointer', background: 'transparent', marginTop: 4 },
-  addTagInput: { alignSelf: 'stretch', fontSize: 14, color: THEME.textDark, border: `1px solid ${THEME.textFaint}`, borderRadius: 999, padding: '8px 14px', outline: 'none', background: THEME.surface, marginTop: 4 },
+  addTagInput: { alignSelf: 'stretch', fontSize: 14, color: THEME.textDark, border: `1px solid ${THEME.textFaint}`, borderRadius: 999, padding: '8px 14px', background: THEME.surface, marginTop: 4 },
   moveConfirm: { marginTop: 10, background: THEME.surfaceAlt, borderRadius: 10, padding: '10px 12px' },
   moveConfirmText: { fontSize: 12, color: THEME.textDark, marginBottom: 8, lineHeight: 1.5 },
   moveConfirmActions: { display: 'flex', gap: 8 },
   moveConfirmBtn: { border: 'none', cursor: 'pointer', padding: '6px 14px', borderRadius: 8, background: THEME.primary, color: '#fff', fontSize: 12, fontWeight: 700 },
   moveCancelBtn: { border: 'none', cursor: 'pointer', padding: '6px 14px', borderRadius: 8, background: THEME.surface, color: THEME.textMuted, fontSize: 12, fontWeight: 600 },
   newCategoryCard: { background: THEME.surface, borderRadius: THEME.radius, padding: '16px 18px', boxShadow: THEME.shadow, display: 'flex', gap: 8 },
-  newCategoryInput: { flex: 1, boxSizing: 'border-box', padding: '10px 12px', borderRadius: THEME.radiusSm, border: `1px solid ${THEME.border}`, fontSize: 14, color: THEME.textDark, background: THEME.surface, outline: 'none' },
+  newCategoryInput: { flex: 1, boxSizing: 'border-box', padding: '10px 12px', borderRadius: THEME.radiusSm, border: `1px solid ${THEME.border}`, fontSize: 14, color: THEME.textDark, background: THEME.surface },
   addCategoryBtn: { border: 'none', cursor: 'pointer', padding: '0 18px', borderRadius: THEME.radiusSm, background: THEME.primary, color: '#fff', fontSize: 14, fontWeight: 700 },
 };
 
@@ -77,7 +77,7 @@ function InlineName({ name, spanStyle, inputStyle, onCommit }) {
   }
   return (
     <>
-      <input
+      <input aria-label="編輯標籤名稱"
         autoFocus
         style={inputStyle}
         value={value}
@@ -174,7 +174,7 @@ function TagBox({ tag, isFirst, isLast, allCategories, tagDetailHistory, actions
               </div>
             ))}
             {addingSub ? (
-              <input
+              <input aria-label="新子標籤"
                 autoFocus
                 style={S.addSubInput}
                 value={subDraft}
@@ -285,7 +285,7 @@ function CategoryCard({ category, allCategories, tagDetailHistory, onRename, onD
           ))}
 
           {addingTag ? (
-            <input
+            <input aria-label="新主標籤"
               autoFocus
               style={S.addTagInput}
               value={tagDraft}
@@ -361,7 +361,7 @@ export default function ManageTags({ categories, tagDetailHistory, onRenameCateg
         ))}
 
         <div style={S.newCategoryCard}>
-          <input
+          <input aria-label="新增分類名稱"
             style={S.newCategoryInput}
             value={newCategoryInput}
             onChange={(e) => setNewCategoryInput(e.target.value)}

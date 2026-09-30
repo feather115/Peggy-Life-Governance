@@ -61,16 +61,16 @@ export default function AdvancedSheet({ app, selectedDate, onClose }) {
   };
 
   return (
-    <Sheet onBackdrop={close} height="min(75vh, 680px)" zIndex={15}>
+    <Sheet label="進階設定" onBackdrop={close} height="min(75vh, 680px)" zIndex={15}>
       <div style={{ padding: '8px 20px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flex: 'none' }}>
         <div>
-          <div style={{ fontSize: 18, fontWeight: 900, color: '#234034' }}>進階</div>
-          <div style={{ fontSize: 12, color: '#9bb0a3', fontWeight: 700, marginTop: 1 }}>{dateLabel(selectedDate)}</div>
+          <div style={{ fontSize: 18, fontWeight: 900, color: 'var(--text)' }}>進階</div>
+          <div style={{ fontSize: 12, color: 'var(--text-faint)', fontWeight: 700, marginTop: 1 }}>{dateLabel(selectedDate)}</div>
         </div>
-        <button onClick={close} style={{ border: 'none', background: '#2E8B5E', color: '#fff', fontWeight: 800, fontSize: 14, padding: '8px 18px', borderRadius: 18, cursor: 'pointer' }}>完成</button>
+        <button onClick={close} style={{ border: 'none', background: 'var(--primary)', color: '#fff', fontWeight: 800, fontSize: 14, padding: '8px 18px', borderRadius: 18, cursor: 'pointer' }}>完成</button>
       </div>
       <div className="ps" style={{ flex: 1, overflowY: 'auto', padding: '4px 18px 28px' }}>
-        <TagToggleGroup title="⏱ 斷食" hint="今天的斷食方式，可複選" tags={fastingTagDefs} activeTags={activeTags} activeBg="#4361EE"
+        <TagToggleGroup title="⏱ 斷食" hint="今天的斷食方式，可複選" tags={fastingTagDefs} activeTags={activeTags} activeBg="var(--info)"
           onToggle={toggle} />
         <div style={{ height: 24 }} />
         <TagToggleGroup title="🏷 記錄原因" hint="聚餐、外食等特殊情況，可複選" tags={otherTagDefs} activeTags={activeTags} activeBg="#E8A13C" useTagColor
@@ -78,12 +78,12 @@ export default function AdvancedSheet({ app, selectedDate, onClose }) {
         <div style={{ height: 24 }} />
         <div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
-            <div style={{ fontSize: 14, fontWeight: 900, color: '#234034' }}>📋 當日 AI 摘要</div>
-            <button onClick={generateSummary} disabled={aiBusy} style={{ border: 'none', background: aiBusy ? '#C7D6CC' : '#EAF5EE', color: aiBusy ? '#fff' : '#2E8B5E', fontWeight: 800, fontSize: 12, padding: '6px 12px', borderRadius: 12, cursor: 'pointer' }}>{aiBusy ? '產生中…' : '✨ AI 幫我寫'}</button>
+            <div style={{ fontSize: 14, fontWeight: 900, color: 'var(--text)' }}>📋 當日 AI 摘要</div>
+            <button onClick={generateSummary} disabled={aiBusy} style={{ border: 'none', background: aiBusy ? 'var(--line-strong)' : 'var(--bg)', color: aiBusy ? '#fff' : 'var(--primary)', fontWeight: 800, fontSize: 12, padding: '6px 12px', borderRadius: 12, cursor: 'pointer' }}>{aiBusy ? '產生中…' : '✨ AI 幫我寫'}</button>
           </div>
-          <div style={{ fontSize: 12, color: '#9bb0a3', fontWeight: 700, marginBottom: 11 }}>貼上 AI 對今日飲食的評價，或點上面按鈕自動產生 · 關閉時自動儲存</div>
-          {aiError && <div style={{ marginBottom: 8, fontSize: 12, fontWeight: 700, color: '#B91C1C' }}>{aiError}</div>}
-          <textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="例如：今天蛋白質達標，碳水偏高。建議明天減少精緻澱粉，多補充蔬菜纖維…" style={{ width: '100%', height: 130, border: 'none', background: '#F6FAF7', borderRadius: 16, padding: '12px 14px', fontSize: 16, fontWeight: 600, color: '#234034', resize: 'none', lineHeight: 1.75 }} />
+          <div style={{ fontSize: 12, color: 'var(--text-faint)', fontWeight: 700, marginBottom: 11 }}>貼上 AI 對今日飲食的評價，或點上面按鈕自動產生 · 關閉時自動儲存</div>
+          {aiError && <div style={{ marginBottom: 8, fontSize: 12, fontWeight: 700, color: 'var(--danger)' }}>{aiError}</div>}
+          <textarea aria-label="當日摘要" value={note} onChange={(e) => setNote(e.target.value)} placeholder="例如：今天蛋白質達標，碳水偏高。建議明天減少精緻澱粉，多補充蔬菜纖維…" style={{ width: '100%', height: 130, border: 'none', background: 'var(--surface-alt)', borderRadius: 16, padding: '12px 14px', fontSize: 16, fontWeight: 600, color: 'var(--text)', resize: 'none', lineHeight: 1.75 }} />
         </div>
       </div>
     </Sheet>
@@ -93,14 +93,14 @@ export default function AdvancedSheet({ app, selectedDate, onClose }) {
 function TagToggleGroup({ title, hint, tags, activeTags, activeBg, useTagColor = false, onToggle }) {
   return (
     <div>
-      <div style={{ fontSize: 14, fontWeight: 900, color: '#234034', marginBottom: 3 }}>{title}</div>
-      <div style={{ fontSize: 12, color: '#9bb0a3', fontWeight: 700, marginBottom: 11 }}>{hint}</div>
+      <div style={{ fontSize: 14, fontWeight: 900, color: 'var(--text)', marginBottom: 3 }}>{title}</div>
+      <div style={{ fontSize: 12, color: 'var(--text-faint)', fontWeight: 700, marginBottom: 11 }}>{hint}</div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
         {tags.map((t) => {
           const active = activeTags.includes(t.id);
-          const bg = active && useTagColor ? (t.color || activeBg) : active ? activeBg : '#F0F3F1';
+          const bg = active && useTagColor ? (t.color || activeBg) : active ? activeBg : 'var(--sunken)';
           return (
-            <button key={t.id} onClick={() => onToggle(t.id, active)} style={{ border: 'none', background: bg, color: active ? '#fff' : '#6E8B7C', padding: '11px 20px', borderRadius: 22, fontSize: 14, fontWeight: 800, cursor: 'pointer' }}>{t.label}</button>
+            <button key={t.id} onClick={() => onToggle(t.id, active)} style={{ border: 'none', background: bg, color: active ? '#fff' : 'var(--text-muted)', padding: '11px 20px', borderRadius: 22, fontSize: 14, fontWeight: 800, cursor: 'pointer' }}>{t.label}</button>
           );
         })}
       </div>

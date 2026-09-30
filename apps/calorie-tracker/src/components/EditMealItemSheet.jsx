@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Sheet from './Sheet.jsx';
 import { alertError } from '../utils.js';
+import Icon from '@peggy-life/shared/Icon.jsx';
 
 export default function EditMealItemSheet({ item, mealLabel, onSave, onClose }) {
   const [form, setForm] = useState({
@@ -32,31 +33,31 @@ export default function EditMealItemSheet({ item, mealLabel, onSave, onClose }) 
   };
 
   return (
-    <Sheet onBackdrop={onClose} height="min(70vh, 640px)" zIndex={12}>
+    <Sheet label="編輯餐點" onBackdrop={onClose} height="min(70vh, 640px)" zIndex={12}>
       <div style={{ padding: '8px 20px 6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ fontSize: 18, fontWeight: 900, color: '#234034' }}>編輯{mealLabel}記錄</span>
-        <button onClick={onClose} style={{ border: 'none', background: '#F0F3F1', color: '#6E8B7C', width: 30, height: 30, borderRadius: '50%', cursor: 'pointer', fontSize: 16, lineHeight: 1, fontWeight: 700 }}>×</button>
+        <span style={{ fontSize: 18, fontWeight: 900, color: 'var(--text)' }}>編輯{mealLabel}記錄</span>
+        <button aria-label="關閉" className="tap" onClick={onClose} style={{ border: 'none', background: 'var(--sunken)', color: 'var(--text-muted)', width: 30, height: 30, borderRadius: '50%', cursor: 'pointer', fontSize: 16, lineHeight: 1, fontWeight: 700 }}><Icon name="x" size={14} /></button>
       </div>
       <div className="ps" style={{ flex: 1, overflowY: 'auto', padding: '6px 20px 20px' }}>
-        <div style={{ fontSize: 12, color: '#9bb0a3', fontWeight: 700, marginBottom: 10 }}>只會更新今天這一筆，不影響食物庫或其他天的記錄</div>
-        <div style={{ fontSize: 13, fontWeight: 800, color: '#6E8B7C' }}>食物名稱</div>
-        <input type="text" value={form.name} onChange={setField('name')} style={{ width: '100%', marginTop: 5, border: 'none', background: '#F6FAF7', borderRadius: 12, padding: '12px 14px', fontSize: 16, fontWeight: 700, color: '#234034' }} />
-        <div style={{ marginTop: 12, fontSize: 13, fontWeight: 800, color: '#6E8B7C' }}>品牌（選填）</div>
-        <input type="text" value={form.brand} onChange={setField('brand')} placeholder="例如：7-11" style={{ width: '100%', marginTop: 5, border: 'none', background: '#F6FAF7', borderRadius: 12, padding: '12px 14px', fontSize: 16, fontWeight: 700, color: '#234034' }} />
+        <div style={{ fontSize: 12, color: 'var(--text-faint)', fontWeight: 700, marginBottom: 10 }}>只會更新今天這一筆，不影響食物庫或其他天的記錄</div>
+        <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-muted)' }}>食物名稱</div>
+        <input aria-label="食物名稱" type="text" value={form.name} onChange={setField('name')} style={{ width: '100%', marginTop: 5, border: 'none', background: 'var(--surface-alt)', borderRadius: 12, padding: '12px 14px', fontSize: 16, fontWeight: 700, color: 'var(--text)' }} />
+        <div style={{ marginTop: 12, fontSize: 13, fontWeight: 800, color: 'var(--text-muted)' }}>品牌（選填）</div>
+        <input aria-label="品牌" type="text" value={form.brand} onChange={setField('brand')} placeholder="例如：7-11" style={{ width: '100%', marginTop: 5, border: 'none', background: 'var(--surface-alt)', borderRadius: 12, padding: '12px 14px', fontSize: 16, fontWeight: 700, color: 'var(--text)' }} />
         <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
-          <div style={{ flex: 1 }}><div style={{ fontSize: 13, fontWeight: 800, color: '#6E8B7C' }}>份量</div><input type="text" value={form.unit} onChange={setField('unit')} style={{ width: '100%', marginTop: 5, border: 'none', background: '#F6FAF7', borderRadius: 12, padding: 12, fontSize: 16, fontWeight: 700, color: '#234034' }} /></div>
-          <div style={{ flex: 1 }}><div style={{ fontSize: 13, fontWeight: 800, color: '#6E8B7C' }}>卡路里</div><input type="number" inputMode="numeric" value={form.cal} onChange={setField('cal')} style={{ width: '100%', marginTop: 5, border: 'none', background: '#F6FAF7', borderRadius: 12, padding: 12, fontSize: 16, fontWeight: 700, color: '#234034' }} /></div>
+          <div style={{ flex: 1 }}><div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-muted)' }}>份量</div><input aria-label="份量" type="text" value={form.unit} onChange={setField('unit')} style={{ width: '100%', marginTop: 5, border: 'none', background: 'var(--surface-alt)', borderRadius: 12, padding: 12, fontSize: 16, fontWeight: 700, color: 'var(--text)' }} /></div>
+          <div style={{ flex: 1 }}><div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-muted)' }}>卡路里</div><input aria-label="卡路里" type="number" inputMode="numeric" value={form.cal} onChange={setField('cal')} style={{ width: '100%', marginTop: 5, border: 'none', background: 'var(--surface-alt)', borderRadius: 12, padding: 12, fontSize: 16, fontWeight: 700, color: 'var(--text)' }} /></div>
         </div>
-        <div style={{ marginTop: 14, fontSize: 13, fontWeight: 800, color: '#6E8B7C' }}>三大營養素 (g)</div>
+        <div style={{ marginTop: 14, fontSize: 13, fontWeight: 800, color: 'var(--text-muted)' }}>三大營養素 (g)</div>
         <div style={{ marginTop: 5, display: 'flex', gap: 8 }}>
-          {[{ key: 'p', label: '蛋白質', color: '#2E8B5E' }, { key: 'c', label: '碳水', color: '#E8A13C' }, { key: 'f', label: '脂肪', color: '#5FA8D3' }].map((m) => (
+          {[{ key: 'p', label: '蛋白質', color: 'var(--primary)' }, { key: 'c', label: '碳水', color: '#E8A13C' }, { key: 'f', label: '脂肪', color: '#5FA8D3' }].map((m) => (
             <div key={m.key} style={{ flex: 1 }}>
-              <div style={{ fontSize: 11, fontWeight: 800, color: m.color, marginBottom: 3 }}>{m.label}</div>
-              <input type="number" inputMode="decimal" value={form[m.key]} onChange={setField(m.key)} style={{ width: '100%', border: 'none', background: '#F6FAF7', borderRadius: 12, padding: '12px 10px', fontSize: 16, fontWeight: 700, color: '#234034' }} />
+              <div style={{ fontSize: 12, fontWeight: 800, color: m.color, marginBottom: 3 }}>{m.label}</div>
+              <input aria-label={m.label} type="number" inputMode="decimal" value={form[m.key]} onChange={setField(m.key)} style={{ width: '100%', border: 'none', background: 'var(--surface-alt)', borderRadius: 12, padding: '12px 10px', fontSize: 16, fontWeight: 700, color: 'var(--text)' }} />
             </div>
           ))}
         </div>
-        <button onClick={save} disabled={!canSave || busy} style={{ width: '100%', marginTop: 18, border: 'none', background: canSave ? '#2E8B5E' : '#C7D6CC', color: '#fff', fontWeight: 900, fontSize: 14, padding: 14, borderRadius: 16, cursor: 'pointer' }}>{busy ? '儲存中…' : '儲存修改'}</button>
+        <button onClick={save} disabled={!canSave || busy} style={{ width: '100%', marginTop: 18, border: 'none', background: canSave ? 'var(--primary)' : 'var(--line-strong)', color: '#fff', fontWeight: 900, fontSize: 14, padding: 14, borderRadius: 16, cursor: 'pointer' }}>{busy ? '儲存中…' : '儲存修改'}</button>
       </div>
     </Sheet>
   );

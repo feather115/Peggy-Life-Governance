@@ -12,14 +12,14 @@ import { PeopleSelect } from './HistoryFields.jsx';
 const S = {
   header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', background: THEME.surface, borderBottom: `1px solid ${THEME.border}` },
   headerLeft: { display: 'flex', alignItems: 'center', gap: 10 },
-  backBtn: { border: 'none', background: 'none', cursor: 'pointer', fontSize: 20, color: THEME.textMuted, padding: '2px 6px', outline: 'none' },
+  backBtn: { border: 'none', background: 'none', cursor: 'pointer', fontSize: 20, color: THEME.textMuted, padding: '2px 6px' },
   title: { fontSize: 17, fontWeight: 700, color: THEME.textDark, margin: 0 },
-  confirmBtn: { border: 'none', cursor: 'pointer', padding: '9px 18px', borderRadius: 999, background: THEME.primary, color: '#fff', fontSize: 14, fontWeight: 700, outline: 'none', boxShadow: '0 4px 12px rgba(61,90,128,.28)' },
+  confirmBtn: { border: 'none', cursor: 'pointer', padding: '9px 18px', borderRadius: 999, background: THEME.primary, color: '#fff', fontSize: 14, fontWeight: 700, boxShadow: '0 4px 12px rgba(61,90,128,.28)' },
   body: { padding: '18px 20px 24px' },
   field: { marginBottom: 18 },
   label: { fontSize: 13, color: THEME.textMuted, marginBottom: 6 },
-  input: { width: '100%', boxSizing: 'border-box', border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSm, padding: '11px 12px', fontSize: 15, color: THEME.textDark, background: THEME.surface, outline: 'none' },
-  textarea: { width: '100%', boxSizing: 'border-box', border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSm, padding: '11px 12px', fontSize: 15, color: THEME.textDark, background: THEME.surface, outline: 'none', minHeight: 76, lineHeight: 1.6, fontFamily: 'inherit', resize: 'vertical' },
+  input: { width: '100%', boxSizing: 'border-box', border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSm, padding: '11px 12px', fontSize: 15, color: THEME.textDark, background: THEME.surface },
+  textarea: { width: '100%', boxSizing: 'border-box', border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSm, padding: '11px 12px', fontSize: 15, color: THEME.textDark, background: THEME.surface, minHeight: 76, lineHeight: 1.6, fontFamily: 'inherit', resize: 'vertical' },
   suggestions: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 },
   suggestionChip: { cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, background: THEME.surfaceAlt, padding: '5px 10px 5px 8px', borderRadius: 999, fontSize: 12, color: THEME.textDark },
   suggestionDot: { width: 8, height: 8, borderRadius: '50%', flexShrink: 0 },
@@ -31,7 +31,7 @@ const S = {
   toggleKnob: (on) => ({ width: 20, height: 20, borderRadius: '50%', background: '#fff', position: 'absolute', top: 3, left: on ? 21 : 3, boxShadow: '0 1px 3px rgba(0,0,0,.25)' }),
   endRow: { display: 'flex', gap: 8 },
   dateTimeRow: { display: 'flex', gap: 8 },
-  dateInput: { flex: 3, boxSizing: 'border-box', border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSm, padding: '11px 12px', fontSize: 15, color: THEME.textDark, background: THEME.surface, outline: 'none' },
+  dateInput: { flex: 3, boxSizing: 'border-box', border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSm, padding: '11px 12px', fontSize: 15, color: THEME.textDark, background: THEME.surface },
   timeInputWrap: { flex: 2 },
   clearBtn: { border: `1px solid ${THEME.border}`, background: THEME.surface, cursor: 'pointer', padding: '0 14px', borderRadius: THEME.radiusSm, fontSize: 13, color: THEME.textMuted, fontWeight: 600 },
   errorBox: { background: THEME.errorBg, color: THEME.error, padding: '10px 12px', borderRadius: THEME.radiusSm, fontSize: 13, fontWeight: 600, marginBottom: 12 },
@@ -39,7 +39,7 @@ const S = {
   // 分區標頭
   sectionHeader: { display: 'flex', alignItems: 'center', gap: 8, margin: '4px 0 14px', fontSize: 13, fontWeight: 700, color: THEME.textMuted, letterSpacing: '0.04em' },
   sectionRule: { flex: 1, height: 1, background: THEME.border },
-  reflectToggle: { width: '100%', boxSizing: 'border-box', border: `1px dashed ${THEME.primary}`, background: THEME.surface, color: THEME.primary, cursor: 'pointer', padding: 12, borderRadius: THEME.radiusSm, fontSize: 14, fontWeight: 700, outline: 'none', marginBottom: 4 },
+  reflectToggle: { width: '100%', boxSizing: 'border-box', border: `1px dashed ${THEME.primary}`, background: THEME.surface, color: THEME.primary, cursor: 'pointer', padding: 12, borderRadius: THEME.radiusSm, fontSize: 14, fontWeight: 700, marginBottom: 4 },
   // ＃快速注記
   hashtagLabel: { fontSize: 13, fontWeight: 700, color: THEME.textMuted, margin: '12px 0 8px' },
   hashtagChips: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 },
@@ -57,17 +57,17 @@ const S = {
   subTagChip: (selected) => ({ cursor: 'pointer', padding: '8px 13px', borderRadius: 999, background: selected ? THEME.primary : 'transparent', border: `1px solid ${selected ? THEME.primary : THEME.border}`, color: selected ? '#fff' : THEME.textMuted, fontSize: 12, fontWeight: selected ? 700 : 500, boxShadow: selected ? '0 4px 10px rgba(61,90,128,.28)' : 'none' }),
   addTagIconBtn: { flexShrink: 0, border: 'none', cursor: 'pointer', width: 22, height: 22, borderRadius: '50%', background: THEME.surfaceAlt, color: THEME.textMuted, fontSize: 14, fontWeight: 700, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 },
   addTagRow: { display: 'flex', gap: 8, marginTop: 10 },
-  addTagInput: { flex: 1, boxSizing: 'border-box', border: `1px dashed ${THEME.textFaint}`, background: 'transparent', borderRadius: 999, padding: '8px 14px', fontSize: 13, color: THEME.textDark, outline: 'none' },
+  addTagInput: { flex: 1, boxSizing: 'border-box', border: `1px dashed ${THEME.textFaint}`, background: 'transparent', borderRadius: 999, padding: '8px 14px', fontSize: 13, color: THEME.textDark },
   addTagBtn: { border: 'none', cursor: 'pointer', padding: '0 16px', borderRadius: 999, background: THEME.primarySoft, color: THEME.primary, fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0 },
-  addTagHint: { fontSize: 11, color: THEME.textFaint, marginTop: 6 },
+  addTagHint: { fontSize: 12, color: THEME.textFaint, marginTop: 6 },
   emptyCategory: { fontSize: 12, color: THEME.textFaint },
   detailList: { display: 'flex', flexDirection: 'column', gap: 6, marginTop: 10 },
   detailRow: { display: 'flex', alignItems: 'center', gap: 8 },
   detailTagLabel: { flexShrink: 0, fontSize: 12, fontWeight: 700, color: THEME.primary, maxWidth: 90, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
   detailInputWrap: { flex: 1, minWidth: 0 },
-  detailInput: { width: '100%', minWidth: 0, boxSizing: 'border-box', border: 'none', borderBottom: `1px dashed ${THEME.textFaint}`, background: 'transparent', padding: '3px 2px', fontSize: 12, color: THEME.textDark, outline: 'none' },
+  detailInput: { width: '100%', minWidth: 0, boxSizing: 'border-box', border: 'none', borderBottom: `1px dashed ${THEME.textFaint}`, background: 'transparent', padding: '3px 2px', fontSize: 12, color: THEME.textDark },
   detailSuggestions: { display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 6 },
-  detailSuggestionChip: { border: `1px dashed ${THEME.border}`, background: THEME.surfaceAlt, cursor: 'pointer', padding: '4px 9px', borderRadius: 999, fontSize: 11, color: THEME.textDark },
+  detailSuggestionChip: { border: `1px dashed ${THEME.border}`, background: THEME.surfaceAlt, cursor: 'pointer', padding: '4px 9px', borderRadius: 999, fontSize: 12, color: THEME.textDark },
 };
 
 // 新增紀錄時預設開始時間：選定日期的早上 9 點
@@ -84,7 +84,7 @@ function DetailInput({ value, history, onChange }) {
 
   return (
     <div style={S.detailInputWrap}>
-      <input
+      <input aria-label="細節（選填）"
         type="text"
         style={S.detailInput}
         value={value}
@@ -181,7 +181,7 @@ function CategoryTagCard({ category, allCategories, selectedTags, onToggleTag, o
 
       {adding && (
         <div style={S.addTagRow}>
-          <input
+          <input aria-label="新標籤名稱"
             autoFocus
             style={S.addTagInput}
             value={draft}
@@ -367,12 +367,12 @@ export default function RecordForm({ record, defaultDateKey, allRecords = [], ca
         <div style={S.field}>
           <div style={S.label}>開始時間</div>
           {allDay ? (
-            <input type="date" style={S.input} value={startValue.slice(0, 10)} onChange={(e) => setStartValue(e.target.value)} />
+            <input aria-label="開始日期" type="date" style={S.input} value={startValue.slice(0, 10)} onChange={(e) => setStartValue(e.target.value)} />
           ) : (
             <div style={S.dateTimeRow}>
-              <input type="date" style={S.dateInput} value={startValue.slice(0, 10)} onChange={(e) => setStartValue(`${e.target.value}T${startValue.slice(11, 16)}`)} />
+              <input aria-label="開始日期" type="date" style={S.dateInput} value={startValue.slice(0, 10)} onChange={(e) => setStartValue(`${e.target.value}T${startValue.slice(11, 16)}`)} />
               <div style={S.timeInputWrap}>
-                <TimeSelect value={startValue.slice(11, 16)} onChange={(t) => setStartValue(`${startValue.slice(0, 10)}T${t}`)} />
+                <TimeSelect label="開始時間" value={startValue.slice(11, 16)} onChange={(t) => setStartValue(`${startValue.slice(0, 10)}T${t}`)} />
               </div>
             </div>
           )}
@@ -382,14 +382,14 @@ export default function RecordForm({ record, defaultDateKey, allRecords = [], ca
           <div style={S.label}>結束時間 <span style={{ color: THEME.textFaint }}>(選填)</span></div>
           {allDay ? (
             <div style={S.endRow}>
-              <input type="date" style={S.input} value={endValue.slice(0, 10)} onChange={(e) => setEndValue(e.target.value)} />
+              <input aria-label="結束日期" type="date" style={S.input} value={endValue.slice(0, 10)} onChange={(e) => setEndValue(e.target.value)} />
               {endValue && <button type="button" style={S.clearBtn} onClick={() => setEndValue('')}>清除</button>}
             </div>
           ) : (
             <div style={S.dateTimeRow}>
-              <input type="date" style={S.dateInput} value={endValue.slice(0, 10)} onChange={(e) => setEndValue(`${e.target.value}T${endValue.slice(11, 16) || '09:00'}`)} />
+              <input aria-label="結束日期" type="date" style={S.dateInput} value={endValue.slice(0, 10)} onChange={(e) => setEndValue(`${e.target.value}T${endValue.slice(11, 16) || '09:00'}`)} />
               <div style={S.timeInputWrap}>
-                <TimeSelect value={endValue.slice(11, 16)} onChange={(t) => setEndValue(`${endValue.slice(0, 10) || startValue.slice(0, 10)}T${t}`)} />
+                <TimeSelect label="結束時間" value={endValue.slice(11, 16)} onChange={(t) => setEndValue(`${endValue.slice(0, 10) || startValue.slice(0, 10)}T${t}`)} />
               </div>
               {endValue && <button type="button" style={S.clearBtn} onClick={() => setEndValue('')}>清除</button>}
             </div>
@@ -411,7 +411,7 @@ export default function RecordForm({ record, defaultDateKey, allRecords = [], ca
 
         <div style={S.field}>
           <div style={S.label}>標題 <span style={{ color: THEME.textFaint }}>(選填)</span></div>
-          <input style={S.input} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="例如：牙醫回診" />
+          <input aria-label="標題" style={S.input} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="例如：牙醫回診" />
           {titleSuggestions.length > 0 && (
             <div style={S.suggestions}>
               {titleSuggestions.map(([t, r]) => (
@@ -440,7 +440,7 @@ export default function RecordForm({ record, defaultDateKey, allRecords = [], ca
 
         <div style={S.field}>
           <div style={S.label}>備註 <span style={{ color: THEME.textFaint }}>(選填)</span></div>
-          <textarea style={S.textarea} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="備註…" />
+          <textarea aria-label="備註" style={S.textarea} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="備註…" />
         </div>
 
         {/* ---- 回顧面（可收合）---- */}
@@ -452,7 +452,7 @@ export default function RecordForm({ record, defaultDateKey, allRecords = [], ca
 
             <div style={S.field}>
               <div style={S.label}>今天的感覺 <span style={{ color: THEME.textFaint }}>(選填)</span></div>
-              <textarea style={S.textarea} value={note} onChange={(e) => setNote(e.target.value)} placeholder="寫下今天的一些想法…" />
+              <textarea aria-label="今天的感覺" style={S.textarea} value={note} onChange={(e) => setNote(e.target.value)} placeholder="寫下今天的一些想法…" />
               <div style={S.hashtagLabel}>＃ 快速注記</div>
               {hashtags.length > 0 && (
                 <div style={S.hashtagChips}>
@@ -490,7 +490,7 @@ export default function RecordForm({ record, defaultDateKey, allRecords = [], ca
                 </div>
               )}
               <div style={S.hashtagRow}>
-                <input
+                <input aria-label="快速注記"
                   type="text"
                   style={S.input}
                   value={hashtagDraft}
