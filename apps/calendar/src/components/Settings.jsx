@@ -4,6 +4,7 @@ import { THEME } from '../theme.js';
 import { canLinkLine, useLineLinked } from '../liff.js';
 import { loadMyDisplayName, updateDisplayName } from '../db.js';
 import Icon from '@peggy-life/shared/Icon.jsx';
+import OtherApps from '@peggy-life/shared/OtherApps.jsx';
 
 const S = {
   header: { display: 'flex', alignItems: 'center', gap: 12, padding: 16, background: THEME.surface, borderBottom: `1px solid ${THEME.border}` },
@@ -15,8 +16,8 @@ const S = {
   accountCard: { background: THEME.surface, borderRadius: THEME.radiusSm, padding: '16px 18px', boxShadow: THEME.shadow },
   accountLabel: { fontSize: 12, color: THEME.textMuted, marginBottom: 4 },
   accountEmail: { fontSize: 14, fontWeight: 700, color: THEME.textDark, marginBottom: 14, wordBreak: 'break-all' },
-  linkedBadge: { display: 'inline-block', fontSize: 13, fontWeight: 700, color: THEME.success, background: THEME.successBg, padding: '9px 16px', borderRadius: THEME.radiusSmInner },
-  linkBtn: { border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700, color: THEME.primary, background: THEME.primarySoft, padding: '9px 16px', borderRadius: THEME.radiusSmInner },
+  linkedBadge: { display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 700, color: THEME.success, background: THEME.successBg, padding: '9px 16px', borderRadius: THEME.radiusSmInner },
+  linkBtn: { display: 'inline-flex', alignItems: 'center', gap: 6, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700, color: THEME.primary, background: THEME.primarySoft, padding: '9px 16px', borderRadius: THEME.radiusSmInner },
   linkHint: { fontSize: 12, color: THEME.textFaint, marginTop: 8 },
   msgSuccess: { marginTop: 8, fontSize: 13, fontWeight: 700, color: THEME.success, background: THEME.successBg, padding: '8px 12px', borderRadius: THEME.radiusSmInner },
   msgError: { marginTop: 8, fontSize: 13, fontWeight: 700, color: THEME.error, background: THEME.errorBg, padding: '8px 12px', borderRadius: THEME.radiusSmInner },
@@ -35,7 +36,7 @@ function LineLinker() {
   const { linked, busy, msg, link } = useLineLinked(LINE_LINKED_CACHE_KEY);
 
   if (linked) {
-    return <div style={S.linkedBadge}>✅ 已連結 LINE 帳號</div>;
+    return <div style={S.linkedBadge}><Icon name="check-circle" size={16} />已連結 LINE 帳號</div>;
   }
 
   if (!canLinkLine()) return null;
@@ -43,7 +44,7 @@ function LineLinker() {
   return (
     <>
       <button type="button" onClick={link} disabled={busy} style={S.linkBtn}>
-        {busy ? '連結中…' : '🔗 連結 LINE 帳號'}
+        {busy ? '連結中…' : <><Icon name="link" size={16} style={{ color: '#06C755' }} />連結 LINE 帳號</>}
       </button>
       <div style={S.linkHint}>連結後，之後從 LINE 開啟會直接登入這個帳號</div>
       {msg === 'success' && <div style={S.msgSuccess}>已連結成功</div>}
@@ -142,6 +143,8 @@ export default function Settings({ session, onClose, onManageTags, onManageOptio
           <span style={S.rowLabel}>管理地點、人名與事件標籤</span>
           <Icon name="chevron-right" size={18} style={{ color: THEME.textFaint }} />
         </button>
+
+        <OtherApps current="calendar" />
 
         {onSignOut && (
           <button type="button" className="btn-reset" style={{ ...S.row, justifyContent: 'center' }} onClick={onSignOut}>

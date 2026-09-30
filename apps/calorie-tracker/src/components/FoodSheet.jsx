@@ -199,7 +199,7 @@ export default function FoodSheet({ app, selectedDate, mealKey, onClose }) {
       {!formOpen && (
         <div className="ps" style={{ flex: 1, overflowY: 'auto', padding: '6px 16px 20px' }}>
           <div style={{ position: 'relative', marginTop: 7 }}>
-            <span style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', fontSize: 14, pointerEvents: 'none' }}>🔍</span>
+            <Icon name="search" size={16} style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-faint)', pointerEvents: 'none' }} />
             <input aria-label="搜尋食物" type="search" enterKeyHint="search" value={search} onChange={(e) => setSearch(e.target.value)}
               placeholder="搜尋食物名稱、品牌、備註"
               style={{ width: '100%', border: 'none', background: 'var(--sunken)', borderRadius: 12, padding: '11px 36px', fontSize: 16, fontWeight: 700, color: 'var(--text)' }} />
@@ -269,7 +269,7 @@ export default function FoodSheet({ app, selectedDate, mealKey, onClose }) {
           {formMode === 'manual' && (
             <>
               <div style={{ marginTop: 10, background: 'var(--sunken)', borderRadius: 14, padding: 12 }}>
-                <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--primary)', marginBottom: 6 }}>✨ AI 搜尋（用一句話描述，自動帶入下面欄位）</div>
+                <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--primary)', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="sparkles" size={14} />AI 搜尋（用一句話描述，自動帶入下面欄位）</div>
                 <form onSubmit={(e) => { e.preventDefault(); aiSearch(); }} style={{ display: 'flex', gap: 8 }}>
                   <input aria-label="AI 搜尋食物" type="search" enterKeyHint="search" value={aiQuery} onChange={(e) => setAiQuery(e.target.value)}
                     placeholder="例如：7-11 御飯糰 鮭魚"

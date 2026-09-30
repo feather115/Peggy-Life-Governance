@@ -16,8 +16,8 @@ export default function ChallengeCreateSheet({ onClose, onCreate, onJoin, repeat
       {!repeatSource && (
         <div style={{ padding: '4px 16px 0' }}>
           <div style={{ display: 'flex', background: 'var(--sunken)', borderRadius: 12, padding: 3, gap: 3 }}>
-            <button onClick={() => setTab('create')} style={tabBtn(tab === 'create')}>＋ 建立</button>
-            <button onClick={() => setTab('join')} style={tabBtn(tab === 'join')}>🔑 加入</button>
+            <button onClick={() => setTab('create')} aria-pressed={tab === 'create'} style={tabBtn(tab === 'create')}><Icon name="plus" size={15} />建立</button>
+            <button onClick={() => setTab('join')} aria-pressed={tab === 'join'} style={tabBtn(tab === 'join')}><Icon name="log-in" size={15} />加入</button>
           </div>
         </div>
       )}
@@ -32,7 +32,8 @@ export default function ChallengeCreateSheet({ onClose, onCreate, onJoin, repeat
 const tabBtn = (active) => ({
   flex: 1, padding: 10, border: 'none', borderRadius: 10, cursor: 'pointer',
   fontSize: 14, fontWeight: 800, fontFamily: 'inherit',
-  background: active ? '#fff' : 'transparent',
+  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+  background: active ? 'var(--surface)' : 'transparent',
   color: active ? 'var(--primary)' : 'var(--text-faint)',
   boxShadow: active ? 'var(--shadow-card)' : 'none',
 });

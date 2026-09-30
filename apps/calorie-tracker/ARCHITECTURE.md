@@ -87,6 +87,9 @@ Supabase ⇄ db.js ⇄ useAppData.js ⇄ App.jsx ⇄ components/*
 - **viewport 不鎖縮放**（無 `maximum-scale` / `user-scalable=no`）；為了避免 iOS 聚焦輸入框自動放大，`base.css` 在觸控裝置把輸入框強制 16px。
 - **字級下限 12px**。
 - **`Sheet.jsx`**：`role="dialog" aria-modal`，開啟時焦點移進面板、`Esc` 關閉（多層時只關最上層）、關閉後焦點還給原觸發元素；新增面板要傳 `label`。**手機返回鍵也會關閉面板**（`@peggy-life/shared/useBackClose`），不會直接離開 app。
+- **icon 與 emoji**：操作與標示用途一律用 `@peggy-life/shared/Icon.jsx`（線條 icon，路徑取自 Lucide；`filled` 可做實心，例如已按讚的愛心）——emoji 在 iOS/Android/LINE 長得不一樣、大小也不齊。**只有內容性的 emoji 保留**：餐別圖示、挑戰頁的 🏆🥇🔥 標題（遊戲化的趣味）、沒有圖片時的 🍳 佔位。
+- **載入/失敗畫面**：`@peggy-life/shared/LoadingSkeleton.jsx` 的 `<LoadingSkeleton />`（灰色色塊排出版面、`.skeleton` 閃爍動畫在 base.css）與 `<LoadError message />`（說明＋「重新載入」按鈕）。
+- **其他 App 入口**：設定頁的 `<OtherApps current="…" />`（shared），連到另外兩個 app 的 LIFF URL；LIFF ID 來自 `VITE_LIFF_ID_CALORIE` / `VITE_LIFF_ID_RECIPE` / `VITE_LIFF_ID_CALENDAR`，沒設就不顯示（見 `.env.example`）。
 - **自選顏色上的文字**：記錄原因標籤、挑戰成員頭像的字色用 `utils.js` 的 `readableOn(color)`，依底色亮度挑深字（`#111`）或白字（淺黃 `#E8A13C` 配白字只有 2.2:1）。超標提示「已超過 X kcal」底色用 `--danger`（原本 `#D9544F` 配白字只有 3.9:1）。
 - **提示與確認**：不用瀏覽器原生 `alert`/`confirm`（在 LINE 內建瀏覽器會帶網址當標題、卡住畫面），一律用 `@peggy-life/shared/feedback.jsx` 的 `toast(message, { tone, action })` 與 `await confirmDialog({ title, message, confirmText, danger })`。`main.jsx` 在 `<Root />` 旁邊掛了 `<FeedbackHost />`。確認框焦點預設在「取消」、Esc/返回鍵/點背景都是取消。`utils.js` 的 `alertError()` 現在是紅色 toast。
 - **刪除**：今日頁的餐點 × **直接刪、給 5 秒「復原」**（復原＝用同樣內容重新 `addMeal`，會排到該餐最後、`food_ref` 不保留——目前沒有地方讀它）。自訂食物、標籤、挑戰的刪除重建會換新 id、斷掉引用，所以維持先用 `confirmDialog` 確認。食物庫面板的成功/失敗提示也改用共用 toast（原本是面板內自己的 toast）。今天時「後一天」按鈕是 `disabled`。

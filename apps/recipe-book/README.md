@@ -69,6 +69,8 @@ npm run dev:recipe-book
 2. **Settings → Root Directory** 設成 `apps/recipe-book`
 3. **Environment Variables** 補上 `VITE_SUPABASE_URL`、`VITE_SUPABASE_ANON_KEY`，以及選填的 `VITE_LIFF_ID`
 
+選填：設定頁「其他 App」入口要顯示另外兩個 app，就加上 `VITE_LIFF_ID_CALORIE` / `VITE_LIFF_ID_RECIPE` / `VITE_LIFF_ID_CALENDAR`（各 app 的 LIFF ID，公開值）；沒設就不顯示那一個。
+
 Vercel 會用本資料夾的 `package.json` 自動偵測 Vite，不影響其他 app。
 
 ---

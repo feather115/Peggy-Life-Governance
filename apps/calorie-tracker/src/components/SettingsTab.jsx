@@ -7,6 +7,7 @@ import { supabase } from '../supabase.js';
 import { canLinkLine, useLineLinked } from '../liff.js';
 import Icon from '@peggy-life/shared/Icon.jsx';
 import { confirmDialog } from '@peggy-life/shared/feedback.jsx';
+import OtherApps from '@peggy-life/shared/OtherApps.jsx';
 
 const TAG_COLORS = ['#E8A13C', '#D9544F', '#EC4899', '#8B5CF6', 'var(--info)', '#5FA8D3', '#14B8A6', 'var(--primary)'];
 
@@ -123,16 +124,18 @@ export default function SettingsTab({ app, session, onSignOut }) {
       {/* Tag Management */}
       <div style={{ background: 'var(--surface)', borderRadius: 24, padding: '20px 18px', marginTop: 12, boxShadow: 'var(--shadow-card)' }}>
         <div style={{ fontSize: 16, fontWeight: 900, color: 'var(--text)', marginBottom: 16 }}>標籤管理</div>
-        <TagGroup title="⏱ 斷食標籤" titleColor="var(--info)" chipBg="var(--info-bg)" chipColor="var(--info)" delColor="#8899DD"
+        <TagGroup title={<><Icon name="timer" size={15} />斷食標籤</>} titleColor="var(--info)" chipBg="var(--info-bg)" chipColor="var(--info)" delColor="#8899DD"
           tags={fastingTagDefs} onDelete={(id) => deleteTagDef('fasting', id).catch((e) => alertError('刪除標籤', e))}
           input={addFastingInput} setInput={setAddFastingInput} onAdd={submitFasting} addBg="var(--info)" placeholder="新增斷食標籤…" />
         <div style={{ height: 20 }} />
-        <TagGroup title="🏷 記錄原因標籤" titleColor="#C4780A" chipBg="#FFF3DC" chipColor="#8B5A00" delColor="#D4923E"
+        <TagGroup title={<><Icon name="tag" size={15} />記錄原因標籤</>} titleColor="#C4780A" chipBg="#FFF3DC" chipColor="#8B5A00" delColor="#D4923E"
           tags={otherTagDefs} onDelete={(id) => deleteTagDef('other', id).catch((e) => alertError('刪除標籤', e))}
           onColor={(id, color) => updateTagColor('other', id, color)}
           input={addOtherInput} setInput={setAddOtherInput} onAdd={submitOther} addBg={addOtherColor} placeholder="新增標籤（如：聚餐、旅行）…"
           color={addOtherColor} setColor={setAddOtherColor} />
       </div>
+
+      <div style={{ marginTop: 12 }}><OtherApps current="calorie" /></div>
 
       {/* Data Management */}
       <div style={{ background: 'var(--surface)', borderRadius: 24, padding: '20px 18px', marginTop: 12, boxShadow: 'var(--shadow-card)' }}>
@@ -155,7 +158,7 @@ function TagGroup({ title, titleColor, chipBg, chipColor, delColor, tags, onDele
   const [editingColorId, setEditingColorId] = useState(null);
   return (
     <div>
-      <div style={{ fontSize: 13, fontWeight: 900, color: titleColor, marginBottom: 8, letterSpacing: 0.3 }}>{title}</div>
+      <div style={{ fontSize: 13, fontWeight: 900, color: titleColor, marginBottom: 8, letterSpacing: 0.3, display: 'flex', alignItems: 'center', gap: 6 }}>{title}</div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, minHeight: 28 }}>
         {tags.map((mt) => (
           <div key={mt.id}>
@@ -203,8 +206,8 @@ function LineLinker() {
 
   if (linked) {
     return (
-      <div style={{ border: 'none', background: 'var(--success-bg)', color: 'var(--success)', fontWeight: 800, fontSize: 13, padding: '10px 16px', borderRadius: 12 }}>
-        ✅ 已連結 LINE 帳號
+      <div style={{ border: 'none', background: 'var(--success-bg)', color: 'var(--success)', fontWeight: 800, fontSize: 13, padding: '10px 16px', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+        <Icon name="check-circle" size={16} />已連結 LINE 帳號
       </div>
     );
   }
@@ -213,8 +216,8 @@ function LineLinker() {
 
   return (
     <>
-      <button onClick={link} disabled={busy} style={{ border: 'none', background: 'var(--sunken)', color: '#06C755', fontWeight: 800, fontSize: 13, padding: '10px 16px', borderRadius: 12, cursor: 'pointer' }}>
-        {busy ? '連結中…' : '🔗 連結 LINE 帳號'}
+      <button onClick={link} disabled={busy} style={{ border: 'none', background: 'var(--sunken)', color: 'var(--text)', fontWeight: 800, fontSize: 13, padding: '10px 16px', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
+        {busy ? '連結中…' : <><Icon name="link" size={16} style={{ color: '#06C755' }} />連結 LINE 帳號</>}
       </button>
       {msg === 'success' && <div style={{ width: '100%', marginTop: 8, fontSize: 13, color: 'var(--success)', background: 'var(--success-bg)', padding: '8px 12px', borderRadius: 10, fontWeight: 700 }}>已連結成功</div>}
       {msg && msg !== 'success' && <div style={{ width: '100%', marginTop: 8, fontSize: 13, color: 'var(--danger)', background: 'var(--danger-bg)', padding: '8px 12px', borderRadius: 10, fontWeight: 700 }}>{msg}</div>}
@@ -240,8 +243,8 @@ function PasswordChanger() {
 
   if (!open) {
     return (
-      <button onClick={() => setOpen(true)} style={{ border: 'none', background: 'var(--sunken)', color: 'var(--text-muted)', fontWeight: 800, fontSize: 13, padding: '10px 16px', borderRadius: 12, cursor: 'pointer' }}>
-        🔑 變更密碼
+      <button onClick={() => setOpen(true)} style={{ border: 'none', background: 'var(--sunken)', color: 'var(--text-muted)', fontWeight: 800, fontSize: 13, padding: '10px 16px', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
+        <Icon name="key" size={16} />變更密碼
       </button>
     );
   }

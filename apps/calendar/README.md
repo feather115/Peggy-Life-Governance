@@ -81,6 +81,8 @@ npm install
    LINE_CHANNEL_ID=1234567890     # 選填，同上
    SUPABASE_SERVICE_ROLE_KEY=eyJ... # 選填，同上（伺服器端用，極機密）
    ```
+
+選填：設定頁「其他 App」入口要顯示另外兩個 app，就加上 `VITE_LIFF_ID_CALORIE` / `VITE_LIFF_ID_RECIPE` / `VITE_LIFF_ID_CALENDAR`（各 app 的 LIFF ID，公開值）；沒設就不顯示那一個。
    LINE 登入用的 `line_links` 對照表跟其他 app 共用，存在獨立的 `shared` schema
    （見 [`ARCHITECTURE.md`](./ARCHITECTURE.md) 說明），不用另外建表，但要確保
    `packages/shared/supabase/2026-07-01_line_links_to_shared.sql` 已經跑過、

@@ -228,7 +228,10 @@ Supabase ⇄ db.js ⇄ use<Domain>.js ⇄ Root.jsx/App.jsx ⇄ components/*
   - **不要寫 `outline: 'none'`**——焦點環由 `base.css` 的 `:focus-visible` 提供，inline 寫了會蓋掉它
   - `cursor: 'pointer'` 已由 `base.css` 提供，不必再寫
   - icon-only 按鈕一定要有 `aria-label`；視覺上小於 44px 的按鈕加 `className="tap"`
-  - icon 用 `@peggy-life/shared/Icon.jsx`，不要用 emoji / 文字符號（✏ × ＋）當操作圖示
+  - icon 用 `@peggy-life/shared/Icon.jsx`，不要用 emoji / 文字符號（✏ × ＋ 🔍 📋）當操作或標示圖示；
+    只有內容性的 emoji（餐別圖示、佔位圖）可以留
+  - 載入中用 `<LoadingSkeleton />`、載入失敗用 `<LoadError message />`（shared），不要只放一行文字
+  - 設定頁放 `<OtherApps current="…" />`，並在 `.env.example` 與 `OtherApps.jsx` 的清單加上新 app
   - 每個 `<input>/<textarea>/<select>` 要有 `aria-label`（或 `<label>` 包住），placeholder 不算
   - 字級不低於 12px
   - 可點的東西一律用 `<button>`（或 `<a href>`），不要 `<div onClick>` / `<span onClick>`——後者鍵盤點不到、也沒有按壓回饋；

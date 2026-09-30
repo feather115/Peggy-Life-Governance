@@ -22,7 +22,7 @@ const S = {
   rowInput: (bold) => ({ flex: 1, minWidth: 0, border: 'none', fontSize: bold ? 15 : 14, fontWeight: bold ? 600 : 400, color: THEME.textDark, background: 'transparent' }),
   usage: { fontSize: 12, color: THEME.textFaint, whiteSpace: 'nowrap' },
   toggleBtn: { border: `1px solid ${THEME.border}`, background: THEME.surface, borderRadius: THEME.radiusSmInner, padding: '5px 10px', fontSize: 12.5, color: THEME.textMuted, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' },
-  deleteBtn: { border: 'none', background: 'none', color: THEME.error, cursor: 'pointer', fontSize: 14, padding: '0 2px' },
+  deleteBtn: { border: 'none', background: 'none', color: THEME.error, cursor: 'pointer', padding: '0 2px', display: 'flex' },
   addRow: (indent) => ({ display: 'flex', alignItems: 'center', gap: 8, marginTop: indent ? 0 : 10, padding: '8px 12px', borderRadius: THEME.radiusSm, border: `1px dashed ${THEME.textFaint}`, background: indent ? 'transparent' : THEME.surface }),
   addInput: { flex: 1, minWidth: 0, border: 'none', fontSize: 14, color: THEME.textDark, background: 'transparent' },
   tagCard: { border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSm, background: THEME.surface, padding: 10 },
@@ -59,7 +59,7 @@ function OptionRow({ option, usage, canDelete, onRename, onToggleArchive, onDele
       />
       <span style={S.usage}>使用 {usage} 次</span>
       <button type="button" style={S.toggleBtn} onClick={onToggleArchive}>{option.archived ? '恢復' : '封存'}</button>
-      {canDelete && <button aria-label="永久刪除" className="tap" type="button" style={S.deleteBtn} title="永久刪除" onClick={onDelete}>🗑</button>}
+      {canDelete && <button aria-label="永久刪除" className="tap" type="button" style={S.deleteBtn} title="永久刪除" onClick={onDelete}><Icon name="trash" size={16} /></button>}
     </div>
   );
 }

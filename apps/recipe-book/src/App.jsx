@@ -8,6 +8,7 @@ import RecipeDetail from './components/RecipeDetail.jsx';
 import RecipeForm from './components/RecipeForm.jsx';
 import SettingsTab from './components/SettingsTab.jsx';
 import TabBar from './components/TabBar.jsx';
+import LoadingSkeleton, { LoadError } from '@peggy-life/shared/LoadingSkeleton.jsx';
 
 function Centered({ children, color = 'var(--text-muted)' }) {
   return (
@@ -26,8 +27,8 @@ export default function App({ session, onSignOut, onExitGuest }) {
   const [editing, setEditing] = useState(null);
   useRefreshOnReturn(recipes.refresh);
 
-  if (!recipes.loaded) return <Centered>載入中…</Centered>;
-  if (recipes.loadError) return <Centered color="var(--danger)">載入失敗：{recipes.loadError}</Centered>;
+  if (!recipes.loaded) return <LoadingSkeleton />;
+  if (recipes.loadError) return <LoadError message={recipes.loadError} />;
 
   const handleBack = () => {
     if (backTab === 'calendar') {

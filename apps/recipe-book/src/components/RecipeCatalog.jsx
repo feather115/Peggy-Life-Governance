@@ -1,6 +1,7 @@
 // Recipe catalog view: search, category tabs, and grid cards.
 import React from 'react';
 import { ALL_CATEGORY } from '../utils.js';
+import Icon from '@peggy-life/shared/Icon.jsx';
 
 const S = {
   viewHome: { padding: '6px 18px 20px' },
@@ -113,9 +114,10 @@ export default function RecipeCatalog({
                   key={t.key}
                   type="button"
                   onClick={() => onToggleOwnership(t.key)}
+                  aria-pressed={on}
                   style={on ? S.ownerChipOn : S.ownerChip}
                 >
-                  <span>{on ? '☑' : '☐'}</span>
+                  <Icon name={on ? 'check-square' : 'square'} size={15} />
                   {t.label}
                 </button>
               );
@@ -128,7 +130,7 @@ export default function RecipeCatalog({
             value={searchQuery}
             onChange={(e) => onSearchQueryChange(e.target.value)}
             type="text"
-            placeholder="🔍 搜尋你想吃什麼料理..."
+            placeholder="搜尋你想吃什麼料理..."
             style={S.search}
           />
         </div>
@@ -170,7 +172,7 @@ export default function RecipeCatalog({
                       ? <img src={recipe.image_url} alt={recipe.title} style={S.cardImage} loading="lazy" />
                       : <div style={S.placeholder}>🍳</div>}
                     {count > 0 && (
-                      <div style={S.likeChip}>{liked ? '❤️' : '🤍'} {count}</div>
+                      <div style={S.likeChip}><Icon name="heart" size={12} filled={liked} />{count}</div>
                     )}
                   </div>
                   <div style={S.cardInfo}>

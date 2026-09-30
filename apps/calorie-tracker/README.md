@@ -35,6 +35,7 @@ npm install
    VITE_SUPABASE_URL=https://你的專案.supabase.co
    VITE_SUPABASE_ANON_KEY=eyJ...
    ```
+   選填：設定頁「其他 App」入口要顯示另外兩個 app，就加上 `VITE_LIFF_ID_CALORIE` / `VITE_LIFF_ID_RECIPE` / `VITE_LIFF_ID_CALENDAR`（各 app 的 LIFF ID，公開值）；沒設就不顯示那一個。部署時也要加到 Vercel 的 Environment Variables。
 
 > 想關掉註冊 email 驗證：Supabase → **Authentication → Providers → Email** → 關閉 *Confirm email*
 

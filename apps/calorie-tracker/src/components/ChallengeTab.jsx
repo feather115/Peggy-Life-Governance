@@ -394,7 +394,7 @@ function ProgressChartCard({ challenge, myUserId, onSetColor }) {
               </button>
               {isMe && onSetColor && (
                 <button aria-label="改顏色" className="tap" onClick={() => setPickerOpen(!pickerOpen)} title="改顏色"
-                  style={{ border: 'none', background: 'transparent', color: 'var(--text-faint)', fontSize: 13, cursor: 'pointer', padding: 2 }}>🎨</button>
+                  style={{ border: 'none', background: 'transparent', color: 'var(--text-faint)', cursor: 'pointer', padding: 2, display: 'flex' }}><Icon name="palette" size={15} /></button>
               )}
             </div>
           );
@@ -633,7 +633,7 @@ function EditName({ challenge, onUpdate }) {
     return (
       <button onClick={() => { setName(challenge.name); setEditing(true); setErr(''); }}
         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: 10, padding: '10px 14px', background: 'var(--surface-alt)', border: 'none', borderRadius: 12, cursor: 'pointer' }}>
-        <span style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 700 }}>✏ 挑戰名稱</span>
+        <span style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="pencil" size={13} />挑戰名稱</span>
         <span style={{ fontSize: 14, color: 'var(--text)', fontWeight: 800, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 180 }}>{challenge.name} ›</span>
       </button>
     );
@@ -679,7 +679,7 @@ function EditEndDate({ challenge, onUpdate }) {
     return (
       <button onClick={() => { setDate(challenge.endDate); setEditing(true); setErr(''); }}
         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: 10, padding: '10px 14px', background: 'var(--surface-alt)', border: 'none', borderRadius: 12, cursor: 'pointer' }}>
-        <span style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 700 }}>📅 結束日期</span>
+        <span style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="calendar" size={13} />結束日期</span>
         <span style={{ fontSize: 14, color: 'var(--text)', fontWeight: 800 }}>{challenge.endDate} ›</span>
       </button>
     );

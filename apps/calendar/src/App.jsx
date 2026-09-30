@@ -26,14 +26,7 @@ import ManageOptions from './components/ManageOptions.jsx';
 import Settings from './components/Settings.jsx';
 import TaskForm from './components/TaskForm.jsx';
 import { toast } from '@peggy-life/shared/feedback.jsx';
-
-function Centered({ children, color = THEME.primary }) {
-  return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, color, fontWeight: 700 }}>
-      {children}
-    </div>
-  );
-}
+import LoadingSkeleton, { LoadError } from '@peggy-life/shared/LoadingSkeleton.jsx';
 
 export default function App({ session, onSignOut }) {
   const userId = session.user.id;
@@ -102,10 +95,10 @@ export default function App({ session, onSignOut }) {
     };
   }, [rec.records, opts.menus, opts.options]);
 
-  if (!rec.loaded || !diaryTags.loaded || !tasksHub.loaded || !opts.loaded) return <Centered>載入中…</Centered>;
-  if (rec.loadError) return <Centered color={THEME.error}>載入失敗：{rec.loadError}</Centered>;
-  if (diaryTags.loadError) return <Centered color={THEME.error}>載入失敗：{diaryTags.loadError}</Centered>;
-  if (tasksHub.loadError) return <Centered color={THEME.error}>載入失敗：{tasksHub.loadError}</Centered>;
+  if (!rec.loaded || !diaryTags.loaded || !tasksHub.loaded || !opts.loaded) return <LoadingSkeleton />;
+  if (rec.loadError) return <LoadError message={rec.loadError} />;
+  if (diaryTags.loadError) return <LoadError message={diaryTags.loadError} />;
+  if (tasksHub.loadError) return <LoadError message={tasksHub.loadError} />;
 
   const handleSaveRecord = async (payload, existingId) => {
     if (existingId) await rec.updateRecord(existingId, payload);

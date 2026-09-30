@@ -9,6 +9,7 @@ import {
   parseSteps,
   parseYieldInfo,
 } from '../utils.js';
+import Icon from '@peggy-life/shared/Icon.jsx';
 
 const S = {
   viewDetail: { padding: '6px 18px 20px' },
@@ -17,7 +18,7 @@ const S = {
   recipeImage: { width: '100%', height: 200, objectFit: 'cover', borderRadius: 16, marginBottom: 14 },
   badgesRow: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 },
   categoryBadge: { background: 'var(--primary)', color: '#fff', padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 800 },
-  yieldBadge: { background: 'var(--surface-alt)', color: 'var(--text-muted)', padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 800 },
+  yieldBadge: { display: 'inline-flex', alignItems: 'center', gap: 4, background: 'var(--surface-alt)', color: 'var(--text-muted)', padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 800 },
   titleRow: { display: 'flex', alignItems: 'center', marginBottom: 10 },
   recipeTitle: { fontSize: 22, fontWeight: 900, color: 'var(--text)', margin: 0 },
   paramsDashboard: { background: 'var(--surface-alt)', borderRadius: 16, padding: 14, marginBottom: 10 },
@@ -26,13 +27,14 @@ const S = {
   paramKey: { fontSize: 12, fontWeight: 800, color: 'var(--text-muted)' },
   paramValue: { fontSize: 16, fontWeight: 900, color: 'var(--text)' },
   scaleController: { background: 'var(--surface-alt)', borderRadius: 16, padding: 14, marginBottom: 10 },
-  scaleLabel: { fontSize: 13, fontWeight: 700, color: 'var(--text)', marginBottom: 8 },
+  scaleLabel: { fontSize: 13, fontWeight: 700, color: 'var(--text)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 },
   scaleInputs: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
   baseName: { fontSize: 14, fontWeight: 800, color: 'var(--text)' },
   weightInput: { border: 'none', background: 'var(--surface)', borderRadius: 14, padding: '10px 12px', fontSize: 16, fontWeight: 800, color: 'var(--text)', width: 80 },
   unitText: { fontSize: 13, color: 'var(--text-muted)', fontWeight: 700 },
   resetBtn: { background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: 14, padding: '8px 14px', fontSize: 13, fontWeight: 800, cursor: 'pointer' },
   scaleAlert: { background: 'var(--primary-soft)', color: 'var(--primary)', borderRadius: 12, padding: '8px 12px', fontSize: 13, fontWeight: 700, marginTop: 8 },
+  sectionTitle: { display: 'inline-flex', alignItems: 'center', gap: 6 },
   sectionDivider: { fontSize: 15, fontWeight: 900, color: 'var(--text)', marginTop: 20, marginBottom: 10 },
   ingredientRow: { cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: 'var(--surface-alt)', borderRadius: 14, marginBottom: 6 },
   ingName: { fontSize: 14, fontWeight: 800, color: 'var(--text)' },
@@ -128,8 +130,8 @@ export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, o
         )}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {isOwner && onEdit && (
-            <button onClick={onEdit} style={{ border: 'none', background: 'var(--primary)', color: '#fff', fontWeight: 900, fontSize: 13, padding: '8px 14px', borderRadius: 14, cursor: 'pointer' }}>
-              ✏️ 編輯
+            <button onClick={onEdit} style={{ border: 'none', background: 'var(--primary)', color: '#fff', fontWeight: 900, fontSize: 13, padding: '8px 14px', borderRadius: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+              <Icon name="pencil" size={14} />編輯
             </button>
           )}
           <div style={{ ...S.hintBadge, marginBottom: 0 }}>✓ 點一下標記進度</div>
@@ -150,7 +152,7 @@ export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, o
                 <span key={tag} style={S.categoryBadge}>{tag}</span>
               ))}
               {parsedYieldInfo.map((yieldText, idx) => (
-                <span key={idx} style={S.yieldBadge}>🍽️ {yieldText}</span>
+                <span key={idx} style={S.yieldBadge}><Icon name="utensils" size={12} />{yieldText}</span>
               ))}
             </div>
 
@@ -161,14 +163,14 @@ export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, o
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
               {isOwner ? (
                 <div style={{ background: 'var(--surface-alt)', padding: '8px 12px', borderRadius: 12, fontSize: 13, fontWeight: 800, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                  ❤️ {likeCount} 人按讚
+                  <Icon name="heart" size={14} filled style={{ color: 'var(--like)' }} />{likeCount} 人按讚
                   <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 700 }}>
                     · {recipe.is_shared ? '已分享' : '未分享（按編輯可開啟）'}
                   </span>
                 </div>
               ) : isGuest ? (
-                <div style={{ background: 'var(--surface-alt)', padding: '8px 12px', borderRadius: 12, fontSize: 13, fontWeight: 800, color: 'var(--text-muted)' }}>
-                  ❤️ {likeCount} 人按讚 · 別人分享的食譜
+                <div style={{ background: 'var(--surface-alt)', padding: '8px 12px', borderRadius: 12, fontSize: 13, fontWeight: 800, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <Icon name="heart" size={14} filled style={{ color: 'var(--like)' }} />{likeCount} 人按讚 · 別人分享的食譜
                 </div>
               ) : (
                 <button
@@ -177,8 +179,8 @@ export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, o
                   disabled={likeBusy}
                   style={{
                     border: 'none',
-                    background: isLiked ? '#FFE4EC' : 'var(--surface-alt)',
-                    color: isLiked ? '#C2185B' : 'var(--text)',
+                    background: isLiked ? 'var(--like-bg)' : 'var(--surface-alt)',
+                    color: isLiked ? 'var(--like)' : 'var(--text)',
                     padding: '8px 14px',
                     borderRadius: 12,
                     fontSize: 13,
@@ -189,8 +191,8 @@ export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, o
                     gap: 6,
                   }}
                 >
-                  {isLiked ? '❤️' : '🤍'} {likeCount}
-                  <span style={{ fontSize: 12, fontWeight: 700, color: isLiked ? '#C2185B' : 'var(--text-muted)' }}>
+                  <Icon name="heart" size={15} filled={isLiked} />{likeCount}
+                  <span style={{ fontSize: 12, fontWeight: 700, color: isLiked ? 'var(--like)' : 'var(--text-muted)' }}>
                     {isLiked ? '已加入喜愛' : '加入喜愛'}
                   </span>
                 </button>
@@ -223,7 +225,7 @@ export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, o
 
           {baseIng && (
             <div style={S.scaleController}>
-              <div style={S.scaleLabel}>⚖️ 依據主食材等比例縮放配方：</div>
+              <div style={S.scaleLabel}><Icon name="scale" size={15} />依據主食材等比例縮放配方：</div>
               <div style={S.scaleInputs}>
                 <span style={S.baseName}>{baseIng.name}</span>
                 <input aria-label={`${baseIng.name} 用量`}
@@ -241,7 +243,7 @@ export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, o
               </div>
               {isScaled && (
                 <div style={S.scaleAlert}>
-                  📢 比例已調整為原本的 <b>{scaleRatio.toFixed(2)}</b> 倍
+                  <Icon name="info" size={14} style={{ marginRight: 4 }} />比例已調整為原本的 <b>{scaleRatio.toFixed(2)}</b> 倍
                 </div>
               )}
             </div>
@@ -251,8 +253,8 @@ export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, o
             <div key={group.typeName}>
               <div style={S.sectionDivider}>
                 {group.typeName === 'DEFAULT'
-                  ? <span>📦 準備食材</span>
-                  : <span>📦 準備食材：{group.typeName}</span>}
+                  ? <span style={S.sectionTitle}><Icon name="list" size={16} />準備食材</span>
+                  : <span style={S.sectionTitle}><Icon name="list" size={16} />準備食材：{group.typeName}</span>}
               </div>
 
               <div>
@@ -284,8 +286,8 @@ export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, o
             <div key={stepGroup.typeName}>
               <div style={S.sectionDivider}>
                 {stepGroup.typeName === 'DEFAULT'
-                  ? <span>⏱️ 料理工序</span>
-                  : <span>⏱️ 料理工序：{stepGroup.typeName}</span>}
+                  ? <span style={S.sectionTitle}><Icon name="clock" size={16} />料理工序</span>
+                  : <span style={S.sectionTitle}><Icon name="clock" size={16} />料理工序：{stepGroup.typeName}</span>}
               </div>
 
               <ol style={S.stepsOl}>
@@ -312,7 +314,7 @@ export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, o
 
           {formattedNotes.length > 0 && (
             <div>
-              <div style={S.sectionDivider}><span>💡 心得與備註</span></div>
+              <div style={S.sectionDivider}><span style={S.sectionTitle}><Icon name="lightbulb" size={16} />心得與備註</span></div>
               <ul style={{ ...S.notesList, ...S.noteSection }}>
                 {formattedNotes.map((note, index) => {
                   const id = `note-${recipe.id}-${index}`;
@@ -337,7 +339,7 @@ export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, o
 
           {recipe.last_cooked_at && (
             <div style={S.lastCooked}>
-              🕒 上次製作：{formatDate(recipe.last_cooked_at)}
+              <Icon name="clock" size={13} style={{ marginRight: 4 }} />上次製作：{formatDate(recipe.last_cooked_at)}
             </div>
           )}
         </div>

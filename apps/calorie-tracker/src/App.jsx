@@ -11,10 +11,7 @@ import SettingsTab from './components/SettingsTab.jsx';
 import ChallengeTab from './components/ChallengeTab.jsx';
 import FoodSheet from './components/FoodSheet.jsx';
 import AdvancedSheet from './components/AdvancedSheet.jsx';
-
-function Centered({ children, color = 'var(--text-muted)' }) {
-  return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, color, fontWeight: 700 }}>{children}</div>;
-}
+import LoadingSkeleton, { LoadError } from '@peggy-life/shared/LoadingSkeleton.jsx';
 
 export default function App({ session, onSignOut }) {
   const app = useAppData(session.user.id);
@@ -26,8 +23,8 @@ export default function App({ session, onSignOut }) {
   const [advancedOpen, setAdvancedOpen] = useState(false);
   useRefreshOnReturn(app.refresh);
 
-  if (!app.loaded) return <Centered>載入中…</Centered>;
-  if (app.loadError) return <Centered color="var(--danger)">載入失敗：{app.loadError}</Centered>;
+  if (!app.loaded) return <LoadingSkeleton />;
+  if (app.loadError) return <LoadError message={app.loadError} />;
 
   const changeTab = (t) => { setTab(t); setSheetMeal(null); setAdvancedOpen(false); };
   const openDateInToday = (dateKey) => {

@@ -1,6 +1,7 @@
 // 新增 / 編輯食譜的表單。recipe = null 為新增模式。
 import React, { useState } from 'react';
 import { parseIngredients, parseNotes, parseSteps, parseYieldInfo } from '../utils.js';
+import Icon from '@peggy-life/shared/Icon.jsx';
 
 // 可編輯清單（步驟／心得／製作參數共用）。
 // value 可以是字串（steps/notes）或物件（parameters），用 set() 換整筆、用 patch() 改物件的部分欄位。
@@ -252,9 +253,9 @@ export default function RecipeForm({ recipe, onSave, onCancel, onDelete }) {
           <button
             type="button"
             onClick={() => { setImportOpen((v) => !v); setImportError(''); }}
-            style={{ border: '1px dashed var(--text-muted)', background: 'transparent', color: 'var(--text-muted)', padding: '8px 14px', borderRadius: 12, fontSize: 12, fontWeight: 900, cursor: 'pointer', width: '100%' }}
+            style={{ border: '1px dashed var(--text-muted)', background: 'transparent', color: 'var(--text-muted)', padding: '8px 14px', borderRadius: 12, fontSize: 12, fontWeight: 900, cursor: 'pointer', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}
           >
-            {importOpen ? '× 關閉 JSON 匯入' : '📥 用 JSON 匯入（之後仍可編輯）'}
+            {importOpen ? <><Icon name="x" size={14} />關閉 JSON 匯入</> : <><Icon name="download" size={14} />用 JSON 匯入（之後仍可編輯）</>}
           </button>
           {importOpen && (
             <div style={{ marginTop: 8 }}>
@@ -375,7 +376,7 @@ export default function RecipeForm({ recipe, onSave, onCancel, onDelete }) {
 
         <label style={{ ...S.label, display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
           <input type="checkbox" checked={isShared} onChange={(e) => setIsShared(e.target.checked)} />
-          🌐 分享給其他人（取消勾選則只有自己看得到）
+          <Icon name="globe" size={16} />分享給其他人（取消勾選則只有自己看得到）
         </label>
 
         {error && <div style={S.errorBox}>{error}</div>}
@@ -393,9 +394,9 @@ export default function RecipeForm({ recipe, onSave, onCancel, onDelete }) {
               type="button"
               onClick={handleDelete}
               disabled={busy}
-              style={{ width: '100%', border: 'none', background: confirmDelete ? 'var(--danger-bg)' : 'var(--surface-alt)', color: confirmDelete ? 'var(--danger)' : 'var(--text-muted)', borderRadius: 14, padding: '12px 14px', fontSize: 13, fontWeight: 900, cursor: 'pointer' }}
+              style={{ width: '100%', border: 'none', background: confirmDelete ? 'var(--danger-bg)' : 'var(--surface-alt)', color: confirmDelete ? 'var(--danger)' : 'var(--text-muted)', borderRadius: 14, padding: '12px 14px', fontSize: 13, fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
             >
-              {confirmDelete ? '⚠️ 確認刪除（無法復原，再按一次）' : '🗑️ 刪除這個食譜'}
+              {confirmDelete ? '確認刪除（無法復原，再按一次）' : <><Icon name="trash" size={15} />刪除這個食譜</>}
             </button>
           </div>
         )}

@@ -46,6 +46,9 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
   `useTasks()` 有關，但「目前在看哪個 tab」統一由 `useRecords.view` 控制，不要另外開一份 view state。
 - **回到 app 自動更新**：`App.jsx` 用 `@peggy-life/shared/useRefreshOnReturn`，切到別的 app（LINE 聊天、鎖螢幕）**超過 30 秒**再回來，就呼叫資料中樞的 `refresh()` 靜默重抓。refresh 不動 `loaded`（畫面不會閃回載入中），失敗只 console.warn、保留舊資料。四個中樞（`useRecords`/`useDiaryTags`/`useTasks`/`useOptions`）各有 `refresh()`；`useDiaryTags.refresh` 抓到空的就不動（預設分類種子只在初次載入做）。
 - **提示與確認**：不用瀏覽器原生 `alert`/`confirm`（在 LINE 內建瀏覽器會帶網址當標題、卡住畫面），一律用 `@peggy-life/shared/feedback.jsx` 的 `toast(message, { tone, action })` 與 `await confirmDialog({ title, message, confirmText, danger })`。`main.jsx` 在 `<Root />` 旁邊掛了 `<FeedbackHost />`。確認框焦點預設在「取消」、Esc/返回鍵/點背景都是取消。紀錄表單的未儲存防呆、選項庫永久刪除、刪除分類細節都用 `confirmDialog`；勾掉任務後的「已完成…下次到期」也改用共用 toast（原本是 App.jsx 自己的）。
+- **icon 與 emoji**：操作與標示用途一律用 `@peggy-life/shared/Icon.jsx`（線條 icon，路徑取自 Lucide；`filled` 可做實心，例如已按讚的愛心）——emoji 在 iOS/Android/LINE 長得不一樣、大小也不齊。**只有內容性的 emoji 保留**：餐別圖示、挑戰頁的 🏆🥇🔥 標題（遊戲化的趣味）、沒有圖片時的 🍳 佔位。
+- **載入/失敗畫面**：`@peggy-life/shared/LoadingSkeleton.jsx` 的 `<LoadingSkeleton />`（灰色色塊排出版面、`.skeleton` 閃爍動畫在 base.css）與 `<LoadError message />`（說明＋「重新載入」按鈕）。
+- **其他 App 入口**：設定頁的 `<OtherApps current="…" />`（shared），連到另外兩個 app 的 LIFF URL；LIFF ID 來自 `VITE_LIFF_ID_CALORIE` / `VITE_LIFF_ID_RECIPE` / `VITE_LIFF_ID_CALENDAR`，沒設就不顯示（見 `.env.example`）。
 - **表單錯誤訊息**（紀錄/任務/選項庫）：`role="alert"`，出現時用 `utils.js` 的 `scrollIntoViewOnMount` 捲到畫面中間（`key={error}` 讓訊息改變時重新捲動）。不能用 smooth 捲動——錯誤框插在頁面上方時瀏覽器的捲動錨定會把動畫中斷，實測會停在錯誤框上面看不到。
 
 ---

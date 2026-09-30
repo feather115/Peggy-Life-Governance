@@ -39,7 +39,7 @@ export default function FoodHistoryCard({ app }) {
 
   return (
     <div style={{ background: 'var(--surface)', borderRadius: 24, padding: '20px 16px', marginTop: 12, boxShadow: 'var(--shadow-card)' }}>
-      <div style={{ fontSize: 16, fontWeight: 900, color: 'var(--text)', marginBottom: 12 }}>🔍 飲食歷史</div>
+      <div style={{ fontSize: 16, fontWeight: 900, color: 'var(--text)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}><Icon name="search" size={17} />飲食歷史</div>
       <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
         <button onClick={() => setTab('search')} style={tabBtn(tab === 'search')}>搜尋食物</button>
         <button onClick={() => setTab('byMeal')} style={tabBtn(tab === 'byMeal')}>依餐別統計</button>
@@ -74,7 +74,7 @@ export default function FoodHistoryCard({ app }) {
                           <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
                             {copiedKey === entryKey
                               ? <span style={{ fontSize: 12, color: 'var(--primary)', fontWeight: 800 }}>已加入菜單 ✓</span>
-                              : <button aria-label="複製到食物庫菜單" className="tap" onClick={() => copyToMenu(e, entryKey)} title="複製到食物庫菜單" style={{ border: 'none', background: 'var(--bg)', color: 'var(--primary)', width: 26, height: 26, borderRadius: '50%', cursor: 'pointer', fontSize: 12 }}>📋</button>}
+                              : <button aria-label="複製到食物庫菜單" className="tap" onClick={() => copyToMenu(e, entryKey)} title="複製到食物庫菜單" style={{ border: 'none', background: 'var(--bg)', color: 'var(--primary)', width: 26, height: 26, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}><Icon name="copy" size={13} /></button>}
                             <button aria-label="編輯這筆" className="tap" onClick={() => setEditing({ date: e.date, mealKey: e.mealKey, item: e.item })} title="編輯這筆" style={{ border: 'none', background: 'var(--bg)', color: 'var(--text-muted)', width: 26, height: 26, borderRadius: '50%', cursor: 'pointer', fontSize: 12 }}><Icon name="pencil" size={14} /></button>
                           </div>
                         </div>

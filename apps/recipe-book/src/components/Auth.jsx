@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../supabase.js';
 import { canLinkLine, retryLineAuthorization } from '../liff.js';
+import Icon from '@peggy-life/shared/Icon.jsx';
 
 export default function Auth({ lineDebug, onGuest }) {
   const [mode, setMode] = useState('signin'); // 'signin' | 'signup' | 'forgot'
@@ -102,9 +103,9 @@ export default function Auth({ lineDebug, onGuest }) {
                 type="button"
                 onClick={handleRetryAuthorization}
                 disabled={authRetryBusy}
-                style={{ display: 'block', width: '100%', marginTop: 10, border: 'none', background: '#06C755', color: '#fff', fontWeight: 900, fontSize: 13, padding: '10px 12px', borderRadius: 10, cursor: 'pointer' }}
+                style={{ display: 'block', width: '100%', marginTop: 10, border: 'none', background: '#06C755', color: '#fff', fontWeight: 900, fontSize: 13, padding: '10px 12px', borderRadius: 10, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
               >
-                {authRetryBusy ? '處理中…' : '🔄 重新申請 LINE 授權'}
+                {authRetryBusy ? '處理中…' : <><Icon name="refresh" size={15} />重新申請 LINE 授權</>}
               </button>
             )}
             {authRetryMsg && (
@@ -143,9 +144,9 @@ export default function Auth({ lineDebug, onGuest }) {
             <button
               type="button"
               onClick={onGuest}
-              style={{ width: '100%', border: 'none', background: 'var(--surface-alt)', color: 'var(--text)', fontWeight: 900, fontSize: 14, padding: 12, borderRadius: 14, cursor: 'pointer' }}
+              style={{ width: '100%', border: 'none', background: 'var(--surface-alt)', color: 'var(--text)', fontWeight: 900, fontSize: 14, padding: 12, borderRadius: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
             >
-              👀 以訪客身分瀏覽分享的食譜
+              <Icon name="eye" size={16} />以訪客身分瀏覽分享的食譜
             </button>
             <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-faint)', fontWeight: 700, textAlign: 'center', lineHeight: 1.5 }}>
               訪客只能看別人分享出來的食譜，無法新增、編輯，也沒有料理行事曆。

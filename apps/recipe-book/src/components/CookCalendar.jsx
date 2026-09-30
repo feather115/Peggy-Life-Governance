@@ -240,7 +240,7 @@ export default function CookCalendar({ recipes, cookRecords, cookRecordError, on
                   <div style={{ marginTop: 5 }}>
                     <input aria-label="新增備註"
                       type="text"
-                      placeholder="📝 新增備註（如：微辣、偏甜）..."
+                      placeholder="新增備註（如：微辣、偏甜）..."
                       value={editingNotes[record.id] !== undefined ? editingNotes[record.id] : (record.notes || '')}
                       onChange={(e) => setEditingNotes((prev) => ({ ...prev, [record.id]: e.target.value }))}
                       onBlur={() => handleSaveNotes(record.id, editingNotes[record.id])}
@@ -282,7 +282,7 @@ export default function CookCalendar({ recipes, cookRecords, cookRecordError, on
                 type="text"
                 value={recipeQuery}
                 onChange={(e) => setRecipeQuery(e.target.value)}
-                placeholder="🔍 輸入關鍵字搜尋料理..."
+                placeholder="輸入關鍵字搜尋料理..."
                 style={S.select}
                 autoFocus
               />

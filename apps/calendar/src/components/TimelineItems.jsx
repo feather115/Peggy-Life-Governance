@@ -1,11 +1,12 @@
 // 三個檢視共用的時間軸渲染：Day/Week/Month 都用 <TimelineItems> 渲染整條清單。
 // 事件與日記合併後只剩兩種項目：紀錄（record）與任務（task）。一張紀錄卡把計畫面
-// （標題+備註+選項庫標籤）與回顧面（今天的感覺+＃注記+分類標籤+📍👤）疊在一起，
+// （標題+備註+選項庫標籤）與回顧面（今天的感覺+＃注記+分類標籤+地點/同伴）疊在一起，
 // 有什麼顯示什麼。改這裡一次，三個檢視同時生效。
 import React, { useState } from 'react';
 import { INTERVAL_UNIT_LABEL, formatRecordTime } from '../utils.js';
 import { THEME, categoryAccentForTag } from '../theme.js';
 import TaskCompleteRow from './TaskCompleteRow.jsx';
+import Icon from '@peggy-life/shared/Icon.jsx';
 
 const S = {
   list: { display: 'flex', flexDirection: 'column', gap: 8 },
@@ -24,10 +25,9 @@ const S = {
   tagChip: { fontSize: 12.5, fontWeight: 600, color: THEME.textMuted, background: THEME.bg, padding: '4px 10px', borderRadius: 999 },
   tagsRow: { display: 'flex', flexWrap: 'wrap', gap: 8 },
   meta: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '4px 14px', fontSize: 12.5, color: THEME.textMuted },
-  // 分類標籤 chip 與 📍👤 資訊列同一行（放不下才換行）
+  // 分類標籤 chip 與地點/同伴資訊列同一行（放不下才換行）
   footerRow: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '6px 12px' },
   metaItem: { display: 'inline-flex', alignItems: 'center', gap: 4, fontWeight: 500 },
-  metaIcon: { fontSize: 12 },
   empty: { fontSize: 13, color: THEME.textFaint },
   taskCard: { padding: '12px 14px', background: THEME.surfaceAlt, borderRadius: THEME.radiusSm, border: `1px dashed ${THEME.border}` },
   taskRow: { display: 'flex', gap: 12, alignItems: 'center' },
@@ -56,7 +56,7 @@ export function DiaryTags({ record, categories, fallback, onTint = false }) {
   );
 }
 
-// 📍 一個地點一個 span、👤 同伴全部合併在一個 span（設計稿的底部資訊列）
+// 地點一個一個 span、同伴全部合併在一個 span（設計稿的底部資訊列）；圖示用線條 icon（emoji 在各平台長得不一樣）
 function MetaRow({ locations, people }) {
   const locs = locations || [];
   const ppl = people || [];
@@ -64,10 +64,10 @@ function MetaRow({ locations, people }) {
   return (
     <div style={S.meta}>
       {locs.map((loc) => (
-        <span key={loc} style={S.metaItem}><span style={S.metaIcon}>📍</span>{loc}</span>
+        <span key={loc} style={S.metaItem}><Icon name="map-pin" size={13} />{loc}</span>
       ))}
       {ppl.length > 0 && (
-        <span style={S.metaItem}><span style={S.metaIcon}>👤</span>{ppl.join(', ')}</span>
+        <span style={S.metaItem}><Icon name="user" size={13} />{ppl.join(', ')}</span>
       )}
     </div>
   );
@@ -165,7 +165,7 @@ export default function TimelineItems({ timeline, categories, onRecordClick, onT
               </>
             )}
 
-            {isEmpty && <span style={S.empty}>✎ 這則紀錄還沒有內容</span>}
+            {isEmpty && <span style={{ ...S.empty, display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="pencil" size={13} />這則紀錄還沒有內容</span>}
           </Card>
         );
       })}

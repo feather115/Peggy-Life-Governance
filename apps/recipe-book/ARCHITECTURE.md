@@ -265,6 +265,12 @@ LINE，其他 app 就能即時識別並支援 LINE 自動免密碼登入。
 ### 配方等比例縮放
 `RecipeDetail.jsx` 裡有一個輸入框可以填入主食材（`is_base: true`）的新重量（克），所有食材的數量會依比例即時換算。重設按鈕清空輸入恢復原始值。縮放只影響畫面顯示，不改 DB。
 
+### 介面慣例
+- **icon 與 emoji**：操作與標示用途一律用 `@peggy-life/shared/Icon.jsx`（線條 icon，路徑取自 Lucide；`filled` 可做實心，例如已按讚的愛心）——emoji 在 iOS/Android/LINE 長得不一樣、大小也不齊。**只有內容性的 emoji 保留**：餐別圖示、挑戰頁的 🏆🥇🔥 標題（遊戲化的趣味）、沒有圖片時的 🍳 佔位。
+- **載入/失敗畫面**：`@peggy-life/shared/LoadingSkeleton.jsx` 的 `<LoadingSkeleton />`（灰色色塊排出版面、`.skeleton` 閃爍動畫在 base.css）與 `<LoadError message />`（說明＋「重新載入」按鈕）。
+- **其他 App 入口**：設定頁的 `<OtherApps current="…" />`（shared），連到另外兩個 app 的 LIFF URL；LIFF ID 來自 `VITE_LIFF_ID_CALORIE` / `VITE_LIFF_ID_RECIPE` / `VITE_LIFF_ID_CALENDAR`，沒設就不顯示（見 `.env.example`）。
+- 按讚用 `--like` / `--like-bg`（`theme.css`）。
+
 ### 點一下標記完成
 食材、步驟、心得**點一下**就標記完成（加刪除線），再點一下恢復；`role="checkbox"` + `aria-checked`，鍵盤 Space/Enter 也能切換。
 狀態存在 React state（`completedItems`），離開頁面就重設，不存 DB。

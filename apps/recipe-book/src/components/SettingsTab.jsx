@@ -1,6 +1,8 @@
 // Settings tab: account email, nickname, LINE account linking, sign out.
 import React, { useEffect, useState } from 'react';
 import { canLinkLine, useLineLinked } from '../liff.js';
+import OtherApps from '@peggy-life/shared/OtherApps.jsx';
+import Icon from '@peggy-life/shared/Icon.jsx';
 
 export default function SettingsTab({ session, myDisplayName, onSetDisplayName, onSignOut }) {
   const [nameInput, setNameInput] = useState(myDisplayName);
@@ -65,6 +67,7 @@ export default function SettingsTab({ session, myDisplayName, onSetDisplayName, 
           </div>
         )}
       </div>
+      <div style={{ marginTop: 12 }}><OtherApps current="recipe" /></div>
     </div>
   );
 }
@@ -77,8 +80,8 @@ function LineLinker() {
 
   if (linked) {
     return (
-      <div style={{ border: 'none', background: 'var(--success-bg)', color: 'var(--success)', fontWeight: 800, fontSize: 13, padding: '10px 16px', borderRadius: 12 }}>
-        ✅ 已連結 LINE 帳號
+      <div style={{ border: 'none', background: 'var(--success-bg)', color: 'var(--success)', fontWeight: 800, fontSize: 13, padding: '10px 16px', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+        <Icon name="check-circle" size={16} />已連結 LINE 帳號
       </div>
     );
   }
@@ -87,8 +90,8 @@ function LineLinker() {
 
   return (
     <>
-      <button onClick={link} disabled={busy} style={{ border: 'none', background: 'var(--sunken)', color: '#06C755', fontWeight: 800, fontSize: 13, padding: '10px 16px', borderRadius: 12, cursor: 'pointer' }}>
-        {busy ? '連結中…' : '🔗 連結 LINE 帳號'}
+      <button onClick={link} disabled={busy} style={{ border: 'none', background: 'var(--sunken)', color: 'var(--text)', fontWeight: 800, fontSize: 13, padding: '10px 16px', borderRadius: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+        {busy ? '連結中…' : <><Icon name="link" size={16} style={{ color: '#06C755' }} />連結 LINE 帳號</>}
       </button>
       {msg === 'success' && <div style={{ width: '100%', marginTop: 8, fontSize: 13, color: 'var(--success)', background: 'var(--success-bg)', padding: '8px 12px', borderRadius: 10, fontWeight: 700 }}>已連結成功</div>}
       {msg && msg !== 'success' && <div style={{ width: '100%', marginTop: 8, fontSize: 13, color: 'var(--danger)', background: 'var(--danger-bg)', padding: '8px 12px', borderRadius: 10, fontWeight: 700 }}>{msg}</div>}
