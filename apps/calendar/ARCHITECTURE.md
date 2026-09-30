@@ -58,7 +58,7 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
 | **日檢視（紀錄+任務合併時間軸、新增按鈕）** | `src/components/DayView.jsx` |
 | **月/週/日/任務切換 tab、回到今天** | `src/components/ViewTabs.jsx` |
 | **時間軸卡的共用渲染（紀錄卡/任務卡、分類標籤 chip、地點/同伴小字）** | `src/components/TimelineItems.jsx` |
-| **新增/編輯紀錄表單（計畫面：標題/顏色/標籤/備註；回顧面：今天感覺/＃注記/分類標籤，可收合）** | `src/components/RecordForm.jsx` |
+| **新增/編輯紀錄表單（標題在最上面；計畫面：顏色/標籤/備註；回顧面：今天感覺/＃注記/分類標籤，可收合）** | `src/components/RecordForm.jsx` |
 | **時間選擇（預設 30 分鐘一格下拉選單，可切換手動輸入）** | `src/components/TimeSelect.jsx` |
 | **地點/和誰的歷史選單輸入（下拉選歷史值，可切自行輸入，人名顯示成 tag chips）** | `src/components/HistoryFields.jsx` |
 | **設定頁（帳號/暱稱/LINE 連結、管理標籤入口、登出）** | `src/components/Settings.jsx` |
@@ -210,9 +210,10 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
   白底才不會被吃掉：分類標籤 chip 走 `DiaryTags onTint`、＃注記 pill 與選項庫標籤
   chip 直接換 `THEME.surface`（`hashtagBg` 跟 `primarySoft` 剛好同色）。
 - **`RecordForm.jsx`** — 新增/編輯紀錄的**單一表單**（合併前的 `EventForm` + `DiaryForm`）。
-  頂部是時間區（全天開關、開始/結束時間，日期 `<input type="date">` + `TimeSelect`）+
+  **最上面是標題**（新增模式輸入時列出過去相同標題建議，點擊帶入標題+顏色），接著是時間區
+  （全天開關、開始/結束時間，日期 `<input type="date">` + `TimeSelect`）+
   地點/和誰（`HistoryFields.jsx` 的 `PeopleSelect` 多選，地點與和誰同一套）。下面分兩區：
-  **計畫**（標題——新增模式輸入時列出過去相同標題建議，點擊帶入標題+顏色；7 色顏色選擇器；
+  **計畫**（7 色顏色選擇器；
   選項庫標籤 `PeopleSelect`；備註 `description`）與 **回顧 · 心情**（今天的感覺 `note`；
   ＃快速注記 `hashtags`——Enter/「加入」變深藍 chip、＃由系統加、前導 #/＃ 會被剝掉、重複
   不再加；chip 內的左右按鈕可前後調整陣列順序，儲存後保留；依分類分組的標籤選擇卡片

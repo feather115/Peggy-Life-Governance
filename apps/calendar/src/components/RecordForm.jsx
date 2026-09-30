@@ -356,6 +356,22 @@ export default function RecordForm({ record, defaultDateKey, allRecords = [], ca
       <div style={S.body}>
         {error && <div style={S.errorBox}>{error}</div>}
 
+        {/* ---- 標題（放最前面） ---- */}
+        <div style={S.field}>
+          <div style={S.label}>標題 <span style={{ color: THEME.textFaint }}>(選填)</span></div>
+          <input aria-label="標題" style={S.input} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="例如：牙醫回診" />
+          {titleSuggestions.length > 0 && (
+            <div style={S.suggestions}>
+              {titleSuggestions.map(([t, r]) => (
+                <div key={t} style={S.suggestionChip} onClick={() => { setTitle(t); setColor(r.color || EVENT_COLORS[0]); }}>
+                  <span style={{ ...S.suggestionDot, background: r.color || THEME.primary }} />
+                  <span>{t}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* ---- 時間 ---- */}
         <div style={S.toggleRow}>
           <div style={S.toggleLabel}>全天</div>
@@ -408,21 +424,6 @@ export default function RecordForm({ record, defaultDateKey, allRecords = [], ca
 
         {/* ---- 計畫面 ---- */}
         <div style={S.sectionHeader}><span>計畫</span><span style={S.sectionRule} /></div>
-
-        <div style={S.field}>
-          <div style={S.label}>標題 <span style={{ color: THEME.textFaint }}>(選填)</span></div>
-          <input aria-label="標題" style={S.input} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="例如：牙醫回診" />
-          {titleSuggestions.length > 0 && (
-            <div style={S.suggestions}>
-              {titleSuggestions.map(([t, r]) => (
-                <div key={t} style={S.suggestionChip} onClick={() => { setTitle(t); setColor(r.color || EVENT_COLORS[0]); }}>
-                  <span style={{ ...S.suggestionDot, background: r.color || THEME.primary }} />
-                  <span>{t}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
 
         <div style={S.field}>
           <div style={S.label}>顏色</div>
