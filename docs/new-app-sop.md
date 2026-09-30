@@ -204,6 +204,8 @@ Supabase ⇄ db.js ⇄ use<Domain>.js ⇄ Root.jsx/App.jsx ⇄ components/*
     的 `loadAll` 與 recipe-book `useRecipes.js` 的初始載入）
   - **setState 的 updater 必須是純函式**——不要在 `setX((prev) => ...)` 裡面打 API 或呼叫
     有副作用的函式（React 可能重複呼叫 updater），先在外面算好 next 值再 `setX(next)`
+- 資料中樞要提供 `refresh()`（靜默重抓、不動 `loaded`、失敗保留舊資料），`App.jsx` 用
+  `useRefreshOnReturn(hub.refresh)` 接上，使用者從 LINE 切回來時資料才會是新的
 - 樂觀更新（optimistic update）的模式：先更新本地 state，API 失敗就 rollback
   （參考 recipe-book `useRecipes.js` 的 `toggleLike`）
 

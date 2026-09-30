@@ -8,6 +8,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Icon from '@peggy-life/shared/Icon.jsx';
 import { useBackClose } from '@peggy-life/shared/useBackClose';
+import { useRefreshOnReturn } from '@peggy-life/shared/useRefreshOnReturn';
 import { useRecords } from './useRecords.js';
 import { useDiaryTags } from './useDiaryTags.js';
 import { useTasks } from './useTasks.js';
@@ -46,6 +47,7 @@ export default function App({ session, onSignOut }) {
 
   const [overlay, setOverlay] = useState(null);
   const closeOverlay = () => setOverlay(null);
+  useRefreshOnReturn(() => { rec.refresh(); diaryTags.refresh(); tasksHub.refresh(); opts.refresh(); });
 
   // 手機返回鍵：管理頁回設定頁、其他覆蓋畫面直接關閉（紀錄表單有未儲存防呆，自己在 RecordForm 裡處理）
   useBackClose(overlay !== null && overlay.type !== 'record', () => {

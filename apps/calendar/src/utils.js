@@ -159,3 +159,10 @@ export function addInterval(dateKey, value, unit) {
 export function diffDays(a, b) {
   return Math.round((parseDateKey(a) - parseDateKey(b)) / 86400000);
 }
+
+// 表單錯誤訊息的 ref：出現時捲到畫面中間（長表單存檔失敗時，錯誤在頂端會被捲出畫面外、使用者以為沒反應）。
+// 要是模組層級的固定函式，React 才只在掛上時呼叫一次；訊息改變時搭配 key={error} 重新掛上。
+// 不用 smooth：錯誤框插進頁面上方時瀏覽器的捲動錨定會把平滑捲動中斷，實測會停在錯誤框上面看不到
+export function scrollIntoViewOnMount(el) {
+  el?.scrollIntoView({ block: 'center' });
+}

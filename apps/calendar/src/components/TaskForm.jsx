@@ -1,7 +1,7 @@
 // 新增 / 編輯週期性任務。task = null 為新增模式。
 import React, { useState } from 'react';
 import { THEME } from '../theme.js';
-import { todayKey } from '../utils.js';
+import { todayKey, scrollIntoViewOnMount } from '../utils.js';
 import Icon from '@peggy-life/shared/Icon.jsx';
 
 const S = {
@@ -76,7 +76,7 @@ export default function TaskForm({ task, onSave, onCancel }) {
         <div style={S.title}>{isEdit ? '編輯任務' : '新增任務'}</div>
       </div>
 
-      {error && <div style={{ ...S.errorBox, marginTop: 16 }}>{error}</div>}
+      {error && <div key={error} ref={scrollIntoViewOnMount} role="alert" style={{ ...S.errorBox, marginTop: 16 }}>{error}</div>}
 
       <div style={S.body}>
         <div>

@@ -1,5 +1,6 @@
 // App shell: manages the 520px centered container, fetches recipes using useRecipes hook, and routes to catalog or details.
 import React, { useState } from 'react';
+import { useRefreshOnReturn } from '@peggy-life/shared/useRefreshOnReturn';
 import { useRecipes } from './useRecipes.js';
 import CookCalendar from './components/CookCalendar.jsx';
 import RecipeCatalog from './components/RecipeCatalog.jsx';
@@ -23,6 +24,7 @@ export default function App({ session, onSignOut, onExitGuest }) {
   const [backTab, setBackTab] = useState('recipes');
   // editing: null = not editing; { mode: 'create' } | { mode: 'edit', recipe }
   const [editing, setEditing] = useState(null);
+  useRefreshOnReturn(recipes.refresh);
 
   if (!recipes.loaded) return <Centered>載入中…</Centered>;
   if (recipes.loadError) return <Centered color="var(--danger)">載入失敗：{recipes.loadError}</Centered>;

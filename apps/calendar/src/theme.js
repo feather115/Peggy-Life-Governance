@@ -34,7 +34,8 @@ export const THEME = {
 export const EVENT_COLORS = ['#5497E3', '#27A594', '#4EA651', '#C68910', '#ED6C45', '#9787E8', '#E56C9C'];
 
 // 日記標籤依所屬分類上色（分類本身沒有存顏色，用分類在清單裡的順序固定分配）
-const CATEGORY_ACCENTS = ['#3D5A80', '#6B7FA8', '#8B6F9E', '#4A8B8C', '#A0785A'];
+// 12px 小字放在淡藍底（primarySoft）上，每色都要 ≥4.5:1（2026-09-30 加深，原本後四色只有 3.2～3.6）
+const CATEGORY_ACCENTS = ['#3D5A80', '#556890', '#785D8A', '#3C7071', '#816149'];
 export function categoryAccentForTag(tag, categories) {
   const idx = categories.findIndex((c) => c.tags.some((t) => t.name === tag || (t.subs || []).includes(tag)));
   if (idx === -1) return THEME.textMuted;

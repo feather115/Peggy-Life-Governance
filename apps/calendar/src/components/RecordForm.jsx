@@ -5,7 +5,7 @@
 // 動作列：確認按鈕固定在頂部 header，返回鍵在有未儲存變更時會先確認。
 import React, { useMemo, useState } from 'react';
 import { useBackClose } from '@peggy-life/shared/useBackClose';
-import { fromDatetimeLocalValue, toDatetimeLocalValue } from '../utils.js';
+import { fromDatetimeLocalValue, toDatetimeLocalValue, scrollIntoViewOnMount } from '../utils.js';
 import { EVENT_COLORS, THEME } from '../theme.js';
 import TimeSelect from './TimeSelect.jsx';
 import { PeopleSelect } from './HistoryFields.jsx';
@@ -372,7 +372,7 @@ export default function RecordForm({ record, defaultDateKey, allRecords = [], ca
       </header>
 
       <div style={S.body}>
-        {error && <div style={S.errorBox}>{error}</div>}
+        {error && <div key={error} ref={scrollIntoViewOnMount} role="alert" style={S.errorBox}>{error}</div>}
 
         {/* ---- 標題（放最前面） ---- */}
         <div style={S.field}>

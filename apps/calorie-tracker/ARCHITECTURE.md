@@ -27,6 +27,7 @@ Supabase ⇄ db.js ⇄ useAppData.js ⇄ App.jsx ⇄ components/*
   `utils.js` 的 `alertError(action, e)`），不要讓 Promise rejection 默默消失——不然畫面看起來只是「沒反應」，
   或更糟：先顯示「已加入」但其實沒寫進去。成功訊息一律等寫入完成才顯示。
 - 純計算（總熱量、報表長條圖、月曆）放在 `selectors.js`，不碰 state、不碰 API。
+- **回到 app 自動更新**：`App.jsx` 用 `@peggy-life/shared/useRefreshOnReturn`，切到別的 app（LINE 聊天、鎖螢幕）**超過 30 秒**再回來，就呼叫資料中樞的 `refresh()` 靜默重抓。refresh 不動 `loaded`（畫面不會閃回載入中），失敗只 console.warn、保留舊資料。這裡的 `useAppData.refresh()` 只重抓每日紀錄、食物庫、標籤、挑戰；**目標與暱稱不重抓**，避免蓋掉還在 debounce 等待存檔的值。
 
 ---
 
@@ -86,6 +87,7 @@ Supabase ⇄ db.js ⇄ useAppData.js ⇄ App.jsx ⇄ components/*
 - **viewport 不鎖縮放**（無 `maximum-scale` / `user-scalable=no`）；為了避免 iOS 聚焦輸入框自動放大，`base.css` 在觸控裝置把輸入框強制 16px。
 - **字級下限 12px**。
 - **`Sheet.jsx`**：`role="dialog" aria-modal`，開啟時焦點移進面板、`Esc` 關閉（多層時只關最上層）、關閉後焦點還給原觸發元素；新增面板要傳 `label`。**手機返回鍵也會關閉面板**（`@peggy-life/shared/useBackClose`），不會直接離開 app。
+- **自選顏色上的文字**：記錄原因標籤、挑戰成員頭像的字色用 `utils.js` 的 `readableOn(color)`，依底色亮度挑深字（`#111`）或白字（淺黃 `#E8A13C` 配白字只有 2.2:1）。超標提示「已超過 X kcal」底色用 `--danger`（原本 `#D9544F` 配白字只有 3.9:1）。
 - **刪除都要確認**：今日頁的餐點 ×、食物庫的自訂食物 ×、設定頁的標籤 × 都先 `confirm()`（原本一點就刪，很容易誤觸）。今天時「後一天」按鈕是 `disabled`。
 - **`TabBar.jsx`**：`<nav>` + icon + 文字，`aria-current="page"`，底部留 `env(safe-area-inset-bottom)`（取代原本的假 home-indicator 橫條）。
 

@@ -4,6 +4,7 @@
 import React, { useMemo, useState } from 'react';
 import { THEME } from '../theme.js';
 import Icon from '@peggy-life/shared/Icon.jsx';
+import { scrollIntoViewOnMount } from '../utils.js';
 
 const S = {
   header: { display: 'flex', alignItems: 'center', gap: 12, padding: 16, background: THEME.surface, borderBottom: `1px solid ${THEME.border}` },
@@ -149,7 +150,7 @@ export default function ManageOptions({ opts, records, renameField, onClose }) {
 
       <div style={S.body}>
         {opts.loadError && <div style={S.errorBox}>選項庫載入失敗：{opts.loadError}（可能還沒執行 2026-07-09_event_options.sql migration）</div>}
-        {error && <div style={S.errorBox}>{error}</div>}
+        {error && <div key={error} ref={scrollIntoViewOnMount} role="alert" style={S.errorBox}>{error}</div>}
 
         <div>
           <div style={S.sectionName}>地點</div>

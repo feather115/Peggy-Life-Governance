@@ -1,6 +1,6 @@
 // Advanced sheet: toggles fasting/other tags for the day, edits daily AI summary (saves automatically on close).
 import React, { useState } from 'react';
-import { dateLabel, emptyDay, alertError } from '../utils.js';
+import { dateLabel, emptyDay, alertError, readableOn } from '../utils.js';
 import { dayTotals } from '../selectors.js';
 import { MEALS_DEF } from '../constants.js';
 import Sheet from './Sheet.jsx';
@@ -100,7 +100,7 @@ function TagToggleGroup({ title, hint, tags, activeTags, activeBg, useTagColor =
           const active = activeTags.includes(t.id);
           const bg = active && useTagColor ? (t.color || activeBg) : active ? activeBg : 'var(--sunken)';
           return (
-            <button key={t.id} onClick={() => onToggle(t.id, active)} style={{ border: 'none', background: bg, color: active ? '#fff' : 'var(--text-muted)', padding: '11px 20px', borderRadius: 22, fontSize: 14, fontWeight: 800, cursor: 'pointer' }}>{t.label}</button>
+            <button key={t.id} onClick={() => onToggle(t.id, active)} aria-pressed={active} style={{ border: 'none', background: bg, color: active ? readableOn(bg) : 'var(--text-muted)', padding: '11px 20px', borderRadius: 22, fontSize: 14, fontWeight: 800, cursor: 'pointer' }}>{t.label}</button>
           );
         })}
       </div>

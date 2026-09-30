@@ -1,7 +1,7 @@
 // "Today" tab: date switcher, calorie ring, macronutrients, five meal cards, AI summary, and advanced entries
 import React, { useState } from 'react';
 import { MEALS_DEF } from '../constants.js';
-import { todayKey, dkFrom, parseDk, dateLabel, greeting, pct, emptyDay, alertError } from '../utils.js';
+import { todayKey, dkFrom, parseDk, dateLabel, greeting, pct, emptyDay, alertError, readableOn } from '../utils.js';
 import { dayTotals, ringInfo } from '../selectors.js';
 import EditMealItemSheet from './EditMealItemSheet.jsx';
 import Icon from '@peggy-life/shared/Icon.jsx';
@@ -31,7 +31,7 @@ export default function TodayTab({ app, selectedDate, setSelectedDate, onOpenShe
     if (!def) return null;
     const isFasting = fastingIds.includes(tid);
     const tagColor = def.color || '#E8A13C';
-    return { label: def.label, bg: isFasting ? 'var(--info-bg)' : tagColor, color: isFasting ? 'var(--info)' : '#fff' };
+    return { label: def.label, bg: isFasting ? 'var(--info-bg)' : tagColor, color: isFasting ? 'var(--info)' : readableOn(tagColor) };
   }).filter(Boolean);
 
   const macros = [
@@ -149,7 +149,7 @@ export default function TodayTab({ app, selectedDate, setSelectedDate, onOpenShe
         <Icon name="sliders" size={16} />
         <span>進階設定</span>
         {activeTags.length > 0 && <span style={{ background: 'var(--info)', color: '#fff', borderRadius: 10, padding: '1px 8px', fontSize: 12, fontWeight: 900 }}>{activeTags.length} 標籤</span>}
-        {curDay.dayNote && <span style={{ background: '#5FA8D3', color: '#fff', borderRadius: 10, padding: '1px 8px', fontSize: 12, fontWeight: 900 }}>摘要</span>}
+        {curDay.dayNote && <span style={{ background: 'var(--info-bg)', color: 'var(--info)', borderRadius: 10, padding: '1px 8px', fontSize: 12, fontWeight: 900 }}>摘要</span>}
       </button>
 
       {editing && (

@@ -11,7 +11,8 @@
     "./ConfigMissing.jsx": "./src/ConfigMissing.jsx",
     "./Icon.jsx": "./src/Icon.jsx",
     "./base.css": "./src/base.css",
-    "./useBackClose": "./src/useBackClose.js"
+    "./useBackClose": "./src/useBackClose.js",
+    "./useRefreshOnReturn": "./src/useRefreshOnReturn.js"
   },
   "peerDependencies": {
     "@line/liff": "^2.29.0",

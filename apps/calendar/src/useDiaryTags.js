@@ -69,6 +69,12 @@ export function useDiaryTags(userId, recordSync) {
     return () => { cancel = true; };
   }, [userId]);
 
+  // 回到 app 時靜默重新抓（別台裝置或 LINE 裡改過的資料），失敗就維持舊資料；不動 loaded，畫面不會閃回載入中
+  // 空的就不動（第一次使用的預設分類種子只在初次載入做）
+  const refresh = useCallback(() => db.loadCategories(userId)
+    .then((rows) => { if (rows.length > 0) setCategories(normalizeCategories(rows)); })
+    .catch((e) => console.warn('分類標籤重新整理失敗：', e.message)), [userId]);
+
   const addCategory = useCallback(async (name) => {
     const nextOrder = categories.length ? Math.max(...categories.map((c) => c.sort_order ?? 0)) + 1 : 0;
     const [created] = await db.createCategories(userId, [{ name, tags: [] }], nextOrder);
@@ -203,7 +209,7 @@ export function useDiaryTags(userId, recordSync) {
   }, [categories, saveTags]);
 
   return {
-    loaded, loadError, categories,
+    loaded, loadError, refresh, categories,
     addCategory, renameCategory, deleteCategory, moveCategory,
     addTagToCategory, removeTagFromCategory, moveTagToCategory, moveTagInCategory, renameTagInCategory,
     addSubTag, renameSubTag, removeSubTag, moveSubTag,

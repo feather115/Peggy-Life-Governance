@@ -1,6 +1,7 @@
 // App shell: loads data, manages current tab / selected date / open sheets, and assembles the UI.
 // Note: This only acts as a coordinator; actual data logic resides in useAppData, and UI components are in components/.
 import React, { useState } from 'react';
+import { useRefreshOnReturn } from '@peggy-life/shared/useRefreshOnReturn';
 import { useAppData } from './useAppData.js';
 import { todayKey } from './utils.js';
 import TabBar from './components/TabBar.jsx';
@@ -23,6 +24,7 @@ export default function App({ session, onSignOut }) {
   const [selectedDate, setSelectedDate] = useState(todayKey());
   const [sheetMeal, setSheetMeal] = useState(null);    // Which meal's food sheet is open (null = closed)
   const [advancedOpen, setAdvancedOpen] = useState(false);
+  useRefreshOnReturn(app.refresh);
 
   if (!app.loaded) return <Centered>載入中…</Centered>;
   if (app.loadError) return <Centered color="var(--danger)">載入失敗：{app.loadError}</Centered>;

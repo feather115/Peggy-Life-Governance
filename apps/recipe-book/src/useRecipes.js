@@ -113,6 +113,22 @@ export function useRecipes(userId) {
     return () => { cancel = true; };
   }, [userId]);
 
+  // 回到 app 時靜默重新抓（別台裝置或 LINE 裡改過的資料），失敗就維持畫面上的舊資料；不動 loaded，畫面不會閃回載入中
+  const refresh = useCallback(async () => {
+    try {
+      const [recipeRows, likeRows, recordRows] = await Promise.all([
+        db.loadRecipes(),
+        db.loadAllLikes(),
+        isGuest ? Promise.resolve(null) : db.loadCookRecords(userId),
+      ]);
+      setRecipes(recipeRows);
+      setLikes(likeRows);
+      if (recordRows) setCookRecords(recordRows);
+    } catch (e) {
+      console.warn('重新整理失敗：', e.message);
+    }
+  }, [isGuest, userId]);
+
   // Sync view with URL after loading is complete (supports opening URLs with ?recipe=xxx directly)
   useEffect(() => {
     if (!loaded) return;
@@ -336,7 +352,7 @@ export function useRecipes(userId) {
   );
 
   return {
-    loaded, loadError, recipes: recipesWithLastCooked, cookRecords, cookRecordError,
+    loaded, loadError, refresh, recipes: recipesWithLastCooked, cookRecords, cookRecordError,
     searchQuery, setSearchQuery,
     selectedCategory, setSelectedCategory,
     availableCategories, filteredRecipes,

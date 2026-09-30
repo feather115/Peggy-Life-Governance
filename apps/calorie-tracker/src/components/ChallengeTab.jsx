@@ -1,7 +1,7 @@
 // "Challenge" tab: weight loss competition (multiplayer invitation code, podium, leaderboard, weekly progress chart, weekly check-in, history)
 import React, { useState, useMemo } from 'react';
 import { daysLeft, computeLeaderboard, myRankIn, lastFriday, memberColor, MEMBER_PALETTE } from '../selectors.js';
-import { dateLabel, alertError } from '../utils.js';
+import { dateLabel, alertError, readableOn } from '../utils.js';
 import ChallengeCreateSheet from './ChallengeCreateSheet.jsx';
 import WeightChart from './WeightChart.jsx';
 import Icon from '@peggy-life/shared/Icon.jsx';
@@ -705,7 +705,7 @@ function Avatar({ name, color, size = 32, border = 'none' }) {
     <div style={{
       width: size, height: size, borderRadius: '50%', background: color || 'var(--text-faint)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontSize: Math.round(size * 0.42), fontWeight: 800, color: '#fff', flexShrink: 0, border,
+      fontSize: Math.round(size * 0.42), fontWeight: 800, color: readableOn(color), flexShrink: 0, border,
     }}>{initial}</div>
   );
 }

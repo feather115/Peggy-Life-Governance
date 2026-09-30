@@ -44,6 +44,8 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
   （互斥，同時只會有一個 overlay，type 有 `record`/`task`/`settings`/`manageTags`/`manageOptions`）。
   `view` 本身（月/週/日/任務）是 `useRecords()` 管理的狀態，任務列表雖然邏輯上跟
   `useTasks()` 有關，但「目前在看哪個 tab」統一由 `useRecords.view` 控制，不要另外開一份 view state。
+- **回到 app 自動更新**：`App.jsx` 用 `@peggy-life/shared/useRefreshOnReturn`，切到別的 app（LINE 聊天、鎖螢幕）**超過 30 秒**再回來，就呼叫資料中樞的 `refresh()` 靜默重抓。refresh 不動 `loaded`（畫面不會閃回載入中），失敗只 console.warn、保留舊資料。四個中樞（`useRecords`/`useDiaryTags`/`useTasks`/`useOptions`）各有 `refresh()`；`useDiaryTags.refresh` 抓到空的就不動（預設分類種子只在初次載入做）。
+- **表單錯誤訊息**（紀錄/任務/選項庫）：`role="alert"`，出現時用 `utils.js` 的 `scrollIntoViewOnMount` 捲到畫面中間（`key={error}` 讓訊息改變時重新捲動）。不能用 smooth 捲動——錯誤框插在頁面上方時瀏覽器的捲動錨定會把動畫中斷，實測會停在錯誤框上面看不到。
 
 ---
 
@@ -170,7 +172,7 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
 - **`src/theme.js`** — 視覺常數集中地：`THEME`（配色/圓角/陰影）、`EVENT_COLORS`
   （事件顏色的 7 個預設色，2026-09-30 換成清新色系：天空藍/湖水綠/嫩芽綠/蜂蜜黃/蜜桃橘/薰衣草/櫻花粉，
   亮度一致、白底對比 ≥3:1 讓月曆小圓點看得清楚；紀錄也可以存任意自訂色碼，見 RecordForm）、`categoryAccentForTag(tag, categories)`（日記標籤依所屬分類
-  在清單裡的順序固定分配一個強調色，不是存在資料庫裡的欄位）。
+  在清單裡的順序固定分配一個強調色，不是存在資料庫裡的欄位；強調色是 12px 小字、放在淡藍底上，每色都要 ≥4.5:1）。
 - **`src/utils.js`** — 日期字串轉換（`dateKeyFrom`/`parseDateKey`）、月曆格線
   （`getMonthDays`）、週的 7 天（`getWeekDays`）、紀錄分組（`groupRecordsByDate`，依
   `start_at`～`end_at` 涵蓋的每個本地日期分組（結束日期包含在內）、`formatRecordTime(record)`（計時卡的 HH:mm，有 `end_at` 顯示區間）、

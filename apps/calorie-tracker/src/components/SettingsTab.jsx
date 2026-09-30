@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { FOODS } from '../constants.js';
 import { totalRecordedDays } from '../selectors.js';
-import { alertError } from '../utils.js';
+import { alertError, readableOn } from '../utils.js';
 import { supabase } from '../supabase.js';
 import { canLinkLine, useLineLinked } from '../liff.js';
 import Icon from '@peggy-life/shared/Icon.jsx';
@@ -140,7 +140,7 @@ export default function SettingsTab({ app, session, onSignOut }) {
         <div style={{ display: 'flex', gap: 10 }}>
           {!confirmClear && <button onClick={doClear} style={{ flex: 1, border: 'none', background: 'var(--sunken)', color: '#D9544F', fontWeight: 800, fontSize: 14, padding: 14, borderRadius: 16, cursor: 'pointer' }}>清除全部</button>}
           {confirmClear && <>
-            <button onClick={doClear} style={{ flex: 1, border: 'none', background: '#D9544F', color: '#fff', fontWeight: 800, fontSize: 14, padding: 14, borderRadius: 16, cursor: 'pointer' }}>確定清除</button>
+            <button onClick={doClear} style={{ flex: 1, border: 'none', background: 'var(--danger)', color: '#fff', fontWeight: 800, fontSize: 14, padding: 14, borderRadius: 16, cursor: 'pointer' }}>確定清除</button>
             <button onClick={() => setConfirmClear(false)} style={{ flex: 1, border: 'none', background: 'var(--sunken)', color: 'var(--text-muted)', fontWeight: 800, fontSize: 14, padding: 14, borderRadius: 16, cursor: 'pointer' }}>取消</button>
           </>}
         </div>
@@ -160,8 +160,8 @@ function TagGroup({ title, titleColor, chipBg, chipColor, delColor, tags, onDele
           <div key={mt.id}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: onColor ? (mt.color || chipBg) : chipBg, borderRadius: 12, padding: '5px 6px 5px 8px' }}>
               {onColor && <button onClick={() => setEditingColorId(editingColorId === mt.id ? null : mt.id)} title="選擇標籤顏色" style={{ width: 18, height: 18, borderRadius: '50%', border: '2px solid rgba(255,255,255,.9)', background: mt.color || '#E8A13C', cursor: 'pointer', padding: 0, boxShadow: '0 1px 4px rgba(0,0,0,.15)' }} />}
-              <span style={{ fontSize: 13, fontWeight: 800, color: onColor ? '#fff' : chipColor }}>{mt.label}</span>
-              <button aria-label={`刪除標籤「${mt.label}」`} className="tap" onClick={() => { if (confirm(`刪除標籤「${mt.label}」？`)) onDelete(mt.id); }} style={{ border: 'none', background: 'none', color: onColor ? 'rgba(255,255,255,.85)' : delColor, cursor: 'pointer', fontSize: 15, lineHeight: 1, padding: 0, width: 18, height: 18, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="x" size={14} /></button>
+              <span style={{ fontSize: 13, fontWeight: 800, color: onColor ? readableOn(mt.color || chipBg) : chipColor }}>{mt.label}</span>
+              <button aria-label={`刪除標籤「${mt.label}」`} className="tap" onClick={() => { if (confirm(`刪除標籤「${mt.label}」？`)) onDelete(mt.id); }} style={{ border: 'none', background: 'none', color: onColor ? readableOn(mt.color || chipBg) : delColor, cursor: 'pointer', fontSize: 15, lineHeight: 1, padding: 0, width: 18, height: 18, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="x" size={14} /></button>
             </div>
             {onColor && editingColorId === mt.id && (
               <ColorSwatches

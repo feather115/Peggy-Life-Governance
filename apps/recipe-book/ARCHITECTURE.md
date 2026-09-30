@@ -26,6 +26,7 @@ Supabase ⇄ db.js ⇄ useRecipes.js ⇄ App.jsx ⇄ components/*
 - `Root.jsx` 負責：LINE 自動登入與 Supabase Auth 登入閘口、訪客模式切換。
 - `App.jsx` 負責行動版外殼（maxWidth 520px）、三個分頁（食譜/行事曆/設定）切換、
   `RecipeCatalog` ↔ `RecipeDetail` 的 view 導覽與返回、`RecipeForm` 的開關。
+- **回到 app 自動更新**：`App.jsx` 用 `@peggy-life/shared/useRefreshOnReturn`，切到別的 app（LINE 聊天、鎖螢幕）**超過 30 秒**再回來，就呼叫資料中樞的 `refresh()` 靜默重抓。refresh 不動 `loaded`（畫面不會閃回載入中），失敗只 console.warn、保留舊資料。`useRecipes.refresh()` 重抓食譜、按讚、料理紀錄（訪客不抓料理紀錄）。
 
 ---
 

@@ -64,6 +64,20 @@ export function useAppData(userId) {
     return () => { cancel = true; };
   }, [userId]);
 
+  // 回到 app 時靜默重新抓（別台裝置或 LINE 裡改過的資料），失敗就維持畫面上的舊資料；不動 loaded，畫面不會閃回載入中
+  // 目標/暱稱不重抓：避免蓋掉正在編輯、還在 debounce 等待存檔的值
+  const refresh = useCallback(async () => {
+    try {
+      const [data, chList] = await Promise.all([db.loadAll(userId), db.loadMyChallenges(userId).catch(() => null)]);
+      setFastingTagDefs(data.fastingTagDefs); setOtherTagDefs(data.otherTagDefs);
+      setCustomFoods(data.customFoods); setDays(data.days);
+      setFoodUsage(data.foodUsage || {});
+      if (chList) setChallenges(chList);
+    } catch (e) {
+      console.warn('重新整理失敗：', e.message);
+    }
+  }, [userId]);
+
   // Reloads all challenge data (called after creating, joining, ending, or recording weight)
   const reloadChallenges = useCallback(async () => {
     const list = await db.loadMyChallenges(userId);
@@ -279,7 +293,7 @@ export function useAppData(userId) {
   }, [userId, reloadChallenges]);
 
   return {
-    loaded, loadError,
+    loaded, loadError, refresh,
     days, customFoods, foodUsage,
     displayName, setDisplayName,
     goalCal, goalP, goalC, goalF,

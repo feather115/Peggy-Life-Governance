@@ -26,6 +26,9 @@ export function useTasks(userId) {
     return () => { cancel = true; };
   }, [userId]);
 
+  // 回到 app 時靜默重新抓（別台裝置或 LINE 裡改過的資料），失敗就維持舊資料；不動 loaded，畫面不會閃回載入中
+  const refresh = useCallback(() => db.loadTasks(userId).then(setTasks).catch((e) => console.warn('任務重新整理失敗：', e.message)), [userId]);
+
   // 依 next_due 分組（只有 show_on_calendar 才會出現在月/週/日檢視上）
   const tasksByDueDate = useMemo(() => {
     const map = {};
@@ -66,7 +69,7 @@ export function useTasks(userId) {
   }, [tasks]);
 
   return {
-    loaded, loadError, tasks, tasksByDueDate,
+    loaded, loadError, tasks, tasksByDueDate, refresh,
     createTask, updateTask, deleteTask, confirmComplete,
     today: todayKey(),
   };

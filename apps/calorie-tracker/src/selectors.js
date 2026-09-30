@@ -28,7 +28,7 @@ export function ringInfo(consumed, goalCal) {
   const diff = goalCal - consumed;
   const ratio = consumed / (goalCal || 1);
   if (ratio > 1) {
-    return { diff, ringColor: '#D9544F', remainColor: '#fff', remainBg: '#D9544F', remainText: `已超過 ${Math.abs(diff)} kcal` };
+    return { diff, ringColor: '#D9544F', remainColor: '#fff', remainBg: 'var(--danger)', remainText: `已超過 ${Math.abs(diff)} kcal` };
   }
   if (ratio > 0.9) {
     return { diff, ringColor: '#E8A13C', remainColor: '#8B5A00', remainBg: '#FFF1D6', remainText: `剩下 ${diff} kcal` };

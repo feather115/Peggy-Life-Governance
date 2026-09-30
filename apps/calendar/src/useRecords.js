@@ -71,6 +71,9 @@ export function useRecords(userId) {
     return () => { cancel = true; };
   }, [userId]);
 
+  // 回到 app 時靜默重新抓（別台裝置或 LINE 裡改過的資料），失敗就維持舊資料；不動 loaded，畫面不會閃回載入中
+  const refresh = useCallback(() => db.loadRecords(userId).then(setRecords).catch((e) => console.warn('紀錄重新整理失敗：', e.message)), [userId]);
+
   const recordsByDate = useMemo(() => groupRecordsByDate(records), [records]);
 
   // 分類標籤 → 過去填過的細節文字（去重、最近的排前面），給 RecordForm 的細節輸入框做自動建議用
@@ -204,7 +207,7 @@ export function useRecords(userId) {
     view, setView,
     anchorKey, setAnchorKey,
     selectedDateKey, setSelectedDateKey,
-    goToday, openDay, shiftPeriod,
+    goToday, openDay, shiftPeriod, refresh,
     createRecord, updateRecord, deleteRecord, renameFieldValue,
     renameDiaryTagEverywhere, removeDiaryTagsEverywhere,
     renameTagDetailEverywhere, removeTagDetailEverywhere,

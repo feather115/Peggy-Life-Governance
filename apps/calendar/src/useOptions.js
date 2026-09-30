@@ -26,6 +26,9 @@ export function useOptions(userId) {
     return () => { cancel = true; };
   }, [userId]);
 
+  // 回到 app 時靜默重新抓（別台裝置或 LINE 裡改過的資料），失敗就維持舊資料；不動 loaded，畫面不會閃回載入中
+  const refresh = useCallback(() => db.loadOptions(userId).then(setOptions).catch((e) => console.warn('選項庫重新整理失敗：', e.message)), [userId]);
+
   // 表單選單用：只列未封存的。地點/人名是字串陣列；標籤是 { value, label }
   // （子標籤 label 縮排、母標籤封存時整組不出現；不同母標籤下的同名子標籤只列一次）。
   const menus = useMemo(() => {
@@ -131,5 +134,5 @@ export function useOptions(userId) {
     return { kind: opt.kind, oldName: opt.name, newName: name };
   }, [options]);
 
-  return { loaded, loadError, options, menus, ensureNames, addOption, renameOption, setArchived, removeOption };
+  return { loaded, loadError, refresh, options, menus, ensureNames, addOption, renameOption, setArchived, removeOption };
 }
