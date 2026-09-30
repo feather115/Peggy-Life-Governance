@@ -3,9 +3,18 @@ import React, { useState } from 'react';
 import { dateLabel, emptyDay, alertError, readableOn } from '../utils.js';
 import { dayTotals } from '../selectors.js';
 import { MEALS_DEF } from '../constants.js';
-import Sheet from './Sheet.jsx';
+import Sheet, { SheetHeader } from './Sheet.jsx';
 import { confirmDialog } from '@peggy-life/shared/feedback.jsx';
 import Icon from '@peggy-life/shared/Icon.jsx';
+import { UI } from '@peggy-life/shared/ui';
+
+const S = {
+  body: { flex: 1, overflowY: 'auto', padding: '4px 20px 28px', display: 'flex', flexDirection: 'column', gap: 28 },
+  groupTitle: { ...UI.sectionTitle, display: 'flex', alignItems: 'center', gap: 6 },
+  hint: { fontSize: 13, color: 'var(--text-muted)', marginTop: 4, marginBottom: 12, lineHeight: 1.5 },
+  headRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
+  toggle: (on, bg) => ({ ...UI.chip(on), minHeight: 36, ...(on ? { background: bg, color: readableOn(bg) } : {}) }),
+};
 
 export default function AdvancedSheet({ app, selectedDate, onClose }) {
   const { days, fastingTagDefs, otherTagDefs, toggleTag, saveDayNote, goalCal, goalP, goalC, goalF } = app;
@@ -64,29 +73,21 @@ export default function AdvancedSheet({ app, selectedDate, onClose }) {
   };
 
   return (
-    <Sheet label="進階設定" onBackdrop={close} height="min(75vh, 680px)" zIndex={15}>
-      <div style={{ padding: '8px 20px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flex: 'none' }}>
-        <div>
-          <div style={{ fontSize: 18, fontWeight: 900, color: 'var(--text)' }}>進階</div>
-          <div style={{ fontSize: 12, color: 'var(--text-faint)', fontWeight: 700, marginTop: 1 }}>{dateLabel(selectedDate)}</div>
-        </div>
-        <button onClick={close} style={{ border: 'none', background: 'var(--primary)', color: '#fff', fontWeight: 800, fontSize: 14, padding: '8px 18px', borderRadius: 20, cursor: 'pointer' }}>完成</button>
-      </div>
-      <div className="ps" style={{ flex: 1, overflowY: 'auto', padding: '4px 18px 28px' }}>
-        <TagToggleGroup title={<><Icon name="timer" size={16} />斷食</>} hint="今天的斷食方式，可複選" tags={fastingTagDefs} activeTags={activeTags} activeBg="var(--info)"
+    <Sheet label="進階設定" onBackdrop={close} height="min(78vh, 700px)" zIndex={15}>
+      <SheetHeader title="進階設定" subtitle={`${dateLabel(selectedDate)} · 關閉時自動儲存`} onClose={close} closeLabel="完成" />
+      <div className="ps" style={S.body}>
+        <TagToggleGroup title={<><Icon name="timer" size={18} />斷食</>} hint="今天的斷食方式，可複選" tags={fastingTagDefs} activeTags={activeTags} activeBg="var(--info)"
           onToggle={toggle} />
-        <div style={{ height: 24 }} />
-        <TagToggleGroup title={<><Icon name="tag" size={16} />記錄原因</>} hint="聚餐、外食等特殊情況，可複選" tags={otherTagDefs} activeTags={activeTags} activeBg="#E8A13C" useTagColor
+        <TagToggleGroup title={<><Icon name="tag" size={18} />記錄原因</>} hint="聚餐、外食等特殊情況，可複選" tags={otherTagDefs} activeTags={activeTags} activeBg="#E8A13C" useTagColor
           onToggle={toggle} />
-        <div style={{ height: 24 }} />
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
-            <div style={{ fontSize: 14, fontWeight: 900, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 6 }}><Icon name="clipboard" size={16} />當日 AI 摘要</div>
-            <button onClick={generateSummary} disabled={aiBusy} style={{ border: 'none', background: aiBusy ? 'var(--line-strong)' : 'var(--bg)', color: aiBusy ? '#fff' : 'var(--primary-ink)', fontWeight: 800, fontSize: 12, padding: '6px 12px', borderRadius: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>{aiBusy ? '產生中…' : <><Icon name="sparkles" size={14} />AI 幫我寫</>}</button>
+          <div style={S.headRow}>
+            <div style={S.groupTitle}><Icon name="clipboard" size={18} />當日 AI 摘要</div>
+            <button type="button" onClick={generateSummary} disabled={aiBusy} style={{ ...UI.btnSecondary, minHeight: 36, opacity: aiBusy ? 0.6 : 1 }}>{aiBusy ? '產生中…' : <><Icon name="sparkles" size={16} />AI 幫我寫</>}</button>
           </div>
-          <div style={{ fontSize: 12, color: 'var(--text-faint)', fontWeight: 700, marginBottom: 11 }}>貼上 AI 對今日飲食的評價，或點上面按鈕自動產生 · 關閉時自動儲存</div>
-          {aiError && <div style={{ marginBottom: 8, fontSize: 12, fontWeight: 700, color: 'var(--danger-ink)' }}>{aiError}</div>}
-          <textarea aria-label="當日摘要" value={note} onChange={(e) => setNote(e.target.value)} placeholder="例如：今天蛋白質達標，碳水偏高。建議明天減少精緻澱粉，多補充蔬菜纖維…" style={{ width: '100%', height: 130, border: 'none', background: 'var(--surface-alt)', borderRadius: 14, padding: '12px 14px', fontSize: 16, fontWeight: 600, color: 'var(--text)', resize: 'none', lineHeight: 1.75 }} />
+          <div style={S.hint}>貼上 AI 對今日飲食的評價，或按「AI 幫我寫」自動產生</div>
+          {aiError && <div style={{ ...UI.note('danger'), marginBottom: 8 }}>{aiError}</div>}
+          <textarea aria-label="當日摘要" value={note} onChange={(e) => setNote(e.target.value)} placeholder="例如：今天蛋白質達標，碳水偏高。建議明天減少精緻澱粉，多補充蔬菜纖維…" style={{ ...UI.textarea, height: 140, resize: 'none' }} />
         </div>
       </div>
     </Sheet>
@@ -96,14 +97,16 @@ export default function AdvancedSheet({ app, selectedDate, onClose }) {
 function TagToggleGroup({ title, hint, tags, activeTags, activeBg, useTagColor = false, onToggle }) {
   return (
     <div>
-      <div style={{ fontSize: 14, fontWeight: 900, color: 'var(--text)', marginBottom: 3, display: 'flex', alignItems: 'center', gap: 6 }}>{title}</div>
-      <div style={{ fontSize: 12, color: 'var(--text-faint)', fontWeight: 700, marginBottom: 11 }}>{hint}</div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+      <div style={S.groupTitle}>{title}</div>
+      <div style={S.hint}>{hint}</div>
+      <div style={UI.chipRow}>
         {tags.map((t) => {
           const active = activeTags.includes(t.id);
-          const bg = active && useTagColor ? (t.color || activeBg) : active ? activeBg : 'var(--sunken)';
+          const bg = useTagColor ? (t.color || activeBg) : activeBg;
           return (
-            <button key={t.id} onClick={() => onToggle(t.id, active)} aria-pressed={active} style={{ border: 'none', background: bg, color: active ? readableOn(bg) : 'var(--text-muted)', padding: '11px 20px', borderRadius: 20, fontSize: 14, fontWeight: 800, cursor: 'pointer' }}>{t.label}</button>
+            <button key={t.id} type="button" onClick={() => onToggle(t.id, active)} aria-pressed={active} style={S.toggle(active, bg)}>
+              {active && <Icon name="check" size={16} strokeWidth={2} />}{t.label}
+            </button>
           );
         })}
       </div>

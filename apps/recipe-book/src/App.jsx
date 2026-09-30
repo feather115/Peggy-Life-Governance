@@ -12,7 +12,7 @@ import LoadingSkeleton, { LoadError } from '@peggy-life/shared/LoadingSkeleton.j
 
 function Centered({ children, color = 'var(--text-muted)' }) {
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, color, fontWeight: 700 }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, color, fontSize: 15 }}>
       {children}
     </div>
   );
@@ -74,10 +74,10 @@ export default function App({ session, onSignOut, onExitGuest }) {
       background: 'var(--bg)',
       display: 'flex',
       flexDirection: 'column',
-      boxShadow: '0 0 60px -20px rgba(0,0,0,.12)',
+      boxShadow: '0 0 0 1px var(--line)',
       overflow: 'hidden',
     }}>
-      <div className="ps" style={{ flex: 1, overflowY: 'auto', paddingTop: 8 }}>
+      <div className="ps" style={{ flex: 1, overflowY: 'auto' }}>
         {editing ? (
           <RecipeForm
             recipe={editing.mode === 'edit' ? editing.recipe : null}

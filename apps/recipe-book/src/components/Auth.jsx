@@ -1,8 +1,25 @@
-// Login / Sign Up / Forgot Password page (shown when not logged in). Supabase Email + Password.
+// Login / Sign Up / Forgot Password page (shown when not logged in). Supabase Email + Password. 三個 app 的登入頁同一個版型（這裡多了 LINE 授權提示與訪客模式）。
 import React, { useState } from 'react';
 import { supabase } from '../supabase.js';
 import { canLinkLine, retryLineAuthorization } from '../liff.js';
 import Icon from '@peggy-life/shared/Icon.jsx';
+import { UI } from '@peggy-life/shared/ui';
+
+const S = {
+  wrap: { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 },
+  card: { ...UI.card, padding: 24, width: '100%', maxWidth: 380 },
+  title: { ...UI.title, textAlign: 'center' },
+  sub: { fontSize: 14, color: 'var(--text-muted)', textAlign: 'center', marginTop: 4, marginBottom: 20 },
+  lineHint: { ...UI.note('warning'), display: 'block', marginBottom: 16, fontWeight: 400, lineHeight: 1.6 },
+  form: { display: 'flex', flexDirection: 'column', gap: 14 },
+  links: { marginTop: 12, display: 'flex', flexDirection: 'column', alignItems: 'center' },
+  link: { ...UI.btnText, color: 'var(--text-muted)' },
+  guest: { marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--line)' },
+  guestHint: { marginTop: 8, fontSize: 13, color: 'var(--text-muted)', textAlign: 'center', lineHeight: 1.5 },
+  debug: { marginTop: 16, fontSize: 12, color: 'var(--text-faint)', lineHeight: 1.6, wordBreak: 'break-word' },
+};
+
+const MSG_TONE = { error: 'danger', success: 'success', info: 'warning' };
 
 export default function Auth({ lineDebug, onGuest }) {
   const [mode, setMode] = useState('signin'); // 'signin' | 'signup' | 'forgot'
@@ -53,13 +70,6 @@ export default function Auth({ lineDebug, onGuest }) {
     signin: '登入', signup: '註冊', forgot: '寄出重設連結',
   };
 
-  const msgStyles = {
-    error:   { color: 'var(--danger-ink)', bg: 'var(--danger-bg)' },
-    success: { color: 'var(--success-ink)', bg: 'var(--success-bg)' },
-    info:    { color: 'var(--warning-ink)', bg: 'var(--warning-bg)' },
-  };
-  const ms = msgStyles[msgKind];
-
   // 把技術性的 lineDebug 原因轉成一般使用者看得懂的提示。
   // isInClient=false 只代表「不是在 LINE App 裡開的」，這是正常情況（純網頁瀏覽），不用特別提示。
   const isPermissionIssue = !!lineDebug && (lineDebug.includes('getIDToken') || lineDebug.includes('isLoggedIn'));
@@ -89,74 +99,60 @@ export default function Auth({ lineDebug, onGuest }) {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-      <div style={{ background: 'var(--surface)', borderRadius: 28, padding: 28, width: '100%', maxWidth: 380, boxShadow: 'var(--shadow-card)' }}>
-        <div style={{ fontSize: 24, fontWeight: 900, color: 'var(--text)', textAlign: 'center' }}>TY Recipe Book</div>
-        <div style={{ fontSize: 14, color: 'var(--text-muted)', fontWeight: 700, textAlign: 'center', marginTop: 4, marginBottom: 20 }}>
-          {titles[mode]}
-        </div>
+    <div style={S.wrap}>
+      <div style={S.card}>
+        <h1 style={S.title}>TY Recipe Book</h1>
+        <div style={S.sub}>{titles[mode]}</div>
         {lineHint && (
-          <div style={{ marginBottom: 16, fontSize: 13, color: 'var(--warning-ink)', background: 'var(--warning-bg)', padding: '10px 12px', borderRadius: 14, fontWeight: 700, lineHeight: 1.6 }}>
-            💬 {lineHint}
+          <div style={S.lineHint}>
+            {lineHint}
             {isPermissionIssue && canLinkLine() && (
-              <button
-                type="button"
-                onClick={handleRetryAuthorization}
-                disabled={authRetryBusy}
-                style={{ display: 'block', width: '100%', marginTop: 10, border: 'none', background: '#06C755', color: '#fff', fontWeight: 900, fontSize: 13, padding: '10px 12px', borderRadius: 10, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
-              >
-                {authRetryBusy ? '處理中…' : <><Icon name="refresh" size={15} />重新申請 LINE 授權</>}
+              <button type="button" onClick={handleRetryAuthorization} disabled={authRetryBusy} style={{ ...UI.btnNeutral, width: '100%', marginTop: 10, background: 'var(--surface)' }}>
+                {authRetryBusy ? '處理中…' : <><Icon name="refresh" size={16} />重新申請 LINE 授權</>}
               </button>
             )}
-            {authRetryMsg && (
-              <div style={{ marginTop: 8, fontSize: 12, fontWeight: 700, color: 'var(--warning-ink)' }}>{authRetryMsg}</div>
-            )}
+            {authRetryMsg && <div style={{ marginTop: 8, fontSize: 13 }}>{authRetryMsg}</div>}
           </div>
         )}
-        <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <input aria-label="Email" type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required
-            style={{ border: 'none', background: 'var(--surface-alt)', borderRadius: 14, padding: '14px 16px', fontSize: 16, fontWeight: 700, color: 'var(--text)' }} />
+        <form onSubmit={submit} style={S.form}>
+          <label>
+            <span style={UI.fieldLabel}>電子郵件</span>
+            <input type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required style={UI.input} />
+          </label>
           {mode !== 'forgot' && (
-            <input aria-label="密碼" type="password" placeholder="密碼（至少 6 字元）" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6}
-              style={{ border: 'none', background: 'var(--surface-alt)', borderRadius: 14, padding: '14px 16px', fontSize: 16, fontWeight: 700, color: 'var(--text)' }} />
+            <label>
+              <span style={UI.fieldLabel}>密碼</span>
+              <input type="password" placeholder="至少 6 字元" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} style={UI.input} />
+            </label>
           )}
-          <button type="submit" disabled={busy}
-            style={{ border: 'none', background: busy ? 'var(--line-strong)' : 'var(--primary)', color: '#fff', fontWeight: 900, fontSize: 15, padding: 14, borderRadius: 14, cursor: 'pointer', marginTop: 6 }}>
+          <button type="submit" disabled={busy} style={{ ...UI.btnPrimary, marginTop: 4, opacity: busy ? 0.6 : 1 }}>
             {busy ? '處理中…' : submitLabels[mode]}
           </button>
         </form>
-        {msg && <div style={{ marginTop: 12, fontSize: 13, color: ms.color, background: ms.bg, padding: '10px 12px', borderRadius: 14, fontWeight: 700, lineHeight: 1.6 }}>{msg}</div>}
+        {msg && <div style={{ ...UI.note(MSG_TONE[msgKind]), marginTop: 12 }}>{msg}</div>}
 
-        <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <div style={S.links}>
           {mode === 'signin' && <>
-            <button onClick={() => switchMode('signup')} style={linkBtn}>還沒有帳號？建立一個</button>
-            <button onClick={() => switchMode('forgot')} style={linkBtn}>忘記密碼？</button>
+            <button type="button" onClick={() => switchMode('signup')} style={S.link}>還沒有帳號？建立一個</button>
+            <button type="button" onClick={() => switchMode('forgot')} style={S.link}>忘記密碼？</button>
           </>}
           {mode === 'signup' && (
-            <button onClick={() => switchMode('signin')} style={linkBtn}>已有帳號？回到登入</button>
+            <button type="button" onClick={() => switchMode('signin')} style={S.link}>已有帳號？回到登入</button>
           )}
           {mode === 'forgot' && (
-            <button onClick={() => switchMode('signin')} style={linkBtn}>‹ 回到登入</button>
+            <button type="button" onClick={() => switchMode('signin')} style={S.link}>回到登入</button>
           )}
         </div>
         {onGuest && (
-          <div style={{ marginTop: 18, paddingTop: 14, borderTop: '1px solid var(--line)' }}>
-            <button
-              type="button"
-              onClick={onGuest}
-              style={{ width: '100%', border: 'none', background: 'var(--surface-alt)', color: 'var(--text)', fontWeight: 900, fontSize: 14, padding: 12, borderRadius: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
-            >
+          <div style={S.guest}>
+            <button type="button" onClick={onGuest} style={{ ...UI.btnNeutral, width: '100%', minHeight: 44 }}>
               <Icon name="eye" size={16} />以訪客身分瀏覽分享的食譜
             </button>
-            <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-faint)', fontWeight: 700, textAlign: 'center', lineHeight: 1.5 }}>
-              訪客只能看別人分享出來的食譜，無法新增、編輯，也沒有料理行事曆。
-            </div>
+            <div style={S.guestHint}>訪客只能看別人分享出來的食譜，無法新增、編輯，也沒有料理行事曆。</div>
           </div>
         )}
-        {lineDebug && <div style={{ marginTop: 16, fontSize: 12, color: 'var(--text-faint)', fontWeight: 600, lineHeight: 1.6, wordBreak: 'break-word' }}>LINE 自動登入除錯：{lineDebug}</div>}
+        {lineDebug && <div style={S.debug}>LINE 自動登入除錯：{lineDebug}</div>}
       </div>
     </div>
   );
 }
-
-const linkBtn = { width: '100%', border: 'none', background: 'none', color: 'var(--text-muted)', fontWeight: 800, fontSize: 14, cursor: 'pointer', padding: '6px 0' };

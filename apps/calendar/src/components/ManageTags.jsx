@@ -1,61 +1,59 @@
 // 管理分類與標籤：三層結構（分類 → 主標籤 → 子標籤）。
 // 分類與主標籤可收合、點名字直接進入行內改名（無框線、底線輸入框）、
-// ▲▼ 排序（手機友善，不用拖曳）、子標籤是 chip、‹ › 左右排序。
+// 上下箭頭排序（手機友善，不用拖曳）、子標籤是 chip、左右箭頭排序。
 // 標籤名稱（含子標籤）全域唯一，衝突時顯示提示不送出。
 import React, { useState } from 'react';
 import { THEME } from '../theme.js';
 import { findTagOwner } from '../useDiaryTags.js';
 import Icon from '@peggy-life/shared/Icon.jsx';
+import { UI } from '@peggy-life/shared/ui';
 import { confirmDialog } from '@peggy-life/shared/feedback.jsx';
 
 const S = {
-  header: { display: 'flex', alignItems: 'center', gap: 12, padding: 16, background: THEME.surface, borderBottom: `1px solid ${THEME.border}` },
-  backBtn: { border: 'none', background: 'none', color: THEME.textMuted, padding: 2, display: 'flex', alignItems: 'center' },
-  title: { fontSize: 18, fontWeight: 700, color: THEME.textDark },
-  body: { padding: 20, display: 'flex', flexDirection: 'column', gap: 14 },
-  card: { background: THEME.surface, borderRadius: THEME.radius, padding: '14px 16px', boxShadow: THEME.shadow },
-  cardTop: { display: 'flex', alignItems: 'center', gap: 8 },
-  reorderCol: { display: 'flex', flexDirection: 'column', gap: 2, flexShrink: 0 },
-  reorderBtn: (disabled) => ({ border: 'none', background: 'none', cursor: disabled ? 'default' : 'pointer', color: disabled ? THEME.textFaint : THEME.textMuted, fontSize: 12, lineHeight: 1, padding: 2 }),
-  catName: { flex: 1, minWidth: 0, cursor: 'text', fontSize: 15, fontWeight: 700, color: THEME.textDark, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
-  catNameInput: { flex: 1, minWidth: 0, fontSize: 15, fontWeight: 700, color: THEME.textDark, border: 'none', borderBottom: `1px solid ${THEME.primary}`, background: 'transparent', padding: '0 0 2px' },
-  chevronBtn: { cursor: 'pointer', color: THEME.textMuted, fontSize: 13, width: 22, textAlign: 'center', flexShrink: 0, userSelect: 'none' },
-  deleteLabel: (confirming) => ({ cursor: 'pointer', fontSize: 12, fontWeight: 600, color: confirming ? THEME.errorInk : THEME.textMuted, whiteSpace: 'nowrap', flexShrink: 0 }),
-  tagsWrap: { display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 },
-  tagBox: { background: THEME.surfaceAlt, borderRadius: 14, padding: '8px 12px 8px 4px' },
-  tagRow: { display: 'flex', alignItems: 'center', gap: 6 },
+  body: { padding: '8px 20px 32px', display: 'flex', flexDirection: 'column', gap: 12 },
+  card: { ...UI.card, padding: '12px 12px 14px 8px' },
+  cardTop: { display: 'flex', alignItems: 'center', gap: 6 },
+  reorderCol: { display: 'flex', flexDirection: 'column', flexShrink: 0 },
+  reorderBtn: (disabled) => ({ width: 32, height: 22, padding: 0, border: 'none', background: 'none', cursor: disabled ? 'default' : 'pointer', color: disabled ? 'var(--line-strong)' : THEME.textMuted, display: 'flex', alignItems: 'center', justifyContent: 'center' }),
+  catName: { flex: 1, minWidth: 0, padding: 0, border: 'none', background: 'none', textAlign: 'left', cursor: 'text', fontSize: 16, fontWeight: 600, color: THEME.textDark, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+  catNameInput: { flex: 1, minWidth: 0, fontSize: 16, fontWeight: 600, color: THEME.textDark, border: 'none', borderBottom: `1px solid ${THEME.primaryInk}`, background: 'transparent', padding: '0 0 2px' },
+  chevronBtn: { width: 32, height: 32, flexShrink: 0, padding: 0, border: 'none', background: 'none', color: THEME.textMuted, display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  deleteLabel: (confirming) => ({ ...UI.btnText, minHeight: 32, padding: '0 6px', fontSize: 13, color: confirming ? THEME.errorInk : THEME.textMuted, flexShrink: 0 }),
+  tagsWrap: { display: 'flex', flexDirection: 'column', gap: 8, margin: '12px 0 0 6px' },
+  tagBox: { background: THEME.surfaceAlt, borderRadius: 10, padding: '6px 8px 6px 2px' },
+  tagRow: { display: 'flex', alignItems: 'center', gap: 4 },
   tagReorderCol: { display: 'flex', flexDirection: 'column', flexShrink: 0 },
-  tagReorderBtn: (disabled) => ({ border: 'none', background: 'none', cursor: disabled ? 'default' : 'pointer', color: disabled ? THEME.textFaint : THEME.textMuted, fontSize: 14, lineHeight: 1, padding: '6px 9px' }),
-  tagName: { flex: 1, minWidth: 0, cursor: 'text', fontSize: 14, fontWeight: 500, color: THEME.textDark, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
-  tagNameInput: { flex: 1, minWidth: 0, fontSize: 14, fontWeight: 500, color: THEME.textDark, border: 'none', borderBottom: `1px solid ${THEME.primary}`, background: 'transparent' },
-  subBadge: { flexShrink: 0, fontSize: 12, color: THEME.textMuted, background: THEME.primarySoft, borderRadius: 999, padding: '2px 7px' },
-  tagChevron: { cursor: 'pointer', color: THEME.textMuted, fontSize: 12, width: 18, textAlign: 'center', flexShrink: 0, userSelect: 'none' },
-  removeX: { cursor: 'pointer', flexShrink: 0, width: 28, height: 28, borderRadius: '50%', color: THEME.textMuted, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15 },
-  hint: { fontSize: 12, color: THEME.errorInk, marginTop: 4, marginLeft: 6 },
-  subsWrap: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, margin: '10px 0 2px 24px' },
-  subChip: { display: 'inline-flex', alignItems: 'center', gap: 4, background: THEME.surface, border: `1px solid ${THEME.border}`, borderRadius: 999, padding: '4px 6px 4px 10px' },
-  subName: { fontSize: 13, color: THEME.textDark, cursor: 'text' },
+  tagReorderBtn: (disabled) => ({ width: 32, height: 20, padding: 0, border: 'none', background: 'none', cursor: disabled ? 'default' : 'pointer', color: disabled ? 'var(--line-strong)' : THEME.textMuted, display: 'flex', alignItems: 'center', justifyContent: 'center' }),
+  tagName: { flex: 1, minWidth: 0, padding: 0, border: 'none', background: 'none', textAlign: 'left', cursor: 'text', fontSize: 15, color: THEME.textDark, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+  tagNameInput: { flex: 1, minWidth: 0, fontSize: 15, color: THEME.textDark, border: 'none', borderBottom: `1px solid ${THEME.primaryInk}`, background: 'transparent' },
+  subBadge: { ...UI.tag('neutral'), flexShrink: 0, background: THEME.surface },
+  tagChevron: { width: 32, height: 32, flexShrink: 0, padding: 0, border: 'none', background: 'none', color: THEME.textMuted, display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  removeX: { width: 32, height: 32, flexShrink: 0, padding: 0, border: 'none', borderRadius: 999, background: 'none', color: THEME.textMuted, display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  hint: { fontSize: 13, color: THEME.errorInk, marginTop: 4, marginLeft: 6 },
+  subsWrap: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, margin: '8px 0 4px 32px' },
+  subChip: { minHeight: 32, display: 'inline-flex', alignItems: 'center', gap: 2, background: THEME.surface, border: `1px solid ${THEME.border}`, borderRadius: 999, padding: '0 4px' },
+  subName: { padding: '0 2px', border: 'none', background: 'none', fontSize: 13, color: THEME.textDark, cursor: 'text' },
   subNameInput: { width: 64, fontSize: 13, color: THEME.textDark, border: 'none', background: 'transparent' },
-  subMoveBtn: (disabled) => ({ border: 'none', background: 'none', cursor: disabled ? 'default' : 'pointer', color: disabled ? THEME.textFaint : THEME.textMuted, fontSize: 12, lineHeight: 1, padding: '2px 3px' }),
-  subRemove: { cursor: 'pointer', color: THEME.textMuted, fontSize: 13, padding: '0 4px', opacity: 0.8 },
-  detailsSection: { margin: '10px 0 2px 24px', paddingTop: 8, borderTop: `1px solid ${THEME.border}` },
-  detailsTitle: { fontSize: 12, fontWeight: 700, color: THEME.textMuted, marginBottom: 6 },
+  subMoveBtn: (disabled) => ({ width: 22, height: 24, padding: 0, border: 'none', background: 'none', cursor: disabled ? 'default' : 'pointer', color: disabled ? 'var(--line-strong)' : THEME.textMuted, display: 'flex', alignItems: 'center', justifyContent: 'center' }),
+  subRemove: { width: 24, height: 24, padding: 0, border: 'none', background: 'none', color: THEME.textMuted, display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  detailsSection: { margin: '10px 0 4px 32px', paddingTop: 8, borderTop: `1px solid ${THEME.border}` },
+  detailsTitle: { fontSize: 13, fontWeight: 500, color: THEME.textMuted, marginBottom: 6 },
   detailsWrap: { display: 'flex', flexWrap: 'wrap', gap: 6 },
-  detailChip: { display: 'inline-flex', alignItems: 'center', gap: 4, background: THEME.surface, border: `1px dashed ${THEME.border}`, borderRadius: 999, padding: '4px 6px 4px 10px' },
-  detailName: { fontSize: 12, color: THEME.textDark, cursor: 'text' },
-  detailNameInput: { width: 80, fontSize: 12, color: THEME.textDark, border: 'none', background: 'transparent' },
-  addPill: { display: 'inline-flex', alignItems: 'center', alignSelf: 'flex-start', border: `1px dashed ${THEME.textFaint}`, borderRadius: 999, padding: '5px 12px', fontSize: 13, color: THEME.textMuted, cursor: 'pointer', background: 'transparent' },
-  addSubInput: { width: 80, fontSize: 13, color: THEME.textDark, border: `1px solid ${THEME.textFaint}`, borderRadius: 999, padding: '4px 10px', background: THEME.surface },
-  addTagPill: { display: 'inline-flex', alignItems: 'center', alignSelf: 'flex-start', border: `1px dashed ${THEME.textFaint}`, borderRadius: 999, padding: '8px 14px', fontSize: 14, color: THEME.textMuted, cursor: 'pointer', background: 'transparent', marginTop: 4 },
-  addTagInput: { alignSelf: 'stretch', fontSize: 14, color: THEME.textDark, border: `1px solid ${THEME.textFaint}`, borderRadius: 999, padding: '8px 14px', background: THEME.surface, marginTop: 4 },
-  moveConfirm: { marginTop: 10, background: THEME.surfaceAlt, borderRadius: 10, padding: '10px 12px' },
-  moveConfirmText: { fontSize: 12, color: THEME.textDark, marginBottom: 8, lineHeight: 1.5 },
+  detailChip: { minHeight: 32, display: 'inline-flex', alignItems: 'center', gap: 2, background: THEME.surface, border: `1px solid ${THEME.border}`, borderRadius: 999, padding: '0 4px 0 8px' },
+  detailName: { padding: 0, border: 'none', background: 'none', fontSize: 13, color: THEME.textDark, cursor: 'text' },
+  detailNameInput: { width: 80, fontSize: 13, color: THEME.textDark, border: 'none', background: 'transparent' },
+  addPill: { ...UI.btnText, minHeight: 32, padding: '0 6px', fontSize: 13 },
+  addSubInput: { ...UI.input, width: 112, minHeight: 32, padding: '0 10px', fontSize: 13, borderRadius: 999 },
+  addTagPill: { ...UI.btnText, alignSelf: 'flex-start', minHeight: 36, padding: '0 6px' },
+  addTagInput: { ...UI.input, minHeight: 40, fontSize: 14 },
+  moveConfirm: { marginTop: 4, background: THEME.surfaceAlt, borderRadius: 10, padding: '10px 12px' },
+  moveConfirmText: { fontSize: 13, color: THEME.textDark, marginBottom: 8, lineHeight: 1.5 },
   moveConfirmActions: { display: 'flex', gap: 8 },
-  moveConfirmBtn: { border: 'none', cursor: 'pointer', padding: '6px 14px', borderRadius: 8, background: THEME.primary, color: '#fff', fontSize: 12, fontWeight: 700 },
-  moveCancelBtn: { border: 'none', cursor: 'pointer', padding: '6px 14px', borderRadius: 8, background: THEME.surface, color: THEME.textMuted, fontSize: 12, fontWeight: 600 },
-  newCategoryCard: { background: THEME.surface, borderRadius: THEME.radius, padding: '16px 18px', boxShadow: THEME.shadow, display: 'flex', gap: 8 },
-  newCategoryInput: { flex: 1, boxSizing: 'border-box', padding: '10px 12px', borderRadius: THEME.radiusSm, border: `1px solid ${THEME.border}`, fontSize: 14, color: THEME.textDark, background: THEME.surface },
-  addCategoryBtn: { border: 'none', cursor: 'pointer', padding: '0 18px', borderRadius: THEME.radiusSm, background: THEME.primary, color: '#fff', fontSize: 14, fontWeight: 700 },
+  moveConfirmBtn: { ...UI.btnSecondary, minHeight: 36 },
+  moveCancelBtn: { ...UI.btnText, minHeight: 36, color: THEME.textMuted },
+  newCategoryCard: { ...UI.card, padding: 12, display: 'flex', gap: 8 },
+  newCategoryInput: { ...UI.input, flex: 1, width: 'auto', minWidth: 0 },
+  addCategoryBtn: { ...UI.btnSecondary, minHeight: 44, flexShrink: 0 },
 };
 
 // 點名字進入行內改名的小元件：span ↔ 底線 input，Enter/失焦送出、Esc 取消。
@@ -75,7 +73,7 @@ function InlineName({ name, spanStyle, inputStyle, onCommit }) {
   };
 
   if (!editing) {
-    return <button type="button" className="btn-reset" style={spanStyle} aria-label={`重新命名「${name}」`} onClick={() => { setValue(name); setError(''); setEditing(true); }}>{name}</button>;
+    return <button type="button" style={spanStyle} aria-label={`重新命名「${name}」`} onClick={() => { setValue(name); setError(''); setEditing(true); }}>{name}</button>;
   }
   return (
     <>
@@ -108,13 +106,13 @@ function DetailHistory({ tag, details, onRename, onRemove }) {
             />
             <button
               type="button"
-              className="btn-reset tap"
+              className="tap"
               style={S.subRemove}
               aria-label={`刪除細節「${detail}」`}
               onClick={async () => {
                 if (await confirmDialog({ title: `刪除細節「${detail}」？`, message: '所有使用這個細節的歷史紀錄都會同步清除。', confirmText: '刪除', danger: true })) onRemove(detail);
               }}
-            >×</button>
+            ><Icon name="x" size={14} /></button>
           </div>
         ))}
       </div>
@@ -122,7 +120,7 @@ function DetailHistory({ tag, details, onRename, onRemove }) {
   );
 }
 
-// 一個主標籤：標籤列（▲▼、名字、子標籤數 badge、收合箭頭、×）＋展開後的子標籤 chip 區。
+// 一個主標籤：標籤列（上下移、名字、子標籤數 badge、收合箭頭、刪除）＋展開後的子標籤 chip 區。
 function TagBox({ tag, isFirst, isLast, allCategories, tagDetailHistory, actions }) {
   const [expanded, setExpanded] = useState(false);
   const [addingSub, setAddingSub] = useState(false);
@@ -148,8 +146,8 @@ function TagBox({ tag, isFirst, isLast, allCategories, tagDetailHistory, actions
     <div style={S.tagBox}>
       <div style={S.tagRow}>
         <div style={S.tagReorderCol}>
-          <button type="button" style={S.tagReorderBtn(isFirst)} disabled={isFirst} onClick={() => actions.onMove(-1)} aria-label="標籤上移">▲</button>
-          <button type="button" style={S.tagReorderBtn(isLast)} disabled={isLast} onClick={() => actions.onMove(1)} aria-label="標籤下移">▼</button>
+          <button type="button" style={S.tagReorderBtn(isFirst)} disabled={isFirst} onClick={() => actions.onMove(-1)} aria-label="標籤上移"><Icon name="chevron-up" size={16} /></button>
+          <button type="button" style={S.tagReorderBtn(isLast)} disabled={isLast} onClick={() => actions.onMove(1)} aria-label="標籤下移"><Icon name="chevron-down" size={16} /></button>
         </div>
         <InlineName
           name={tag.name}
@@ -158,8 +156,8 @@ function TagBox({ tag, isFirst, isLast, allCategories, tagDetailHistory, actions
           onCommit={(val) => { const err = checkRename(val); if (err) return err; actions.onRename(val); return null; }}
         />
         {tag.subs.length > 0 && <span style={S.subBadge}>{tag.subs.length}</span>}
-        <button type="button" className="btn-reset tap" style={S.tagChevron} aria-expanded={expanded} aria-label={expanded ? '收合子標籤' : '展開子標籤'} onClick={() => setExpanded((v) => !v)}>{expanded ? '▾' : '▸'}</button>
-        <button type="button" className="btn-reset" style={S.removeX} aria-label={`刪除標籤「${tag.name}」`} onClick={actions.onRemove}>×</button>
+        <button type="button" style={S.tagChevron} aria-expanded={expanded} aria-label={expanded ? '收合子標籤' : '展開子標籤'} onClick={() => setExpanded((v) => !v)}><Icon name={expanded ? 'chevron-down' : 'chevron-right'} size={18} /></button>
+        <button type="button" style={S.removeX} aria-label={`刪除標籤「${tag.name}」`} onClick={actions.onRemove}><Icon name="x" size={16} /></button>
       </div>
 
       {expanded && (
@@ -167,15 +165,15 @@ function TagBox({ tag, isFirst, isLast, allCategories, tagDetailHistory, actions
           <div style={S.subsWrap}>
             {tag.subs.map((sub, i) => (
               <div key={sub} style={S.subChip}>
-                <button type="button" style={S.subMoveBtn(i === 0)} disabled={i === 0} onClick={() => actions.onMoveSub(sub, -1)} aria-label="子標籤左移">‹</button>
+                <button type="button" style={S.subMoveBtn(i === 0)} disabled={i === 0} onClick={() => actions.onMoveSub(sub, -1)} aria-label="子標籤左移"><Icon name="chevron-left" size={14} /></button>
                 <InlineName
                   name={sub}
                   spanStyle={S.subName}
                   inputStyle={S.subNameInput}
                   onCommit={(val) => { const err = checkRename(val); if (err) return err; actions.onRenameSub(sub, val); return null; }}
                 />
-                <button type="button" style={S.subMoveBtn(i === tag.subs.length - 1)} disabled={i === tag.subs.length - 1} onClick={() => actions.onMoveSub(sub, 1)} aria-label="子標籤右移">›</button>
-                <button type="button" className="btn-reset tap" style={S.subRemove} aria-label={`刪除子標籤「${sub}」`} onClick={() => actions.onRemoveSub(sub)}>×</button>
+                <button type="button" style={S.subMoveBtn(i === tag.subs.length - 1)} disabled={i === tag.subs.length - 1} onClick={() => actions.onMoveSub(sub, 1)} aria-label="子標籤右移"><Icon name="chevron-right" size={14} /></button>
+                <button type="button" className="tap" style={S.subRemove} aria-label={`刪除子標籤「${sub}」`} onClick={() => actions.onRemoveSub(sub)}><Icon name="x" size={14} /></button>
               </div>
             ))}
             {addingSub ? (
@@ -189,7 +187,7 @@ function TagBox({ tag, isFirst, isLast, allCategories, tagDetailHistory, actions
                 onKeyDown={(e) => { if (e.nativeEvent.isComposing) return; if (e.key === 'Enter') submitSub(); if (e.key === 'Escape') { setAddingSub(false); setSubDraft(''); setSubHint(''); } }}
               />
             ) : (
-              <button type="button" className="btn-reset" style={S.addPill} onClick={() => setAddingSub(true)}>+ 新增子標籤</button>
+              <button type="button" style={S.addPill} onClick={() => setAddingSub(true)}><Icon name="plus" size={14} />新增子標籤</button>
             )}
             {subHint && <div style={S.hint}>{subHint}</div>}
           </div>
@@ -250,8 +248,8 @@ function CategoryCard({ category, allCategories, tagDetailHistory, onRename, onD
     <div style={S.card}>
       <div style={S.cardTop}>
         <div style={S.reorderCol}>
-          <button type="button" style={S.reorderBtn(!canMoveUp)} disabled={!canMoveUp} onClick={onMoveUp} aria-label="上移">▲</button>
-          <button type="button" style={S.reorderBtn(!canMoveDown)} disabled={!canMoveDown} onClick={onMoveDown} aria-label="下移">▼</button>
+          <button type="button" style={S.reorderBtn(!canMoveUp)} disabled={!canMoveUp} onClick={onMoveUp} aria-label="上移"><Icon name="chevron-up" size={16} /></button>
+          <button type="button" style={S.reorderBtn(!canMoveDown)} disabled={!canMoveDown} onClick={onMoveDown} aria-label="下移"><Icon name="chevron-down" size={16} /></button>
         </div>
         <InlineName
           name={category.name}
@@ -259,8 +257,8 @@ function CategoryCard({ category, allCategories, tagDetailHistory, onRename, onD
           inputStyle={S.catNameInput}
           onCommit={(val) => { onRename(val); return null; }}
         />
-        <button type="button" className="btn-reset tap" style={S.chevronBtn} aria-expanded={expanded} aria-label={expanded ? '收合分類' : '展開分類'} onClick={() => setExpanded((v) => !v)}>{expanded ? '▾' : '▸'}</button>
-        <button type="button" className="btn-reset tap" style={S.deleteLabel(confirmDelete)} onClick={handleDeleteClick}>
+        <button type="button" style={S.chevronBtn} aria-expanded={expanded} aria-label={expanded ? '收合分類' : '展開分類'} onClick={() => setExpanded((v) => !v)}><Icon name={expanded ? 'chevron-down' : 'chevron-right'} size={18} /></button>
+        <button type="button" style={S.deleteLabel(confirmDelete)} onClick={handleDeleteClick}>
           {confirmDelete ? '確定？' : '刪除分類'}
         </button>
       </div>
@@ -300,7 +298,7 @@ function CategoryCard({ category, allCategories, tagDetailHistory, onRename, onD
               onKeyDown={(e) => { if (e.nativeEvent.isComposing) return; if (e.key === 'Enter') { e.preventDefault(); submitTag(); } if (e.key === 'Escape') { setAddingTag(false); setTagDraft(''); setTagHint(''); } }}
             />
           ) : (
-            <button type="button" className="btn-reset" style={S.addTagPill} onClick={() => setAddingTag(true)}>+ 新增主標籤</button>
+            <button type="button" style={S.addTagPill} onClick={() => setAddingTag(true)}><Icon name="plus" size={16} />新增主標籤</button>
           )}
           {tagHint && <div style={S.hint}>{tagHint}</div>}
 
@@ -333,10 +331,10 @@ export default function ManageTags({ categories, tagDetailHistory, onRenameCateg
 
   return (
     <div>
-      <div style={S.header}>
-        <button type="button" onClick={onClose} style={S.backBtn} className="tap" aria-label="返回"><Icon name="chevron-left" size={24} /></button>
-        <div style={S.title}>管理分類與標籤</div>
-      </div>
+      <header style={UI.subBar}>
+        <button type="button" onClick={onClose} style={UI.iconBtn} aria-label="返回"><Icon name="chevron-left" size={20} /></button>
+        <h1 style={UI.subTitle}>管理分類與標籤</h1>
+      </header>
 
       <div style={S.body}>
         {categories.map((cat, i) => (

@@ -84,7 +84,7 @@ Vercel 會用本資料夾的 `package.json` 自動偵測 Vite，不影響其他 
 ```
 src/
 ├── main.jsx                       # 進入點（初始化 LINE LIFF；import shared base.css + theme.css）
-├── theme.css                      # 色票 / 陰影（CSS 變數，暖橘棕色系）
+├── theme.css                      # 色票 / 陰影（CSS 變數；中性色三個 app 共用，主色暖橘棕）
 ├── Root.jsx                       # config check + LIFF / Auth 登入閘口，登入後交給 App
 ├── App.jsx                        # 520px 行動外殼 + 載入 recipes 與 view 導覽切換
 ├── supabase.js                    # re-export 共用 supabase client
@@ -94,8 +94,8 @@ src/
 ├── useRecipes.js                  # 狀態中樞（清單、搜尋、分類、URL 同步、按讚、暱稱等）
 └── components/
     ├── Auth.jsx                   # Email / 密碼與 LINE 快速登入頁面
-    ├── TabBar.jsx                 # 底部導覽（食譜 / 行事曆 / 設定）
-    ├── RecipeCatalog.jsx          # 食譜清單、搜尋、分類 tab（全 inline styles）
+    ├── TabBar.jsx                 # 底部導覽（食譜 / 行事曆 / 設定；外觀用 shared 的 BottomTabs）
+    ├── RecipeCatalog.jsx          # 食譜清單、搜尋、分類膠囊、新增 FAB（全 inline styles）
     ├── RecipeDetail.jsx           # 單一食譜的食材、步驟、參數、按讚、誰按讚（全 inline styles）
     ├── RecipeForm.jsx             # 新增/編輯食譜表單
     ├── CookCalendar.jsx           # 料理行事曆分頁
@@ -105,6 +105,10 @@ src/
 ---
 
 ## 近期更新 (Recent Updates)
+- **三個 app 介面統一改版** (2026-09-30)：
+  - 中性色、字型（Figtree）、字級 / 圓角 / 字重規格三個 app 一致，只有主色不同；卡片改用 1px 邊線、不加陰影。頁首、清單、按鈕、輸入框改用共用的 `packages/shared/src/ui.js`，底部分頁列改用共用的 `BottomTabs`。
+  - 食譜頁：頁首改成「食譜」＋食譜數，登出鈕移到設定頁（訪客才在頁首顯示「登入」）；沒有圖片的食譜用名稱第一個字當佔位（原本 🍳）；新增食譜改成右下 FAB。
+  - 食譜詳情、料理行事曆、設定、登入頁套用同一套版型；料理行事曆的頁首跟行事曆 app 月檢視一致（‹ › 換月、離開當月才出現「回到今天」）。介面不再使用 emoji。
 - **清掉已停用的 `recipe_book.user_settings`** (2026-09-29)：
   - 新增 `supabase/2026-09-29_drop_user_settings.sql`，把暱稱第一版的表連同 `auth.users` 上的註冊 trigger / function 一起刪除（需在 Supabase SQL Editor 手動執行）。
 - **登入初始化與 LINE 連結狀態改用共用 hook** (2026-09-29)：

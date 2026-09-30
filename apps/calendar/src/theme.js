@@ -1,11 +1,10 @@
-// 共用視覺樣式常數（配色、圓角、陰影）+ 事件顏色選項。
+// 共用視覺樣式常數（配色）+ 事件顏色選項。圓角、陰影與元件樣式改用 @peggy-life/shared/ui 的 UI（三個 app 共用）。
 // 對應設計稿的「柔和藍」主題。實際色值在 theme.css 的 CSS 變數，這裡只是把變數名包成 JS 常數；所有元件的 inline style 都從這裡取值，不要各自硬編色碼。
 
 export const THEME = {
   bg: 'var(--bg)',
   surface: 'var(--surface)',
   surfaceAlt: 'var(--surface-alt)',
-  surfaceAlt2: 'var(--surface-alt2)',
   primary: 'var(--primary)',
   // 當「字色」用的主色：淺色模式跟 primary 一樣；深色模式比較亮，深底上才讀得到（primary 本身留給實心按鈕底色）
   primaryInk: 'var(--primary-ink)',
@@ -15,16 +14,9 @@ export const THEME = {
   textMuted: 'var(--text-muted)',
   textFaint: 'var(--text-faint)',
   border: 'var(--line)',
-  radius: 20,
-  radiusSm: 14,
-  radiusSmInner: 10,
   success: 'var(--success)',
   successInk: 'var(--success-ink)',
-  successBg: 'var(--success-bg)',
-  error: 'var(--danger)',
   errorInk: 'var(--danger-ink)',
-  errorBg: 'var(--danger-bg)',
-  shadow: 'var(--shadow-card)',
   // ＃快速注記的深藍色（2026-07-10 從暖橘改藍，使用者反饋）
   hashtagInk: 'var(--primary-strong)',
   hashtagBg: 'var(--primary-soft)',

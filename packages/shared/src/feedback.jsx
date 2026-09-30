@@ -24,15 +24,16 @@ export function confirmDialog({ title, message, confirmText = '確定', cancelTe
 const S = {
   // 距底部的高度可由各 app 的 --toast-offset 調整（calendar 有浮動 ＋ 按鈕，要再高一點）
   toastWrap: { position: 'fixed', left: 16, right: 16, bottom: 'calc(var(--toast-offset, 96px) + env(safe-area-inset-bottom))', zIndex: 60, display: 'flex', justifyContent: 'center', pointerEvents: 'none' },
-  toast: (tone) => ({ pointerEvents: 'auto', maxWidth: 480, display: 'flex', alignItems: 'center', gap: 12, padding: '10px 10px 10px 16px', borderRadius: 14, boxShadow: 'var(--shadow-sheet)', background: tone === 'error' ? 'var(--danger)' : '#1F2733', color: '#fff', fontSize: 14, fontWeight: 700, lineHeight: 1.4 }),
-  toastAction: { border: 'none', background: 'rgba(255,255,255,.18)', color: '#fff', fontSize: 14, fontWeight: 800, padding: '7px 12px', borderRadius: 10, whiteSpace: 'nowrap' },
+  // 一般提示用反白（深色字底 / 深色模式下是淺底），錯誤用紅底
+  toast: (tone) => ({ pointerEvents: 'auto', maxWidth: 480, display: 'flex', alignItems: 'center', gap: 12, padding: '10px 10px 10px 16px', borderRadius: 14, boxShadow: 'var(--shadow-float)', background: tone === 'error' ? 'var(--danger)' : 'var(--text)', color: tone === 'error' ? 'var(--on-primary)' : 'var(--bg)', fontSize: 14, fontWeight: 500, lineHeight: 1.4 }),
+  toastAction: { minHeight: 32, border: 'none', background: 'none', color: 'inherit', fontSize: 14, fontWeight: 600, padding: '0 8px', textDecoration: 'underline', textUnderlineOffset: 3, whiteSpace: 'nowrap' },
   scrim: { position: 'fixed', inset: 0, zIndex: 70, background: 'var(--scrim)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 },
-  dialog: { width: '100%', maxWidth: 340, background: 'var(--surface)', borderRadius: 20, padding: '22px 20px 16px', boxShadow: 'var(--shadow-sheet)', outline: 'none' },
-  title: { fontSize: 16, fontWeight: 800, color: 'var(--text)', lineHeight: 1.4 },
-  message: { fontSize: 14, color: 'var(--text-muted)', lineHeight: 1.6, marginTop: 6, whiteSpace: 'pre-wrap' },
-  actions: { display: 'flex', gap: 10, marginTop: 20 },
-  cancelBtn: { flex: 1, border: 'none', background: 'var(--sunken)', color: 'var(--text)', fontSize: 15, fontWeight: 700, padding: 12, borderRadius: 14 },
-  confirmBtn: (danger) => ({ flex: 1, border: 'none', background: danger ? 'var(--danger)' : 'var(--primary)', color: '#fff', fontSize: 15, fontWeight: 800, padding: 12, borderRadius: 14 }),
+  dialog: { width: '100%', maxWidth: 340, background: 'var(--surface)', borderRadius: 20, padding: '24px 20px 20px', boxShadow: 'var(--shadow-float)', outline: 'none' },
+  title: { fontSize: 18, fontWeight: 600, color: 'var(--text)', lineHeight: 1.4 },
+  message: { fontSize: 15, color: 'var(--text-muted)', lineHeight: 1.6, marginTop: 8, whiteSpace: 'pre-wrap' },
+  actions: { display: 'flex', gap: 8, marginTop: 20 },
+  cancelBtn: { flex: 1, minHeight: 44, border: 'none', background: 'var(--sunken)', color: 'var(--text)', fontSize: 15, fontWeight: 500, borderRadius: 10 },
+  confirmBtn: (danger) => ({ flex: 1, minHeight: 44, border: 'none', background: danger ? 'var(--danger)' : 'var(--primary)', color: 'var(--on-primary)', fontSize: 15, fontWeight: 600, borderRadius: 10 }),
 };
 
 function ConfirmDialog({ title, message, confirmText, cancelText, danger, onClose }) {

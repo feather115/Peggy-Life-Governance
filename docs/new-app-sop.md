@@ -221,20 +221,34 @@ Supabase ⇄ db.js ⇄ use<Domain>.js ⇄ Root.jsx/App.jsx ⇄ components/*
   `--bg / --surface / --surface-alt / --sunken / --line / --line-strong / --track / --text / --text-muted /
   --text-faint / --primary / --primary-ink / --primary-soft / --on-primary / --ring / --info / --info-ink / --info-bg /
   --success / --success-ink / --success-bg / --danger / --danger-ink / --danger-bg / --warning-ink / --warning-bg /
-  --scrim / --shadow-card / --shadow-nav / --shadow-sheet`），`main.jsx` 依序 import
+  --scrim / --shadow-card / --shadow-nav / --shadow-sheet / --shadow-float`），`main.jsx` 依序 import
   `@peggy-life/shared/base.css` 和 `./theme.css`。inline style 寫 `'var(--text)'`，**不要寫死色碼**。
+  - **中性色（底色、線、文字）三個 app 是同一組暖灰**，只有 `--primary*` 主色不同（綠 `#29774F` / 橘棕 `#9F4F2F` /
+    藍 `#3F6AA1`）；新 app 整組中性色照抄，只換主色
+  - 卡片不加陰影：`--shadow-card` 是 1px 邊線（`0 0 0 1px var(--line)`）；浮在上層的東西（FAB、面板、toast）才用 `--shadow-float`
   - `--primary / --info / --danger / --success` 是**實心底色**（上面放白字）；**當字色用寫 `*-ink`**
   - theme.css 要同時給**淺色與深色**兩組值（`@media (prefers-color-scheme: dark)` 區塊，深色的 `*-ink` 要比較亮）
   - 新 app 的 theme.css 要加進 `packages/shared/src/themeContrast.test.js` 的 `APPS`，`npm test` 會檢查兩個模式的對比度
   - `index.html` 不再放 `<style>`，viewport 不要加 `maximum-scale` / `user-scalable=no`。
-- **尺寸規格**：字級只用 12/13/14/15/16/18/20/24（28 以上給大數字），圓角只用 8/10/14/20/28/999
-  （5 以下的細節不限）。`designScale.test.js` 會掃元件，新 app 的 `src` 要加進它的 `DIRS`。
+- **字型**：`index.html` 載入 Google Fonts 的 Figtree（400/500/600），`base.css` 的 font-family 是 Figtree ＋ 系統中文字型
+- **尺寸規格**：字級只用 12/13/14/15/16/18/24（28 以上給大數字），圓角只用 10/14/20/999（5 以下的細節不限），
+  字重只用 400/500/600（標題 600、強調 500、內文 400）。`designScale.test.js` 會掃元件，新 app 的 `src` 要加進它的 `DIRS`。
+- **共用 UI 樣式（先用這個，不要自己重畫）**：`import { UI } from '@peggy-life/shared/ui'`，同一種東西三個 app 只長一種樣子：
+  - 頁首：`UI.header` 裡放 `UI.title`（24/600）＋ `UI.subtitle`，右邊 `UI.headerActions` 放圓鈕（`UI.iconBtn`，時間切換 ‹ › 固定在右側）；
+    內頁（表單、管理頁）用 `UI.subBar`（返回圓鈕 ＋ `UI.subTitle`）。頁首不放 app 名稱、logo 或 emoji
+  - 分組清單：`UI.groupLabel` ＋ `UI.listCard` 裡一列列 `UI.row`（`rowText / rowTitle / rowMeta / rowValue`），列與列之間 `UI.divider`，
+    清單尾端的「＋ 加入…」用 `UI.addRow`；整列可點就把 `UI.row` 當 `<button>` 的樣式
+  - 按鈕：`btnPrimary`（一個畫面最多一顆）/ `btnSecondary` / `btnNeutral` / `btnText` / `btnDanger`，圓鈕 `iconBtn / iconBtnPlain / iconBtnSoft`，
+    浮動新增 `UI.fab`；篩選膠囊 `UI.chip(on)`、分段切換 `UI.segTrack` ＋ `UI.seg(on)`、狀態標籤 `UI.tag(tone)`、提示框 `UI.note(tone)`
+  - 表單：`UI.fieldLabel` ＋ `UI.input / UI.textarea`，錯誤訊息 `UI.fieldError`，數量加減 `UI.stepper`
+  - 位置、寬度用展開覆寫（`{ ...UI.btnPrimary, width: '100%' }`）；要改外觀改 `ui.js`，三個 app 一起變
+  - 底部分頁列用 `@peggy-life/shared/BottomTabs.jsx`（`tabs=[{ key, label, icon }]`、`active`、`onChange`），app 的 `TabBar` 只決定有哪些分頁
 - 互動元素（button）：
   - **不要寫 `outline: 'none'`**——焦點環由 `base.css` 的 `:focus-visible` 提供，inline 寫了會蓋掉它
   - `cursor: 'pointer'` 已由 `base.css` 提供，不必再寫
   - icon-only 按鈕一定要有 `aria-label`；視覺上小於 44px 的按鈕加 `className="tap"`
-  - icon 用 `@peggy-life/shared/Icon.jsx`，不要用 emoji / 文字符號（✏ × ＋ 🔍 📋）當操作或標示圖示；
-    只有內容性的 emoji（餐別圖示、佔位圖）可以留
+  - icon 用 `@peggy-life/shared/Icon.jsx`，不要用 emoji / 文字符號（✏ × ＋ ‹ › ▲ ▼ 🔍 📋）當操作或標示圖示；
+    介面文案（標題、提示、toast）也不放 emoji。沒有圖片時的佔位用名稱第一個字（見 recipe-book `RecipeCatalog.jsx`）
   - 載入中用 `<LoadingSkeleton />`、載入失敗用 `<LoadError message />`（shared），不要只放一行文字
   - 設定頁放 `<OtherApps current="…" />`，並在 `.env.example` 與 `OtherApps.jsx` 的清單加上新 app
   - 每個 `<input>/<textarea>/<select>` 要有 `aria-label`（或 `<label>` 包住），placeholder 不算
@@ -249,7 +263,7 @@ Supabase ⇄ db.js ⇄ use<Domain>.js ⇄ Root.jsx/App.jsx ⇄ components/*
   - `height: '100vh'` + `maxHeight: '100dvh'` + `overflow: 'hidden'`，只讓中間內容區
     `overflowY: 'auto'`——**不要用 `minHeight: 100vh`**，手機瀏覽器網址列還沒收起來時
     可視高度比 100vh 矮，底部 TabBar 會被擠出畫面外（calorie-tracker 踩過）
-  - 底部 `TabBar`（分頁列）+ 各分頁元件收在 `components/`
+  - 底部 `TabBar`（分頁列，包一層共用的 `BottomTabs`）+ 各分頁元件收在 `components/`
   - 彈出面板（bottom sheet）要用 `createPortal` 掛到 `document.body`，不然 z-index
     蓋不過 TabBar（見 calorie-tracker `Sheet.jsx`）
 

@@ -28,12 +28,12 @@ export function ringInfo(consumed, goalCal) {
   const diff = goalCal - consumed;
   const ratio = consumed / (goalCal || 1);
   if (ratio > 1) {
-    return { diff, ringColor: 'var(--over)', remainColor: '#fff', remainBg: 'var(--danger)', remainText: `已超過 ${Math.abs(diff)} kcal` };
+    return { diff, ringColor: 'var(--over)', remainColor: 'var(--danger-ink)', remainText: `已超過 ${Math.abs(diff)} kcal` };
   }
   if (ratio > 0.9) {
-    return { diff, ringColor: 'var(--warning)', remainColor: 'var(--warning-ink)', remainBg: 'var(--warning-bg)', remainText: `剩下 ${diff} kcal` };
+    return { diff, ringColor: 'var(--warning)', remainColor: 'var(--warning-ink)', remainText: `剩下 ${diff} kcal` };
   }
-  return { diff, ringColor: 'var(--primary-ink)', remainColor: 'var(--primary-ink)', remainBg: 'var(--bg)', remainText: `還可以吃 ${diff} kcal` };
+  return { diff, ringColor: 'var(--primary-ink)', remainColor: 'var(--primary-ink)', remainText: `還可以吃 ${diff} kcal` };
 }
 
 // Report - Weekly bar chart (past 7 days)
@@ -58,7 +58,7 @@ export function buildWeek(days, goalCal, fastingIds, otherIds) {
     const bc = d.cal === 0 ? 'var(--bar-empty)' : d.cal <= goalCal ? 'var(--primary-ink)' : d.cal <= goalCal * 1.1 ? 'var(--warning)' : 'var(--over)';
     return {
       cal: d.cal > 0 ? d.cal : '', height: bh + 'px', color: bc, label: d.dow,
-      labelColor: d.isToday ? 'var(--text)' : 'var(--text-faint)', labelWeight: d.isToday ? '900' : '700',
+      labelColor: d.isToday ? 'var(--text)' : 'var(--text-faint)', labelWeight: d.isToday ? '600' : '400',
       calColor: d.cal > goalCal ? 'var(--danger-ink)' : 'var(--text-muted)', hasFast: d.hasFast,
     };
   });
@@ -88,7 +88,7 @@ export function buildMonth(days, goalCal, fastingIds, otherTagDefs, monthDate = 
     let bg = isFut ? 'var(--future-bg)' : 'var(--sunken)';
     if (!isFut && mc > 0) {
       mTotalCal += mc; mRecD++; mTP += mt.p; mTC += mt.c; mTF += mt.f;
-      bg = mc <= goalCal ? 'var(--track)' : mc <= goalCal * 1.1 ? 'var(--heat-near)' : 'var(--heat-over)';
+      bg = mc <= goalCal ? 'var(--heat-ok)' : mc <= goalCal * 1.1 ? 'var(--heat-near)' : 'var(--heat-over)';
     }
     const mAT = days[mdk]?.tags?.activeTags || [];
     const mHF = mAT.some((t) => fastingIds.includes(t));
@@ -99,7 +99,7 @@ export function buildMonth(days, goalCal, fastingIds, otherTagDefs, monthDate = 
     const isCur = mdk === today;
     calCells.push({
       empty: false, day: md, dateKey: mdk, isFuture: isFut, bg, hasFast: mHF, hasOther: mHO, otherColors,
-      todayBorder: isCur ? '2px solid var(--primary)' : '2px solid transparent',
+      todayBorder: isCur ? '2px solid var(--primary-ink)' : '2px solid transparent',
       textColor: isFut ? 'var(--future-text)' : 'var(--text)',
     });
   }

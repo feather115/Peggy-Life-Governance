@@ -1,6 +1,20 @@
-// Login / Sign Up / Forgot Password page (shown when not logged in). Supabase Email + Password.
+// Login / Sign Up / Forgot Password page (shown when not logged in). Supabase Email + Password. 三個 app 的登入頁同一個版型。
 import React, { useState } from 'react';
 import { supabase } from '../supabase.js';
+import { UI } from '@peggy-life/shared/ui';
+
+const S = {
+  wrap: { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 },
+  card: { ...UI.card, padding: 24, width: '100%', maxWidth: 380 },
+  title: { ...UI.title, textAlign: 'center' },
+  sub: { fontSize: 14, color: 'var(--text-muted)', textAlign: 'center', marginTop: 4, marginBottom: 20 },
+  form: { display: 'flex', flexDirection: 'column', gap: 14 },
+  links: { marginTop: 12, display: 'flex', flexDirection: 'column', alignItems: 'center' },
+  link: { ...UI.btnText, color: 'var(--text-muted)' },
+  debug: { marginTop: 16, fontSize: 12, color: 'var(--text-faint)', lineHeight: 1.6, wordBreak: 'break-word' },
+};
+
+const MSG_TONE = { error: 'danger', success: 'success', info: 'warning' };
 
 export default function Auth({ lineDebug }) {
   const [mode, setMode] = useState('signin'); // 'signin' | 'signup' | 'forgot'
@@ -49,50 +63,42 @@ export default function Auth({ lineDebug }) {
     signin: '登入', signup: '註冊', forgot: '寄出重設連結',
   };
 
-  const msgStyles = {
-    error:   { color: 'var(--danger-ink)', bg: 'var(--danger-bg)' },
-    success: { color: 'var(--success-ink)', bg: 'var(--success-bg)' },
-    info:    { color: 'var(--warning-ink)', bg: 'var(--warning-bg)' },
-  };
-  const ms = msgStyles[msgKind];
-
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-      <div style={{ background: 'var(--surface)', borderRadius: 28, padding: 28, width: '100%', maxWidth: 380, boxShadow: 'var(--shadow-card)' }}>
-        <div style={{ fontSize: 24, fontWeight: 900, color: 'var(--text)', textAlign: 'center' }}>TY Calorie Tracker</div>
-        <div style={{ fontSize: 14, color: 'var(--text-muted)', fontWeight: 700, textAlign: 'center', marginTop: 4, marginBottom: 20 }}>
-          {titles[mode]}
-        </div>
-        <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <input aria-label="Email" type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required
-            style={{ border: 'none', background: 'var(--surface-alt)', borderRadius: 14, padding: '14px 16px', fontSize: 16, fontWeight: 700, color: 'var(--text)' }} />
+    <div style={S.wrap}>
+      <div style={S.card}>
+        <h1 style={S.title}>TY Calorie Tracker</h1>
+        <div style={S.sub}>{titles[mode]}</div>
+        <form onSubmit={submit} style={S.form}>
+          <label>
+            <span style={UI.fieldLabel}>電子郵件</span>
+            <input type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required style={UI.input} />
+          </label>
           {mode !== 'forgot' && (
-            <input aria-label="密碼" type="password" placeholder="密碼（至少 6 字元）" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6}
-              style={{ border: 'none', background: 'var(--surface-alt)', borderRadius: 14, padding: '14px 16px', fontSize: 16, fontWeight: 700, color: 'var(--text)' }} />
+            <label>
+              <span style={UI.fieldLabel}>密碼</span>
+              <input type="password" placeholder="至少 6 字元" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} style={UI.input} />
+            </label>
           )}
-          <button type="submit" disabled={busy}
-            style={{ border: 'none', background: busy ? 'var(--line-strong)' : 'var(--primary)', color: '#fff', fontWeight: 900, fontSize: 15, padding: 14, borderRadius: 14, cursor: 'pointer', marginTop: 6 }}>
+          <button type="submit" disabled={busy} style={{ ...UI.btnPrimary, marginTop: 4, opacity: busy ? 0.6 : 1 }}>
             {busy ? '處理中…' : submitLabels[mode]}
           </button>
         </form>
-        {msg && <div style={{ marginTop: 12, fontSize: 13, color: ms.color, background: ms.bg, padding: '10px 12px', borderRadius: 14, fontWeight: 700, lineHeight: 1.6 }}>{msg}</div>}
+        {msg && <div style={{ ...UI.note(MSG_TONE[msgKind]), marginTop: 12 }}>{msg}</div>}
 
-        <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <div style={S.links}>
           {mode === 'signin' && <>
-            <button onClick={() => switchMode('signup')} style={linkBtn}>還沒有帳號？建立一個</button>
-            <button onClick={() => switchMode('forgot')} style={linkBtn}>忘記密碼？</button>
+            <button type="button" onClick={() => switchMode('signup')} style={S.link}>還沒有帳號？建立一個</button>
+            <button type="button" onClick={() => switchMode('forgot')} style={S.link}>忘記密碼？</button>
           </>}
           {mode === 'signup' && (
-            <button onClick={() => switchMode('signin')} style={linkBtn}>已有帳號？回到登入</button>
+            <button type="button" onClick={() => switchMode('signin')} style={S.link}>已有帳號？回到登入</button>
           )}
           {mode === 'forgot' && (
-            <button onClick={() => switchMode('signin')} style={linkBtn}>‹ 回到登入</button>
+            <button type="button" onClick={() => switchMode('signin')} style={S.link}>回到登入</button>
           )}
         </div>
-        {lineDebug && <div style={{ marginTop: 16, fontSize: 12, color: 'var(--text-faint)', fontWeight: 600, lineHeight: 1.6, wordBreak: 'break-word' }}>LINE 自動登入除錯：{lineDebug}</div>}
+        {lineDebug && <div style={S.debug}>LINE 自動登入除錯：{lineDebug}</div>}
       </div>
     </div>
   );
 }
-
-const linkBtn = { width: '100%', border: 'none', background: 'none', color: 'var(--text-muted)', fontWeight: 800, fontSize: 14, cursor: 'pointer', padding: '6px 0' };

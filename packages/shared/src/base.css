@@ -4,7 +4,7 @@
 html,body{height:100%;}
 html{-webkit-text-size-adjust:100%;}
 body{
-  font-family:'Nunito','PingFang TC','Noto Sans TC','Microsoft JhengHei',system-ui,sans-serif;
+  font-family:'Figtree','PingFang TC','Noto Sans TC','Microsoft JhengHei',system-ui,sans-serif;
   background:var(--bg);color:var(--text);
   min-height:100vh;min-height:100dvh;
   -webkit-tap-highlight-color:transparent;

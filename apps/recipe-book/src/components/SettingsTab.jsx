@@ -1,8 +1,21 @@
-// Settings tab: account email, nickname, LINE account linking, sign out.
+// Settings tab: 分組清單（個人資料、其他 App、帳號）＋ 登出。三個 app 的設定頁用同一個版型。
 import React, { useEffect, useState } from 'react';
 import { canLinkLine, useLineLinked } from '../liff.js';
 import OtherApps from '@peggy-life/shared/OtherApps.jsx';
 import Icon from '@peggy-life/shared/Icon.jsx';
+import { UI } from '@peggy-life/shared/ui';
+
+const S = {
+  page: { paddingBottom: 24 },
+  group: { margin: '28px 20px 0', display: 'flex', flexDirection: 'column', gap: 8 },
+  groupHint: { margin: 0, padding: '0 4px', fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5 },
+  rowLabel: { flex: 1, minWidth: 0, fontSize: 15 },
+  nameInput: { ...UI.input, flex: 1, minWidth: 0, minHeight: 40 },
+  rowNote: { padding: '0 16px 12px' },
+  linked: { display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 13, fontWeight: 500, color: 'var(--success-ink)' },
+  signOut: { margin: '28px 20px 0' },
+  footer: { margin: '16px 0 0', textAlign: 'center', fontSize: 12, color: 'var(--text-faint)' },
+};
 
 export default function SettingsTab({ session, myDisplayName, onSetDisplayName, onSignOut }) {
   const [nameInput, setNameInput] = useState(myDisplayName);
@@ -32,42 +45,41 @@ export default function SettingsTab({ session, myDisplayName, onSetDisplayName, 
     }
   };
 
+  const nameUnchanged = nameInput.trim() === myDisplayName;
+
   return (
-    <div style={{ padding: '6px 18px 20px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-        <div>
-          <div style={{ fontSize: 24, fontWeight: 900, color: 'var(--text)', marginBottom: 4 }}>設定</div>
-          <div style={{ fontSize: 14, color: 'var(--text-muted)', fontWeight: 700 }}>{displayEmail}</div>
+    <div style={S.page}>
+      <header style={UI.header}>
+        <div style={{ minWidth: 0 }}>
+          <h1 style={UI.title}>設定</h1>
+          <p style={UI.subtitle}>{displayEmail}</p>
         </div>
-        <button onClick={onSignOut} style={{ border: 'none', background: 'var(--sunken)', color: 'var(--text-muted)', fontWeight: 800, fontSize: 13, padding: '8px 14px', borderRadius: 14, cursor: 'pointer' }}>登出</button>
-      </div>
+      </header>
 
-      <div style={{ background: 'var(--surface)', borderRadius: 28, padding: '20px 18px', marginTop: 14, boxShadow: 'var(--shadow-card)' }}>
-        <div style={{ fontSize: 16, fontWeight: 900, color: 'var(--text)', marginBottom: 14 }}>個人資料</div>
-
-        <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 6 }}>暱稱</div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <input aria-label="暱稱" type="text" value={nameInput} onChange={(e) => setNameInput(e.target.value)} placeholder="例如：小明" maxLength={20}
-            style={{ flex: 1, border: 'none', background: 'var(--surface-alt)', borderRadius: 14, padding: '14px 15px', fontSize: 16, fontWeight: 800, color: 'var(--text)' }} />
-          <button onClick={submitName} disabled={nameBusy || nameInput.trim() === myDisplayName}
-            style={{ border: 'none', background: 'var(--primary)', color: '#fff', fontWeight: 900, fontSize: 14, padding: '0 18px', borderRadius: 14, cursor: 'pointer' }}>
-            {nameBusy ? '儲存中…' : '儲存'}
-          </button>
-        </div>
-        <div style={{ fontSize: 12, color: 'var(--text-faint)', marginTop: 6, fontWeight: 600 }}>會顯示在「誰按讚」名單裡，沒設定就用 email 帳號名稱代替</div>
-        {nameMsg === 'success' && <div style={{ marginTop: 8, fontSize: 13, color: 'var(--success-ink)', background: 'var(--success-bg)', padding: '8px 12px', borderRadius: 10, fontWeight: 700 }}>已儲存</div>}
-        {nameMsg && nameMsg !== 'success' && <div style={{ marginTop: 8, fontSize: 13, color: 'var(--danger-ink)', background: 'var(--danger-bg)', padding: '8px 12px', borderRadius: 10, fontWeight: 700 }}>{nameMsg}</div>}
-
-        <div style={{ marginTop: 16, display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start' }}>
-          <LineLinker />
-        </div>
-        {canLinkLine() && (
-          <div style={{ fontSize: 12, color: 'var(--text-faint)', marginTop: 6, fontWeight: 600 }}>
-            連結後，之後從 LINE 開啟會直接登入這個帳號
+      <section style={S.group}>
+        <h2 style={UI.groupLabel}>個人資料</h2>
+        <div style={UI.listCard}>
+          <div style={UI.row}>
+            <label htmlFor="nickname" style={{ fontSize: 15, flexShrink: 0 }}>暱稱</label>
+            <input id="nickname" type="text" value={nameInput} onChange={(e) => setNameInput(e.target.value)} placeholder="例如：小明" maxLength={20} style={S.nameInput} />
+            <button type="button" onClick={submitName} disabled={nameBusy || nameUnchanged} style={{ ...UI.btnSecondary, opacity: nameBusy || nameUnchanged ? 0.5 : 1 }}>
+              {nameBusy ? '儲存中…' : '儲存'}
+            </button>
           </div>
-        )}
+          {nameMsg === 'success' && <div style={S.rowNote}><div style={UI.note('success')}>已儲存</div></div>}
+          {nameMsg && nameMsg !== 'success' && <div style={S.rowNote}><div style={UI.note('danger')}>{nameMsg}</div></div>}
+        </div>
+        <p style={S.groupHint}>會顯示在「誰按讚」名單裡，沒設定就用 email 帳號名稱代替</p>
+      </section>
+
+      <OtherApps current="recipe" style={S.group} />
+
+      <LineGroup />
+
+      <div style={S.signOut}>
+        <button type="button" onClick={onSignOut} style={{ ...UI.btnNeutral, width: '100%', minHeight: 48, fontSize: 15 }}>登出</button>
       </div>
-      <div style={{ marginTop: 12 }}><OtherApps current="recipe" /></div>
+      <p style={S.footer}>TY Recipe Book</p>
     </div>
   );
 }
@@ -75,26 +87,26 @@ export default function SettingsTab({ session, myDisplayName, onSetDisplayName, 
 const LINE_LINKED_CACHE_KEY = 'recipe-book:line-linked';
 
 // 連結狀態邏輯（含 localStorage 快取）在 @peggy-life/shared/lineAuth 的 useLineLinked，三個 app 共用，這裡只負責畫面。
-function LineLinker() {
+function LineGroup() {
   const { linked, busy, msg, link } = useLineLinked(LINE_LINKED_CACHE_KEY);
 
-  if (linked) {
-    return (
-      <div style={{ border: 'none', background: 'var(--success-bg)', color: 'var(--success-ink)', fontWeight: 800, fontSize: 13, padding: '10px 16px', borderRadius: 14, display: 'flex', alignItems: 'center', gap: 6 }}>
-        <Icon name="check-circle" size={16} />已連結 LINE 帳號
-      </div>
-    );
-  }
-
-  if (!canLinkLine()) return null;
+  if (!linked && !canLinkLine()) return null;
 
   return (
-    <>
-      <button onClick={link} disabled={busy} style={{ border: 'none', background: 'var(--sunken)', color: 'var(--text)', fontWeight: 800, fontSize: 13, padding: '10px 16px', borderRadius: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
-        {busy ? '連結中…' : <><Icon name="link" size={16} style={{ color: '#06C755' }} />連結 LINE 帳號</>}
-      </button>
-      {msg === 'success' && <div style={{ width: '100%', marginTop: 8, fontSize: 13, color: 'var(--success-ink)', background: 'var(--success-bg)', padding: '8px 12px', borderRadius: 10, fontWeight: 700 }}>已連結成功</div>}
-      {msg && msg !== 'success' && <div style={{ width: '100%', marginTop: 8, fontSize: 13, color: 'var(--danger-ink)', background: 'var(--danger-bg)', padding: '8px 12px', borderRadius: 10, fontWeight: 700 }}>{msg}</div>}
-    </>
+    <section style={S.group}>
+      <h2 style={UI.groupLabel}>帳號</h2>
+      <div style={UI.listCard}>
+        <div style={UI.row}>
+          <Icon name="link" size={20} style={{ color: 'var(--text-muted)' }} />
+          <span style={S.rowLabel}>LINE 帳號</span>
+          {linked
+            ? <span style={S.linked}><Icon name="check-circle" size={16} />已連結</span>
+            : <button type="button" onClick={link} disabled={busy} style={{ ...UI.btnSecondary, minHeight: 36 }}>{busy ? '連結中…' : '連結'}</button>}
+        </div>
+        {!linked && msg === 'success' && <div style={S.rowNote}><div style={UI.note('success')}>已連結成功</div></div>}
+        {!linked && msg && msg !== 'success' && <div style={S.rowNote}><div style={UI.note('danger')}>{msg}</div></div>}
+      </div>
+      {canLinkLine() && <p style={S.groupHint}>連結後，之後從 LINE 開啟會直接登入這個帳號</p>}
+    </section>
   );
 }

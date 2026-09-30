@@ -1,6 +1,6 @@
-// Four tab buttons at the bottom: Today / Reports / Challenge / Settings
+// Four tab buttons at the bottom: Today / Reports / Challenge / Settings（樣式在 shared 的 BottomTabs，三個 app 共用）
 import React from 'react';
-import Icon from '@peggy-life/shared/Icon.jsx';
+import BottomTabs from '@peggy-life/shared/BottomTabs.jsx';
 
 const TABS = [
   { key: 'today',     label: '紀錄', icon: 'flame' },
@@ -10,22 +10,5 @@ const TABS = [
 ];
 
 export default function TabBar({ tab, onTab }) {
-  return (
-    <nav aria-label="主選單" style={{ flex: 'none', background: 'var(--surface)', boxShadow: 'var(--shadow-nav)', paddingBottom: 'env(safe-area-inset-bottom)' }}>
-      <div style={{ display: 'flex', alignItems: 'stretch', justifyContent: 'space-around', padding: '6px 8px 4px' }}>
-        {TABS.map((t) => {
-          const active = tab === t.key;
-          return (
-            <button key={t.key} type="button" onClick={() => onTab(t.key)} aria-current={active ? 'page' : undefined}
-              style={{ flex: 1, minHeight: 52, border: 'none', background: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, color: active ? 'var(--primary-ink)' : 'var(--text-faint)' }}>
-              <span style={{ width: 52, height: 28, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', background: active ? 'var(--primary-soft)' : 'transparent' }}>
-                <Icon name={t.icon} size={20} />
-              </span>
-              <span style={{ fontSize: 12, fontWeight: 900 }}>{t.label}</span>
-            </button>
-          );
-        })}
-      </div>
-    </nav>
-  );
+  return <BottomTabs tabs={TABS} active={tab} onChange={onTab} />;
 }

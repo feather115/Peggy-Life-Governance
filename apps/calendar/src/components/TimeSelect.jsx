@@ -1,6 +1,6 @@
 // 時間選擇：預設是 30 分鐘一格的下拉選單，選「自訂時間…」才切換成可以輸入任意分鐘的原生時間輸入框。
 import React, { useState } from 'react';
-import { THEME } from '../theme.js';
+import { UI } from '@peggy-life/shared/ui';
 
 const OPTIONS = [];
 for (let h = 0; h < 24; h++) {
@@ -11,9 +11,9 @@ for (let h = 0; h < 24; h++) {
 const CUSTOM = '__custom__';
 
 const S = {
-  input: { width: '100%', boxSizing: 'border-box', border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSm, padding: '11px 12px', fontSize: 15, color: THEME.textDark, background: THEME.surface },
+  input: { ...UI.input },
   row: { display: 'flex', gap: 8 },
-  customBtn: { border: `1px solid ${THEME.border}`, background: THEME.surface, cursor: 'pointer', padding: '0 12px', borderRadius: THEME.radiusSm, fontSize: 12, color: THEME.textMuted, fontWeight: 600, whiteSpace: 'nowrap' },
+  customBtn: { ...UI.btnNeutral, minHeight: 44, padding: '0 12px', fontSize: 13 },
 };
 
 export default function TimeSelect({ value, onChange, label = '時間' }) {

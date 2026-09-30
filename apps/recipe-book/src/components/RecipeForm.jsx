@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { parseIngredients, parseNotes, parseSteps, parseYieldInfo } from '../utils.js';
 import Icon from '@peggy-life/shared/Icon.jsx';
+import { UI } from '@peggy-life/shared/ui';
 
 // 可編輯清單（步驟／心得／製作參數共用）。
 // value 可以是字串（steps/notes）或物件（parameters），用 set() 換整筆、用 patch() 改物件的部分欄位。
@@ -21,22 +22,26 @@ function useEditableList(initialItems, makeEmpty, { minOne = true } = {}) {
 }
 
 const S = {
-  view: { padding: '6px 18px 24px' },
-  title: { fontSize: 24, fontWeight: 900, color: 'var(--text)', margin: 0 },
-  label: { display: 'block', fontSize: 13, fontWeight: 900, color: 'var(--text)', marginBottom: 6, marginTop: 14 },
-  hint: { fontSize: 12, color: 'var(--text-muted)', fontWeight: 700, marginTop: 4 },
-  input: { width: '100%', boxSizing: 'border-box', border: 'none', background: 'var(--surface-alt)', borderRadius: 14, padding: '11px 14px', fontSize: 14, fontWeight: 700, color: 'var(--text)' },
-  textarea: { width: '100%', boxSizing: 'border-box', border: 'none', background: 'var(--surface-alt)', borderRadius: 14, padding: '11px 14px', fontSize: 14, fontWeight: 700, color: 'var(--text)', minHeight: 100, lineHeight: 1.6, fontFamily: 'inherit' },
-  row: { display: 'grid', gap: 6, gridTemplateColumns: '1fr 110px 28px', marginBottom: 6, alignItems: 'center' },
-  kvRow: { display: 'grid', gap: 6, gridTemplateColumns: '1fr 1fr 28px', marginBottom: 6 },
-  smallInput: { boxSizing: 'border-box', border: 'none', background: 'var(--surface-alt)', borderRadius: 14, padding: '9px 12px', fontSize: 13, fontWeight: 700, color: 'var(--text)' },
-  rowBtn: { border: 'none', background: 'var(--surface-alt)', color: 'var(--text-faint)', borderRadius: 14, width: 28, height: 30, fontSize: 16, fontWeight: 900, cursor: 'pointer', padding: 0 },
-  addBtn: { border: '1px dashed var(--primary)', background: 'transparent', color: 'var(--primary-ink)', borderRadius: 14, padding: '8px 12px', fontSize: 12, fontWeight: 900, cursor: 'pointer', marginTop: 4 },
-  baseLabel: { display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--text-muted)', fontWeight: 800, marginTop: 6 },
-  actions: { display: 'flex', gap: 10, marginTop: 24 },
-  saveBtn: { flex: 1, border: 'none', background: 'var(--primary)', color: '#fff', borderRadius: 14, padding: '12px 14px', fontSize: 15, fontWeight: 900, cursor: 'pointer' },
-  cancelBtn: { border: 'none', background: 'var(--sunken)', color: 'var(--text-muted)', borderRadius: 14, padding: '12px 18px', fontSize: 15, fontWeight: 900, cursor: 'pointer' },
-  errorBox: { background: 'var(--danger-bg)', color: 'var(--danger-ink)', padding: '10px 12px', borderRadius: 14, fontSize: 13, fontWeight: 800, marginTop: 12 },
+  view: { paddingBottom: 32 },
+  card: { ...UI.card, margin: '8px 20px 0', padding: 16, display: 'flex', flexDirection: 'column', gap: 16 },
+  label: { ...UI.fieldLabel },
+  hint: { fontSize: 13, color: 'var(--text-muted)', marginTop: 6 },
+  field: { display: 'flex', flexDirection: 'column' },
+  sectionBox: { background: 'var(--sunken)', borderRadius: 10, padding: 12, display: 'flex', flexDirection: 'column', gap: 8 },
+  itemRow: { display: 'grid', gap: 6, gridTemplateColumns: 'minmax(0, 1fr) 104px 32px', alignItems: 'center' },
+  itemRow2: { display: 'grid', gap: 6, gridTemplateColumns: 'minmax(0, 1fr) auto', alignItems: 'center' },
+  kvRow: { display: 'grid', gap: 6, gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr) 32px', alignItems: 'center', marginBottom: 6 },
+  listRow: { display: 'grid', gap: 8, gridTemplateColumns: '24px minmax(0, 1fr) 32px', alignItems: 'start', marginBottom: 6 },
+  smallInput: { ...UI.input, minHeight: 40, fontSize: 14 },
+  smallTextarea: { ...UI.textarea, minHeight: 40, fontSize: 14, lineHeight: 1.5, padding: '9px 12px' },
+  rowBtn: { width: 32, height: 32, padding: 0, border: 'none', borderRadius: 999, background: 'none', color: 'var(--text-faint)', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  addBtn: { ...UI.btnText, alignSelf: 'flex-start', minHeight: 36, padding: '0 4px' },
+  stepNo: { width: 24, height: 24, marginTop: 8, borderRadius: 999, background: 'var(--primary-soft)', color: 'var(--primary-ink)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 600 },
+  noteDot: { width: 5, height: 5, margin: '18px auto 0', borderRadius: 3, background: 'var(--primary-ink)' },
+  baseLabel: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-muted)', whiteSpace: 'nowrap' },
+  shareRow: { display: 'flex', alignItems: 'center', gap: 10, fontSize: 15, color: 'var(--text)', cursor: 'pointer' },
+  actions: { display: 'flex', gap: 8, margin: '20px 20px 0' },
+  deleteWrap: { display: 'flex', justifyContent: 'center', margin: '16px 20px 0' },
 };
 
 function emptyItem(isBase = false) {
@@ -240,167 +245,168 @@ export default function RecipeForm({ recipe, onSave, onCancel, onDelete }) {
 
   return (
     <div style={S.view}>
-      <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-        <button type="button" onClick={onCancel} disabled={busy} style={{ border: 'none', background: 'var(--surface)', color: 'var(--primary-ink)', fontWeight: 900, fontSize: 14, padding: '8px 16px', borderRadius: 14, cursor: 'pointer', boxShadow: '0 4px 12px -8px rgba(0,0,0,.2)' }}>
-          ‹ 取消
-        </button>
-        <h1 style={S.title}>{isEdit ? '編輯食譜' : '新增食譜'}</h1>
-        <div style={{ width: 64 }} />
+      <header style={UI.subBar}>
+        <button type="button" aria-label="取消" onClick={onCancel} disabled={busy} style={UI.iconBtn}><Icon name="chevron-left" size={20} /></button>
+        <h1 style={UI.subTitle}>{isEdit ? '編輯食譜' : '新增食譜'}</h1>
       </header>
 
-      <div style={{ background: 'var(--surface)', borderRadius: 20, padding: 18, boxShadow: 'var(--shadow-card)' }}>
-        <div style={{ marginBottom: 4 }}>
+      <div style={S.card}>
+        <div>
           <button
             type="button"
             onClick={() => { setImportOpen((v) => !v); setImportError(''); }}
-            style={{ border: '1px dashed var(--text-muted)', background: 'transparent', color: 'var(--text-muted)', padding: '8px 14px', borderRadius: 14, fontSize: 12, fontWeight: 900, cursor: 'pointer', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}
+            style={{ ...UI.btnNeutral, width: '100%' }}
           >
-            {importOpen ? <><Icon name="x" size={14} />關閉 JSON 匯入</> : <><Icon name="download" size={14} />用 JSON 匯入（之後仍可編輯）</>}
+            {importOpen ? <><Icon name="x" size={16} />關閉 JSON 匯入</> : <><Icon name="download" size={16} />用 JSON 匯入（之後仍可編輯）</>}
           </button>
           {importOpen && (
-            <div style={{ marginTop: 8 }}>
+            <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 8 }}>
               <textarea aria-label="貼上食譜 JSON"
                 value={importText}
                 onChange={(e) => setImportText(e.target.value)}
-                style={{ ...S.textarea, minHeight: 140, fontFamily: 'monospace', fontSize: 12 }}
+                style={{ ...UI.textarea, minHeight: 140, fontFamily: 'monospace', fontSize: 12 }}
                 placeholder={'貼上食譜 JSON，例如：\n{\n  "title": "番茄炒蛋",\n  "category": ["家常菜"],\n  "ingredients": [\n    { "name": "蛋", "amount": "3 顆", "is_base": true },\n    { "name": "番茄", "amount": "200 g" }\n  ],\n  "steps": ["蛋打散加鹽", "番茄切塊下鍋"],\n  "notes": ["小火慢炒"],\n  "parameters": { "火力": "中小火" }\n}'}
               />
-              {importError && <div style={{ ...S.errorBox, marginTop: 8 }}>{importError}</div>}
-              <button type="button" onClick={applyImport} style={{ ...S.addBtn, width: '100%', marginTop: 8, borderStyle: 'solid', background: 'var(--primary-soft)' }}>
+              {importError && <div style={UI.note('danger')}>{importError}</div>}
+              <button type="button" onClick={applyImport} style={{ ...UI.btnSecondary, width: '100%' }}>
                 解析並套用到下面的表單
               </button>
-              <div style={{ ...S.hint, marginTop: 4 }}>套用後欄位會被填上，你可以在下面繼續編輯，按「建立食譜」才會送出。</div>
+              <div style={{ ...S.hint, marginTop: 0 }}>套用後欄位會被填上，你可以在下面繼續編輯，按「建立食譜」才會送出。</div>
             </div>
           )}
         </div>
 
-        <label style={{ ...S.label, marginTop: 14 }}>食譜名稱 *</label>
-        <input aria-label="食譜名稱" style={S.input} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="例：番茄炒蛋" />
-
-        <label style={S.label}>分類標籤</label>
-        <input aria-label="分類標籤" style={S.input} value={categoryText} onChange={(e) => setCategoryText(e.target.value)} placeholder="例：家常菜、快手、便當" />
-        <div style={S.hint}>用逗號或頓號分隔多個標籤</div>
-
-        <label style={S.label}>食譜圖片 URL（選填）</label>
-        <input aria-label="食譜圖片 URL" style={S.input} value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://..." />
-
-        <label style={S.label}>份量 / 產出（選填）</label>
-        <input aria-label="份量 / 產出" style={S.input} value={yieldText} onChange={(e) => setYieldText(e.target.value)} placeholder="例：2 人份、約 6 塊" />
-        <div style={S.hint}>用逗號或頓號分隔多筆</div>
-
-        <label style={S.label}>食材</label>
-        {ingredientSections.map((section, secIdx) => (
-          <div key={secIdx} style={{ background: 'var(--surface-alt)', borderRadius: 14, padding: 12, marginBottom: 12, border: '1px solid var(--line)' }}>
-            <div style={{ display: 'grid', gap: 6, gridTemplateColumns: '1fr 28px', alignItems: 'center', marginBottom: 8 }}>
-              <input aria-label="分區名稱"
-                style={{ ...S.smallInput, background: 'var(--surface)', fontWeight: 900, color: 'var(--text)' }}
-                value={section.type}
-                onChange={(e) => updateSectionType(secIdx, e.target.value)}
-                placeholder="分區名稱（留空＝未分類，例：主料、醬料、配料）"
-              />
-              <button
-                type="button"
-                style={S.rowBtn}
-                onClick={() => removeSection(secIdx)}
-                aria-label="刪除分區"
-                title="刪除整個分區"
-              >×</button>
-            </div>
-
-            {section.items.map((it, itemIdx) => (
-              <div key={itemIdx} style={{ marginBottom: 6 }}>
-                <div style={{ display: 'grid', gap: 6, gridTemplateColumns: '1fr 110px 28px', alignItems: 'center' }}>
-                  <input aria-label="食材名稱" style={{ ...S.smallInput, background: 'var(--surface)' }} value={it.name} onChange={(e) => updateItem(secIdx, itemIdx, { name: e.target.value })} placeholder="食材名稱（如：雞肉）" />
-                  <input aria-label="食材份量" style={{ ...S.smallInput, background: 'var(--surface)' }} value={it.amount} onChange={(e) => updateItem(secIdx, itemIdx, { amount: e.target.value })} placeholder="份量（如：200g）" />
-                  <button type="button" style={S.rowBtn} onClick={() => removeItem(secIdx, itemIdx)} aria-label="刪除食材">×</button>
-                </div>
-                <div style={{ display: 'grid', gap: 6, gridTemplateColumns: '1fr auto', alignItems: 'center', marginTop: 4 }}>
-                  <input aria-label="品牌或備註" style={{ ...S.smallInput, background: 'var(--surface)' }} value={it.brand || ''} onChange={(e) => updateItem(secIdx, itemIdx, { brand: e.target.value })} placeholder="品牌/備註（選填，如：日式）" />
-                  <label style={{ ...S.baseLabel, marginTop: 0, whiteSpace: 'nowrap' }}>
-                    <input type="radio" checked={!!it.is_base} onChange={() => setBaseItem(secIdx, itemIdx)} /> 主食材
-                  </label>
-                </div>
-              </div>
-            ))}
-
-            <button type="button" style={{ ...S.addBtn, marginTop: 8 }} onClick={() => addItem(secIdx)}>+ 新增食材到「{section.type || '未分類'}」</button>
-          </div>
-        ))}
-        <button type="button" style={{ ...S.addBtn, background: 'var(--primary-soft)' }} onClick={addSection}>＋ 新增食材分區</button>
-
-        <label style={S.label}>步驟</label>
-        {stepsList.items.map((text, idx) => (
-          <div key={idx} style={{ display: 'grid', gap: 6, gridTemplateColumns: '24px 1fr 28px', alignItems: 'start', marginBottom: 6 }}>
-            <div style={{ width: 24, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--primary)', color: '#fff', borderRadius: '50%', fontSize: 12, fontWeight: 900 }}>
-              {idx + 1}
-            </div>
-            <textarea aria-label={`步驟 ${idx + 1}`}
-              value={text}
-              onChange={(e) => stepsList.set(idx, e.target.value)}
-              placeholder={`步驟 ${idx + 1}`}
-              rows={2}
-              style={{ ...S.smallInput, fontFamily: 'inherit', lineHeight: 1.5, resize: 'vertical', minHeight: 38 }}
-            />
-            <button type="button" style={S.rowBtn} onClick={() => stepsList.remove(idx)} aria-label="刪除步驟">×</button>
-          </div>
-        ))}
-        <button type="button" style={S.addBtn} onClick={stepsList.add}>+ 新增一個步驟</button>
-
-        <label style={S.label}>心得備註（選填）</label>
-        {notesList.items.map((text, idx) => (
-          <div key={idx} style={{ display: 'grid', gap: 6, gridTemplateColumns: '24px 1fr 28px', alignItems: 'start', marginBottom: 6 }}>
-            <div style={{ width: 24, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-ink)', fontSize: 16, fontWeight: 900 }}>
-              ●
-            </div>
-            <textarea aria-label="備註"
-              value={text}
-              onChange={(e) => notesList.set(idx, e.target.value)}
-              placeholder="一條備註（例：小火慢炒避免焦黑）"
-              rows={2}
-              style={{ ...S.smallInput, fontFamily: 'inherit', lineHeight: 1.5, resize: 'vertical', minHeight: 38 }}
-            />
-            <button type="button" style={S.rowBtn} onClick={() => notesList.remove(idx)} aria-label="刪除備註">×</button>
-          </div>
-        ))}
-        <button type="button" style={S.addBtn} onClick={notesList.add}>+ 新增一條備註</button>
-
-        <label style={S.label}>製作參數（選填）</label>
-        {paramsList.items.map((row, idx) => (
-          <div key={idx} style={S.kvRow}>
-            <input aria-label="參數名稱" style={S.smallInput} value={row.key} onChange={(e) => paramsList.patch(idx, { key: e.target.value })} placeholder="名稱（例：烤箱溫度）" />
-            <input aria-label="參數值" style={S.smallInput} value={row.value} onChange={(e) => paramsList.patch(idx, { value: e.target.value })} placeholder="值（例：180°C）" />
-            <button type="button" style={S.rowBtn} onClick={() => paramsList.remove(idx)} aria-label="刪除參數">×</button>
-          </div>
-        ))}
-        <button type="button" style={S.addBtn} onClick={paramsList.add}>+ 新增一筆參數</button>
-
-        <label style={{ ...S.label, display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-          <input type="checkbox" checked={isShared} onChange={(e) => setIsShared(e.target.checked)} />
-          <Icon name="globe" size={16} />分享給其他人（取消勾選則只有自己看得到）
+        <label style={S.field}><span style={S.label}>食譜名稱 *</span>
+          <input aria-label="食譜名稱" style={UI.input} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="例：番茄炒蛋" />
         </label>
 
-        {error && <div style={S.errorBox}>{error}</div>}
+        <label style={S.field}><span style={S.label}>分類標籤</span>
+          <input aria-label="分類標籤" style={UI.input} value={categoryText} onChange={(e) => setCategoryText(e.target.value)} placeholder="例：家常菜、快手、便當" />
+          <span style={S.hint}>用逗號或頓號分隔多個標籤</span>
+        </label>
 
-        <div style={S.actions}>
-          <button type="button" style={S.saveBtn} onClick={handleSave} disabled={busy}>
-            {busy ? '儲存中…' : (isEdit ? '儲存變更' : '建立食譜')}
-          </button>
-          <button type="button" style={S.cancelBtn} onClick={onCancel} disabled={busy}>取消</button>
+        <label style={S.field}><span style={S.label}>食譜圖片 URL（選填）</span>
+          <input aria-label="食譜圖片 URL" style={UI.input} value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://..." />
+        </label>
+
+        <label style={S.field}><span style={S.label}>份量 / 產出（選填）</span>
+          <input aria-label="份量 / 產出" style={UI.input} value={yieldText} onChange={(e) => setYieldText(e.target.value)} placeholder="例：2 人份、約 6 塊" />
+          <span style={S.hint}>用逗號或頓號分隔多筆</span>
+        </label>
+
+        <div style={S.field}>
+          <span style={S.label}>食材</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {ingredientSections.map((section, secIdx) => (
+              <div key={secIdx} style={S.sectionBox}>
+                <div style={{ display: 'grid', gap: 6, gridTemplateColumns: 'minmax(0, 1fr) 32px', alignItems: 'center' }}>
+                  <input aria-label="分區名稱"
+                    style={{ ...S.smallInput, fontWeight: 500 }}
+                    value={section.type}
+                    onChange={(e) => updateSectionType(secIdx, e.target.value)}
+                    placeholder="分區名稱（留空＝未分類，例：主料、醬料）"
+                  />
+                  <button type="button" className="tap" style={S.rowBtn} onClick={() => removeSection(secIdx)} aria-label="刪除分區" title="刪除整個分區"><Icon name="x" size={16} /></button>
+                </div>
+
+                {section.items.map((it, itemIdx) => (
+                  <div key={itemIdx} style={{ display: 'flex', flexDirection: 'column', gap: 6, paddingTop: itemIdx > 0 ? 8 : 0, borderTop: itemIdx > 0 ? '1px solid var(--line)' : 'none' }}>
+                    <div style={S.itemRow}>
+                      <input aria-label="食材名稱" style={S.smallInput} value={it.name} onChange={(e) => updateItem(secIdx, itemIdx, { name: e.target.value })} placeholder="食材名稱（如：雞肉）" />
+                      <input aria-label="食材份量" style={S.smallInput} value={it.amount} onChange={(e) => updateItem(secIdx, itemIdx, { amount: e.target.value })} placeholder="份量（200g）" />
+                      <button type="button" className="tap" style={S.rowBtn} onClick={() => removeItem(secIdx, itemIdx)} aria-label="刪除食材"><Icon name="x" size={16} /></button>
+                    </div>
+                    <div style={S.itemRow2}>
+                      <input aria-label="品牌或備註" style={S.smallInput} value={it.brand || ''} onChange={(e) => updateItem(secIdx, itemIdx, { brand: e.target.value })} placeholder="品牌/備註（選填，如：日式）" />
+                      <label style={S.baseLabel}>
+                        <input type="radio" checked={!!it.is_base} onChange={() => setBaseItem(secIdx, itemIdx)} style={{ accentColor: 'var(--primary)' }} /> 主食材
+                      </label>
+                    </div>
+                  </div>
+                ))}
+
+                <button type="button" style={S.addBtn} onClick={() => addItem(secIdx)}><Icon name="plus" size={16} />新增食材到「{section.type || '未分類'}」</button>
+              </div>
+            ))}
+            <button type="button" style={{ ...UI.btnSecondary, alignSelf: 'flex-start' }} onClick={addSection}><Icon name="plus" size={16} />新增食材分區</button>
+          </div>
         </div>
 
-        {isEdit && onDelete && (
-          <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--line)' }}>
-            <button
-              type="button"
-              onClick={handleDelete}
-              disabled={busy}
-              style={{ width: '100%', border: 'none', background: confirmDelete ? 'var(--danger-bg)' : 'var(--surface-alt)', color: confirmDelete ? 'var(--danger-ink)' : 'var(--text-muted)', borderRadius: 14, padding: '12px 14px', fontSize: 13, fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
-            >
-              {confirmDelete ? '確認刪除（無法復原，再按一次）' : <><Icon name="trash" size={15} />刪除這個食譜</>}
-            </button>
-          </div>
-        )}
+        <div style={S.field}>
+          <span style={S.label}>步驟</span>
+          {stepsList.items.map((text, idx) => (
+            <div key={idx} style={S.listRow}>
+              <span style={S.stepNo}>{idx + 1}</span>
+              <textarea aria-label={`步驟 ${idx + 1}`}
+                value={text}
+                onChange={(e) => stepsList.set(idx, e.target.value)}
+                placeholder={`步驟 ${idx + 1}`}
+                rows={2}
+                style={S.smallTextarea}
+              />
+              <button type="button" className="tap" style={{ ...S.rowBtn, marginTop: 4 }} onClick={() => stepsList.remove(idx)} aria-label="刪除步驟"><Icon name="x" size={16} /></button>
+            </div>
+          ))}
+          <button type="button" style={S.addBtn} onClick={stepsList.add}><Icon name="plus" size={16} />新增一個步驟</button>
+        </div>
+
+        <div style={S.field}>
+          <span style={S.label}>心得備註（選填）</span>
+          {notesList.items.map((text, idx) => (
+            <div key={idx} style={S.listRow}>
+              <span aria-hidden="true" style={S.noteDot} />
+              <textarea aria-label="備註"
+                value={text}
+                onChange={(e) => notesList.set(idx, e.target.value)}
+                placeholder="一條備註（例：小火慢炒避免焦黑）"
+                rows={2}
+                style={S.smallTextarea}
+              />
+              <button type="button" className="tap" style={{ ...S.rowBtn, marginTop: 4 }} onClick={() => notesList.remove(idx)} aria-label="刪除備註"><Icon name="x" size={16} /></button>
+            </div>
+          ))}
+          <button type="button" style={S.addBtn} onClick={notesList.add}><Icon name="plus" size={16} />新增一條備註</button>
+        </div>
+
+        <div style={S.field}>
+          <span style={S.label}>製作參數（選填）</span>
+          {paramsList.items.map((row, idx) => (
+            <div key={idx} style={S.kvRow}>
+              <input aria-label="參數名稱" style={S.smallInput} value={row.key} onChange={(e) => paramsList.patch(idx, { key: e.target.value })} placeholder="名稱（例：烤箱溫度）" />
+              <input aria-label="參數值" style={S.smallInput} value={row.value} onChange={(e) => paramsList.patch(idx, { value: e.target.value })} placeholder="值（例：180°C）" />
+              <button type="button" className="tap" style={S.rowBtn} onClick={() => paramsList.remove(idx)} aria-label="刪除參數"><Icon name="x" size={16} /></button>
+            </div>
+          ))}
+          <button type="button" style={S.addBtn} onClick={paramsList.add}><Icon name="plus" size={16} />新增一筆參數</button>
+        </div>
+
+        <label style={S.shareRow}>
+          <input type="checkbox" checked={isShared} onChange={(e) => setIsShared(e.target.checked)} style={{ width: 20, height: 20, accentColor: 'var(--primary)' }} />
+          <Icon name="globe" size={18} style={{ color: 'var(--text-muted)' }} />分享給其他人（取消勾選則只有自己看得到）
+        </label>
+
+        {error && <div style={UI.note('danger')}>{error}</div>}
       </div>
+
+      <div style={S.actions}>
+        <button type="button" style={{ ...UI.btnPrimary, flex: 1, opacity: busy ? 0.6 : 1 }} onClick={handleSave} disabled={busy}>
+          {busy ? '儲存中…' : (isEdit ? '儲存變更' : '建立食譜')}
+        </button>
+        <button type="button" style={{ ...UI.btnNeutral, minHeight: 48 }} onClick={onCancel} disabled={busy}>取消</button>
+      </div>
+
+      {isEdit && onDelete && (
+        <div style={S.deleteWrap}>
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={busy}
+            style={confirmDelete ? { ...UI.btnNeutral, background: 'var(--danger-bg)', color: 'var(--danger-ink)' } : UI.btnDangerText}
+          >
+            {confirmDelete ? '確認刪除（無法復原，再按一次）' : <><Icon name="trash" size={16} />刪除這個食譜</>}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

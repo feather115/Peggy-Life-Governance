@@ -1,32 +1,30 @@
 // 新增 / 編輯週期性任務。task = null 為新增模式。
 import React, { useState } from 'react';
 import { THEME } from '../theme.js';
+import { UI } from '@peggy-life/shared/ui';
 import { todayKey, scrollIntoViewOnMount } from '../utils.js';
 import Icon from '@peggy-life/shared/Icon.jsx';
 
 const S = {
-  header: { display: 'flex', alignItems: 'center', gap: 12, padding: 16, background: THEME.surface, borderBottom: `1px solid ${THEME.border}` },
-  backBtn: { border: 'none', background: 'none', color: THEME.textMuted, padding: 2, display: 'flex', alignItems: 'center' },
-  title: { fontSize: 18, fontWeight: 700, color: THEME.textDark },
-  body: { padding: 20, display: 'flex', flexDirection: 'column', gap: 18 },
-  fieldLabel: { fontSize: 13, color: THEME.textMuted, marginBottom: 6 },
+  body: { padding: '8px 20px 24px', display: 'flex', flexDirection: 'column', gap: 18 },
+  fieldLabel: { ...UI.fieldLabel },
   required: { color: THEME.errorInk },
-  input: { width: '100%', boxSizing: 'border-box', border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSm, padding: '11px 12px', fontSize: 15, color: THEME.textDark, background: THEME.surface },
-  inputError: { borderColor: THEME.error },
-  errorText: { fontSize: 12, color: THEME.errorInk, marginTop: 5 },
+  input: { ...UI.input },
+  inputError: { borderColor: THEME.errorInk },
+  errorText: { ...UI.fieldError },
   intervalRow: { display: 'flex', gap: 8, alignItems: 'center' },
-  intervalInput: { width: 70, boxSizing: 'border-box', border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSm, padding: '11px 12px', fontSize: 15, color: THEME.textDark, background: THEME.surface },
-  unitSegment: { flex: 1, display: 'flex', background: THEME.surfaceAlt, borderRadius: THEME.radiusSm, padding: 3, gap: 2 },
-  unitBtn: (active) => ({ flex: 1, border: 'none', cursor: 'pointer', padding: '9px 0', borderRadius: THEME.radiusSmInner, fontSize: 13, fontWeight: 600, background: active ? THEME.primary : 'transparent', color: active ? '#fff' : THEME.textMuted }),
-  toggleRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
+  intervalInput: { ...UI.input, width: 72, textAlign: 'center', ...UI.num },
+  unitSegment: { ...UI.segTrack, flex: 1 },
+  unitBtn: (active) => UI.seg(active),
+  toggleRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
   toggleTextWrap: {},
-  toggleTitle: { fontSize: 14, color: THEME.textDark, fontWeight: 600 },
-  toggleHint: { fontSize: 12, color: THEME.textMuted, marginTop: 2 },
-  toggleTrack: (on) => ({ width: 44, height: 26, borderRadius: 14, background: on ? THEME.primary : THEME.textFaint, position: 'relative', cursor: 'pointer', flexShrink: 0 }),
-  toggleKnob: (on) => ({ width: 20, height: 20, borderRadius: '50%', background: '#fff', position: 'absolute', top: 3, left: on ? 21 : 3, boxShadow: '0 1px 3px rgba(0,0,0,.25)' }),
-  footer: { padding: '14px 16px calc(14px + env(safe-area-inset-bottom))', background: THEME.surface, borderTop: `1px solid ${THEME.border}` },
-  saveBtn: { width: '100%', border: 'none', cursor: 'pointer', padding: 13, borderRadius: THEME.radiusSm, background: THEME.primary, color: '#fff', fontSize: 15, fontWeight: 700 },
-  errorBox: { background: THEME.errorBg, color: THEME.errorInk, padding: '10px 12px', borderRadius: THEME.radiusSm, fontSize: 13, fontWeight: 600, margin: '0 20px' },
+  toggleTitle: { fontSize: 15, color: THEME.textDark },
+  toggleHint: { fontSize: 13, color: THEME.textMuted, marginTop: 2 },
+  toggleTrack: (on) => ({ width: 44, height: 26, padding: 0, border: 'none', borderRadius: 999, background: on ? THEME.primary : 'var(--line-strong)', position: 'relative', cursor: 'pointer', flexShrink: 0 }),
+  toggleKnob: (on) => ({ width: 20, height: 20, borderRadius: 999, background: '#FFFFFF', position: 'absolute', top: 3, left: on ? 21 : 3, boxShadow: '0 1px 2px rgba(0,0,0,.2)' }),
+  footer: { padding: '12px 20px calc(12px + env(safe-area-inset-bottom))' },
+  saveBtn: { ...UI.btnPrimary, width: '100%' },
+  errorBox: { ...UI.note('danger'), margin: '0 20px' },
 };
 
 const UNITS = [
@@ -71,16 +69,16 @@ export default function TaskForm({ task, onSave, onCancel }) {
 
   return (
     <div>
-      <div style={S.header}>
-        <button type="button" onClick={onCancel} disabled={busy} style={S.backBtn} className="tap" aria-label="返回"><Icon name="chevron-left" size={24} /></button>
-        <div style={S.title}>{isEdit ? '編輯任務' : '新增任務'}</div>
-      </div>
+      <header style={UI.subBar}>
+        <button type="button" onClick={onCancel} disabled={busy} style={UI.iconBtn} aria-label="返回"><Icon name="chevron-left" size={20} /></button>
+        <h1 style={UI.subTitle}>{isEdit ? '編輯任務' : '新增任務'}</h1>
+      </header>
 
       {error && <div key={error} ref={scrollIntoViewOnMount} role="alert" style={{ ...S.errorBox, marginTop: 16 }}>{error}</div>}
 
       <div style={S.body}>
         <div>
-          <div style={S.fieldLabel}>標題 <span style={S.required}>＊</span></div>
+          <div style={S.fieldLabel}>標題 <span style={S.required}>*</span></div>
           <input aria-label="標題"
             style={{ ...S.input, ...(titleInvalid ? S.inputError : {}) }}
             value={title}
@@ -96,14 +94,14 @@ export default function TaskForm({ task, onSave, onCancel }) {
             <input aria-label="重複間隔" type="number" min="1" style={S.intervalInput} value={intervalValue} onChange={(e) => setIntervalValue(e.target.value)} />
             <div style={S.unitSegment}>
               {UNITS.map((u) => (
-                <button key={u.key} type="button" style={S.unitBtn(intervalUnit === u.key)} onClick={() => setIntervalUnit(u.key)}>{u.label}</button>
+                <button key={u.key} type="button" aria-pressed={intervalUnit === u.key} style={S.unitBtn(intervalUnit === u.key)} onClick={() => setIntervalUnit(u.key)}>{u.label}</button>
               ))}
             </div>
           </div>
         </div>
 
         <div>
-          <div style={S.fieldLabel}>{isEdit ? '下次到期日' : '起始到期日'} <span style={S.required}>＊</span></div>
+          <div style={S.fieldLabel}>{isEdit ? '下次到期日' : '起始到期日'} <span style={S.required}>*</span></div>
           <input aria-label="到期日" type="date" style={S.input} value={due} onChange={(e) => setDue(e.target.value)} />
         </div>
 
@@ -112,14 +110,14 @@ export default function TaskForm({ task, onSave, onCancel }) {
             <div style={S.toggleTitle}>顯示在行事曆</div>
             <div style={S.toggleHint}>到期日會出現在月/週/日檢視</div>
           </div>
-          <button type="button" className="btn-reset" role="switch" aria-checked={showOnCalendar} aria-label="顯示在行事曆" style={S.toggleTrack(showOnCalendar)} onClick={() => setShowOnCalendar((v) => !v)}>
+          <button type="button" role="switch" aria-checked={showOnCalendar} aria-label="顯示在行事曆" style={S.toggleTrack(showOnCalendar)} onClick={() => setShowOnCalendar((v) => !v)}>
             <span style={S.toggleKnob(showOnCalendar)} />
           </button>
         </div>
       </div>
 
       <div style={S.footer}>
-        <button type="button" style={S.saveBtn} onClick={handleSave} disabled={busy}>{busy ? '儲存中…' : '儲存'}</button>
+        <button type="button" style={{ ...S.saveBtn, opacity: busy ? 0.6 : 1 }} onClick={handleSave} disabled={busy}>{busy ? '儲存中…' : '儲存'}</button>
       </div>
     </div>
   );

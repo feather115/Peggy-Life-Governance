@@ -23,7 +23,7 @@ function tokens(block) {
 }
 
 const TEXT = ['text', 'text-muted', 'text-faint', 'primary-ink', 'info-ink', 'success-ink', 'danger-ink', 'warning-ink',
-  'carb-ink', 'fat-ink', 'bronze-ink', 'cat-1', 'cat-2', 'cat-3', 'cat-4', 'cat-5'];
+  'bronze-ink', 'cat-1', 'cat-2', 'cat-3', 'cat-4', 'cat-5'];
 const SURFACES = ['surface', 'bg', 'surface-alt'];
 const ON_TINT = [['primary-ink', 'primary-soft'], ['primary-strong', 'primary-soft'], ['info-ink', 'info-bg'], ['success-ink', 'success-bg'],
   ['danger-ink', 'danger-bg'], ['warning-ink', 'warning-bg'], ['like', 'like-bg'],

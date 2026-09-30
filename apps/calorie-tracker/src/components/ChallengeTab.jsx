@@ -5,12 +5,12 @@ import { dateLabel, alertError, readableOn } from '../utils.js';
 import ChallengeCreateSheet from './ChallengeCreateSheet.jsx';
 import WeightChart from './WeightChart.jsx';
 import Icon from '@peggy-life/shared/Icon.jsx';
+import { UI } from '@peggy-life/shared/ui';
 import { confirmDialog } from '@peggy-life/shared/feedback.jsx';
 
 const MEDAL_RGBS = ['192,192,192', '255,215,0', '205,127,50']; // 2/1/3
-const MEDAL_EMOJIS = ['🥈', '🥇', '🥉'];
-const PODIUM_HEIGHTS = ['108px', '155px', '88px'];
-const RANK_NAMES = ['2nd', '1st', '3rd'];
+const PODIUM_HEIGHTS = ['96px', '136px', '76px'];
+const PODIUM_RANKS = [2, 1, 3];
 const LB_INDICES = [1, 0, 2];
 
 function fmtKgDiff(v) {
@@ -22,7 +22,7 @@ function fmtWeight(v) {
   return `${v.toFixed(1)} kg`;
 }
 const diffColor = (v) => v === null ? 'var(--text-faint)' : v < 0 ? 'var(--primary-ink)' : 'var(--danger-ink)';
-const rankColor = (r) => r === 1 ? 'var(--warning-ink)' : r === 2 ? 'var(--text-faint)' : r === 3 ? 'var(--bronze-ink)' : 'var(--text-faint)';
+const rankColor = (r) => r === 1 ? 'var(--warning-ink)' : r === 2 ? 'var(--text-muted)' : r === 3 ? 'var(--bronze-ink)' : 'var(--text-faint)';
 
 const getWeeklyChangeText = (change) => {
   if (change === null || change === undefined) return '累積差值';
@@ -33,9 +33,36 @@ const getWeeklyChangeText = (change) => {
 
 const getWeeklyChangeColor = (change) => {
   if (change === null || change === undefined) return 'var(--text-faint)';
-  if (change < 0) return 'var(--primary)';
+  if (change < 0) return 'var(--primary-ink)';
   if (change > 0) return 'var(--danger-ink)';
   return 'var(--text-faint)';
+};
+
+const S = {
+  page: { paddingBottom: 24 },
+  card: { ...UI.card, margin: '12px 20px 0', padding: 16 },
+  cardHead: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 12 },
+  meta: { fontSize: 13, color: 'var(--text-muted)' },
+  hint: { fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6 },
+  chips: { display: 'flex', gap: 8, overflowX: 'auto', padding: '8px 20px 0' },
+  back: { ...UI.btnText, margin: '8px 16px 0' },
+  daysBox: { background: 'var(--sunken)', borderRadius: 10, padding: '8px 12px', minWidth: 72, textAlign: 'center', flexShrink: 0 },
+  daysNum: (color) => ({ fontSize: 24, fontWeight: 600, lineHeight: 1, color, ...UI.num }),
+  code: { fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 15, fontWeight: 600, letterSpacing: 2, color: 'var(--text)', background: 'var(--sunken)', padding: '4px 10px', borderRadius: 4 },
+  podiumWrap: { ...UI.card, padding: '16px 12px 0', overflow: 'hidden' },
+  podium: { display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 6, padding: '0 8px' },
+  podiumCol: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', maxWidth: 140 },
+  block: (pos) => ({ width: '100%', height: PODIUM_HEIGHTS[pos], background: `rgba(${MEDAL_RGBS[pos]},0.16)`, borderTop: `3px solid rgba(${MEDAL_RGBS[pos]},0.7)`, borderRadius: '4px 4px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }),
+  blockRank: { fontSize: 24, fontWeight: 600, color: 'var(--text-muted)', ...UI.num },
+  lbRow: (isMe) => ({ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: isMe ? 'var(--primary-soft)' : 'transparent' }),
+  rankNo: (r) => ({ width: 24, textAlign: 'center', fontSize: 16, fontWeight: 600, color: rankColor(r), ...UI.num }),
+  entryMsg: (kind) => ({ ...UI.note(kind === 'success' ? 'success' : 'danger'), marginBottom: 12 }),
+  fields: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 },
+  field: { flex: 1, minWidth: 130 },
+  assist: { marginBottom: 12, background: 'var(--sunken)', borderRadius: 10, padding: '10px 12px' },
+  smallBtn: { width: 32, height: 32, padding: 0, border: 'none', borderRadius: 999, background: 'var(--surface)', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  editBox: { background: 'var(--sunken)', borderRadius: 10, padding: 12, display: 'flex', flexDirection: 'column', gap: 8 },
+  softDanger: { ...UI.btnNeutral, background: 'var(--danger-bg)', color: 'var(--danger-ink)' },
 };
 
 export default function ChallengeTab({ app }) {
@@ -56,12 +83,16 @@ export default function ChallengeTab({ app }) {
   }, [selectedId, challenges, showEnded]);
 
   return (
-    <div style={{ padding: '6px 18px 20px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-        <div style={{ fontSize: 24, fontWeight: 900, color: 'var(--text)' }}>🏆 挑戰</div>
-        <button onClick={() => { setRepeatSource(null); setCreateOpen(true); }} style={{ border: 'none', background: 'var(--primary)', color: '#fff', fontWeight: 800, fontSize: 13, padding: '8px 14px', borderRadius: 14, cursor: 'pointer' }}>＋ 新增 / 加入</button>
-      </div>
-      <div style={{ fontSize: 14, color: 'var(--text-muted)', fontWeight: 700 }}>跟朋友一起減重，看誰先甩肉成功</div>
+    <div style={S.page}>
+      <header style={UI.header}>
+        <div style={{ minWidth: 0 }}>
+          <h1 style={UI.title}>挑戰</h1>
+          <p style={UI.subtitle}>跟朋友一起減重，互相監督</p>
+        </div>
+        {challenges.length > 0 && (
+          <button type="button" onClick={() => { setRepeatSource(null); setCreateOpen(true); }} style={UI.btnSecondary}><Icon name="plus" size={16} />新增 / 加入</button>
+        )}
+      </header>
 
       {challenges.length === 0 && <EmptyState onOpen={() => setCreateOpen(true)} />}
 
@@ -69,10 +100,9 @@ export default function ChallengeTab({ app }) {
         <>
           {/* 挑戰切換 chip（若有多個進行中） */}
           {active.length > 1 && (
-            <div style={{ display: 'flex', gap: 6, marginTop: 12, overflowX: 'auto', paddingBottom: 4 }}>
+            <div className="ps" style={S.chips}>
               {active.map(c => (
-                <button key={c.id} onClick={() => setSelectedId(c.id)}
-                  style={{ flexShrink: 0, border: 'none', background: c.id === current?.id ? 'var(--primary)' : 'var(--surface)', color: c.id === current?.id ? '#fff' : 'var(--text)', fontWeight: 800, fontSize: 13, padding: '8px 14px', borderRadius: 14, cursor: 'pointer' }}>
+                <button key={c.id} type="button" aria-pressed={c.id === current?.id} onClick={() => setSelectedId(c.id)} style={UI.chip(c.id === current?.id)}>
                   {c.name}
                 </button>
               ))}
@@ -80,10 +110,7 @@ export default function ChallengeTab({ app }) {
           )}
 
           {current?.status === 'ended' && (
-            <button onClick={() => setSelectedId(null)}
-              style={{ border: 'none', background: 'transparent', color: 'var(--primary-ink)', fontWeight: 900, fontSize: 14, padding: '14px 2px 0', cursor: 'pointer' }}>
-              ‹ 回到挑戰
-            </button>
+            <button type="button" onClick={() => setSelectedId(null)} style={S.back}><Icon name="chevron-left" size={16} />回到挑戰</button>
           )}
 
           {current && <ChallengeView
@@ -102,20 +129,21 @@ export default function ChallengeTab({ app }) {
           />}
 
           {ended.length > 0 && (
-            <div style={{ marginTop: 16 }}>
-              <button onClick={() => setShowEnded(!showEnded)}
-                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', background: 'var(--surface)', border: 'none', borderRadius: 20, cursor: 'pointer', color: 'var(--text)', boxShadow: 'var(--shadow-card)' }}>
-                <span style={{ fontSize: 16, fontWeight: 900 }}>🗂 歷史挑戰</span>
-                <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{ended.length} 場 {showEnded ? '▲' : '▼'}</span>
+            <section style={UI.section}>
+              <button type="button" aria-expanded={showEnded} onClick={() => setShowEnded(!showEnded)} style={{ ...UI.row, ...UI.card }}>
+                <Icon name="clock" size={20} style={{ color: 'var(--text-muted)' }} />
+                <span style={{ ...UI.rowTitle, flex: 1 }}>歷史挑戰</span>
+                <span style={S.meta}>{ended.length} 場</span>
+                <Icon name="chevron-right" size={18} style={{ color: 'var(--text-faint)', transform: showEnded ? 'rotate(90deg)' : 'none' }} />
               </button>
               {showEnded && (
-                <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {ended.map(c => (
                     <EndedChallengeCard key={c.id} challenge={c} myUserId={userId} onSelect={() => setSelectedId(c.id)} active={current?.id === c.id} />
                   ))}
                 </div>
               )}
-            </div>
+            </section>
           )}
         </>
       )}
@@ -139,11 +167,11 @@ export default function ChallengeTab({ app }) {
 
 function EmptyState({ onOpen }) {
   return (
-    <div style={{ background: 'var(--surface)', borderRadius: 28, padding: '40px 24px', marginTop: 20, textAlign: 'center', boxShadow: 'var(--shadow-card)' }}>
-      <div style={{ fontSize: 56, marginBottom: 12 }}>🏆</div>
-      <div style={{ fontSize: 18, fontWeight: 900, color: 'var(--text)', marginBottom: 6 }}>加入或建立你的第一個挑戰</div>
-      <div style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 600, lineHeight: 1.8, marginBottom: 18 }}>跟朋友互相監督，<br/>看誰先成功減重</div>
-      <button onClick={onOpen} style={{ border: 'none', background: 'var(--primary)', color: '#fff', fontWeight: 900, fontSize: 15, padding: '14px 28px', borderRadius: 14, cursor: 'pointer' }}>開始</button>
+    <div style={{ ...S.card, marginTop: 8, padding: '32px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, textAlign: 'center' }}>
+      <span aria-hidden="true" style={{ width: 48, height: 48, borderRadius: 999, background: 'var(--sunken)', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="trophy" size={22} /></span>
+      <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text)' }}>加入或建立你的第一個挑戰</div>
+      <div style={S.hint}>跟朋友互相監督，看誰先成功減重</div>
+      <button type="button" onClick={onOpen} style={{ ...UI.btnPrimary, marginTop: 6 }}>開始</button>
     </div>
   );
 }
@@ -159,83 +187,64 @@ function ChallengeView({ challenge, myUserId, onSubmitEntry, onRemoveEntry, onUp
   return (
     <div>
       {/* Banner */}
-      <div style={{ background: 'var(--surface)', borderRadius: 28, padding: '20px 22px', marginTop: 14, boxShadow: 'var(--shadow-card)' }}>
+      <section style={{ ...S.card, marginTop: 8 }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-              {isActive ? (
-                <>
-                  <div style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--primary)' }} />
-                  <span style={{ fontSize: 12, fontWeight: 900, letterSpacing: 1, color: 'var(--primary-ink)' }}>進行中</span>
-                </>
-              ) : (
-                <span style={{ fontSize: 12, fontWeight: 900, letterSpacing: 1, color: 'var(--text-faint)' }}>已結束</span>
-              )}
-            </div>
-            <div style={{ fontSize: 24, fontWeight: 900, color: 'var(--text)', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{challenge.name}</div>
-            <div style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 600, marginTop: 4 }}>{dateLabel(challenge.startDate)} → {dateLabel(challenge.endDate)}</div>
+          <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 6 }}>
+            <span style={UI.tag(isActive ? 'primary' : 'neutral')}>{isActive ? '進行中' : '已結束'}</span>
+            <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600, color: 'var(--text)', lineHeight: 1.3, maxWidth: '100%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{challenge.name}</h2>
+            <div style={S.meta}>{dateLabel(challenge.startDate)} → {dateLabel(challenge.endDate)}</div>
           </div>
           {isActive && (
-            <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
-              <div style={{ background: 'var(--surface-alt)', borderRadius: 14, padding: '8px 10px', minWidth: 64, textAlign: 'center' }}>
-                <div style={{ fontSize: 24, fontWeight: 900, lineHeight: 1, color: dlColor }}>{dl}</div>
-                <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: 1, color: 'var(--text-faint)', marginTop: 2 }}>天後結束</div>
-              </div>
+            <div style={S.daysBox}>
+              <div style={S.daysNum(dlColor)}>{dl}</div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>天後結束</div>
             </div>
           )}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--line)' }}>
-          <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 700 }}>邀請碼</span>
-          <code style={{ fontSize: 16, fontWeight: 900, letterSpacing: 2, color: 'var(--primary-ink)', background: 'var(--bg)', padding: '4px 10px', borderRadius: 8 }}>{challenge.inviteCode}</code>
-          <button onClick={() => navigator.clipboard?.writeText(challenge.inviteCode)} style={{ border: 'none', background: 'var(--sunken)', color: 'var(--text-muted)', fontWeight: 700, fontSize: 12, padding: '5px 10px', borderRadius: 8, cursor: 'pointer' }}>複製</button>
-          <span style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--text-faint)', fontWeight: 700 }}>{challenge.members.length} 人</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 14, paddingTop: 12, borderTop: '1px solid var(--line)' }}>
+          <span style={S.meta}>邀請碼</span>
+          <code style={S.code}>{challenge.inviteCode}</code>
+          <button type="button" onClick={() => navigator.clipboard?.writeText(challenge.inviteCode)} style={{ ...UI.btnText, minHeight: 32 }}><Icon name="copy" size={16} />複製</button>
+          <span style={{ ...S.meta, marginLeft: 'auto' }}>{challenge.members.length} 人</span>
         </div>
-      </div>
+      </section>
 
       {/* 即時排行榜 */}
-      <div style={{ marginTop: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-          <div style={{ fontSize: 16, fontWeight: 900, color: 'var(--text)' }}>🥊 即時排行榜</div>
-          {myRank && <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 700 }}>你是第 {myRank} 名</span>}
+      <section style={UI.section}>
+        <div style={UI.sectionHead}>
+          <h2 style={UI.sectionTitle}>即時排行榜</h2>
+          {myRank && <span style={S.meta}>你是第 {myRank} 名</span>}
         </div>
 
         {/* Podium */}
-        <div style={{ background: 'var(--surface)', borderRadius: 20, padding: '16px 12px 0', boxShadow: 'var(--shadow-card)' }}>
-          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 6, padding: '0 8px' }}>
+        <div style={S.podiumWrap}>
+          <div style={S.podium}>
             {[0, 1, 2].map(pos => {
               const item = lb[LB_INDICES[pos]];
-              const rgb = MEDAL_RGBS[pos];
-              const block = { width: '100%', height: PODIUM_HEIGHTS[pos], background: `rgba(${rgb},0.18)`, borderTop: `3px solid rgba(${rgb},0.6)`, borderRadius: '8px 8px 0 0', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3 };
               if (!item || item.kgDiff === null) {
                 return (
-                  <div key={pos} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', maxWidth: 140 }}>
-                    <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--surface-alt)', border: '2px dashed var(--track)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-faint)', fontSize: 18, marginBottom: 6 }}>?</div>
-                    <div style={{ fontSize: 12, color: 'var(--text-faint)', fontWeight: 700, paddingBottom: 8 }}>—</div>
-                    <div style={block}>
-                      <span style={{ fontSize: 28, lineHeight: 1 }}>{MEDAL_EMOJIS[pos]}</span>
-                      <span style={{ fontSize: 13, fontWeight: 800, color: `rgba(${rgb},0.7)`, letterSpacing: 1.5 }}>{RANK_NAMES[pos]}</span>
-                    </div>
+                  <div key={pos} style={S.podiumCol}>
+                    <div style={{ width: 48, height: 48, borderRadius: 999, background: 'var(--sunken)', border: '2px dashed var(--line-strong)', marginBottom: 6 }} />
+                    <div style={{ fontSize: 12, color: 'var(--text-faint)', paddingBottom: 8 }}>—</div>
+                    <div style={S.block(pos)}><span style={S.blockRank}>{PODIUM_RANKS[pos]}</span></div>
                   </div>
                 );
               }
               return (
-                <div key={pos} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', maxWidth: 140 }}>
-                  <Avatar name={item.name} color={item.color} size={50} border={`3px solid rgba(${rgb},0.85)`} />
+                <div key={pos} style={S.podiumCol}>
+                  <Avatar name={item.name} color={item.color} size={48} border={`3px solid rgba(${MEDAL_RGBS[pos]},0.85)`} />
                   <div style={{ textAlign: 'center', padding: '6px 0 8px' }}>
-                    <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 120 }}>{item.name}{item.isMe ? ' (你)' : ''}</div>
-                    <div style={{ fontSize: 12, fontWeight: 800, color: diffColor(item.kgDiff), marginTop: 2 }}>
-                      {item.kgDiff < 0 ? `▼ ${(-item.kgDiff).toFixed(1)}` : `▲ ${item.kgDiff.toFixed(1)}`} kg
+                    <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 120 }}>{item.name}{item.isMe ? '（你）' : ''}</div>
+                    <div style={{ fontSize: 12, fontWeight: 500, color: diffColor(item.kgDiff), marginTop: 2, ...UI.num }}>
+                      {item.kgDiff < 0 ? `減 ${(-item.kgDiff).toFixed(1)}` : `增 ${item.kgDiff.toFixed(1)}`} kg
                     </div>
                     {item.weeklyChange !== null && (
-                      <div style={{ fontSize: 12, fontWeight: 800, color: getWeeklyChangeColor(item.weeklyChange), marginTop: 1 }}>
+                      <div style={{ fontSize: 12, color: getWeeklyChangeColor(item.weeklyChange), marginTop: 1, ...UI.num }}>
                         {item.weeklyChange < 0 ? `比上週 -${(-item.weeklyChange).toFixed(1)}` : `比上週 +${item.weeklyChange.toFixed(1)}`}
                       </div>
                     )}
                   </div>
-                  <div style={block}>
-                    <span style={{ fontSize: 28, lineHeight: 1 }}>{MEDAL_EMOJIS[pos]}</span>
-                    <span style={{ fontSize: 13, fontWeight: 800, color: `rgba(${rgb},0.95)`, letterSpacing: 1.5 }}>{RANK_NAMES[pos]}</span>
-                  </div>
+                  <div style={S.block(pos)}><span style={S.blockRank}>{PODIUM_RANKS[pos]}</span></div>
                 </div>
               );
             })}
@@ -243,27 +252,25 @@ function ChallengeView({ challenge, myUserId, onSubmitEntry, onRemoveEntry, onUp
         </div>
 
         {/* Full list */}
-        <div style={{ background: 'var(--surface)', borderRadius: 20, marginTop: 10, boxShadow: 'var(--shadow-card)', overflow: 'hidden' }}>
-          {lb.map(item => (
-            <div key={item.userId} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderTop: '1px solid var(--line)', background: item.isMe ? 'var(--surface-alt)' : 'transparent' }}>
-              <div style={{ width: 28, textAlign: 'center', fontSize: 16, fontWeight: 900, color: rankColor(item.rank) }}>
-                {item.rank <= 3 ? ['🥇','🥈','🥉'][item.rank-1] : item.rank}
-              </div>
+        <div style={UI.listCard}>
+          {lb.map((item, i) => (
+            <div key={item.userId} style={{ ...S.lbRow(item.isMe), borderTop: i === 0 ? 'none' : '1px solid var(--line)' }}>
+              <div style={S.rankNo(item.rank)}>{item.rank}</div>
               <Avatar name={item.name} color={item.color} size={32} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 15, fontWeight: 700, color: item.isMe ? 'var(--primary-ink)' : 'var(--text)' }}>{item.name}{item.isMe ? ' (你)' : ''}</div>
-                <div style={{ fontSize: 12, color: 'var(--text-faint)', fontWeight: 600, marginTop: 1 }}>{item.lastUpdated ? `更新 ${dateLabel(item.lastUpdated.slice(0,10))}` : '尚未登記'}</div>
+                <div style={{ ...UI.rowTitle, color: item.isMe ? 'var(--primary-ink)' : 'var(--text)' }}>{item.name}{item.isMe ? '（你）' : ''}</div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 1 }}>{item.lastUpdated ? `更新 ${dateLabel(item.lastUpdated.slice(0,10))}` : '尚未登記'}</div>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: 18, fontWeight: 900, color: diffColor(item.kgDiff), lineHeight: 1 }}>{fmtKgDiff(item.kgDiff)}</div>
-                <div style={{ fontSize: 12, color: getWeeklyChangeColor(item.weeklyChange), fontWeight: 700, marginTop: 2 }}>
+                <div style={{ fontSize: 16, fontWeight: 600, color: diffColor(item.kgDiff), lineHeight: 1.2, ...UI.num }}>{fmtKgDiff(item.kgDiff)}</div>
+                <div style={{ fontSize: 12, color: getWeeklyChangeColor(item.weeklyChange), marginTop: 2 }}>
                   {getWeeklyChangeText(item.weeklyChange)}
                 </div>
               </div>
             </div>
           ))}
         </div>
-      </div>
+      </section>
 
       {/* 進度圖 */}
       {challenge.entries.length > 0 && <ProgressChartCard challenge={challenge} myUserId={myUserId} onSetColor={onSetColor} />}
@@ -272,8 +279,8 @@ function ChallengeView({ challenge, myUserId, onSubmitEntry, onRemoveEntry, onUp
       {isActive && <EntryForm challenge={challenge} myUserId={myUserId} onSubmit={onSubmitEntry} onRemove={onRemoveEntry} onSetWeights={onSetWeights} />}
 
       {/* 管理 / 退出 */}
-      <div style={{ marginTop: 16, background: 'var(--surface)', borderRadius: 20, padding: '16px 18px', boxShadow: 'var(--shadow-card)' }}>
-        <div style={{ fontSize: 14, fontWeight: 900, color: 'var(--text)', marginBottom: 10 }}>{isCreator ? '建立者選項' : '挑戰選項'}</div>
+      <section style={S.card}>
+        <h2 style={{ ...UI.sectionTitle, marginBottom: 12 }}>{isCreator ? '建立者選項' : '挑戰選項'}</h2>
 
         {isCreator && isActive && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -282,31 +289,31 @@ function ChallengeView({ challenge, myUserId, onSubmitEntry, onRemoveEntry, onUp
           </div>
         )}
 
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: isCreator && isActive ? 12 : 0 }}>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: isCreator && isActive ? 12 : 0 }}>
           {isCreator && !isActive && (
-            <button onClick={onRepeat} style={primaryBtn}>原班人馬再來一局</button>
+            <button type="button" onClick={onRepeat} style={UI.btnSecondary}>原班人馬再來一局</button>
           )}
           {isCreator && isActive && (
-            <button onClick={async () => {
+            <button type="button" onClick={async () => {
               if (!(await confirmDialog({ title: '結束這個挑戰？', message: '冠軍會依目前成績自動決定。', confirmText: '結束挑戰' }))) return;
               const winner = lb.find(x => x.kgDiff !== null);
               await onEnd(challenge.id, winner ? winner.userId : null).catch((e) => alertError('結束挑戰', e));
-            }} style={primaryBtn}>結束挑戰</button>
+            }} style={UI.btnNeutral}>結束挑戰</button>
           )}
           {isCreator && (
-            <button onClick={async () => {
+            <button type="button" onClick={async () => {
               if (!(await confirmDialog({ title: '完全刪除這個挑戰？', message: '所有人的記錄都會消失，無法復原。', confirmText: '刪除', danger: true }))) return;
               await onDelete(challenge.id).catch((e) => alertError('刪除挑戰', e));
-            }} style={dangerBtn}>刪除挑戰</button>
+            }} style={S.softDanger}>刪除挑戰</button>
           )}
           {!isCreator && (
-            <button onClick={async () => {
+            <button type="button" onClick={async () => {
               if (!(await confirmDialog({ title: '退出這個挑戰？', message: '你在這個挑戰的記錄會被刪除。', confirmText: '退出', danger: true }))) return;
               await onLeave(challenge.id).catch((e) => alertError('退出挑戰', e));
-            }} style={dangerBtn}>退出挑戰</button>
+            }} style={S.softDanger}>退出挑戰</button>
           )}
         </div>
-      </div>
+      </section>
     </div>
   );
 }
@@ -318,18 +325,18 @@ function ProgressChartCard({ challenge, myUserId, onSetColor }) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [selectedWeek, setSelectedWeek] = useState(null);
   return (
-    <div style={{ marginTop: 16, background: 'var(--surface)', borderRadius: 20, padding: '18px 14px 14px', boxShadow: 'var(--shadow-card)' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-        <div style={{ fontSize: 16, fontWeight: 900, color: 'var(--text)' }}>🔥 每週甩肉戰績</div>
-        <span style={{ fontSize: 12, color: 'var(--text-faint)', fontWeight: 700 }}>每週五登記</span>
+    <section style={{ ...S.card, marginTop: 28 }}>
+      <div style={S.cardHead}>
+        <h2 style={UI.sectionTitle}>每週甩肉戰績</h2>
+        <span style={S.meta}>每週五登記</span>
       </div>
       <WeightChart challenge={challenge} highlightUserId={highlight} selectedWeek={selectedWeek} onSelectWeek={setSelectedWeek} />
-      
+
       {selectedWeek && (
-        <div style={{ marginTop: 14, padding: '12px 14px', background: 'var(--surface-alt)', borderRadius: 14, border: '1px solid var(--track)' }}>
+        <div style={{ marginTop: 14, padding: '12px 12px 8px', background: 'var(--sunken)', borderRadius: 10 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-            <span style={{ fontSize: 13, fontWeight: 900, color: 'var(--text)' }}>📅 {dateLabel(selectedWeek)} 戰績清單</span>
-            <button aria-label="關閉戰績清單" className="tap" onClick={() => setSelectedWeek(null)} style={{ border: 'none', background: 'transparent', color: 'var(--text-muted)', fontWeight: 800, fontSize: 15, cursor: 'pointer', padding: '0 4px' }}><Icon name="x" size={14} /></button>
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{dateLabel(selectedWeek)} 戰績清單</span>
+            <button type="button" aria-label="關閉戰績清單" className="tap" onClick={() => setSelectedWeek(null)} style={{ ...S.smallBtn, width: 28, height: 28, background: 'none' }}><Icon name="x" size={16} /></button>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {(() => {
@@ -338,7 +345,7 @@ function ProgressChartCard({ challenge, myUserId, onSetColor }) {
                 const kgVal = entry ? Number(entry.kgDiff) : null;
                 return { member: m, kgVal };
               });
-              
+
               list.sort((a, b) => {
                 if (a.kgVal === null && b.kgVal === null) return 0;
                 if (a.kgVal === null) return 1;
@@ -360,14 +367,14 @@ function ProgressChartCard({ challenge, myUserId, onSetColor }) {
                   <div key={m.userId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 8px', background: 'var(--surface)', borderRadius: 10 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <Avatar name={m.name} color={memberColor(challenge, m.userId)} size={24} />
-                      <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--text)' }}>{m.name}</span>
+                      <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)' }}>{m.name}</span>
                     </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <span style={{ fontSize: 14, fontWeight: 900, color: diffColor(kgVal), marginRight: 6 }}>
+                    <div style={{ textAlign: 'right', ...UI.num }}>
+                      <span style={{ fontSize: 14, fontWeight: 600, color: diffColor(kgVal), marginRight: 6 }}>
                         {fmtKgDiff(kgVal)}
                       </span>
                       {chg !== null && (
-                        <span style={{ fontSize: 12, fontWeight: 800, color: getWeeklyChangeColor(chg) }}>
+                        <span style={{ fontSize: 12, color: getWeeklyChangeColor(chg) }}>
                           ({chg < 0 ? `-${(-chg).toFixed(1)}` : `+${chg.toFixed(1)}`})
                         </span>
                       )}
@@ -381,20 +388,20 @@ function ProgressChartCard({ challenge, myUserId, onSetColor }) {
       )}
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 10px', marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--line)' }}>
-        <div style={{ fontSize: 12, color: 'var(--text-faint)', fontWeight: 700, width: '100%', marginBottom: 4 }}>💡 點選圖表柱位可看該週戰績 · 點人名可過濾線條</div>
+        <div style={{ fontSize: 12, color: 'var(--text-muted)', width: '100%', marginBottom: 4 }}>點圖表可看該週戰績 · 點人名只看那一條線</div>
         {challenge.members.map(m => {
           const dim = highlight && highlight !== m.userId;
           const isMe = m.userId === myUserId;
           return (
             <div key={m.userId} style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <button onClick={() => setHighlight(highlight === m.userId ? null : m.userId)}
-                style={{ display: 'flex', alignItems: 'center', gap: 6, border: 'none', background: highlight === m.userId ? 'var(--sunken)' : 'transparent', borderRadius: 10, padding: '4px 8px', cursor: 'pointer', opacity: dim ? 0.4 : 1 }}>
-                <div style={{ width: 18, height: 3, borderRadius: 2, background: memberColor(challenge, m.userId) }} />
-                <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>{m.name}</span>
+              <button type="button" aria-pressed={highlight === m.userId} onClick={() => setHighlight(highlight === m.userId ? null : m.userId)}
+                style={{ minHeight: 32, display: 'flex', alignItems: 'center', gap: 6, border: 'none', background: highlight === m.userId ? 'var(--sunken)' : 'transparent', borderRadius: 999, padding: '0 10px', opacity: dim ? 0.4 : 1 }}>
+                <div style={{ width: 16, height: 3, borderRadius: 2, background: memberColor(challenge, m.userId) }} />
+                <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{m.name}</span>
               </button>
               {isMe && onSetColor && (
-                <button aria-label="改顏色" className="tap" onClick={() => setPickerOpen(!pickerOpen)} title="改顏色"
-                  style={{ border: 'none', background: 'transparent', color: 'var(--text-faint)', cursor: 'pointer', padding: 2, display: 'flex' }}><Icon name="palette" size={15} /></button>
+                <button type="button" aria-label="改顏色" className="tap" onClick={() => setPickerOpen(!pickerOpen)} title="改顏色"
+                  style={{ border: 'none', background: 'transparent', color: 'var(--text-faint)', padding: 2, display: 'flex' }}><Icon name="palette" size={16} /></button>
               )}
             </div>
           );
@@ -406,16 +413,16 @@ function ProgressChartCard({ challenge, myUserId, onSetColor }) {
           onPick={async (hex) => { try { await onSetColor(challenge.id, hex); setPickerOpen(false); } catch (e) { alertError('更新顏色', e); } }}
         />
       )}
-    </div>
+    </section>
   );
 }
 
 function ColorPicker({ current, onPick }) {
   return (
-    <div style={{ marginTop: 10, padding: 12, background: 'var(--surface-alt)', borderRadius: 14, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+    <div style={{ marginTop: 10, padding: 12, background: 'var(--sunken)', borderRadius: 10, display: 'flex', flexWrap: 'wrap', gap: 10 }}>
       {MEMBER_PALETTE.map(hex => (
-        <button key={hex} onClick={() => onPick(hex)}
-          style={{ width: 30, height: 30, borderRadius: '50%', background: hex, border: hex === current ? '3px solid var(--text)' : '2px solid var(--surface)', cursor: 'pointer', boxShadow: '0 1px 4px rgba(0,0,0,.15)' }} />
+        <button key={hex} type="button" aria-label={`顏色 ${hex}`} aria-pressed={hex === current} onClick={() => onPick(hex)}
+          style={{ width: 28, height: 28, padding: 0, border: 'none', borderRadius: 999, background: hex, boxShadow: hex === current ? '0 0 0 2px var(--sunken), 0 0 0 4px var(--text)' : 'none' }} />
       ))}
     </div>
   );
@@ -467,7 +474,7 @@ function EntryForm({ challenge, myUserId, onSubmit, onRemove, onSetWeights }) {
         startWeight: hasStartWeight ? parsedStartWeight : null,
         currentWeight: hasCurrentWeight ? parsedCurrentWeight : null,
       });
-      setWeightMsg({ kind:'success', text:'✓ 已更新體重紀錄' });
+      setWeightMsg({ kind:'success', text:'已更新體重紀錄' });
       setTimeout(() => setWeightMsg(null), 2500);
     } catch (e) {
       setWeightMsg({ kind:'error', text: e.message || '更新失敗' });
@@ -488,7 +495,7 @@ function EntryForm({ challenge, myUserId, onSubmit, onRemove, onSetWeights }) {
         kgDiff: n,
         weekLabel: editingWeek || date,
       });
-      setEntryMsg({ kind:'success', text:`✓ 已${editingWeek ? '更新' : '記錄'} ${n > 0 ? '+' : ''}${n} kg` });
+      setEntryMsg({ kind:'success', text:`已${editingWeek ? '更新' : '記錄'} ${n > 0 ? '+' : ''}${n} kg` });
       setKg('');
       setEditingWeek(null);
       setTimeout(() => setEntryMsg(null), 2500);
@@ -501,89 +508,82 @@ function EntryForm({ challenge, myUserId, onSubmit, onRemove, onSetWeights }) {
 
   return (
     <>
-      <div style={{ marginTop: 16, background: 'var(--surface)', borderRadius: 20, padding: '20px 18px', boxShadow: 'var(--shadow-card)' }}>
-        <div style={{ fontSize: 16, fontWeight: 900, color: 'var(--text)', marginBottom: 4 }}>⚖️ 體重紀錄（選填）</div>
-        <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, marginBottom: 14, lineHeight: 1.6 }}>可另外記起始體重與當前體重，幫你核對數字並協助換算公斤差值</div>
+      <section style={S.card}>
+        <h2 style={{ ...UI.sectionTitle, marginBottom: 4 }}>體重紀錄（選填）</h2>
+        <div style={{ ...S.hint, marginBottom: 14 }}>可另外記起始體重與當前體重，幫你核對數字並協助換算公斤差值</div>
 
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 12 }}>
-          <div style={{ flex: 1, minWidth: 130 }}>
-            <div style={{ fontSize: 12, fontWeight: 900, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 6 }}>起始體重（選填）</div>
-            <input aria-label="起始體重" type="text" inputMode="decimal" value={startWeight} onChange={(e) => { if (/^\d*\.?\d*$/.test(e.target.value)) setStartWeight(e.target.value); }} placeholder="60.0"
-              style={{ width: '100%', border: 'none', background: 'var(--surface-alt)', borderRadius: 14, padding: '14px 15px', fontSize: 16, fontWeight: 700, color: 'var(--text)' }} />
-          </div>
-          <div style={{ flex: 1, minWidth: 130 }}>
-            <div style={{ fontSize: 12, fontWeight: 900, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 6 }}>當前體重（選填）</div>
-            <input aria-label="當前體重" type="text" inputMode="decimal" value={currentWeight} onChange={(e) => { if (/^\d*\.?\d*$/.test(e.target.value)) setCurrentWeight(e.target.value); }} placeholder="57.5"
-              style={{ width: '100%', border: 'none', background: 'var(--surface-alt)', borderRadius: 14, padding: '14px 15px', fontSize: 16, fontWeight: 700, color: 'var(--text)' }} />
+        <div style={S.fields}>
+          <label style={S.field}><span style={UI.fieldLabel}>起始體重</span>
+            <input aria-label="起始體重" type="text" inputMode="decimal" value={startWeight} onChange={(e) => { if (/^\d*\.?\d*$/.test(e.target.value)) setStartWeight(e.target.value); }} placeholder="60.0" style={UI.input} />
+          </label>
+          <label style={S.field}><span style={UI.fieldLabel}>當前體重</span>
+            <input aria-label="當前體重" type="text" inputMode="decimal" value={currentWeight} onChange={(e) => { if (/^\d*\.?\d*$/.test(e.target.value)) setCurrentWeight(e.target.value); }} placeholder="57.5" style={UI.input} />
+          </label>
+        </div>
+
+        <div style={S.assist}>
+          <div style={UI.fieldLabel}>自動計算差值</div>
+          <div style={{ fontSize: 14, fontWeight: 500, color: assistedKgDiff === null ? 'var(--text-faint)' : diffColor(assistedKgDiff), ...UI.num }}>
+            {assistedKgDiff === null ? '兩個體重都填了才會自動算差值' : `${assistedKgDiff > 0 ? '+' : ''}${assistedKgDiff.toFixed(1)} kg`}
           </div>
         </div>
 
-        <div style={{ marginBottom: 12, background: 'var(--surface-alt)', borderRadius: 14, padding: '10px 12px' }}>
-          <div style={{ fontSize: 12, fontWeight: 900, color: 'var(--text-muted)', letterSpacing: 1 }}>一鍵協助計算</div>
-          <div style={{ fontSize: 13, fontWeight: 800, color: assistedKgDiff === null ? 'var(--text-faint)' : diffColor(assistedKgDiff), marginTop: 4 }}>
-            {assistedKgDiff === null ? '兩個體重都填了才會自動算差值' : `自動差值：${assistedKgDiff > 0 ? '+' : ''}${assistedKgDiff.toFixed(1)} kg`}
-          </div>
-        </div>
+        {weightMsg && <div style={S.entryMsg(weightMsg.kind)}>{weightMsg.text}</div>}
 
-        {weightMsg && <div style={{ padding: '10px 14px', borderRadius: 14, marginBottom: 12, fontSize: 13, fontWeight: 700, color: weightMsg.kind === 'success' ? 'var(--success-ink)' : 'var(--danger-ink)', background: weightMsg.kind === 'success' ? 'var(--success-bg)' : 'var(--danger-bg)' }}>{weightMsg.text}</div>}
-
-        <div style={{ display: 'flex', gap: 10 }}>
+        <div style={{ display: 'flex', gap: 8 }}>
           <button type="button" disabled={assistedKgDiff === null || busy} onClick={() => submit(assistedKgDiff)}
-            style={{ flex: 1, border: 'none', background: assistedKgDiff === null || busy ? 'var(--sunken)' : 'var(--bg)', color: assistedKgDiff === null || busy ? 'var(--text-faint)' : 'var(--primary-ink)', fontWeight: 900, fontSize: 13, padding: '12px 12px', borderRadius: 14, cursor: assistedKgDiff === null || busy ? 'not-allowed' : 'pointer' }}>{busy ? '送出中…' : '協助帶入並送出'}</button>
+            style={{ ...UI.btnSecondary, flex: 1, minHeight: 44, opacity: assistedKgDiff === null || busy ? 0.5 : 1 }}>{busy ? '送出中…' : '用差值送出'}</button>
           <button type="button" onClick={persistWeights} disabled={busy}
-            style={{ flex: 1, border: 'none', background: busy ? 'var(--line-strong)' : 'var(--primary)', color: '#fff', fontWeight: 900, fontSize: 13, padding: '12px 12px', borderRadius: 14, cursor: 'pointer' }}>{busy ? '儲存中…' : '修改體重'}</button>
+            style={{ ...UI.btnNeutral, flex: 1, minHeight: 44, opacity: busy ? 0.6 : 1 }}>{busy ? '儲存中…' : '儲存體重'}</button>
         </div>
-      </div>
+      </section>
 
-      <div style={{ marginTop: 16, background: 'var(--surface)', borderRadius: 20, padding: '20px 18px', boxShadow: 'var(--shadow-card)' }}>
-        <div style={{ fontSize: 16, fontWeight: 900, color: 'var(--text)', marginBottom: 4 }}>📝 本週登記</div>
-        <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, marginBottom: 14, lineHeight: 1.6 }}>從挑戰開始到現在的體重差值（減重用負數，例如 -2.5）</div>
+      <section style={S.card}>
+        <h2 style={{ ...UI.sectionTitle, marginBottom: 4 }}>本週登記</h2>
+        <div style={{ ...S.hint, marginBottom: 14 }}>從挑戰開始到現在的體重差值（減重用負數，例如 -2.5）</div>
 
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 12 }}>
-          <div style={{ flex: 1, minWidth: 130 }}>
-            <div style={{ fontSize: 12, fontWeight: 900, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 6 }}>公斤差值</div>
+        <div style={S.fields}>
+          <div style={S.field}>
+            <span style={UI.fieldLabel}>公斤差值</span>
             <div style={{ display: 'flex', alignItems: 'stretch', gap: 6 }}>
               {/* 有些手機鍵盤打不出負號，所以用按鈕切換正負，不用打字也行 */}
-              <button aria-label="切換正負號" className="tap" type="button" onClick={() => setKg((v) => v.startsWith('-') ? v.slice(1) : v ? `-${v}` : '-')}
-                style={{ width: 44, border: 'none', background: 'var(--bg)', color: 'var(--primary-ink)', fontWeight: 900, fontSize: 20, borderRadius: 14, cursor: 'pointer', flexShrink: 0 }}>±</button>
+              <button aria-label="切換正負號" type="button" onClick={() => setKg((v) => v.startsWith('-') ? v.slice(1) : v ? `-${v}` : '-')}
+                style={{ ...UI.btnNeutral, width: 44, padding: 0, fontSize: 18, flexShrink: 0 }}>±</button>
               <input aria-label="體重變化（公斤）" type="text" inputMode="decimal" value={kg} onChange={(e) => { if (/^-?\d*\.?\d*$/.test(e.target.value)) setKg(e.target.value); }} placeholder="-2.5"
-                style={{ flex: 1, minWidth: 0, border: 'none', background: 'var(--surface-alt)', borderRadius: 14, padding: '14px 8px', fontSize: 24, fontWeight: 900, color: 'var(--text)', textAlign: 'center' }} />
+                style={{ ...UI.input, flex: 1, minWidth: 0, textAlign: 'center', fontSize: 18, fontWeight: 600, ...UI.num }} />
             </div>
           </div>
-          <div style={{ flex: 1, minWidth: 130 }}>
-            <div style={{ fontSize: 12, fontWeight: 900, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 6 }}>日期（週五）</div>
+          <label style={S.field}><span style={UI.fieldLabel}>日期（週五）</span>
             <input aria-label="日期" type="date" value={date} onChange={(e) => setDate(e.target.value)} disabled={!!editingWeek}
-              style={{ width: '100%', border: 'none', background: editingWeek ? 'var(--line)' : 'var(--surface-alt)', borderRadius: 14, padding: '14px 15px', fontSize: 16, fontWeight: 700, color: editingWeek ? 'var(--text-faint)' : 'var(--text)' }} />
-          </div>
+              style={{ ...UI.input, ...(editingWeek ? { background: 'var(--sunken)', color: 'var(--text-faint)' } : {}) }} />
+          </label>
         </div>
 
-        {entryMsg && <div style={{ padding: '10px 14px', borderRadius: 14, marginBottom: 12, fontSize: 13, fontWeight: 700, color: entryMsg.kind === 'success' ? 'var(--success-ink)' : 'var(--danger-ink)', background: entryMsg.kind === 'success' ? 'var(--success-bg)' : 'var(--danger-bg)' }}>{entryMsg.text}</div>}
+        {entryMsg && <div style={S.entryMsg(entryMsg.kind)}>{entryMsg.text}</div>}
 
-        <div style={{ display: 'flex', gap: 10 }}>
-          <button onClick={() => submit()} disabled={busy} style={{ flex: 1, border: 'none', background: busy ? 'var(--line-strong)' : 'var(--primary)', color: '#fff', fontWeight: 900, fontSize: 15, padding: 14, borderRadius: 14, cursor: 'pointer' }}>{busy ? '送出中…' : editingWeek ? '更新記錄' : '送出記錄'}</button>
-          {editingWeek && <button onClick={cancelEdit} style={{ border: 'none', background: 'var(--sunken)', color: 'var(--text-muted)', fontWeight: 800, fontSize: 14, padding: '14px 18px', borderRadius: 14, cursor: 'pointer' }}>取消</button>}
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button type="button" onClick={() => submit()} disabled={busy} style={{ ...UI.btnPrimary, flex: 1, opacity: busy ? 0.6 : 1 }}>{busy ? '送出中…' : editingWeek ? '更新記錄' : '送出記錄'}</button>
+          {editingWeek && <button type="button" onClick={cancelEdit} style={{ ...UI.btnNeutral, minHeight: 48 }}>取消</button>}
         </div>
 
         {myEntries.length > 0 && (
           <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--line)' }}>
-            <div style={{ fontSize: 12, fontWeight: 900, letterSpacing: 1, color: 'var(--text-faint)', marginBottom: 10 }}>我的登記紀錄（{myEntries.length} 筆）</div>
+            <div style={{ ...UI.fieldLabel, marginBottom: 10 }}>我的登記紀錄（{myEntries.length} 筆）</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 320, overflowY: 'auto' }}>
               {myEntries.map(e => (
-                <div key={e.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '9px 12px', background: editingWeek === e.weekLabel ? 'var(--bg)' : 'var(--surface-alt)', borderRadius: 10 }}>
-                  <div style={{ minWidth: 0, flex: 1 }}>
-                    <div style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 600 }}>{e.weekLabel}</div>
-                  </div>
-                  <span style={{ fontSize: 16, fontWeight: 900, color: diffColor(e.kgDiff) }}>{fmtKgDiff(e.kgDiff)}</span>
+                <div key={e.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '6px 6px 6px 12px', background: editingWeek === e.weekLabel ? 'var(--primary-soft)' : 'var(--sunken)', borderRadius: 10 }}>
+                  <div style={{ minWidth: 0, flex: 1, fontSize: 13, color: 'var(--text-muted)', ...UI.num }}>{e.weekLabel}</div>
+                  <span style={{ fontSize: 15, fontWeight: 600, color: diffColor(e.kgDiff), ...UI.num }}>{fmtKgDiff(e.kgDiff)}</span>
                   <div style={{ display: 'flex', gap: 4 }}>
-                    <button aria-label="編輯紀錄" className="tap" onClick={() => startEdit(e)} style={{ border: 'none', background: 'var(--surface)', color: 'var(--text-muted)', width: 26, height: 26, borderRadius: '50%', cursor: 'pointer', fontSize: 13 }}><Icon name="pencil" size={14} /></button>
-                    <button aria-label="刪除紀錄" className="tap" onClick={async () => { if (await confirmDialog({ title: '刪除這筆體重紀錄？', confirmText: '刪除', danger: true })) { if (editingWeek === e.weekLabel) cancelEdit(); await onRemove(e.id).catch((err) => alertError('刪除紀錄', err)); } }} style={{ border: 'none', background: 'var(--surface)', color: 'var(--text-faint)', width: 26, height: 26, borderRadius: '50%', cursor: 'pointer', fontSize: 15, lineHeight: 1 }}><Icon name="x" size={14} /></button>
+                    <button type="button" aria-label="編輯紀錄" onClick={() => startEdit(e)} style={S.smallBtn}><Icon name="pencil" size={16} /></button>
+                    <button type="button" aria-label="刪除紀錄" onClick={async () => { if (await confirmDialog({ title: '刪除這筆體重紀錄？', confirmText: '刪除', danger: true })) { if (editingWeek === e.weekLabel) cancelEdit(); await onRemove(e.id).catch((err) => alertError('刪除紀錄', err)); } }} style={S.smallBtn}><Icon name="trash" size={16} /></button>
                   </div>
                 </div>
               ))}
             </div>
           </div>
         )}
-      </div>
+      </section>
     </>
   );
 }
@@ -592,17 +592,16 @@ function EndedChallengeCard({ challenge, myUserId, onSelect, active }) {
   const lb = computeLeaderboard(challenge, myUserId);
   const winner = lb[0];
   return (
-    <button type="button" className="btn-reset" aria-pressed={active} style={{ display: 'block', width: '100%', background: 'var(--surface)', borderRadius: 14, padding: '14px 16px', boxShadow: 'var(--shadow-card)', border: active ? '2px solid var(--primary)' : '2px solid transparent' }} onClick={onSelect}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{challenge.name}</div>
-          <div style={{ fontSize: 12, color: 'var(--text-faint)', marginTop: 2 }}>{dateLabel(challenge.startDate)} → {dateLabel(challenge.endDate)}</div>
-        </div>
-        <div style={{ textAlign: 'right' }}>
-          <div style={{ fontSize: 12, color: 'var(--text-faint)', fontWeight: 700, letterSpacing: 1 }}>冠軍</div>
-          <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--warning-ink)' }}>🏆 {winner?.name || '—'}</div>
-        </div>
-      </div>
+    <button type="button" aria-pressed={active} onClick={onSelect}
+      style={{ ...UI.row, ...UI.card, boxShadow: active ? '0 0 0 2px var(--primary-ink)' : 'var(--shadow-card)' }}>
+      <span style={UI.rowText}>
+        <span style={{ ...UI.rowTitle, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{challenge.name}</span>
+        <span style={UI.rowMeta}>{dateLabel(challenge.startDate)} → {dateLabel(challenge.endDate)}</span>
+      </span>
+      <span style={{ textAlign: 'right', flexShrink: 0 }}>
+        <span style={{ display: 'block', fontSize: 12, color: 'var(--text-muted)' }}>冠軍</span>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 14, fontWeight: 500, color: 'var(--warning-ink)' }}><Icon name="trophy" size={14} />{winner?.name || '—'}</span>
+      </span>
     </button>
   );
 }
@@ -631,22 +630,23 @@ function EditName({ challenge, onUpdate }) {
 
   if (!editing) {
     return (
-      <button onClick={() => { setName(challenge.name); setEditing(true); setErr(''); }}
-        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: 10, padding: '10px 14px', background: 'var(--surface-alt)', border: 'none', borderRadius: 14, cursor: 'pointer' }}>
-        <span style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="pencil" size={13} />挑戰名稱</span>
-        <span style={{ fontSize: 14, color: 'var(--text)', fontWeight: 800, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 180 }}>{challenge.name} ›</span>
+      <button type="button" onClick={() => { setName(challenge.name); setEditing(true); setErr(''); }} style={{ ...UI.row, minHeight: 48, padding: '0 12px', background: 'var(--sunken)', borderRadius: 10 }}>
+        <Icon name="pencil" size={16} style={{ color: 'var(--text-muted)' }} />
+        <span style={{ flex: 1, fontSize: 14, color: 'var(--text-muted)' }}>挑戰名稱</span>
+        <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 180 }}>{challenge.name}</span>
+        <Icon name="chevron-right" size={16} style={{ color: 'var(--text-faint)' }} />
       </button>
     );
   }
   return (
-    <div style={{ background: 'var(--surface-alt)', borderRadius: 14, padding: 12 }}>
-      <div style={{ fontSize: 12, fontWeight: 900, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 6 }}>新的挑戰名稱</div>
-      <input aria-label="新的挑戰名稱" type="text" value={name} onChange={(e) => setName(e.target.value)} maxLength={40} autoFocus
-        style={{ width: '100%', border: 'none', background: 'var(--surface)', borderRadius: 10, padding: '12px 14px', fontSize: 16, fontWeight: 700, color: 'var(--text)' }} />
-      {err && <div style={{ marginTop: 8, fontSize: 12, color: 'var(--danger-ink)', fontWeight: 700 }}>{err}</div>}
-      <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-        <button onClick={save} disabled={busy} style={{ ...primaryBtn, flex: 1, opacity: busy ? 0.6 : 1 }}>{busy ? '儲存中…' : '儲存'}</button>
-        <button onClick={() => setEditing(false)} style={{ ...dangerBtn, background: 'var(--surface)', color: 'var(--text-muted)', flex: 1 }}>取消</button>
+    <div style={S.editBox}>
+      <label><span style={UI.fieldLabel}>新的挑戰名稱</span>
+        <input aria-label="新的挑戰名稱" type="text" value={name} onChange={(e) => setName(e.target.value)} maxLength={40} autoFocus style={UI.input} />
+      </label>
+      {err && <div style={UI.fieldError}>{err}</div>}
+      <div style={{ display: 'flex', gap: 8 }}>
+        <button type="button" onClick={save} disabled={busy} style={{ ...UI.btnPrimary, flex: 1, minHeight: 44, fontSize: 14, opacity: busy ? 0.6 : 1 }}>{busy ? '儲存中…' : '儲存'}</button>
+        <button type="button" onClick={() => setEditing(false)} style={{ ...UI.btnNeutral, flex: 1, minHeight: 44, background: 'var(--surface)' }}>取消</button>
       </div>
     </div>
   );
@@ -677,22 +677,23 @@ function EditEndDate({ challenge, onUpdate }) {
 
   if (!editing) {
     return (
-      <button onClick={() => { setDate(challenge.endDate); setEditing(true); setErr(''); }}
-        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: 10, padding: '10px 14px', background: 'var(--surface-alt)', border: 'none', borderRadius: 14, cursor: 'pointer' }}>
-        <span style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="calendar" size={13} />結束日期</span>
-        <span style={{ fontSize: 14, color: 'var(--text)', fontWeight: 800 }}>{challenge.endDate} ›</span>
+      <button type="button" onClick={() => { setDate(challenge.endDate); setEditing(true); setErr(''); }} style={{ ...UI.row, minHeight: 48, padding: '0 12px', background: 'var(--sunken)', borderRadius: 10 }}>
+        <Icon name="calendar" size={16} style={{ color: 'var(--text-muted)' }} />
+        <span style={{ flex: 1, fontSize: 14, color: 'var(--text-muted)' }}>結束日期</span>
+        <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text)', ...UI.num }}>{challenge.endDate}</span>
+        <Icon name="chevron-right" size={16} style={{ color: 'var(--text-faint)' }} />
       </button>
     );
   }
   return (
-    <div style={{ background: 'var(--surface-alt)', borderRadius: 14, padding: 12 }}>
-      <div style={{ fontSize: 12, fontWeight: 900, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 6 }}>新的結束日期</div>
-      <input aria-label="新的結束日期" type="date" value={date} onChange={(e) => setDate(e.target.value)}
-        style={{ width: '100%', border: 'none', background: 'var(--surface)', borderRadius: 10, padding: '12px 14px', fontSize: 16, fontWeight: 700, color: 'var(--text)' }} />
-      {err && <div style={{ marginTop: 8, fontSize: 12, color: 'var(--danger-ink)', fontWeight: 700 }}>{err}</div>}
-      <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-        <button onClick={save} disabled={busy} style={{ ...primaryBtn, flex: 1, opacity: busy ? 0.6 : 1 }}>{busy ? '儲存中…' : '儲存'}</button>
-        <button onClick={() => setEditing(false)} style={{ ...dangerBtn, background: 'var(--surface)', color: 'var(--text-muted)', flex: 1 }}>取消</button>
+    <div style={S.editBox}>
+      <label><span style={UI.fieldLabel}>新的結束日期</span>
+        <input aria-label="新的結束日期" type="date" value={date} onChange={(e) => setDate(e.target.value)} style={UI.input} />
+      </label>
+      {err && <div style={UI.fieldError}>{err}</div>}
+      <div style={{ display: 'flex', gap: 8 }}>
+        <button type="button" onClick={save} disabled={busy} style={{ ...UI.btnPrimary, flex: 1, minHeight: 44, fontSize: 14, opacity: busy ? 0.6 : 1 }}>{busy ? '儲存中…' : '儲存'}</button>
+        <button type="button" onClick={() => setEditing(false)} style={{ ...UI.btnNeutral, flex: 1, minHeight: 44, background: 'var(--surface)' }}>取消</button>
       </div>
     </div>
   );
@@ -704,12 +705,9 @@ function Avatar({ name, color, size = 32, border = 'none' }) {
   const initial = (raw.startsWith('@') ? raw.slice(1, 2) : raw.slice(0, 1)) || '?';
   return (
     <div style={{
-      width: size, height: size, borderRadius: '50%', background: color || 'var(--text-faint)',
+      width: size, height: size, borderRadius: 999, background: color || 'var(--text-faint)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontSize: Math.round(size * 0.42), fontWeight: 800, color: readableOn(color), flexShrink: 0, border,
+      fontSize: Math.round(size * 0.42), fontWeight: 600, color: readableOn(color), flexShrink: 0, border,
     }}>{initial}</div>
   );
 }
-
-const primaryBtn = { border: 'none', background: 'var(--primary)', color: '#fff', fontWeight: 800, fontSize: 13, padding: '10px 18px', borderRadius: 14, cursor: 'pointer' };
-const dangerBtn = { border: 'none', background: 'var(--danger-bg)', color: 'var(--danger-ink)', fontWeight: 800, fontSize: 13, padding: '10px 18px', borderRadius: 14, cursor: 'pointer' };

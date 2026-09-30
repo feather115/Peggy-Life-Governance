@@ -108,11 +108,6 @@ export function fromDatetimeLocalValue(value) {
 }
 
 // 紀錄的時間顯示：計時項目顯示 HH:mm（有結束時間顯示區間）。全天卡不顯示時間、不會呼叫到這裡。
-export function formatRecordTime(record) {
-  const t = formatTime(record.start_at);
-  return record.end_at ? `${t}–${formatTime(record.end_at)}` : t;
-}
-
 // 合併紀錄 + 當天到期任務成一條時間軸（全天/任務在前，其餘依時間排序），Day/Week/Month 共用
 export function buildDayTimeline(dateRecords, dateTasks) {
   const recordItems = (dateRecords || []).map((r) => ({

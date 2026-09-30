@@ -1,11 +1,27 @@
 // Edits an already added meal item: name/brand/unit/calories/nutrients
 // Only updates this specific record; does not affect food library definitions or historical records of other days.
+// onDelete 選填：今天頁把「刪除」放在這裡（餐點列不再放小 × 鈕），刪完由呼叫端給 5 秒「復原」
 import React, { useState } from 'react';
-import Sheet from './Sheet.jsx';
+import Sheet, { SheetHeader } from './Sheet.jsx';
 import { alertError } from '../utils.js';
 import Icon from '@peggy-life/shared/Icon.jsx';
+import { UI } from '@peggy-life/shared/ui';
 
-export default function EditMealItemSheet({ item, mealLabel, onSave, onClose }) {
+const MACROS = [
+  { key: 'p', label: '蛋白質', color: 'var(--primary-ink)' },
+  { key: 'c', label: '碳水', color: 'var(--carb)' },
+  { key: 'f', label: '脂肪', color: 'var(--fat)' },
+];
+
+const S = {
+  body: { flex: 1, overflowY: 'auto', padding: '4px 20px 24px', display: 'flex', flexDirection: 'column', gap: 16 },
+  hint: { fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5 },
+  cols: (n) => ({ display: 'grid', gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))`, gap: 8 }),
+  macroLabel: { ...UI.fieldLabel, display: 'flex', alignItems: 'center', gap: 6 },
+  dot: (color) => ({ width: 8, height: 8, borderRadius: 4, background: color, flex: 'none' }),
+};
+
+export default function EditMealItemSheet({ item, mealLabel, onSave, onDelete, onClose }) {
   const [form, setForm] = useState({
     name: item.name, brand: item.brand || '', unit: item.unit,
     cal: String(item.cal), p: String(item.p || 0), c: String(item.c || 0), f: String(item.f || 0),
@@ -32,32 +48,34 @@ export default function EditMealItemSheet({ item, mealLabel, onSave, onClose }) 
     }
   };
 
+  const remove = () => {
+    onClose();
+    onDelete();
+  };
+
   return (
-    <Sheet label="編輯餐點" onBackdrop={onClose} height="min(70vh, 640px)" zIndex={12}>
-      <div style={{ padding: '8px 20px 6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ fontSize: 18, fontWeight: 900, color: 'var(--text)' }}>編輯{mealLabel}記錄</span>
-        <button aria-label="關閉" className="tap" onClick={onClose} style={{ border: 'none', background: 'var(--sunken)', color: 'var(--text-muted)', width: 30, height: 30, borderRadius: '50%', cursor: 'pointer', fontSize: 16, lineHeight: 1, fontWeight: 700 }}><Icon name="x" size={14} /></button>
-      </div>
-      <div className="ps" style={{ flex: 1, overflowY: 'auto', padding: '6px 20px 20px' }}>
-        <div style={{ fontSize: 12, color: 'var(--text-faint)', fontWeight: 700, marginBottom: 10 }}>只會更新今天這一筆，不影響食物庫或其他天的記錄</div>
-        <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-muted)' }}>食物名稱</div>
-        <input aria-label="食物名稱" type="text" value={form.name} onChange={setField('name')} style={{ width: '100%', marginTop: 5, border: 'none', background: 'var(--surface-alt)', borderRadius: 14, padding: '12px 14px', fontSize: 16, fontWeight: 700, color: 'var(--text)' }} />
-        <div style={{ marginTop: 12, fontSize: 13, fontWeight: 800, color: 'var(--text-muted)' }}>品牌（選填）</div>
-        <input aria-label="品牌" type="text" value={form.brand} onChange={setField('brand')} placeholder="例如：7-11" style={{ width: '100%', marginTop: 5, border: 'none', background: 'var(--surface-alt)', borderRadius: 14, padding: '12px 14px', fontSize: 16, fontWeight: 700, color: 'var(--text)' }} />
-        <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
-          <div style={{ flex: 1 }}><div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-muted)' }}>份量</div><input aria-label="份量" type="text" value={form.unit} onChange={setField('unit')} style={{ width: '100%', marginTop: 5, border: 'none', background: 'var(--surface-alt)', borderRadius: 14, padding: 12, fontSize: 16, fontWeight: 700, color: 'var(--text)' }} /></div>
-          <div style={{ flex: 1 }}><div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-muted)' }}>卡路里</div><input aria-label="卡路里" type="number" inputMode="numeric" value={form.cal} onChange={setField('cal')} style={{ width: '100%', marginTop: 5, border: 'none', background: 'var(--surface-alt)', borderRadius: 14, padding: 12, fontSize: 16, fontWeight: 700, color: 'var(--text)' }} /></div>
+    <Sheet label="編輯餐點" onBackdrop={onClose} height="min(76vh, 660px)" zIndex={12}>
+      <SheetHeader title={`編輯${mealLabel}記錄`} onClose={onClose} />
+      <div className="ps" style={S.body}>
+        <div style={S.hint}>只會更新這一筆，不影響食物庫或其他天的記錄</div>
+        <label><span style={UI.fieldLabel}>食物名稱</span><input aria-label="食物名稱" type="text" value={form.name} onChange={setField('name')} style={UI.input} /></label>
+        <label><span style={UI.fieldLabel}>品牌（選填）</span><input aria-label="品牌" type="text" value={form.brand} onChange={setField('brand')} placeholder="例如：7-11" style={UI.input} /></label>
+        <div style={S.cols(2)}>
+          <label><span style={UI.fieldLabel}>份量</span><input aria-label="份量" type="text" value={form.unit} onChange={setField('unit')} style={UI.input} /></label>
+          <label><span style={UI.fieldLabel}>卡路里</span><input aria-label="卡路里" type="number" inputMode="numeric" value={form.cal} onChange={setField('cal')} style={UI.input} /></label>
         </div>
-        <div style={{ marginTop: 14, fontSize: 13, fontWeight: 800, color: 'var(--text-muted)' }}>三大營養素 (g)</div>
-        <div style={{ marginTop: 5, display: 'flex', gap: 8 }}>
-          {[{ key: 'p', label: '蛋白質', color: 'var(--primary-ink)' }, { key: 'c', label: '碳水', color: 'var(--carb-ink)' }, { key: 'f', label: '脂肪', color: 'var(--fat-ink)' }].map((m) => (
-            <div key={m.key} style={{ flex: 1 }}>
-              <div style={{ fontSize: 12, fontWeight: 800, color: m.color, marginBottom: 3 }}>{m.label}</div>
-              <input aria-label={m.label} type="number" inputMode="decimal" value={form[m.key]} onChange={setField(m.key)} style={{ width: '100%', border: 'none', background: 'var(--surface-alt)', borderRadius: 14, padding: '12px 10px', fontSize: 16, fontWeight: 700, color: 'var(--text)' }} />
-            </div>
+        <div style={S.cols(3)}>
+          {MACROS.map((m) => (
+            <label key={m.key}>
+              <span style={S.macroLabel}><span style={S.dot(m.color)} />{m.label} (g)</span>
+              <input aria-label={m.label} type="number" inputMode="decimal" value={form[m.key]} onChange={setField(m.key)} style={UI.input} />
+            </label>
           ))}
         </div>
-        <button onClick={save} disabled={!canSave || busy} style={{ width: '100%', marginTop: 18, border: 'none', background: canSave ? 'var(--primary)' : 'var(--line-strong)', color: '#fff', fontWeight: 900, fontSize: 14, padding: 14, borderRadius: 14, cursor: 'pointer' }}>{busy ? '儲存中…' : '儲存修改'}</button>
+        <button type="button" onClick={save} disabled={!canSave || busy} style={{ ...UI.btnPrimary, width: '100%', marginTop: 4, opacity: canSave ? 1 : 0.4 }}>{busy ? '儲存中…' : '儲存修改'}</button>
+        {onDelete && (
+          <button type="button" onClick={remove} style={{ ...UI.btnDangerText, alignSelf: 'center' }}><Icon name="trash" size={16} />刪除這筆</button>
+        )}
       </div>
     </Sheet>
   );

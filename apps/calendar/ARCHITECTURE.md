@@ -21,7 +21,7 @@ LIFF 連結在 LINE App 裡直接開啟並自動登入。
 `2026-07-15_merge_diary_into_events.sql`**（把 `diary_entries` 併進 `events`、時間以
 Asia/Taipei 換算成 `start_at`），跑完前新版程式碼會查不到新欄位。
 
-視覺風格照 Claude Design 產出的「TY Calendar Design System」設計稿實作（柔和藍主題）。
+視覺風格：2026-09-30 起跟另外兩個 app 用同一套介面規範（共用中性色、Figtree 字型、`@peggy-life/shared/ui` 的元件樣式），本 app 只有主色是霧藍（`#3F6AA1`）。原本照「TY Calendar Design System」設計稿做的柔和藍主題已被取代。
 
 ---
 
@@ -46,7 +46,7 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
   `useTasks()` 有關，但「目前在看哪個 tab」統一由 `useRecords.view` 控制，不要另外開一份 view state。
 - **回到 app 自動更新**：`App.jsx` 用 `@peggy-life/shared/useRefreshOnReturn`，切到別的 app（LINE 聊天、鎖螢幕）**超過 30 秒**再回來，就呼叫資料中樞的 `refresh()` 靜默重抓。refresh 不動 `loaded`（畫面不會閃回載入中），失敗只 console.warn、保留舊資料。四個中樞（`useRecords`/`useDiaryTags`/`useTasks`/`useOptions`）各有 `refresh()`；`useDiaryTags.refresh` 抓到空的就不動（預設分類種子只在初次載入做）。
 - **提示與確認**：不用瀏覽器原生 `alert`/`confirm`（在 LINE 內建瀏覽器會帶網址當標題、卡住畫面），一律用 `@peggy-life/shared/feedback.jsx` 的 `toast(message, { tone, action })` 與 `await confirmDialog({ title, message, confirmText, danger })`。`main.jsx` 在 `<Root />` 旁邊掛了 `<FeedbackHost />`。確認框焦點預設在「取消」、Esc/返回鍵/點背景都是取消。紀錄表單的未儲存防呆、選項庫永久刪除、刪除分類細節都用 `confirmDialog`；勾掉任務後的「已完成…下次到期」也改用共用 toast（原本是 App.jsx 自己的）。
-- **icon 與 emoji**：操作與標示用途一律用 `@peggy-life/shared/Icon.jsx`（線條 icon，路徑取自 Lucide；`filled` 可做實心，例如已按讚的愛心）——emoji 在 iOS/Android/LINE 長得不一樣、大小也不齊。**只有內容性的 emoji 保留**：餐別圖示、挑戰頁的 🏆🥇🔥 標題（遊戲化的趣味）、沒有圖片時的 🍳 佔位。
+- **icon 與 emoji**：操作與標示用途一律用 `@peggy-life/shared/Icon.jsx`（線條 icon，路徑取自 Lucide；`filled` 可做實心，例如已按讚的愛心）——emoji 在 iOS/Android/LINE 長得不一樣、大小也不齊。2026-09-30 改版後**介面完全不用 emoji**：地點/同伴用 `map-pin` / `user` icon，管理頁的 ▲▼ ‹ › ▾▸ × 也都換成 icon。
 - **載入/失敗畫面**：`@peggy-life/shared/LoadingSkeleton.jsx` 的 `<LoadingSkeleton />`（灰色色塊排出版面、`.skeleton` 閃爍動畫在 base.css）與 `<LoadError message />`（說明＋「重新載入」按鈕）。
 - **其他 App 入口**：設定頁的 `<OtherApps current="…" />`（shared），連到另外兩個 app 的 LIFF URL；LIFF ID 來自 `VITE_LIFF_ID_CALORIE` / `VITE_LIFF_ID_RECIPE` / `VITE_LIFF_ID_CALENDAR`，沒設就不顯示（見 `.env.example`）。
 - **表單錯誤訊息**（紀錄/任務/選項庫）：`role="alert"`，出現時用 `utils.js` 的 `scrollIntoViewOnMount` 捲到畫面中間（`key={error}` 讓訊息改變時重新捲動）。不能用 smooth 捲動——錯誤框插在頁面上方時瀏覽器的捲動錨定會把動畫中斷，實測會停在錯誤框上面看不到。
@@ -57,14 +57,15 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
 
 | 你想改的東西 | 檔案 |
 |---|---|
-| **配色（變數名）、圓角、陰影、事件顏色選項** | `src/theme.js` |
+| **配色（變數名）、事件顏色選項** | `src/theme.js`（圓角、陰影與元件樣式在 `packages/shared/src/ui.js`） |
 | **色票值（CSS 變數）/ 焦點環等全域樣式** | `src/theme.css` + `packages/shared/src/base.css` |
+| **共用元件樣式（頁首、分組清單、按鈕、膠囊、輸入框、FAB，三個 app 一致）** | `packages/shared/src/ui.js` → `UI` |
 | **月檢視（格線月曆、紀錄/任務圓點、選中日摘要卡 + 在選中日新增）** | `src/components/MonthView.jsx` |
-| **週檢視（7 天直向列表，含紀錄+任務時間軸，每天標題有 ＋）** | `src/components/WeekView.jsx` |
+| **週檢視（7 天各一張卡片，含紀錄+任務時間軸，每天標題有 ＋）** | `src/components/WeekView.jsx` |
 | **日檢視（紀錄+任務合併時間軸、新增按鈕）** | `src/components/DayView.jsx` |
-| **底部導覽列（月/週/日/任務）** | `src/components/ViewTabs.jsx` |
-| **header 的「今天」與設定按鈕、右下角浮動 ＋ 按鈕** | `src/App.jsx` |
-| **時間軸卡的共用渲染與點擊行為（紀錄卡/任務卡、分類標籤 chip、地點/同伴小字）** | `src/components/TimelineItems.jsx` |
+| **底部導覽列（月/週/日/任務）** | `src/components/ViewTabs.jsx`（外觀在 `packages/shared/src/BottomTabs.jsx`） |
+| **頁首（各檢視的標題/副標、‹ › 翻頁、離開今天才出現的「回到今天」、設定按鈕）、右下角浮動 ＋ 按鈕** | `src/App.jsx` → `headerInfo()` |
+| **時間軸的共用渲染與點擊行為（紀錄列/任務列、分類標籤 chip、地點/同伴小字）** | `src/components/TimelineItems.jsx` |
 | **任務「標記完成」行內確認列（選完成日期 → 確認；任務列表與時間軸共用）** | `src/components/TaskCompleteRow.jsx` |
 | **新增/編輯紀錄表單（標題在最上面；計畫面：顏色/標籤/備註；回顧面：今天感覺/＃注記/分類標籤，可收合）** | `src/components/RecordForm.jsx` |
 | **時間選擇（預設 30 分鐘一格下拉選單，可切換手動輸入）** | `src/components/TimeSelect.jsx` |
@@ -91,17 +92,20 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
 
 ## 樣式與設計 tokens
 
-- **色票 = CSS 變數**：`src/theme.css` 的 `:root` 定義色票（`src/theme.js` 的 `THEME` 只是把變數名包成 JS 常數，值是 `'var(--…)'`）（`--bg / --surface / --text / --text-muted / --text-faint / --primary / --line / --danger …`）與陰影（`--shadow-card / --shadow-nav / --shadow-sheet`）。元件 inline style 一律寫 `THEME.xxx`，**不要再寫死色碼**；要換色只改 `theme.css`。三個 app 變數名相同、色值不同（綠 / 橘棕 / 藍）。
+- **色票 = CSS 變數**：`src/theme.css` 的 `:root` 定義色票（`src/theme.js` 的 `THEME` 只是把變數名包成 JS 常數，值是 `'var(--…)'`）（`--bg / --surface / --text / --text-muted / --text-faint / --primary / --line / --danger …`）與陰影（`--shadow-card / --shadow-nav / --shadow-sheet / --shadow-float`）。元件 inline style 一律寫 `THEME.xxx`（或共用的 `UI`），**不要再寫死色碼**；要換色只改 `theme.css`。三個 app 變數名相同；**中性色（底色、線、文字）與語意色三個 app 共用同一組暖白色票**，只有主色不同（綠 / 橘棕 / 霧藍 `#3F6AA1`）。
+- **卡片不加陰影**：`--shadow-card` 是 1px 邊線（`0 0 0 1px var(--line)`），導覽列上緣 `--shadow-nav` 也是一條線；只有浮在上層的東西（FAB、toast）用 `--shadow-float`。
+- **共用元件樣式**：頁首、分組清單、按鈕、膠囊、輸入框、FAB 都用 `@peggy-life/shared/ui` 的 `UI`（用法見 `docs/new-app-sop.md` 第 6 節），本 app 的 `S` 只放位置、寬度與特有元件（月曆格、時間軸列、表單）。字型是 Figtree（`index.html` 載 400/500/600）＋系統中文字型。
 - **共用全域樣式**：`packages/shared/src/base.css`（由 `main.jsx` import）— reset、`:focus-visible` 焦點環（`--ring`）、按鈕按壓回饋、`prefers-reduced-motion`、`.tap`（把小按鈕點擊範圍撐到 ≥44px，不影響版面）、`.ps`（隱藏捲軸）。因為 inline style 優先級高於 CSS，**元件裡不可再寫 `outline: 'none'`**，否則焦點環會被蓋掉。
-- **實心底色 vs 字色（*-ink）**：`--primary / --info / --danger / --success` 是實心底色（上面放白字，使用者存的標籤色也可能是 `var(--primary)`）；**當字色用一律寫 `*-ink`**（`var(--primary-ink)`）。淺色模式兩者同色，深色模式 ink 比較亮，深底上才讀得到。本 app 另有 `--primary-strong`（＃注記字色）、`--band-1 / --band-2`（週檢視日期色帶）、`--cat-1～5`（日記分類強調色，`theme.js` 的 `CATEGORY_ACCENTS` 指向它們）、`--warning-ink / --warning-bg`、`--toast-offset`。`THEME.primaryInk / errorInk / successInk` 是字色版本。
+- **實心底色 vs 字色（*-ink）**：`--primary / --info / --danger / --success` 是實心底色（上面放白字，使用者存的標籤色也可能是 `var(--primary)`）；**當字色用一律寫 `*-ink`**（`var(--primary-ink)`）。淺色模式兩者同色，深色模式 ink 比較亮，深底上才讀得到。本 app 另有 `--primary-strong`（＃注記字色）、`--cat-1～5`（日記分類強調色，`theme.js` 的 `CATEGORY_ACCENTS` 指向它們）、`--warning-ink / --warning-bg`、`--toast-offset`。`THEME.primaryInk / errorInk / successInk` 是字色版本。
 - **深色模式**：`theme.css` 的 `@media (prefers-color-scheme: dark)` 區塊整組換色，跟著手機系統設定；元件不用改。新增顏色時兩個模式都要給值，不要在元件裡寫死色碼（寫死的白底在深色模式會變成一塊亮白）。
 - **對比度有測試守著**：`packages/shared/src/themeContrast.test.js` 檢查淺色/深色兩組色票：文字與 *-ink 在 `--surface / --bg / --surface-alt` 上 ≥4.5:1、*-ink 在對應的淡色底上 ≥4.5:1、`--primary / --info / --danger` 上的白字 ≥4.5:1。改色後跑 `npm test`。
-- **icon**：`@peggy-life/shared/Icon.jsx`（內建線條 SVG，`<Icon name="pencil" />`，`aria-hidden`）。icon-only 按鈕必須加 `aria-label`；小按鈕加 `className="tap"`。內容性 emoji（餐別圖示等）保留，UI 操作符號（✏ × ＋ ‹ ›）用 `Icon`。
+- **icon**：`@peggy-life/shared/Icon.jsx`（內建線條 SVG，`<Icon name="pencil" />`，`aria-hidden`）。icon-only 按鈕必須加 `aria-label`；小按鈕加 `className="tap"`。UI 操作符號（✏ × ＋ ‹ ›）一律用 `Icon`，介面不放 emoji。
 - **表單欄位**：每個 `<input>/<textarea>/<select>` 都要有 `aria-label`（或 `<label>` 包住）；只靠 placeholder 不算。
 - **viewport 不鎖縮放**（無 `maximum-scale` / `user-scalable=no`）；為了避免 iOS 聚焦輸入框自動放大，`base.css` 在觸控裝置把輸入框強制 16px。
-- **尺寸規格**：字級只用 12/13/14/15/16/18/20/24（28 以上是大數字），圓角只用 8/10/14/20/28/999（5 以下的細節不限）。`packages/shared/src/designScale.test.js` 會掃所有元件，寫了規格外的值 `npm test` 會失敗。
-- **`ViewTabs.jsx`**：底部導覽列用 `aria-current="page"` 標示目前檢視。
-- **浮動 ＋ 按鈕（FAB）**：`App.jsx` 在日檢視（新增這一天的紀錄，`aria-label` 帶日期）與任務檢視（新增任務）顯示在右下角、導覽列上方；日檢視/任務列表底部留 96px 空間避免最後一張卡被蓋住。共用 toast 在這個 app 用 `--toast-offset:148px` 抬高，不會壓到 FAB。
+- **尺寸規格**：字級只用 12/13/14/15/16/18/24（28 以上是大數字），圓角只用 10/14/20/999（5 以下的細節不限），字重只用 400/500/600。`packages/shared/src/designScale.test.js` 會掃所有元件（含 `theme.js` 與 `ui.js`），寫了規格外的值 `npm test` 會失敗。
+- **`ViewTabs.jsx`**：只定義四個檢視（key / 文字 / icon），外觀是共用的 `@peggy-life/shared/BottomTabs.jsx`（選中的是淡主色膠囊＋`aria-current="page"`）。
+- **頁首**：`App.jsx` 的 `headerInfo()` 依檢視算標題與副標（月「9 月」/「2026 年」、週「9/27 – 10/3」/「2026 年」、日「9 月 30 日」/「今天 · 週三」、任務「任務」/「共 N 項 · 依到期日排序」），右邊是 ‹ ›（任務檢視沒有）與設定圓鈕；不在今天所在的月/週/日時，副標旁才出現「回到今天」膠囊。各檢視不再有自己的導覽列（原本的 `onShift` / `onShiftDay` prop 已拿掉）。
+- **浮動 ＋ 按鈕（FAB）**：`App.jsx` 在日檢視（新增這一天的紀錄，`aria-label` 帶日期）與任務檢視（新增任務）顯示在右下角、導覽列上方（樣式是 `UI.fab`）；日檢視/任務列表底部留 100px 空間避免最後一張卡被蓋住。共用 toast 在這個 app 用 `--toast-offset:160px` 抬高，不會壓到 FAB。
 
 ## 每個檔案在幹嘛
 
@@ -113,8 +117,8 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
   所有覆蓋畫面（紀錄/任務表單、設定、管理標籤/選項）用**單一 `overlay` state 物件**管理
   （`null | { type: 'record'|'task', mode, ... } | { type: 'settings' } |
   { type: 'manageTags' } | { type: 'manageOptions' }`），`renderOverlay()` 依 type switch。
-  header 只剩標題 + ⚙ 齒輪按鈕（開設定頁），登出按鈕移到設定頁裡（跟
-  calorie-tracker/recipe-book 一致，手機上省一顆常駐按鈕）。
+  頁首由 `headerInfo()` 決定標題/副標，右邊是 ‹ ›（`rec.shiftPeriod`）與設定圓鈕，離開今天時副標旁出現
+  「回到今天」（`rec.goToday`）；登出按鈕在設定頁裡（跟 calorie-tracker/recipe-book 一致）。
   **操作相關**：內容區在月/週/日檢視可**左右滑動翻頁**（水平位移 >60px 且明顯大於垂直位移才算，
   在輸入框上起手不算；呼叫 `rec.shiftPeriod`）；**手機返回鍵**用 `@peggy-life/shared/useBackClose`
   關閉覆蓋畫面（管理頁回設定頁、其他直接關；紀錄表單自己處理，見 RecordForm）；在時間軸上勾掉任務後
@@ -177,13 +181,13 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
   等價——`isInClient()` 為 false 時所有 LINE 功能本來就不會啟動。
 
 ### 無狀態工具
-- **`src/theme.js`** — 視覺常數集中地：`THEME`（配色/圓角/陰影）、`EVENT_COLORS`
+- **`src/theme.js`** — 視覺常數集中地：`THEME`（配色；圓角與陰影改用共用的 `UI`）、`EVENT_COLORS`
   （事件顏色的 7 個預設色，2026-09-30 換成清新色系：天空藍/湖水綠/嫩芽綠/蜂蜜黃/蜜桃橘/薰衣草/櫻花粉，
   亮度一致、白底對比 ≥3:1 讓月曆小圓點看得清楚；紀錄也可以存任意自訂色碼，見 RecordForm）、`categoryAccentForTag(tag, categories)`（日記標籤依所屬分類
   在清單裡的順序固定分配一個強調色，不是存在資料庫裡的欄位；強調色是 12px 小字、放在淡藍底上，每色都要 ≥4.5:1）。
 - **`src/utils.js`** — 日期字串轉換（`dateKeyFrom`/`parseDateKey`）、月曆格線
   （`getMonthDays`）、週的 7 天（`getWeekDays`）、紀錄分組（`groupRecordsByDate`，依
-  `start_at`～`end_at` 涵蓋的每個本地日期分組（結束日期包含在內）、`formatRecordTime(record)`（計時卡的 HH:mm，有 `end_at` 顯示區間）、
+  `start_at`～`end_at` 涵蓋的每個本地日期分組（結束日期包含在內））、
   `buildDayTimeline(records, tasksDueToday)`（把某天的紀錄+到期任務合併成一條依時間排序的
   時間軸，Month/Week/Day 三個檢視共用同一個函式，行為才會一致；紀錄排序 key 用
   `formatTime()` 轉本地時間——`start_at` 是 UTC 字串，直接 slice 會拿到 UTC 時刻而錯位）、
@@ -193,41 +197,39 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
   跑 vitest，用本地時間建測資，不受執行環境時區影響）。
 
 ### 畫面（`src/components/`）
-- **`ViewTabs.jsx`** — **底部導覽列**：月/週/日/任務四個檢視（icon + 文字、`aria-current`，底部留 `safe-area`）。
-  2026-09-30 從頂端的分段按鈕移到底部，跟另外兩個 app 一致、單手拇指按得到。「今天」按鈕移到 `App.jsx`
-  header 右側（任務檢視不顯示，任務列表沒有「翻頁到某一天」的概念）。
+- **`ViewTabs.jsx`** — **底部導覽列**：月/週/日/任務四個檢視（icon + 文字、`aria-current`，底部留 `safe-area`；外觀是共用的 `BottomTabs`）。
+  2026-09-30 從頂端的分段按鈕移到底部，跟另外兩個 app 一致、單手拇指按得到。「回到今天」在 `App.jsx`
+  頁首副標旁，只有離開今天時才出現（任務檢視不顯示，任務列表沒有「翻頁到某一天」的概念）。
 - **`TimelineItems.jsx`** — ⭐ **時間軸卡片的共用渲染**。之前 Week/Month/Day 各自複製
   一份渲染邏輯，連續好幾個需求都要三個檢視改三遍，所以抽出來：Week 的每日清單、Month
   的選中日摘要卡、Day 的當日清單**全部**直接用 `<TimelineItems>`。合併後只剩兩種項目：
-  **紀錄卡（record）** 與 **任務卡（task）**。紀錄卡是白卡版型（`THEME.border` 邊框）、
-  **時間獨立一行放卡片頂端**（13px 粗體，`formatRecordTime`），由上而下把有的欄位疊出來：
-  `title`（計時卡與全天卡皆為 15px，標題前不顯示紀錄顏色點）→
-  `description`（計畫備註）→ `note`（今天的感覺，`pre-wrap`）→ ＃`hashtags` pill（深藍
-  `hashtagBg`/`hashtagInk`）→ 選項庫 `tags` 中性 chip → 分隔線 → 底部一行（`footerRow`）：
-  分類 `diary_tags`（`DiaryTags`，依分類上色）後面同一行接資訊列（每個地點各自一個 📍 span、
-  所有同伴合併成一個 👤 span、以 `, ` 分隔並完整顯示，共用 `<MetaRow>`）。分隔線只在下段有內容時出現；
-  什麼都沒有的紀錄顯示「✎ 這則紀錄還沒有內容」。任務卡是虛線邊框 + 左邊圓形勾選框 + 「任務 · 每 X 一次」。
+  **紀錄列（record）** 與 **任務列（task）**。2026-09-30 改版後是「白卡裡的一列一列」：外層白卡由各檢視提供，
+  列與列之間細線分隔。紀錄列**左欄 44px 放時間**（開始時間，有 `end_at` 時下面小字接結束時間，`formatTime`；
+  全天紀錄左欄留空），右欄由上而下把有的欄位疊出來：
+  `title`（計時與全天皆為 15px，**標題前不放紀錄顏色點**）→
+  `description`（計畫備註）→ `note`（今天的感覺，`pre-wrap`）→ ＃`hashtags`（深藍字 `hashtagInk`）與
+  選項庫 `tags` 中性標籤（`UI.tag`）→ 分類 `diary_tags`（`DiaryTags`，依分類上色）→ 資訊列（每個地點各自一個
+  `map-pin` icon span、所有同伴合併成一個 `user` icon span、以 `, ` 分隔並完整顯示，共用 `<MetaRow>`）。
+  什麼都沒有的紀錄顯示「這則紀錄還沒有內容」（鉛筆 icon）。任務列左欄是圓形勾選框，右邊是標題＋「任務 · 每 X 一次」。
   **點擊行為（三個檢視完全一樣）**：紀錄卡 → 開編輯表單；任務標題 → 開任務編輯表單；任務的**圓圈** →
   在卡片內展開 `TaskCompleteRow`（完成日期預設今天 → 確認完成），不用跳到任務頁。
   `onRecordClick`/`onTaskClick`/`onTaskComplete` 是選填 prop，有傳才可點；可點的卡片是 `<button>`。
-- **`MonthView.jsx`** — 格線月曆，日期下方顯示紀錄顏色圓點（最多 3 個不同色，沒設顏色的
+- **`MonthView.jsx`** — 格線月曆（換月在 `App.jsx` 頁首），日期下方顯示紀錄顏色圓點（最多 3 個不同色，沒設顏色的
   紀錄退回 `theme.primaryDark`）+ 任務小方點（`theme.textMuted`），圖例列說明兩種點。
   日期格是 `<button>`（`aria-pressed` 標示選中、`aria-label` 念出紀錄數/有無任務）。
   點日期只會「選中」（`onSelectDay`），不離開月檢視；下方的「選中日摘要卡」用
   `<TimelineItems>` 顯示該天的合併時間軸，點擊行為跟日檢視一樣；點摘要卡標題列是
   `onOpenDay` 跳日檢視；**摘要卡底部有「＋ 新增 M/D 的紀錄」**，直接在選中的那天新增。
-- **`WeekView.jsx`** — 一週 7 天直向列表，週導覽是獨立白色區塊；每天的日期標題依序用
-  淡霧藍、灰藍兩個相近色帶交錯區分。**日期標題（「9/30 週三 ›」）點了跳日檢視**、標題右邊的
-  **「＋」直接在那天新增紀錄**；下方 `<TimelineItems>` 的卡片點擊行為跟月/日檢視一樣
+- **`WeekView.jsx`** — 一週 7 天直向列表，**每天一張白卡**（選中的那天——預設今天——用 2px 主色外框，今天另有「今天」標籤；原本淡霧藍/灰藍交錯的
+  日期色帶在改成分開的卡片後拿掉了），翻週在 `App.jsx` 頁首。**日期標題（「9/30 週三 ›」）點了跳日檢視**、標題右邊的
+  **「＋」直接在那天新增紀錄**；沒有事件的日子顯示「沒有事件」；下方 `<TimelineItems>` 的卡片點擊行為跟月/日檢視一樣
   （2026-09-30 以前整個日列都是「跳日檢視」，卡片本身不能點，跟另外兩個檢視不一致）。
 - **`DayView.jsx`** — 單日紀錄+任務合併時間軸（`buildDayTimeline` + `<TimelineItems>`，
-  卡片版型與點擊行為見上），可切換前一天/後一天（‹ › 或左右滑動），日期旁邊顯示「今天」徽章，
+  卡片版型與點擊行為見上），前一天/後一天在 `App.jsx` 頁首（‹ › 或左右滑動），今天時頁首副標寫「今天 · 週X」，
   新增紀錄用右下角的浮動 ＋ 按鈕（在 `App.jsx`）。
-- **全天項目的呈現** — 跟計時項目**同一套卡片版型**，只差兩件事：**不顯示時間列**
-  （不寫「全天」文字——使用者反饋在時間位置寫「全天」很生硬），**底色改稍深的淺藍**
-  （`allDayCard`＝`THEME.primarySoft`、無邊框）跟白卡區分。淺藍底上的 chip 要換
-  白底才不會被吃掉：分類標籤 chip 走 `DiaryTags onTint`、＃注記 pill 與選項庫標籤
-  chip 直接換 `THEME.surface`（`hashtagBg` 跟 `primarySoft` 剛好同色）。
+- **全天項目的呈現** — 跟計時項目**同一套列版型**，只差左欄**不顯示時間**
+  （不寫「全天」文字——使用者反饋在時間位置寫「全天」很生硬），排在計時項目前面。
+  2026-09-30 改成列版型後不再用淺藍底區分（原本的 `allDayCard` 與 `DiaryTags` 的 `onTint` 已移除）。
 - **`RecordForm.jsx`** — 新增/編輯紀錄的**單一表單**（合併前的 `EventForm` + `DiaryForm`）。
   **最上面是標題**（新增模式輸入時列出過去相同標題建議，點擊帶入標題+顏色），接著是時間區
   （全天開關、開始/結束時間，日期 `<input type="date">` + `TimeSelect`）+
@@ -272,17 +274,15 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
     `<select>`（「＋ 選擇加入…」）列出未選的全部選項。`history` 項目可以是字串或
     `{ value, label }`——事件標籤用後者，子標籤 label 帶「└ 」縮排、選了存的是純名字。
     表單 state 直接就是陣列。推薦 chip 用 `onMouseDown preventDefault` 避免先觸發輸入框 blur。
-- **`Settings.jsx`** — 設定頁，從 header ⚙ 按鈕進入。最上面是帳號卡片：顯示目前登入的
-  email（LINE 登入的帳號是 `line-<sub>@line.invalid` 這種假 email，會轉成
+- **`Settings.jsx`** — 設定頁，從頁首的設定圓鈕進入，跟另外兩個 app 同一個分組清單版型。頂列是返回圓鈕＋「設定」，
+  下面一行是目前登入的 email（LINE 登入的帳號是 `line-<sub>@line.invalid` 這種假 email，會轉成
   `LINE: U1234...wxyz` 遮罩顯示，邏輯跟 calorie-tracker/recipe-book 的 `Auth.jsx`/
-  `SettingsTab.jsx` 一致）+ `NicknameEditor`（內部元件：輸入框+儲存，讀寫
+  `SettingsTab.jsx` 一致）。分組由上而下：**個人資料**（`NicknameEditor`，內部元件：輸入框+儲存，讀寫
   `db.js` 的 `loadMyDisplayName`/`updateDisplayName`，也就是跨 app 共用的
   `shared.user_profiles.display_name`——在這裡改暱稱，calorie-tracker、recipe-book
-  的設定頁會立刻看到同一個名字，反過來也一樣）+ `LineLinker`（內部元件，見下）；
-  下面是「管理日記分類與標籤」一列（點下去切到 `ManageTags.jsx`）、「管理地點、
-  人名與事件標籤」一列（切到 `ManageOptions.jsx`）和**「登出」一列**
-  （紅字置中，登出按鈕從主畫面 header 移過來的，跟 calorie-tracker/recipe-book 的
-  設定頁一致），之後有新設定項目直接加在清單裡。
+  的設定頁會立刻看到同一個名字，反過來也一樣）→ **管理**（「日記分類與標籤」一列切到 `ManageTags.jsx`、
+  「地點、人名與事件標籤」一列切到 `ManageOptions.jsx`）→ 其他 App → **帳號**（`LineLinker`，內部元件，見下）→
+  「登出」按鈕（跟 calorie-tracker/recipe-book 的設定頁一致），之後有新設定項目直接加在「管理」這組裡。
   **`LineLinker`** 只負責畫面，連結狀態邏輯是三個 app 共用的 `useLineLinked('calendar:line-linked')`
   （`packages/shared/src/lineAuth.js`）：`checkLineLinked()`
   查到 `true` 就寫進 `localStorage`（key `calendar:line-linked`），下次開 app 先用快取
@@ -290,7 +290,7 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
   閃一下「未連結」又跳回「已連結」；「連結 LINE 帳號」按鈕只有 `canLinkLine()` 為
   true（在 LINE App 裡開啟且 LIFF 已登入）才會顯示，一般瀏覽器打開看不到這顆按鈕。
 - **`ManageTags.jsx`** — 管理分類與標籤，**三層結構：分類 → 主標籤 → 子標籤**
-  （2026-07-09 改版，版型參考外部 mockup、配色沿用 THEME）。分類卡片頂列：▲▼ 調整
+  （2026-07-09 改版，版型參考外部 mockup、配色沿用 THEME；2026-09-30 起下面提到的 ▲▼ ‹ › ▾/▸ × 都換成 `Icon` 線條圖示，行為不變）。分類卡片頂列：▲▼ 調整
   分類順序（`useDiaryTags.moveCategory`，跟相鄰分類互換 `sort_order`，邊界 disable）、
   點名稱行內改名（`InlineName` 內部元件：span ↔ 底線 input，Enter/失焦送出、Esc 取消，
   分類/主標籤/子標籤三層共用）、▾/▸ 收合整個分類、刪除分類（兩段確認，連動清掉既有
@@ -320,12 +320,12 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
   同步改寫過去引用的紀錄（`locations`/`people`/`tags`），跟 `renameTagInCategory` 同一套
   「前端 Promise.all 迴圈、不是 DB cascade」的做法）、**使用次數**（前端從已載入的
   紀錄算的：地點/人名/選項庫標籤各自計數）、**封存/恢復**（封存只影響之後的
-  選單，過去紀錄照舊）、**永久刪除 🗑**（只有使用 0 次、而且標籤底下沒有子標籤時才
-  出現，按了還有 `window.confirm` 確認）。每個區塊底部有虛線的「＋ 新增，按 Enter」
+  選單，過去紀錄照舊）、**永久刪除**（垃圾桶 icon；只有使用 0 次、而且標籤底下沒有子標籤時才
+  出現，按了還有 `confirmDialog` 確認）。每個區塊底部有虛線的「＋ 新增，按 Enter」
   輸入列；新增撞到已封存的同名項目時直接幫它恢復（不會建重複的）。選項庫載入失敗
   （例如 migration 還沒跑）時頁面頂端顯示錯誤提示，其他功能不受影響。
-- **`TasksView.jsx`** — 任務列表，依到期日排序，狀態文字依 `diffDays` 顯示「已逾期 N 天」
-  （紅）/「今天到期」（主色）/「N 天後到期」（灰）。每筆有「✓ 標記完成」按鈕（展開
+- **`TasksView.jsx`** — 任務列表，依到期日排序，狀態標籤（`UI.tag`）依 `diffDays` 顯示「已逾期 N 天」
+  （紅）/「今天到期」（主色）/「N 天後到期」（灰）。每筆有「標記完成」按鈕（check icon，展開
   `TaskCompleteRow`，確認後呼叫 `onComplete`，跟時間軸同一個流程）、「歷史紀錄 (N)」（有完成過才顯示，
   展開列出過去完成日期）、「刪除」（兩段確認）。`show_on_calendar=false` 的任務會標註
   「不會顯示在行事曆」。新增任務是右下角的浮動 ＋ 按鈕（跟日檢視同一個位置）。
@@ -348,7 +348,7 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
 |---|---|---|---|---|
 | 新增紀錄 | 摘要卡底部「＋ 新增 M/D 的紀錄」 | 每天標題右邊「＋」 | 右下角浮動 ＋ | —（右下角浮動 ＋ 是新增任務） |
 | 開紀錄編輯 | 點紀錄卡 | 點紀錄卡 | 點紀錄卡 | — |
-| 勾掉任務 | 點任務圓圈 | 點任務圓圈 | 點任務圓圈 | 「✓ 標記完成」 |
+| 勾掉任務 | 點任務圓圈 | 點任務圓圈 | 點任務圓圈 | 「標記完成」 |
 | 開任務編輯 | 點任務標題 | 點任務標題 | 點任務標題 | 點任務標題 |
 | 翻頁 | ‹ › / 左右滑 | ‹ › / 左右滑 | ‹ › / 左右滑 | — |
 
@@ -409,8 +409,8 @@ createAppSupabase({ schema: 'calendar' })
 | `end_at` | timestamptz | 結束時間（選填） |
 | `all_day` | boolean | 是否全天 |
 | `color` | text | 顏色（`EVENT_COLORS` 其中一個 hex，選填；月檢視圓點用它，沒設退回 `primaryDark`） |
-| `locations` | text[] | 地點，可多個（合併時把舊 `events.location` 單值併進來；顯示各帶一個 📍） |
-| `people` | text[] | 同伴（選填，顯示帶 👤） |
+| `locations` | text[] | 地點，可多個（合併時把舊 `events.location` 單值併進來；顯示各帶一個地點 icon） |
+| `people` | text[] | 同伴（選填，顯示帶人像 icon） |
 | `tags` | text[] | **選項庫標籤**（「這是什麼」，存純名字；選單與母/子階層由 `event_options` 管理） |
 | `diary_tags` | text[] | **分類標籤**（「感受」，存純名字；字彙由 `tag_categories` 管理，見 `useDiaryTags`） |
 | `tag_details` | jsonb | `diary_tags` → 細節文字的 map，例如 `{"追劇":"想見你 EP5"}`。只有真的填了才有 key（`RecordForm` 存檔前清掉沒填/已取消選取的殘留 key） |
@@ -440,7 +440,7 @@ createAppSupabase({ schema: 'calendar' })
   改成 `[{ "name": "運動", "subs": ["跑步"] }]` 支援子標籤；migration 會把舊字串
   元素自動包成物件（可重跑），也會修復 migration 沒跑期間 app 寫進 `text[]` 被
   PostgREST 壓成 JSON 字串的元素（解析回物件），前端 `useDiaryTags.normalizeCategories()` 另外兜底 |
-| `sort_order` | int | 使用者自訂的顯示順序（`ManageTags.jsx` 的 ▲▼ 按鈕調整），`loadCategories`
+| `sort_order` | int | 使用者自訂的顯示順序（`ManageTags.jsx` 的上/下箭頭按鈕調整），`loadCategories`
   依此排序，不是 `created_at` |
 | `created_at` | timestamptz | 建立時間 |
 

@@ -33,8 +33,8 @@ export default function App({ session, onSignOut }) {
   };
 
   return (
-    <div style={{ position: 'relative', width: '100%', maxWidth: 520, height: '100vh', maxHeight: '100dvh', margin: '0 auto', background: 'var(--bg)', display: 'flex', flexDirection: 'column', boxShadow: '0 0 60px -20px rgba(0,0,0,.12)', overflow: 'hidden' }}>
-      <div className="ps" style={{ flex: 1, overflowY: 'auto', paddingTop: 8 }}>
+    <div style={{ position: 'relative', width: '100%', maxWidth: 520, height: '100vh', maxHeight: '100dvh', margin: '0 auto', background: 'var(--bg)', display: 'flex', flexDirection: 'column', boxShadow: '0 0 0 1px var(--line)', overflow: 'hidden' }}>
+      <div className="ps" style={{ flex: 1, overflowY: 'auto' }}>
         {tab === 'today' && (
           <TodayTab app={app} selectedDate={selectedDate} setSelectedDate={setSelectedDate}
             onOpenSheet={setSheetMeal} onOpenAdvanced={() => setAdvancedOpen(true)} />

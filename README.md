@@ -44,7 +44,7 @@ npm run lint    # eslint：只開 React hooks 的兩條規則（rules-of-hooks�
 避免為了風格規則大改既有程式碼。
 
 
-> `packages/shared` 另有兩個守門測試：`themeContrast.test.js`（三個 app 淺色/深色色票的文字對比 ≥4.5:1）與 `designScale.test.js`（元件的字級/圓角只能用規格內的值）。改色票或寫了規格外的尺寸，`npm test` 會失敗。
+> `packages/shared` 另有兩個守門測試：`themeContrast.test.js`（三個 app 淺色/深色色票的文字對比 ≥4.5:1）與 `designScale.test.js`（元件的字級/圓角/字重只能用規格內的值）。改色票或寫了規格外的尺寸，`npm test` 會失敗。
 ## 部署到 Vercel
 
 每個 app 各自建立獨立的 Vercel 專案，連到同一個 GitHub repo，並在專案設定的
@@ -84,7 +84,7 @@ git diff --quiet $VERCEL_GIT_PREVIOUS_SHA HEAD -- apps/calendar packages/shared
 
 ## 共用套件
 
-- [`packages/shared`](./packages/shared) — `@peggy-life/shared`，提供 Supabase client factory (`createAppSupabase`)、分頁查詢 helper (`fetchAll`，見下)、LINE 整合 (`createLineAuth`，含 `Root.jsx` 用的 `useSession` 與設定頁用的 `useLineLinked` 兩個 hook) 和共用元件 / 樣式 (`ConfigMissing`、`Icon`、`base.css` 全域樣式：焦點環、按壓回饋、reduced-motion、`.btn-reset`)，以及 `useBackClose`（手機返回鍵先關閉覆蓋畫面/面板，而不是離開 app；每筆 history 記層數 `bcDepth`，同時關好幾層也不會對不上）、`useRefreshOnReturn`（離開 app 超過 30 秒再回來時靜默重抓資料）、`feedback.jsx`（`toast` / `confirmDialog`，取代原生 alert/confirm）、`LoadingSkeleton`（骨架載入畫面與 `LoadError`）、`OtherApps`（設定頁跳到另外兩個 app，需設 `VITE_LIFF_ID_CALORIE`/`_RECIPE`/`_CALENDAR`）
+- [`packages/shared`](./packages/shared) — `@peggy-life/shared`，提供 Supabase client factory (`createAppSupabase`)、分頁查詢 helper (`fetchAll`，見下)、LINE 整合 (`createLineAuth`，含 `Root.jsx` 用的 `useSession` 與設定頁用的 `useLineLinked` 兩個 hook) 和共用元件 / 樣式 (`ConfigMissing`、`Icon`、`base.css` 全域樣式：字型、焦點環、按壓回饋、reduced-motion、`.btn-reset`；`ui.js` 的 `UI` 共用元件樣式：頁首、分組清單、按鈕、膠囊、分段切換、輸入框、FAB，三個 app 同一種東西只長一種樣子；`BottomTabs` 底部分頁列)，以及 `useBackClose`（手機返回鍵先關閉覆蓋畫面/面板，而不是離開 app；每筆 history 記層數 `bcDepth`，同時關好幾層也不會對不上）、`useRefreshOnReturn`（離開 app 超過 30 秒再回來時靜默重抓資料）、`feedback.jsx`（`toast` / `confirmDialog`，取代原生 alert/confirm）、`LoadingSkeleton`（骨架載入畫面與 `LoadError`）、`OtherApps`（設定頁跳到另外兩個 app，需設 `VITE_LIFF_ID_CALORIE`/`_RECIPE`/`_CALENDAR`）
 
 > **會無限成長的表一律用 `fetchAll` 載入**：PostgREST 單次查詢最多回傳 Supabase 的 Max rows（預設 1000）筆，
 > 超過的部分會被**靜默截掉、不會報錯**。目前套用在 calendar `events`、calorie-tracker `day_records`、

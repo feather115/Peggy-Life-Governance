@@ -10,74 +10,74 @@ import { EVENT_COLORS, THEME } from '../theme.js';
 import TimeSelect from './TimeSelect.jsx';
 import { PeopleSelect } from './HistoryFields.jsx';
 import Icon from '@peggy-life/shared/Icon.jsx';
+import { UI } from '@peggy-life/shared/ui';
 import { confirmDialog } from '@peggy-life/shared/feedback.jsx';
 
 const S = {
-  header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', background: THEME.surface, borderBottom: `1px solid ${THEME.border}` },
-  headerLeft: { display: 'flex', alignItems: 'center', gap: 10 },
-  backBtn: { border: 'none', background: 'none', color: THEME.textMuted, padding: 2, display: 'flex', alignItems: 'center' },
-  title: { fontSize: 18, fontWeight: 700, color: THEME.textDark, margin: 0 },
-  confirmBtn: { border: 'none', cursor: 'pointer', padding: '9px 18px', borderRadius: 999, background: THEME.primary, color: '#fff', fontSize: 14, fontWeight: 700, boxShadow: '0 4px 12px rgba(61,90,128,.28)' },
-  body: { padding: '18px 20px 24px' },
+  header: { ...UI.subBar, justifyContent: 'space-between' },
+  headerLeft: { display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 },
+  title: { ...UI.subTitle },
+  confirmBtn: { ...UI.btnPrimary, minHeight: 40, padding: '0 18px', fontSize: 14 },
+  body: { padding: '8px 20px 32px' },
   field: { marginBottom: 18 },
-  label: { fontSize: 13, color: THEME.textMuted, marginBottom: 6 },
-  input: { width: '100%', boxSizing: 'border-box', border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSm, padding: '11px 12px', fontSize: 15, color: THEME.textDark, background: THEME.surface },
-  textarea: { width: '100%', boxSizing: 'border-box', border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSm, padding: '11px 12px', fontSize: 15, color: THEME.textDark, background: THEME.surface, minHeight: 76, lineHeight: 1.6, fontFamily: 'inherit', resize: 'vertical' },
+  label: { ...UI.fieldLabel },
+  input: { ...UI.input },
+  textarea: { ...UI.textarea, minHeight: 76 },
   suggestions: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 },
-  suggestionChip: { cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, background: THEME.surfaceAlt, padding: '5px 10px 5px 8px', borderRadius: 999, fontSize: 12, color: THEME.textDark },
-  suggestionDot: { width: 8, height: 8, borderRadius: '50%', flexShrink: 0 },
-  colorsRow: { display: 'flex', flexWrap: 'wrap', gap: 8 },
-  colorDot: (selected) => ({ cursor: 'pointer', width: 28, height: 28, borderRadius: '50%', border: selected ? `2px solid ${THEME.textDark}` : '2px solid transparent' }),
+  suggestionChip: { minHeight: 32, display: 'flex', alignItems: 'center', gap: 6, border: 'none', background: THEME.surfaceAlt, padding: '0 12px 0 10px', borderRadius: 999, fontSize: 13, color: THEME.textDark },
+  suggestionDot: { width: 8, height: 8, borderRadius: 4, flexShrink: 0 },
+  colorsRow: { display: 'flex', flexWrap: 'wrap', gap: 10 },
+  colorDot: (selected) => ({ width: 28, height: 28, padding: 0, border: 'none', borderRadius: 999, boxShadow: selected ? `0 0 0 2px ${THEME.bg}, 0 0 0 4px ${THEME.textDark}` : 'none' }),
   // 自訂顏色：沒選自訂色時顯示彩虹圈，選了就填上該顏色；裡面疊一個透明的原生色盤 <input type="color">
-  customDot: (selected, color) => ({ position: 'relative', display: 'block', overflow: 'hidden', cursor: 'pointer', width: 28, height: 28, borderRadius: '50%', border: selected ? `2px solid ${THEME.textDark}` : '2px solid transparent', background: selected ? color : 'conic-gradient(#E53935, #FDD835, #43A047, #1E88E5, #8E24AA, #E53935)' }),
+  customDot: (selected, color) => ({ position: 'relative', display: 'block', overflow: 'hidden', cursor: 'pointer', width: 28, height: 28, borderRadius: 999, boxShadow: selected ? `0 0 0 2px ${THEME.bg}, 0 0 0 4px ${THEME.textDark}` : 'none', background: selected ? color : 'conic-gradient(#E53935, #FDD835, #43A047, #1E88E5, #8E24AA, #E53935)' }),
   customInput: { position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer', border: 'none', padding: 0 },
-  hexRow: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginTop: 10 },
+  hexRow: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginTop: 12 },
   hexLabel: { fontSize: 13, color: THEME.textMuted },
-  hexInput: { width: 110, boxSizing: 'border-box', border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSmInner, padding: '8px 10px', fontSize: 14, color: THEME.textDark, background: THEME.surface, fontVariantNumeric: 'tabular-nums', textTransform: 'uppercase' },
-  hexHint: { fontSize: 12, color: THEME.errorInk },
+  hexInput: { ...UI.input, width: 112, minHeight: 36, fontSize: 14, fontVariantNumeric: 'tabular-nums', textTransform: 'uppercase' },
+  hexHint: { fontSize: 13, color: THEME.errorInk },
   toggleRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 },
-  toggleLabel: { fontSize: 14, color: THEME.textDark, fontWeight: 600 },
-  toggleTrack: (on) => ({ width: 44, height: 26, borderRadius: 14, background: on ? THEME.primary : THEME.textFaint, position: 'relative', cursor: 'pointer' }),
-  toggleKnob: (on) => ({ width: 20, height: 20, borderRadius: '50%', background: '#fff', position: 'absolute', top: 3, left: on ? 21 : 3, boxShadow: '0 1px 3px rgba(0,0,0,.25)' }),
+  toggleLabel: { fontSize: 15, color: THEME.textDark },
+  toggleTrack: (on) => ({ width: 44, height: 26, padding: 0, border: 'none', borderRadius: 999, background: on ? THEME.primary : 'var(--line-strong)', position: 'relative', cursor: 'pointer' }),
+  toggleKnob: (on) => ({ width: 20, height: 20, borderRadius: 999, background: '#FFFFFF', position: 'absolute', top: 3, left: on ? 21 : 3, boxShadow: '0 1px 2px rgba(0,0,0,.2)' }),
   endRow: { display: 'flex', gap: 8 },
   dateTimeRow: { display: 'flex', gap: 8 },
-  dateInput: { flex: 3, boxSizing: 'border-box', border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSm, padding: '11px 12px', fontSize: 15, color: THEME.textDark, background: THEME.surface },
-  timeInputWrap: { flex: 2 },
-  clearBtn: { border: `1px solid ${THEME.border}`, background: THEME.surface, cursor: 'pointer', padding: '0 14px', borderRadius: THEME.radiusSm, fontSize: 13, color: THEME.textMuted, fontWeight: 600 },
-  errorBox: { background: THEME.errorBg, color: THEME.errorInk, padding: '10px 12px', borderRadius: THEME.radiusSm, fontSize: 13, fontWeight: 600, marginBottom: 12 },
-  deleteLink: (confirming) => ({ marginTop: 24, textAlign: 'center', fontSize: 13, fontWeight: 600, color: confirming ? THEME.errorInk : THEME.textMuted, cursor: 'pointer' }),
+  dateInput: { ...UI.input, flex: 3, width: 'auto', minWidth: 0 },
+  timeInputWrap: { flex: 2, minWidth: 0 },
+  clearBtn: { ...UI.btnNeutral, minHeight: 44, padding: '0 12px', fontSize: 13 },
+  errorBox: { ...UI.note('danger'), marginBottom: 12 },
+  deleteLink: (confirming) => ({ ...UI.btnDangerText, marginTop: 24, color: confirming ? THEME.errorInk : THEME.textMuted }),
   // 分區標頭
-  sectionHeader: { display: 'flex', alignItems: 'center', gap: 8, margin: '4px 0 14px', fontSize: 13, fontWeight: 700, color: THEME.textMuted, letterSpacing: '0.04em' },
+  sectionHeader: { display: 'flex', alignItems: 'center', gap: 8, margin: '8px 0 14px', fontSize: 13, fontWeight: 500, color: THEME.textMuted },
   sectionRule: { flex: 1, height: 1, background: THEME.border },
-  reflectToggle: { width: '100%', boxSizing: 'border-box', border: `1px dashed ${THEME.primaryInk}`, background: THEME.surface, color: THEME.primaryInk, cursor: 'pointer', padding: 12, borderRadius: THEME.radiusSm, fontSize: 14, fontWeight: 700, marginBottom: 4 },
+  reflectToggle: { ...UI.btnSecondary, width: '100%', minHeight: 44, marginBottom: 4 },
   // ＃快速注記
-  hashtagLabel: { fontSize: 13, fontWeight: 700, color: THEME.textMuted, margin: '12px 0 8px' },
+  hashtagLabel: { ...UI.fieldLabel, margin: '14px 0 8px' },
   hashtagChips: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 },
-  hashtagChip: { display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: THEME.hashtagInk, background: THEME.hashtagBg, padding: '4px 10px', borderRadius: 999 },
-  hashtagAction: (disabled = false) => ({ border: 'none', background: 'none', cursor: disabled ? 'default' : 'pointer', padding: 0, color: 'inherit', fontSize: 14, lineHeight: 1, opacity: disabled ? 0.2 : 0.6 }),
+  hashtagChip: { display: 'inline-flex', alignItems: 'center', gap: 2, minHeight: 32, fontSize: 13, fontWeight: 500, color: THEME.hashtagInk, background: THEME.hashtagBg, padding: '0 4px 0 10px', borderRadius: 999 },
+  hashtagAction: (disabled = false) => ({ width: 24, height: 24, padding: 0, border: 'none', background: 'none', cursor: disabled ? 'default' : 'pointer', color: 'inherit', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', opacity: disabled ? 0.25 : 0.7 }),
   hashtagRow: { display: 'flex', gap: 8 },
-  hashtagAddBtn: { border: 'none', cursor: 'pointer', padding: '0 16px', borderRadius: THEME.radiusSm, background: THEME.hashtagBg, color: THEME.hashtagInk, fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0 },
+  hashtagAddBtn: { ...UI.btnSecondary, minHeight: 44, flexShrink: 0 },
   // 分類標籤卡
-  categoryList: { display: 'flex', flexDirection: 'column', gap: 16 },
-  categoryCard: { background: THEME.surface, borderRadius: THEME.radius, padding: '16px 18px', boxShadow: THEME.shadow },
+  categoryList: { display: 'flex', flexDirection: 'column', gap: 12 },
+  categoryCard: { ...UI.card, padding: 16 },
   categoryHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
-  categoryName: { fontSize: 13, fontWeight: 700, color: THEME.textMuted },
+  categoryName: { fontSize: 13, fontWeight: 500, color: THEME.textMuted },
   tagWrap: { display: 'flex', flexWrap: 'wrap', gap: 8 },
-  tagChip: (selected) => ({ cursor: 'pointer', padding: '9px 15px', borderRadius: 999, background: selected ? THEME.primary : THEME.surfaceAlt, color: selected ? '#fff' : THEME.textDark, fontSize: 13, fontWeight: selected ? 700 : 500, boxShadow: selected ? '0 4px 10px rgba(61,90,128,.28)' : 'none' }),
-  subTagChip: (selected) => ({ cursor: 'pointer', padding: '8px 13px', borderRadius: 999, background: selected ? THEME.primary : 'transparent', border: `1px solid ${selected ? THEME.primary : THEME.border}`, color: selected ? '#fff' : THEME.textMuted, fontSize: 12, fontWeight: selected ? 700 : 500, boxShadow: selected ? '0 4px 10px rgba(61,90,128,.28)' : 'none' }),
-  addTagIconBtn: { flexShrink: 0, border: 'none', cursor: 'pointer', width: 22, height: 22, borderRadius: '50%', background: THEME.surfaceAlt, color: THEME.textMuted, fontSize: 14, fontWeight: 700, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 },
+  tagChip: (selected) => ({ ...UI.chip(selected), minHeight: 36 }),
+  subTagChip: (selected) => ({ ...UI.chip(selected), fontSize: 13 }),
+  addTagIconBtn: { ...UI.iconBtnSoft, width: 28, height: 28 },
   addTagRow: { display: 'flex', gap: 8, marginTop: 10 },
-  addTagInput: { flex: 1, boxSizing: 'border-box', border: `1px dashed ${THEME.textFaint}`, background: 'transparent', borderRadius: 999, padding: '8px 14px', fontSize: 13, color: THEME.textDark },
-  addTagBtn: { border: 'none', cursor: 'pointer', padding: '0 16px', borderRadius: 999, background: THEME.primarySoft, color: THEME.primaryInk, fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0 },
-  addTagHint: { fontSize: 12, color: THEME.textFaint, marginTop: 6 },
-  emptyCategory: { fontSize: 12, color: THEME.textFaint },
-  detailList: { display: 'flex', flexDirection: 'column', gap: 6, marginTop: 10 },
-  detailRow: { display: 'flex', alignItems: 'center', gap: 8 },
-  detailTagLabel: { flexShrink: 0, fontSize: 12, fontWeight: 700, color: THEME.primaryInk, maxWidth: 90, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+  addTagInput: { ...UI.input, flex: 1, width: 'auto', minWidth: 0, minHeight: 40, fontSize: 14 },
+  addTagBtn: { ...UI.btnSecondary, flexShrink: 0 },
+  addTagHint: { fontSize: 13, color: THEME.textMuted, marginTop: 8 },
+  emptyCategory: { fontSize: 13, color: THEME.textFaint },
+  detailList: { display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 },
+  detailRow: { display: 'flex', alignItems: 'flex-start', gap: 8 },
+  detailTagLabel: { flexShrink: 0, minHeight: 36, display: 'flex', alignItems: 'center', fontSize: 13, fontWeight: 500, color: THEME.primaryInk, maxWidth: 96, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
   detailInputWrap: { flex: 1, minWidth: 0 },
-  detailInput: { width: '100%', minWidth: 0, boxSizing: 'border-box', border: 'none', borderBottom: `1px dashed ${THEME.textFaint}`, background: 'transparent', padding: '3px 2px', fontSize: 12, color: THEME.textDark },
-  detailSuggestions: { display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 6 },
-  detailSuggestionChip: { border: `1px dashed ${THEME.border}`, background: THEME.surfaceAlt, cursor: 'pointer', padding: '4px 9px', borderRadius: 999, fontSize: 12, color: THEME.textDark },
+  detailInput: { ...UI.input, minHeight: 36, fontSize: 14, background: THEME.surfaceAlt, border: 'none' },
+  detailSuggestions: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6 },
+  detailSuggestionChip: { minHeight: 32, border: `1px solid ${THEME.border}`, background: THEME.surface, padding: '0 10px', borderRadius: 999, fontSize: 13, color: THEME.textDark },
 };
 
 // 新增紀錄時預設開始時間：選定日期的早上 9 點
@@ -154,16 +154,16 @@ function CategoryTagCard({ category, allCategories, selectedTags, onToggleTag, o
     <div style={S.categoryCard}>
       <div style={S.categoryHeader}>
         <div style={S.categoryName}>{category.name}</div>
-        <button type="button" className="tap" style={S.addTagIconBtn} onClick={() => { setAdding(true); setHint(''); }} aria-label={`在「${category.name}」新增標籤`}><Icon name="plus" size={14} /></button>
+        <button type="button" className="tap" style={S.addTagIconBtn} onClick={() => { setAdding(true); setHint(''); }} aria-label={`在「${category.name}」新增標籤`}><Icon name="plus" size={16} strokeWidth={2} /></button>
       </div>
 
       {category.tags.length > 0 && (
         <div style={S.tagWrap}>
           {category.tags.map((tag) => (
             <React.Fragment key={tag.name}>
-              <button type="button" className="btn-reset" style={S.tagChip(selectedTags.includes(tag.name))} aria-pressed={selectedTags.includes(tag.name)} onClick={() => onToggleTag(tag.name)}>{tag.name}</button>
+              <button type="button" style={S.tagChip(selectedTags.includes(tag.name))} aria-pressed={selectedTags.includes(tag.name)} onClick={() => onToggleTag(tag.name)}>{tag.name}</button>
               {tag.subs.map((sub) => (
-                <button type="button" className="btn-reset" key={sub} style={S.subTagChip(selectedTags.includes(sub))} aria-pressed={selectedTags.includes(sub)} onClick={() => onToggleTag(sub)}>└ {sub}</button>
+                <button type="button" key={sub} style={S.subTagChip(selectedTags.includes(sub))} aria-pressed={selectedTags.includes(sub)} onClick={() => onToggleTag(sub)}>└ {sub}</button>
               ))}
             </React.Fragment>
           ))}
@@ -366,10 +366,10 @@ export default function RecordForm({ record, defaultDateKey, allRecords = [], ca
     <div>
       <header style={S.header}>
         <div style={S.headerLeft}>
-          <button type="button" onClick={handleCancel} disabled={busy} style={S.backBtn} className="tap" aria-label="返回"><Icon name="chevron-left" size={24} /></button>
+          <button type="button" onClick={handleCancel} disabled={busy} style={UI.iconBtn} aria-label="返回"><Icon name="chevron-left" size={20} /></button>
           <h1 style={S.title}>{isEdit ? '編輯紀錄' : '新增紀錄'}</h1>
         </div>
-        <button type="button" onClick={handleSave} disabled={busy} style={S.confirmBtn}>{busy ? '儲存中…' : '儲存'}</button>
+        <button type="button" onClick={handleSave} disabled={busy} style={{ ...S.confirmBtn, opacity: busy ? 0.6 : 1 }}>{busy ? '儲存中…' : '儲存'}</button>
       </header>
 
       <div style={S.body}>
@@ -382,7 +382,7 @@ export default function RecordForm({ record, defaultDateKey, allRecords = [], ca
           {titleSuggestions.length > 0 && (
             <div style={S.suggestions}>
               {titleSuggestions.map(([t, r]) => (
-                <button type="button" className="btn-reset" key={t} style={S.suggestionChip} onClick={() => { setTitle(t); setColor(r.color || EVENT_COLORS[0]); }}>
+                <button type="button" key={t} style={S.suggestionChip} onClick={() => { setTitle(t); setColor(r.color || EVENT_COLORS[0]); }}>
                   <span style={{ ...S.suggestionDot, background: r.color || THEME.primary }} />
                   <span>{t}</span>
                 </button>
@@ -394,7 +394,7 @@ export default function RecordForm({ record, defaultDateKey, allRecords = [], ca
         {/* ---- 時間 ---- */}
         <div style={S.toggleRow}>
           <div style={S.toggleLabel}>全天</div>
-          <button type="button" className="btn-reset" role="switch" aria-checked={allDay} aria-label="全天" style={S.toggleTrack(allDay)} onClick={toggleAllDay}>
+          <button type="button" role="switch" aria-checked={allDay} aria-label="全天" style={S.toggleTrack(allDay)} onClick={toggleAllDay}>
             <span style={S.toggleKnob(allDay)} />
           </button>
         </div>
@@ -448,7 +448,7 @@ export default function RecordForm({ record, defaultDateKey, allRecords = [], ca
           <div style={S.label}>顏色</div>
           <div style={S.colorsRow}>
             {EVENT_COLORS.map((c, i) => (
-              <button type="button" className="btn-reset" key={c} style={{ ...S.colorDot(color === c), background: c }} aria-label={`顏色 ${i + 1}`} aria-pressed={color === c} onClick={() => setColor(c)} />
+              <button type="button" key={c} style={{ ...S.colorDot(color === c), background: c }} aria-label={`顏色 ${i + 1}`} aria-pressed={color === c} onClick={() => setColor(c)} />
             ))}
             <label style={S.customDot(!EVENT_COLORS.includes(color), color)} title="自訂顏色">
               <input type="color" aria-label="自訂顏色" style={S.customInput} value={color.toLowerCase()} onChange={(e) => setColor(normalizeHex(e.target.value) || color)} />
@@ -482,7 +482,7 @@ export default function RecordForm({ record, defaultDateKey, allRecords = [], ca
 
         {/* ---- 回顧面（可收合）---- */}
         {!showReflection ? (
-          <button type="button" style={S.reflectToggle} onClick={() => setShowReflection(true)}>＋ 補上心情 / 回顧</button>
+          <button type="button" style={S.reflectToggle} onClick={() => setShowReflection(true)}><Icon name="plus" size={16} />補上心情 / 回顧</button>
         ) : (
           <>
             <div style={S.sectionHeader}><span>回顧 · 心情</span><span style={S.sectionRule} /></div>
@@ -490,7 +490,7 @@ export default function RecordForm({ record, defaultDateKey, allRecords = [], ca
             <div style={S.field}>
               <div style={S.label}>今天的感覺 <span style={{ color: THEME.textFaint }}>(選填)</span></div>
               <textarea aria-label="今天的感覺" style={S.textarea} value={note} onChange={(e) => setNote(e.target.value)} placeholder="寫下今天的一些想法…" />
-              <div style={S.hashtagLabel}>＃ 快速注記</div>
+              <div style={S.hashtagLabel}>＃快速注記</div>
               {hashtags.length > 0 && (
                 <div style={S.hashtagChips}>
                   {hashtags.map((h, index) => (
@@ -503,7 +503,7 @@ export default function RecordForm({ record, defaultDateKey, allRecords = [], ca
                         aria-label={`將「${h}」往前移`}
                         onClick={() => moveHashtag(index, -1)}
                       >
-                        ←
+                        <Icon name="chevron-left" size={14} />
                       </button>
                       <button
                         type="button"
@@ -512,7 +512,7 @@ export default function RecordForm({ record, defaultDateKey, allRecords = [], ca
                         aria-label={`將「${h}」往後移`}
                         onClick={() => moveHashtag(index, 1)}
                       >
-                        →
+                        <Icon name="chevron-right" size={14} />
                       </button>
                       <button
                         type="button"
@@ -520,7 +520,7 @@ export default function RecordForm({ record, defaultDateKey, allRecords = [], ca
                         aria-label={`移除「${h}」`}
                         onClick={() => setHashtags(hashtags.filter((x) => x !== h))}
                       >
-                        ×
+                        <Icon name="x" size={14} />
                       </button>
                     </span>
                   ))}
@@ -559,9 +559,11 @@ export default function RecordForm({ record, defaultDateKey, allRecords = [], ca
         )}
 
         {isEdit && onDelete && (
-          <button type="button" className="btn-reset" style={{ ...S.deleteLink(confirmDelete), display: 'block', width: '100%', padding: 10 }} disabled={busy} onClick={handleDelete}>
-            {confirmDelete ? '確定要刪除嗎？' : '刪除紀錄'}
-          </button>
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <button type="button" style={S.deleteLink(confirmDelete)} disabled={busy} onClick={handleDelete}>
+              {confirmDelete ? '確定要刪除嗎？' : <><Icon name="trash" size={16} />刪除紀錄</>}
+            </button>
+          </div>
         )}
       </div>
     </div>

@@ -15,7 +15,9 @@
     "./useRefreshOnReturn": "./src/useRefreshOnReturn.js",
     "./feedback.jsx": "./src/feedback.jsx",
     "./LoadingSkeleton.jsx": "./src/LoadingSkeleton.jsx",
-    "./OtherApps.jsx": "./src/OtherApps.jsx"
+    "./OtherApps.jsx": "./src/OtherApps.jsx",
+    "./BottomTabs.jsx": "./src/BottomTabs.jsx",
+    "./ui": "./src/ui.js"
   },
   "peerDependencies": {
     "@line/liff": "^2.29.0",

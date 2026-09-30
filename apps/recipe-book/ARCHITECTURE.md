@@ -34,8 +34,8 @@ Supabase ⇄ db.js ⇄ useRecipes.js ⇄ App.jsx ⇄ components/*
 
 | 你想改的東西 | 檔案 |
 |---|---|
-| **食譜清單（搜尋框、分類 tab、卡片網格、登出鈕）** | `src/components/RecipeCatalog.jsx` (Inline styles) |
-| **單一食譜詳情（返回鈕、食材、步驟、心得、參數）** | `src/components/RecipeDetail.jsx` (Inline styles) |
+| **食譜清單（頁首、擁有者篩選、搜尋框、分類膠囊、卡片網格、新增 FAB；訪客的登入鈕）** | `src/components/RecipeCatalog.jsx` (Inline styles) |
+| **單一食譜詳情（返回鈕、編輯鈕、食材、步驟、心得、參數）** | `src/components/RecipeDetail.jsx` (Inline styles) |
 | **配方等比例縮放** | `src/components/RecipeDetail.jsx` → `getScaledAmount()` |
 | **點一下標記完成** | `src/components/RecipeDetail.jsx` → `pressHandlers()` |
 | **搜尋 / 分類篩選邏輯** | `src/utils.js` → `filterRecipes()` / `getAvailableCategories()` |
@@ -47,7 +47,8 @@ Supabase ⇄ db.js ⇄ useRecipes.js ⇄ App.jsx ⇄ components/*
 | **LINE LIFF 初始化與登入** | `src/liff.js`（薄殼，邏輯在 `packages/shared/src/lineAuth.js`，三 app 共用） |
 | **新增/編輯食譜表單**（食材分區、步驟、參數、分享 checkbox） | `src/components/RecipeForm.jsx` |
 | **料理行事曆**（月曆、記錄料理、備註） | `src/components/CookCalendar.jsx` |
-| **底部分頁列**（訪客模式會隱藏行事曆/設定） | `src/components/TabBar.jsx` |
+| **底部分頁列**（有哪些分頁；訪客模式會隱藏行事曆/設定） | `src/components/TabBar.jsx`（外觀在 `packages/shared/src/BottomTabs.jsx`） |
+| **共用元件樣式**（頁首、分組清單、按鈕、膠囊、輸入框、FAB，三個 app 一致） | `packages/shared/src/ui.js` → `UI` |
 | **色票 / 陰影 / 焦點環等全域樣式** | `src/theme.css`（色票）+ `packages/shared/src/base.css`（共用）|
 | **Email/密碼與 LINE 自動登入閘口** | `src/Root.jsx` |
 | **Email 登入/註冊/重設密碼頁面** | `src/components/Auth.jsx` |
@@ -59,16 +60,19 @@ Supabase ⇄ db.js ⇄ useRecipes.js ⇄ App.jsx ⇄ components/*
 
 ## 樣式與設計 tokens
 
-- **色票 = CSS 變數**：`src/theme.css` 的 `:root` 定義本 app 的色票（`--bg / --surface / --text / --text-muted / --text-faint / --primary / --line / --danger …`）與陰影（`--shadow-card / --shadow-nav / --shadow-sheet`）。元件 inline style 一律寫 `'var(--text)'`，**不要再寫死色碼**；要換色只改 `theme.css`。三個 app 變數名相同、色值不同（綠 / 橘棕 / 藍）。
+- **色票 = CSS 變數**：`src/theme.css` 的 `:root` 定義本 app 的色票（`--bg / --surface / --text / --text-muted / --text-faint / --primary / --line / --danger …`）與陰影（`--shadow-card / --shadow-nav / --shadow-sheet / --shadow-float`）。元件 inline style 一律寫 `'var(--text)'`，**不要再寫死色碼**；要換色只改 `theme.css`。三個 app 變數名相同；**中性色（底色、線、文字）與語意色三個 app 共用同一組暖白色票**，只有主色不同（綠 / 橘棕 `#9F4F2F` / 藍）。
+- **卡片不加陰影**：`--shadow-card` 是 1px 邊線（`0 0 0 1px var(--line)`），分頁列上緣 `--shadow-nav` 也是一條線；只有浮在上層的東西（FAB、toast）用 `--shadow-float`。
+- **共用元件樣式**：頁首、分組清單、按鈕、膠囊、輸入框、FAB 都用 `@peggy-life/shared/ui` 的 `UI`（用法見 `docs/new-app-sop.md` 第 6 節），本 app 的 `S` 只放位置、寬度與特有元件（食譜卡、月曆格、食材表單）。字型是 Figtree（`index.html` 載 400/500/600）＋系統中文字型。
 - **共用全域樣式**：`packages/shared/src/base.css`（由 `main.jsx` import）— reset、`:focus-visible` 焦點環（`--ring`）、按鈕按壓回饋、`prefers-reduced-motion`、`.tap`（把小按鈕點擊範圍撐到 ≥44px，不影響版面）、`.ps`（隱藏捲軸）。因為 inline style 優先級高於 CSS，**元件裡不可再寫 `outline: 'none'`**，否則焦點環會被蓋掉。
-- **實心底色 vs 字色（*-ink）**：`--primary / --info / --danger / --success` 是實心底色（上面放白字，使用者存的標籤色也可能是 `var(--primary)`）；**當字色用一律寫 `*-ink`**（`var(--primary-ink)`）。淺色模式兩者同色，深色模式 ink 比較亮，深底上才讀得到。本 app 另有 `--warning-ink / --warning-bg`、`--like / --like-bg`（按讚）、`--today-ring`（料理行事曆的今天外框）。
+- **實心底色 vs 字色（*-ink）**：`--primary / --info / --danger / --success` 是實心底色（上面放白字，使用者存的標籤色也可能是 `var(--primary)`）；**當字色用一律寫 `*-ink`**（`var(--primary-ink)`）。淺色模式兩者同色，深色模式 ink 比較亮，深底上才讀得到。本 app 另有 `--warning-ink / --warning-bg`、`--like / --like-bg`（按讚）。料理行事曆的今天用實心主色圓圈標示，跟行事曆 app 的月檢視一樣。
 - **深色模式**：`theme.css` 的 `@media (prefers-color-scheme: dark)` 區塊整組換色，跟著手機系統設定；元件不用改。新增顏色時兩個模式都要給值，不要在元件裡寫死色碼（寫死的白底在深色模式會變成一塊亮白）。
 - **對比度有測試守著**：`packages/shared/src/themeContrast.test.js` 檢查淺色/深色兩組色票：文字與 *-ink 在 `--surface / --bg / --surface-alt` 上 ≥4.5:1、*-ink 在對應的淡色底上 ≥4.5:1、`--primary / --info / --danger` 上的白字 ≥4.5:1。改色後跑 `npm test`。
-- **icon**：`@peggy-life/shared/Icon.jsx`（內建線條 SVG，`<Icon name="pencil" />`，`aria-hidden`）。icon-only 按鈕必須加 `aria-label`；小按鈕加 `className="tap"`。內容性 emoji（餐別圖示等）保留，UI 操作符號（✏ × ＋ ‹ ›）用 `Icon`。
+- **icon**：`@peggy-life/shared/Icon.jsx`（內建線條 SVG，`<Icon name="pencil" />`，`aria-hidden`）。icon-only 按鈕必須加 `aria-label`；小按鈕加 `className="tap"`。UI 操作符號（✏ × ＋ ‹ ›）一律用 `Icon`，介面不放 emoji。
 - **表單欄位**：每個 `<input>/<textarea>/<select>` 都要有 `aria-label`（或 `<label>` 包住）；只靠 placeholder 不算。
 - **viewport 不鎖縮放**（無 `maximum-scale` / `user-scalable=no`）；為了避免 iOS 聚焦輸入框自動放大，`base.css` 在觸控裝置把輸入框強制 16px。
-- **尺寸規格**：字級只用 12/13/14/15/16/18/20/24（28 以上是大數字），圓角只用 8/10/14/20/28/999（5 以下的細節不限）。`packages/shared/src/designScale.test.js` 會掃所有元件，寫了規格外的值 `npm test` 會失敗。
-- **`TabBar.jsx`**：`<nav>` + icon + 文字，`aria-current="page"`，底部留 `env(safe-area-inset-bottom)`。
+- **尺寸規格**：字級只用 12/13/14/15/16/18/24（28 以上是大數字），圓角只用 10/14/20/999（5 以下的細節不限），字重只用 400/500/600。`packages/shared/src/designScale.test.js` 會掃所有元件（含 `ui.js`），寫了規格外的值 `npm test` 會失敗。
+- **`TabBar.jsx`**：只定義分頁（key / 文字 / icon），外觀是共用的 `@peggy-life/shared/BottomTabs.jsx`：`<nav>` + icon + 文字、選中的分頁是淡主色膠囊＋`aria-current="page"`，底部留 `env(safe-area-inset-bottom)`。
+- **頁首**：每個分頁頂端是大標題（24/600）＋一行副標（食譜數、料理次數、帳號），右邊放圓鈕；頁首不放 app 名稱或 logo。內頁（詳情、表單）用 `UI.subBar` 的返回圓鈕。
 
 ## 每個檔案在幹嘛
 
@@ -92,13 +96,13 @@ Supabase ⇄ db.js ⇄ useRecipes.js ⇄ App.jsx ⇄ components/*
 - **`src/supabase.js`** — re-export `@peggy-life/shared` 的 supabase client（`schema: 'recipe_book'`）。
 
 ### 畫面與組件（`src/components/`）
-- **`RecipeCatalog.jsx`** — 食譜清單：頂部 header（Peggy logo + 登出按鈕 + 食譜數）、搜尋欄、分類 tab、雙欄食譜網格。全 inline styles。
-- **`RecipeDetail.jsx`** — 食譜詳情：返回按鈕、食材、工序、心得、重點參數、按讚/誰按讚。全 inline styles。
+- **`RecipeCatalog.jsx`** — 食譜清單：頁首（「食譜」＋食譜數；**只有訪客有「登入」鈕，登出在設定分頁**）、擁有者篩選膠囊（打勾＝選中）、搜尋欄、分類膠囊、雙欄食譜卡片（沒有圖片時用**名稱第一個字**當佔位，標題下方只有按讚數——2026-06-28 起刻意不放分類）、右下「新增食譜」FAB。全 inline styles。
+- **`RecipeDetail.jsx`** — 食譜詳情：頂列返回圓鈕＋編輯鈕、封面圖、分類/份量標籤、標題、按讚/誰按讚、重點參數卡、縮放卡、食材清單（依 type 分組，主食材與品牌用小標籤）、工序（編號圓圈）、心得、上次製作日期。全 inline styles。
 - **`RecipeForm.jsx`** — 新增/編輯食譜表單：標題、分類、食材（含分區/品牌）、步驟、心得、參數、`is_shared` checkbox、刪除。
-- **`CookCalendar.jsx`** — 料理行事曆分頁：月曆格、點日期記錄「今天做了哪道菜」（可加備註）、點紀錄跳食譜詳情。
-- **`TabBar.jsx`** — 底部分頁列（食譜/行事曆/設定），訪客模式隱藏後兩個。
+- **`CookCalendar.jsx`** — 料理行事曆分頁：版面跟行事曆 app 的月檢視一致——頁首是月份標題＋「料理行事曆 · 已紀錄 N 次」，右側 ‹ › 換月，離開今天所在月份時副標旁出現「回到今天」；月曆格下方圓點＝那天做了幾道；下面的清單卡片列出選中那天的料理（可加備註、× 移除），尾端「＋ 記錄料理」。點紀錄跳食譜詳情。
+- **`TabBar.jsx`** — 底部分頁列（食譜/行事曆/設定，包共用的 `BottomTabs`），訪客模式隱藏後兩個。
 - **`Auth.jsx`** — 登入介面：Email + 密碼登入、註冊、忘記密碼。與 calorie-tracker 風格一致。
-- **`SettingsTab.jsx`** — 設定分頁（`TabBar` 第三個 tab，訪客模式隱藏）：帳號 email（LINE
+- **`SettingsTab.jsx`** — 設定分頁（`TabBar` 第三個 tab，訪客模式隱藏），跟另外兩個 app 同一個分組清單版型（個人資料、其他 App、帳號、登出）：帳號 email（LINE
   登入的假 email 遮罩成 `LINE: U1234...wxyz`）、暱稱輸入框+儲存（呼叫 `useRecipes.js` 的
   `setMyDisplayName`，寫入 `shared.user_profiles.display_name`——**跨 app 共用**，在
   calorie-tracker 設過的暱稱這裡看得到，反過來也一樣，見下方「暱稱跨 app 共用」）、
@@ -159,7 +163,7 @@ Supabase ⇄ db.js ⇄ useRecipes.js ⇄ App.jsx ⇄ components/*
 - **訪客模式**：`Root.jsx` 提供「以訪客身分瀏覽」按鈕（不登入），App.jsx 把 `userId = null` 傳給 `useRecipes`，hook 跳過 `loadCookRecords`、`TabBar` 隱藏「行事曆」分頁。
 - **分享狀態**：`is_shared` 由 `RecipeForm.jsx` 編輯頁面的 checkbox 控制（用 `saveRecipe` 一起 update）。
 - **Catalog 擁有權篩選**：登入者可勾選 `我的私房 / 我已分享 / 大家分享` 三種類別（**多選**，`useRecipes.ownershipFilter` 是 `Set`，`toggleOwnership()` 切換並存進 `localStorage` 記住偏好），`filterRecipes` 用 `ownershipSet + currentUserId` 過濾；訪客因 RLS 天生只拿得到 `others_shared`。
-- **按讚與喜愛排序**：`recipe_likes` 表存按讚紀錄，`useRecipes` 算出 `likeCounts` / `myLikedSet`。RecipeDetail 顯示按讚數＋按讚按鈕（擁有者只見數字、訪客只見數字、登入者可 toggle）；catalog 卡片右上角顯示 ❤️ N 計數；`filterRecipes` 把我喜愛的食譜排在每個分頁的最前面。
+- **按讚與喜愛排序**：`recipe_likes` 表存按讚紀錄，`useRecipes` 算出 `likeCounts` / `myLikedSet`。RecipeDetail 顯示按讚數＋按讚按鈕（擁有者只見數字、訪客只見數字、登入者可 toggle）；catalog 卡片標題下方顯示愛心 icon＋N（我按過讚的是實心 `--like` 色）；`filterRecipes` 把我喜愛的食譜排在每個分頁的最前面。
 - **「誰按讚」顯示名字**：`shared.user_profiles`（`display_name`/`email`，見下方「暱稱跨
   app 共用」）搭配 `useRecipes` 的 `likerNamesByRecipe`（`Map<recipeId, string[]>`），在
   RecipeDetail 的按讚區塊下方列出「小明、小華 按讚」。名字解析邏輯在 `utils.js` 的
@@ -268,7 +272,7 @@ LINE，其他 app 就能即時識別並支援 LINE 自動免密碼登入。
 `RecipeDetail.jsx` 裡有一個輸入框可以填入主食材（`is_base: true`）的新重量（克），所有食材的數量會依比例即時換算。重設按鈕清空輸入恢復原始值。縮放只影響畫面顯示，不改 DB。
 
 ### 介面慣例
-- **icon 與 emoji**：操作與標示用途一律用 `@peggy-life/shared/Icon.jsx`（線條 icon，路徑取自 Lucide；`filled` 可做實心，例如已按讚的愛心）——emoji 在 iOS/Android/LINE 長得不一樣、大小也不齊。**只有內容性的 emoji 保留**：餐別圖示、挑戰頁的 🏆🥇🔥 標題（遊戲化的趣味）、沒有圖片時的 🍳 佔位。
+- **icon 與 emoji**：操作與標示用途一律用 `@peggy-life/shared/Icon.jsx`（線條 icon，路徑取自 Lucide；`filled` 可做實心，例如已按讚的愛心）——emoji 在 iOS/Android/LINE 長得不一樣、大小也不齊。2026-09-30 改版後**介面完全不用 emoji**：沒有圖片的食譜用名稱第一個字當佔位（原本是 🍳），標題與提示文字不加 emoji。
 - **載入/失敗畫面**：`@peggy-life/shared/LoadingSkeleton.jsx` 的 `<LoadingSkeleton />`（灰色色塊排出版面、`.skeleton` 閃爍動畫在 base.css）與 `<LoadError message />`（說明＋「重新載入」按鈕）。
 - **其他 App 入口**：設定頁的 `<OtherApps current="…" />`（shared），連到另外兩個 app 的 LIFF URL；LIFF ID 來自 `VITE_LIFF_ID_CALORIE` / `VITE_LIFF_ID_RECIPE` / `VITE_LIFF_ID_CALENDAR`，沒設就不顯示（見 `.env.example`）。
 - 按讚用 `--like` / `--like-bg`（`theme.css`）。

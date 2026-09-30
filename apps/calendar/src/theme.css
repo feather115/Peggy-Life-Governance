@@ -1,39 +1,42 @@
-/* 行事曆：柔和藍色系色票。文字類色票（text / *-ink / cat-*）在 --surface / --bg / --surface-alt 上都 ≥4.5:1。
+/* 行事曆：霧藍主色。中性色（--bg～--text-faint）與語意色三個 app 共用同一組暖白色票，
+   各 app 只換主色（--primary / --primary-ink / --primary-soft）和自己的資料色。
+   文字類色票（text / *-ink / cat-*）在 --surface / --bg / --surface-alt 上都 ≥4.5:1。
    --primary / --danger 是「實心底色」（上面放白字）；當字色用請用 *-ink（theme.js 的 THEME.primaryInk 等，深色模式比較亮）。
+   卡片不加陰影：--shadow-card 是 1px 邊線；浮在上層的東西（面板、浮動按鈕、提示）才用 --shadow-float。
    深色模式跟著系統設定（prefers-color-scheme）。改色後跑 npm test 會檢查對比度。 */
 :root{
   color-scheme:light;
-  --bg:#EEF2F7;--surface:#FFFFFF;--surface-alt:#F4F7FB;--surface-alt2:#F7F9FC;--sunken:#F4F7FB;
-  --line:#E7ECF3;--line-strong:#C9D2E0;--track:#E3EAF4;
-  --text:#1F2D42;--text-muted:#52617A;--text-faint:#5B6A82;
-  --primary:#3D5A80;--primary-ink:#3D5A80;--primary-strong:#2C4562;--primary-soft:#E3EAF4;--on-primary:#FFFFFF;--ring:#3D5A80;
-  --success:#15803D;--success-ink:#147C3B;--success-bg:#DCFCE7;
-  --danger:#B91C1C;--danger-ink:#B91C1C;--danger-bg:#FEE2E2;
-  --warning-ink:#8B5A00;--warning-bg:#FFF6E6;
-  --band-1:#D9E7F6;--band-2:#AFC9E5;
-  /* 日記分類標籤的強調色（12px 小字，放在淡藍底上） */
-  --cat-1:#3D5A80;--cat-2:#556890;--cat-3:#785D8A;--cat-4:#3C7071;--cat-5:#816149;
-  --scrim:rgba(31,45,66,.42);
-  --toast-offset:148px;
-  --shadow-card:0 1px 3px rgba(31,45,66,.06),0 10px 26px rgba(31,45,66,.08);
-  --shadow-nav:0 -4px 20px rgba(31,45,66,.08);
-  --shadow-sheet:0 -12px 40px rgba(31,45,66,.22);
+  --bg:#F8F6F2;--surface:#FFFFFF;--surface-alt:#F4F2EE;--sunken:#F0EDE9;
+  --line:#E9E6E0;--line-strong:#D4D1CA;--track:#EAE7E2;
+  --text:#25211D;--text-muted:#5F5A54;--text-faint:#6F6963;
+  --primary:#3F6AA1;--primary-ink:#3F6AA1;--primary-strong:#2F5282;--primary-soft:#E7F1FF;--on-primary:#FFFFFF;--ring:#3F6AA1;
+  --info:#4365B3;--info-ink:#4365B3;--info-bg:#E6F0FF;
+  --success:#21763C;--success-ink:#21763C;--success-bg:#E3F6E6;
+  --danger:#B6322D;--danger-ink:#B6322D;--danger-bg:#FFE9E5;
+  --warning-ink:#90601F;--warning-bg:#FEEDDB;
+  /* 日記分類標籤的強調色（12px 小字，放在淡底上） */
+  --cat-1:#3F6AA1;--cat-2:#556890;--cat-3:#785D8A;--cat-4:#3C7071;--cat-5:#816149;
+  --scrim:rgba(18,16,14,.42);
+  --toast-offset:160px;
+  --shadow-card:0 0 0 1px var(--line);
+  --shadow-nav:0 -1px 0 var(--line);
+  --shadow-sheet:0 -8px 32px rgba(37,33,29,.16);
+  --shadow-float:0 8px 24px rgba(37,33,29,.14);
 }
 @media (prefers-color-scheme:dark){
   :root{
     color-scheme:dark;
-    --bg:#0F141B;--surface:#18202A;--surface-alt:#1D2631;--surface-alt2:#1B232D;--sunken:#1D2631;
-    --line:#2A3441;--line-strong:#3A4656;--track:#2A3441;
-    --text:#E4EAF2;--text-muted:#A9B5C6;--text-faint:#909DB0;
-    --primary:#3D5A80;--primary-ink:#9BBBEA;--primary-strong:#BCD0F0;--primary-soft:#22324A;--ring:#9BBBEA;
-    --success:#15803D;--success-ink:#6CCB98;--success-bg:#153222;
-    --danger:#B91C1C;--danger-ink:#FF9189;--danger-bg:#3B1A1A;
-    --warning-ink:#F0B85E;--warning-bg:#3A2C14;
-    --band-1:#1F2B3B;--band-2:#2A3A50;
-    --cat-1:#9BBBEA;--cat-2:#AEB9D6;--cat-3:#C8ADD8;--cat-4:#86CACB;--cat-5:#D6B394;
+    --bg:#12100E;--surface:#1B1916;--surface-alt:#211F1C;--sunken:#24211E;
+    --line:#2C2A26;--line-strong:#433F3B;--track:#302D2A;
+    --text:#EBE7E2;--text-muted:#BBB7B0;--text-faint:#A29E98;
+    --primary:#3F6AA1;--primary-ink:#99C1F4;--primary-strong:#BCD0F0;--primary-soft:#1C2C41;--ring:#99C1F4;
+    --info:#4365B3;--info-ink:#9DBDFF;--info-bg:#1D2842;
+    --success:#21763C;--success-ink:#90D09D;--success-bg:#15301B;
+    --danger:#B6322D;--danger-ink:#FF9A8E;--danger-bg:#3E1F1B;
+    --warning-ink:#DFB585;--warning-bg:#382409;
+    --cat-1:#99C1F4;--cat-2:#AEB9D6;--cat-3:#C8ADD8;--cat-4:#86CACB;--cat-5:#D6B394;
     --scrim:rgba(0,0,0,.6);
-    --shadow-card:0 1px 2px rgba(0,0,0,.45);
-    --shadow-nav:0 -1px 0 rgba(255,255,255,.06);
-    --shadow-sheet:0 -12px 40px rgba(0,0,0,.55);
+    --shadow-sheet:0 -8px 32px rgba(0,0,0,.55);
+    --shadow-float:0 8px 24px rgba(0,0,0,.5);
   }
 }

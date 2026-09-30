@@ -13,8 +13,9 @@ import { useRecords } from './useRecords.js';
 import { useDiaryTags } from './useDiaryTags.js';
 import { useTasks } from './useTasks.js';
 import { useOptions } from './useOptions.js';
+import { UI } from '@peggy-life/shared/ui';
 import { THEME } from './theme.js';
-import { parseDateKey } from './utils.js';
+import { DOW, getWeekDays, parseDateKey, todayKey, weekRangeLabel } from './utils.js';
 import ViewTabs from './components/ViewTabs.jsx';
 import MonthView from './components/MonthView.jsx';
 import WeekView from './components/WeekView.jsx';
@@ -29,13 +30,33 @@ import { toast } from '@peggy-life/shared/feedback.jsx';
 import LoadingSkeleton, { LoadError } from '@peggy-life/shared/LoadingSkeleton.jsx';
 
 const S = {
-  header: { padding: '10px 12px 10px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: THEME.surface },
-  appTitle: { fontSize: 18, fontWeight: 700, color: THEME.textDark, margin: 0 },
-  headerActions: { display: 'flex', alignItems: 'center', gap: 4 },
-  todayBtn: { border: `1px solid ${THEME.border}`, background: THEME.surface, padding: '8px 14px', borderRadius: THEME.radiusSm, fontSize: 13, fontWeight: 700, color: THEME.primaryInk, whiteSpace: 'nowrap' },
-  iconBtn: { border: 'none', background: 'none', color: THEME.textMuted, padding: 8, display: 'flex' },
-  fab: { position: 'absolute', right: 20, bottom: 'calc(78px + env(safe-area-inset-bottom))', zIndex: 5, width: 56, height: 56, borderRadius: '50%', border: 'none', background: THEME.primary, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 20px -6px rgba(31,45,66,.45)' },
+  header: { ...UI.header, flex: 'none', paddingBottom: 12 },
+  backToday: { minHeight: 28, padding: '0 10px', border: 'none', borderRadius: 999, background: THEME.primarySoft, color: THEME.primaryInk, fontSize: 12, fontWeight: 500 },
 };
+
+// 頁首標題與前後切換的文字：月/週/日各自顯示目前翻到的範圍；離開「今天」時副標旁出現「回到今天」
+const NAV_LABELS = {
+  month: ['上一個月', '下一個月'],
+  week: ['上一週', '下一週'],
+  day: ['前一天', '後一天'],
+};
+function headerInfo(view, anchorKey, selectedDateKey, taskCount) {
+  const today = todayKey();
+  if (view === 'tasks') return { title: '任務', sub: `共 ${taskCount} 項 · 依到期日排序`, onToday: true };
+  const anchor = parseDateKey(anchorKey);
+  const now = parseDateKey(today);
+  if (view === 'month') {
+    const sameMonth = anchor.getFullYear() === now.getFullYear() && anchor.getMonth() === now.getMonth();
+    return { title: `${anchor.getMonth() + 1} 月`, sub: `${anchor.getFullYear()} 年`, onToday: sameMonth && selectedDateKey === today };
+  }
+  if (view === 'week') {
+    const days = getWeekDays(anchor);
+    return { title: weekRangeLabel(days), sub: `${anchor.getFullYear()} 年`, onToday: days.includes(today) && selectedDateKey === today };
+  }
+  const d = parseDateKey(selectedDateKey);
+  const isToday = selectedDateKey === today;
+  return { title: `${d.getMonth() + 1} 月 ${d.getDate()} 日`, sub: `${isToday ? '今天 · ' : ''}週${DOW[d.getDay()]}`, onToday: isToday };
+}
 
 export default function App({ session, onSignOut }) {
   const userId = session.user.id;
@@ -219,6 +240,8 @@ export default function App({ session, onSignOut }) {
 
   const overlayNode = renderOverlay();
   const fabDate = parseDateKey(rec.selectedDateKey);
+  const head = headerInfo(rec.view, rec.anchorKey, rec.selectedDateKey, tasksHub.tasks.length);
+  const navLabels = NAV_LABELS[rec.view];
 
   return (
     <div style={{
@@ -231,7 +254,7 @@ export default function App({ session, onSignOut }) {
       background: THEME.bg,
       display: 'flex',
       flexDirection: 'column',
-      boxShadow: '0 0 60px -20px rgba(0,0,0,.12)',
+      boxShadow: '0 0 0 1px var(--line)',
       overflow: 'hidden',
     }}>
       {overlayNode ? (
@@ -241,10 +264,19 @@ export default function App({ session, onSignOut }) {
       ) : (
         <>
           <header style={S.header}>
-            <h1 style={S.appTitle}>TY Calendar</h1>
-            <div style={S.headerActions}>
-              {rec.view !== 'tasks' && <button type="button" onClick={rec.goToday} style={S.todayBtn}>今天</button>}
-              <button type="button" className="tap" onClick={() => setOverlay({ type: 'settings' })} aria-label="設定" style={S.iconBtn}><Icon name="sliders" size={20} /></button>
+            <div style={{ minWidth: 0 }}>
+              <h1 style={UI.title}>{head.title}</h1>
+              <p style={UI.subtitle}>
+                {head.sub}
+                {!head.onToday && <button type="button" className="tap" onClick={rec.goToday} style={S.backToday}>回到今天</button>}
+              </p>
+            </div>
+            <div style={UI.headerActions}>
+              {navLabels && <>
+                <button type="button" onClick={() => rec.shiftPeriod(-1)} aria-label={navLabels[0]} style={UI.iconBtn}><Icon name="chevron-left" size={20} /></button>
+                <button type="button" onClick={() => rec.shiftPeriod(1)} aria-label={navLabels[1]} style={UI.iconBtn}><Icon name="chevron-right" size={20} /></button>
+              </>}
+              <button type="button" onClick={() => setOverlay({ type: 'settings' })} aria-label="設定" style={{ ...UI.iconBtn, color: THEME.textMuted }}><Icon name="sliders" size={20} /></button>
             </div>
           </header>
 
@@ -252,7 +284,6 @@ export default function App({ session, onSignOut }) {
             {rec.view === 'month' && (
               <MonthView
                 anchorKey={rec.anchorKey}
-                onShift={rec.shiftPeriod}
                 selectedDateKey={rec.selectedDateKey}
                 onSelectDay={rec.setSelectedDateKey}
                 onOpenDay={rec.openDay}
@@ -268,7 +299,6 @@ export default function App({ session, onSignOut }) {
             {rec.view === 'week' && (
               <WeekView
                 anchorKey={rec.anchorKey}
-                onShift={rec.shiftPeriod}
                 selectedDateKey={rec.selectedDateKey}
                 onOpenDay={rec.openDay}
                 onCreate={createRecord}
@@ -283,7 +313,6 @@ export default function App({ session, onSignOut }) {
             {rec.view === 'day' && (
               <DayView
                 dateKey={rec.selectedDateKey}
-                onShiftDay={rec.shiftPeriod}
                 recordsByDate={rec.recordsByDate}
                 categories={diaryTags.categories}
                 tasksByDueDate={tasksHub.tasksByDueDate}
@@ -304,13 +333,13 @@ export default function App({ session, onSignOut }) {
 
           {/* 浮動新增按鈕：日檢視新增這一天的紀錄、任務檢視新增任務（月/週檢視在各自的日期卡上有新增按鈕） */}
           {rec.view === 'day' && (
-            <button type="button" style={S.fab} onClick={() => createRecord(rec.selectedDateKey)} aria-label={`新增 ${fabDate.getMonth() + 1}/${fabDate.getDate()} 的紀錄`}>
-              <Icon name="plus" size={26} strokeWidth={2.5} />
+            <button type="button" style={UI.fab} onClick={() => createRecord(rec.selectedDateKey)} aria-label={`新增 ${fabDate.getMonth() + 1}/${fabDate.getDate()} 的紀錄`}>
+              <Icon name="plus" size={24} strokeWidth={2} />
             </button>
           )}
           {rec.view === 'tasks' && (
-            <button type="button" style={S.fab} onClick={() => setOverlay({ type: 'task', mode: 'create' })} aria-label="新增任務">
-              <Icon name="plus" size={26} strokeWidth={2.5} />
+            <button type="button" style={UI.fab} onClick={() => setOverlay({ type: 'task', mode: 'create' })} aria-label="新增任務">
+              <Icon name="plus" size={24} strokeWidth={2} />
             </button>
           )}
 

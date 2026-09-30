@@ -1,42 +1,40 @@
 // Create new challenge / Join existing challenge using an invitation code
 import React, { useState } from 'react';
-import Sheet from './Sheet.jsx';
+import Sheet, { SheetHeader } from './Sheet.jsx';
 import Icon from '@peggy-life/shared/Icon.jsx';
+import { UI } from '@peggy-life/shared/ui';
+
+const S = {
+  tabs: { padding: '4px 20px 0' },
+  body: { flex: 1, overflowY: 'auto', padding: '16px 20px 24px' },
+  form: { display: 'flex', flexDirection: 'column', gap: 16 },
+  cols: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 },
+  hint: { fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6 },
+  code: { ...UI.input, textAlign: 'center', letterSpacing: 4, fontSize: 24, fontWeight: 600, minHeight: 56 },
+};
 
 export default function ChallengeCreateSheet({ onClose, onCreate, onJoin, repeatSource = null }) {
   const [tab, setTab] = useState('create'); // 'create' | 'join'
 
   return (
-    <Sheet label="新增或加入挑戰" onBackdrop={onClose} height="min(70vh, 600px)" zIndex={15}>
-      <div style={{ padding: '8px 20px 6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ fontSize: 18, fontWeight: 900, color: 'var(--text)' }}>{repeatSource ? '原班人馬再來一局' : tab === 'create' ? '建立新挑戰' : '加入既有挑戰'}</div>
-        <button aria-label="關閉" className="tap" onClick={onClose} style={{ border: 'none', background: 'var(--bg)', color: 'var(--text-muted)', width: 30, height: 30, borderRadius: '50%', cursor: 'pointer', fontSize: 16, lineHeight: 1, fontWeight: 700 }}><Icon name="x" size={14} /></button>
-      </div>
+    <Sheet label="新增或加入挑戰" onBackdrop={onClose} height="min(72vh, 620px)" zIndex={15}>
+      <SheetHeader title={repeatSource ? '原班人馬再來一局' : tab === 'create' ? '建立新挑戰' : '加入既有挑戰'} onClose={onClose} />
 
       {!repeatSource && (
-        <div style={{ padding: '4px 16px 0' }}>
-          <div style={{ display: 'flex', background: 'var(--sunken)', borderRadius: 14, padding: 3, gap: 3 }}>
-            <button onClick={() => setTab('create')} aria-pressed={tab === 'create'} style={tabBtn(tab === 'create')}><Icon name="plus" size={15} />建立</button>
-            <button onClick={() => setTab('join')} aria-pressed={tab === 'join'} style={tabBtn(tab === 'join')}><Icon name="log-in" size={15} />加入</button>
+        <div style={S.tabs}>
+          <div style={UI.segTrack}>
+            <button type="button" onClick={() => setTab('create')} aria-pressed={tab === 'create'} style={UI.seg(tab === 'create')}>建立</button>
+            <button type="button" onClick={() => setTab('join')} aria-pressed={tab === 'join'} style={UI.seg(tab === 'join')}>加入</button>
           </div>
         </div>
       )}
 
-      <div className="ps" style={{ flex: 1, overflowY: 'auto', padding: '14px 18px 24px' }}>
+      <div className="ps" style={S.body}>
         {tab === 'create' ? <CreateForm onCreate={onCreate} repeatSource={repeatSource} /> : <JoinForm onJoin={onJoin} />}
       </div>
     </Sheet>
   );
 }
-
-const tabBtn = (active) => ({
-  flex: 1, padding: 10, border: 'none', borderRadius: 10, cursor: 'pointer',
-  fontSize: 14, fontWeight: 800, fontFamily: 'inherit',
-  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
-  background: active ? 'var(--surface)' : 'transparent',
-  color: active ? 'var(--primary-ink)' : 'var(--text-faint)',
-  boxShadow: active ? 'var(--shadow-card)' : 'none',
-});
 
 function CreateForm({ onCreate, repeatSource }) {
   const today = new Date().toISOString().slice(0, 10);
@@ -69,25 +67,21 @@ function CreateForm({ onCreate, repeatSource }) {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <Field label="挑戰名稱">
-        <input aria-label="挑戰名稱" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="例如：暑假甩肉大作戰" maxLength={40} style={input} />
-      </Field>
-      <div style={{ display: 'flex', gap: 10 }}>
-        <div style={{ flex: 1 }}>
-          <Field label="開始日期">
-            <input aria-label="開始日期" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} style={input} />
-          </Field>
-        </div>
-        <div style={{ flex: 1 }}>
-          <Field label="結束日期">
-            <input aria-label="結束日期" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} style={input} />
-          </Field>
-        </div>
+    <div style={S.form}>
+      <label><span style={UI.fieldLabel}>挑戰名稱</span>
+        <input aria-label="挑戰名稱" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="例如：暑假甩肉大作戰" maxLength={40} style={UI.input} />
+      </label>
+      <div style={S.cols}>
+        <label><span style={UI.fieldLabel}>開始日期</span>
+          <input aria-label="開始日期" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} style={UI.input} />
+        </label>
+        <label><span style={UI.fieldLabel}>結束日期</span>
+          <input aria-label="結束日期" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} style={UI.input} />
+        </label>
       </div>
-      {err && <div style={errBox}>{err}</div>}
-      <button onClick={submit} disabled={busy} style={{ ...primaryBtn, marginTop: 6, opacity: busy ? 0.6 : 1 }}>{busy ? '建立中…' : repeatSource ? '建立新一局' : '建立挑戰'}</button>
-      <div style={{ fontSize: 12, color: 'var(--text-faint)', fontWeight: 600, lineHeight: 1.7, marginTop: 4 }}>
+      {err && <div style={UI.note('danger')}>{err}</div>}
+      <button type="button" onClick={submit} disabled={busy} style={{ ...UI.btnPrimary, width: '100%', opacity: busy ? 0.6 : 1 }}>{busy ? '建立中…' : repeatSource ? '建立新一局' : '建立挑戰'}</button>
+      <div style={S.hint}>
         {repeatSource ? `建立後，上一局的 ${repeatSource.members.length} 位成員會直接加入新局。` : '建立後會產生一組邀請碼，分享給朋友讓他們加入。'}
       </div>
     </div>
@@ -111,27 +105,13 @@ function JoinForm({ onJoin }) {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <Field label="邀請碼">
-        <input aria-label="邀請碼" type="text" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="6 碼英數字" maxLength={6}
-          style={{ ...input, textAlign: 'center', letterSpacing: 4, fontSize: 24, fontWeight: 900 }} />
-      </Field>
-      {err && <div style={errBox}>{err}</div>}
-      <button onClick={submit} disabled={busy} style={{ ...primaryBtn, marginTop: 6, opacity: busy ? 0.6 : 1 }}>{busy ? '加入中…' : '加入挑戰'}</button>
-      <div style={{ fontSize: 12, color: 'var(--text-faint)', fontWeight: 600, lineHeight: 1.7, marginTop: 4 }}>請朋友把他建立挑戰時拿到的邀請碼給你。</div>
+    <div style={S.form}>
+      <label><span style={UI.fieldLabel}>邀請碼</span>
+        <input aria-label="邀請碼" type="text" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="6 碼英數字" maxLength={6} style={S.code} />
+      </label>
+      {err && <div style={UI.note('danger')}>{err}</div>}
+      <button type="button" onClick={submit} disabled={busy} style={{ ...UI.btnPrimary, width: '100%', opacity: busy ? 0.6 : 1 }}><Icon name="log-in" size={18} />{busy ? '加入中…' : '加入挑戰'}</button>
+      <div style={S.hint}>請朋友把他建立挑戰時拿到的邀請碼給你。</div>
     </div>
   );
 }
-
-function Field({ label, children }) {
-  return (
-    <div>
-      <div style={{ fontSize: 12, fontWeight: 900, letterSpacing: 1, color: 'var(--text-muted)', marginBottom: 6 }}>{label}</div>
-      {children}
-    </div>
-  );
-}
-
-const input = { width: '100%', border: 'none', background: 'var(--surface-alt)', borderRadius: 14, padding: '14px 15px', fontSize: 16, fontWeight: 700, color: 'var(--text)' };
-const primaryBtn = { border: 'none', background: 'var(--primary)', color: '#fff', fontWeight: 900, fontSize: 15, padding: 14, borderRadius: 14, cursor: 'pointer' };
-const errBox = { background: 'var(--danger-bg)', color: 'var(--danger-ink)', borderRadius: 10, padding: '10px 12px', fontSize: 13, fontWeight: 700 };

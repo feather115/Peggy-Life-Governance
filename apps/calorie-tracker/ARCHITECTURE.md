@@ -36,7 +36,7 @@ Supabase ⇄ db.js ⇄ useAppData.js ⇄ App.jsx ⇄ components/*
 | 你想改的東西 | 檔案 |
 |---|---|
 | **內建食物清單**（新增/改熱量） | `src/constants.js` → `FOODS` |
-| **餐別**（早午晚點宵的名稱/圖示/emoji） | `src/constants.js` → `MEALS_DEF` |
+| **餐別**（早午晚點宵的名稱與順序，只有文字、不用 emoji） | `src/constants.js` → `MEALS_DEF` |
 | **卡路里環顏色 / 超標門檻** | `src/selectors.js` → `ringInfo()` |
 | **報表：本週長條圖算法** | `src/selectors.js` → `buildWeek()` |
 | **報表：月曆熱力圖 / 月統計 / 營養素比例** | `src/selectors.js` → `buildMonth()` |
@@ -45,9 +45,9 @@ Supabase ⇄ db.js ⇄ useAppData.js ⇄ App.jsx ⇄ components/*
 | **日期格式 / 問候語** | `src/utils.js` |
 | **任何資料庫讀寫**（欄位、query） | `src/db.js` |
 | **新增一種資料操作**（state + API） | `src/useAppData.js` |
-| **今日頁畫面**（環、餐卡、營養條） | `src/components/TodayTab.jsx` |
+| **今日頁畫面**（頁首日期切換、摘要卡〔剩餘熱量＋環＋三大營養素〕、各餐清單、AI 摘要、進階設定入口） | `src/components/TodayTab.jsx` |
 | **報表頁畫面** | `src/components/ReportsTab.jsx` |
-| **設定頁畫面**（目標、標籤管理、登出） | `src/components/SettingsTab.jsx` |
+| **設定頁畫面**（分組清單：個人資料、每日目標、標籤〔點了開面板管理〕、帳號、資料、登出） | `src/components/SettingsTab.jsx` |
 | **挑戰頁畫面**（排行榜、podium、登記、歷史、編輯名稱/結束日期） | `src/components/ChallengeTab.jsx` |
 | **新增/加入挑戰彈窗** | `src/components/ChallengeCreateSheet.jsx` |
 | **體重折線圖**（SVG） | `src/components/WeightChart.jsx` |
@@ -55,13 +55,14 @@ Supabase ⇄ db.js ⇄ useAppData.js ⇄ App.jsx ⇄ components/*
 | **排行榜計算 / 剩餘天數** | `src/selectors.js` → `computeLeaderboard()`, `daysLeft()` |
 | **食物庫面板 / 新增、編輯自訂食物表單**（含品牌、備註、AI搜尋、JSON 輸入、份數選擇） | `src/components/FoodSheet.jsx` |
 | **編輯「今天已加入」的某筆餐點** | `src/components/EditMealItemSheet.jsx` |
-| **今日頁的餐點顯示**（品牌、三大營養素、✏編輯按鈕） | `src/components/TodayTab.jsx` |
+| **今日頁的餐點顯示**（品牌、三大營養素；整列點了開編輯面板，刪除在編輯面板裡） | `src/components/TodayTab.jsx` |
 | **進階面板**（斷食/原因標籤、AI摘要產生） | `src/components/AdvancedSheet.jsx` |
 | **記錄原因標籤顏色 / 月曆彩色點** | `src/components/SettingsTab.jsx` + `src/components/ReportsTab.jsx` + `src/selectors.js` |
 | **報表頁的飲食歷史搜尋 / 依餐別統計 / 複製進菜單** | `src/components/FoodHistoryCard.jsx` |
-| **底部分頁列** | `src/components/TabBar.jsx` |
+| **底部分頁列**（有哪些分頁） | `src/components/TabBar.jsx`（外觀在 `packages/shared/src/BottomTabs.jsx`） |
+| **共用元件樣式**（頁首、分組清單、按鈕、膠囊、分段切換、輸入框，三個 app 一致） | `packages/shared/src/ui.js` → `UI` |
 | **色票 / 陰影 / 焦點環等全域樣式** | `src/theme.css`（色票）+ `packages/shared/src/base.css`（共用）|
-| **彈出面板的外框**（圓角、半透明背景、握把） | `src/components/Sheet.jsx` |
+| **彈出面板的外框**（圓角、半透明背景、握把）與標題列 | `src/components/Sheet.jsx`（`Sheet` + `SheetHeader`） |
 | **登入/註冊頁** | `src/components/Auth.jsx` |
 | **登入判斷 / 設定缺失提示 / LINE 自動登入觸發點** | `src/Root.jsx` |
 | **分頁切換 / 哪個面板開著 / App 外層高度（影響分頁列是否固定）** | `src/App.jsx` |
@@ -79,23 +80,26 @@ Supabase ⇄ db.js ⇄ useAppData.js ⇄ App.jsx ⇄ components/*
 
 ## 樣式與設計 tokens
 
-- **色票 = CSS 變數**：`src/theme.css` 的 `:root` 定義本 app 的色票（`--bg / --surface / --text / --text-muted / --text-faint / --primary / --line / --danger …`）與陰影（`--shadow-card / --shadow-nav / --shadow-sheet`）。元件 inline style 一律寫 `'var(--text)'`，**不要再寫死色碼**；要換色只改 `theme.css`。三個 app 變數名相同、色值不同（綠 / 橘棕 / 藍）。
+- **色票 = CSS 變數**：`src/theme.css` 的 `:root` 定義本 app 的色票（`--bg / --surface / --text / --text-muted / --text-faint / --primary / --line / --danger …`）與陰影（`--shadow-card / --shadow-nav / --shadow-sheet / --shadow-float`）。元件 inline style 一律寫 `'var(--text)'`，**不要再寫死色碼**；要換色只改 `theme.css`。三個 app 變數名相同；**中性色（底色、線、文字）與語意色三個 app 共用同一組暖白色票**，只有主色不同（綠 `#29774F` / 橘棕 / 藍）。
+- **卡片不加陰影**：`--shadow-card` 是 1px 邊線（`0 0 0 1px var(--line)`），分頁列上緣 `--shadow-nav` 也是一條線；只有浮在上層的東西（面板、toast）用 `--shadow-float`。
+- **共用元件樣式**：頁首、分組清單、按鈕、膠囊、分段切換、輸入框、stepper 都用 `@peggy-life/shared/ui` 的 `UI`（用法見 `docs/new-app-sop.md` 第 6 節），本 app 的 `S` 只放位置、寬度與特有元件（熱量環、長條圖、月曆、頒獎台）。字型是 Figtree（`index.html` 載 400/500/600）＋系統中文字型。
 - **共用全域樣式**：`packages/shared/src/base.css`（由 `main.jsx` import）— reset、`:focus-visible` 焦點環（`--ring`）、按鈕按壓回饋、`prefers-reduced-motion`、`.tap`（把小按鈕點擊範圍撐到 ≥44px，不影響版面）、`.ps`（隱藏捲軸）。因為 inline style 優先級高於 CSS，**元件裡不可再寫 `outline: 'none'`**，否則焦點環會被蓋掉。
-- **實心底色 vs 字色（*-ink）**：`--primary / --info / --danger / --success` 是實心底色（上面放白字，使用者存的標籤色也可能是 `var(--primary)`）；**當字色用一律寫 `*-ink`**（`var(--primary-ink)`）。淺色模式兩者同色，深色模式 ink 比較亮，深底上才讀得到。本 app 另有 `--warning / --warning-ink / --warning-bg`（接近目標的橘）、`--carb / --carb-ink`、`--fat / --fat-ink`（營養素：前者畫長條、後者當字色）、`--over`（超標的環與長條）、`--bar-empty / --heat-near / --heat-over / --future-bg / --future-text`（報表月曆與長條圖）、`--goal-line`、`--bronze-ink`（排行榜第三名）。
+- **實心底色 vs 字色（*-ink）**：`--primary / --info / --danger / --success` 是實心底色（上面放白字，使用者存的標籤色也可能是 `var(--primary)`）；**當字色用一律寫 `*-ink`**（`var(--primary-ink)`）。淺色模式兩者同色，深色模式 ink 比較亮，深底上才讀得到。本 app 另有 `--warning / --warning-ink / --warning-bg`（接近目標的橘）、`--carb`、`--fat`（營養素的長條與小圓點；文字一律用一般字色，不再有 `*-ink` 版本）、`--over`（超標的環與長條）、`--bar-empty / --heat-ok / --heat-near / --heat-over / --future-bg / --future-text`（報表月曆與長條圖；`--heat-ok` 是達標日的淡綠底）、`--goal-line`、`--bronze-ink`（排行榜第三名）。
 - **深色模式**：`theme.css` 的 `@media (prefers-color-scheme: dark)` 區塊整組換色，跟著手機系統設定；元件不用改。新增顏色時兩個模式都要給值，不要在元件裡寫死色碼（寫死的白底在深色模式會變成一塊亮白）。
 - **對比度有測試守著**：`packages/shared/src/themeContrast.test.js` 檢查淺色/深色兩組色票：文字與 *-ink 在 `--surface / --bg / --surface-alt` 上 ≥4.5:1、*-ink 在對應的淡色底上 ≥4.5:1、`--primary / --info / --danger` 上的白字 ≥4.5:1。改色後跑 `npm test`。
-- **icon**：`@peggy-life/shared/Icon.jsx`（內建線條 SVG，`<Icon name="pencil" />`，`aria-hidden`）。icon-only 按鈕必須加 `aria-label`；小按鈕加 `className="tap"`。內容性 emoji（餐別圖示等）保留，UI 操作符號（✏ × ＋ ‹ ›）用 `Icon`。
+- **icon**：`@peggy-life/shared/Icon.jsx`（內建線條 SVG，`<Icon name="pencil" />`，`aria-hidden`）。icon-only 按鈕必須加 `aria-label`；小按鈕加 `className="tap"`。UI 操作符號（✏ × ＋ ‹ ›）一律用 `Icon`，介面不放 emoji。
 - **表單欄位**：每個 `<input>/<textarea>/<select>` 都要有 `aria-label`（或 `<label>` 包住）；只靠 placeholder 不算。
 - **viewport 不鎖縮放**（無 `maximum-scale` / `user-scalable=no`）；為了避免 iOS 聚焦輸入框自動放大，`base.css` 在觸控裝置把輸入框強制 16px。
-- **尺寸規格**：字級只用 12/13/14/15/16/18/20/24（28 以上是大數字），圓角只用 8/10/14/20/28/999（5 以下的細節不限）。`packages/shared/src/designScale.test.js` 會掃所有元件，寫了規格外的值 `npm test` 會失敗。
+- **尺寸規格**：字級只用 12/13/14/15/16/18/24（28 以上是大數字），圓角只用 10/14/20/999（5 以下的細節不限），字重只用 400/500/600。`packages/shared/src/designScale.test.js` 會掃所有元件（含 `ui.js`），寫了規格外的值 `npm test` 會失敗。
 - **`Sheet.jsx`**：`role="dialog" aria-modal`，開啟時焦點移進面板、`Esc` 關閉（多層時只關最上層）、關閉後焦點還給原觸發元素；新增面板要傳 `label`。**手機返回鍵也會關閉面板**（`@peggy-life/shared/useBackClose`），不會直接離開 app。
-- **icon 與 emoji**：操作與標示用途一律用 `@peggy-life/shared/Icon.jsx`（線條 icon，路徑取自 Lucide；`filled` 可做實心，例如已按讚的愛心）——emoji 在 iOS/Android/LINE 長得不一樣、大小也不齊。**只有內容性的 emoji 保留**：餐別圖示、挑戰頁的 🏆🥇🔥 標題（遊戲化的趣味）、沒有圖片時的 🍳 佔位。
+- **icon 與 emoji**：操作與標示用途一律用 `@peggy-life/shared/Icon.jsx`（線條 icon，路徑取自 Lucide；`filled` 可做實心，例如已按讚的愛心）——emoji 在 iOS/Android/LINE 長得不一樣、大小也不齊。2026-09-30 改版後**介面完全不用 emoji**：餐別只寫文字、挑戰頁的名次用數字（頒獎台、排行榜）、標題與提示文字不加 emoji；「AI 搜尋」「AI 幫我寫」用 `sparkles` icon。
 - **載入/失敗畫面**：`@peggy-life/shared/LoadingSkeleton.jsx` 的 `<LoadingSkeleton />`（灰色色塊排出版面、`.skeleton` 閃爍動畫在 base.css）與 `<LoadError message />`（說明＋「重新載入」按鈕）。
 - **其他 App 入口**：設定頁的 `<OtherApps current="…" />`（shared），連到另外兩個 app 的 LIFF URL；LIFF ID 來自 `VITE_LIFF_ID_CALORIE` / `VITE_LIFF_ID_RECIPE` / `VITE_LIFF_ID_CALENDAR`，沒設就不顯示（見 `.env.example`）。
 - **自選顏色上的文字**：記錄原因標籤、挑戰成員頭像的字色用 `utils.js` 的 `readableOn(color)`，依底色亮度挑深字（`#111`）或白字（淺黃 `#E8A13C` 配白字只有 2.2:1）。超標提示「已超過 X kcal」底色用 `--danger`（原本 `#D9544F` 配白字只有 3.9:1）。
 - **提示與確認**：不用瀏覽器原生 `alert`/`confirm`（在 LINE 內建瀏覽器會帶網址當標題、卡住畫面），一律用 `@peggy-life/shared/feedback.jsx` 的 `toast(message, { tone, action })` 與 `await confirmDialog({ title, message, confirmText, danger })`。`main.jsx` 在 `<Root />` 旁邊掛了 `<FeedbackHost />`。確認框焦點預設在「取消」、Esc/返回鍵/點背景都是取消。`utils.js` 的 `alertError()` 現在是紅色 toast。
-- **刪除**：今日頁的餐點 × **直接刪、給 5 秒「復原」**（復原＝用同樣內容重新 `addMeal`，會排到該餐最後、`food_ref` 不保留——目前沒有地方讀它）。自訂食物、標籤、挑戰的刪除重建會換新 id、斷掉引用，所以維持先用 `confirmDialog` 確認。食物庫面板的成功/失敗提示也改用共用 toast（原本是面板內自己的 toast）。今天時「後一天」按鈕是 `disabled`。
-- **`TabBar.jsx`**：`<nav>` + icon + 文字，`aria-current="page"`，底部留 `env(safe-area-inset-bottom)`（取代原本的假 home-indicator 橫條）。
+- **刪除**：今日頁點餐點那一列開 `EditMealItemSheet`，面板最下面的「刪除這筆」**直接刪、給 5 秒「復原」**（復原＝用同樣內容重新 `addMeal`，會排到該餐最後、`food_ref` 不保留——目前沒有地方讀它）。自訂食物、標籤、挑戰的刪除重建會換新 id、斷掉引用，所以維持先用 `confirmDialog` 確認。食物庫面板的成功/失敗提示也改用共用 toast（原本是面板內自己的 toast）。今天時「後一天」按鈕是 `disabled`。
+- **`TabBar.jsx`**：只定義四個分頁（key / 文字 / icon），外觀是共用的 `@peggy-life/shared/BottomTabs.jsx`：`<nav>` + icon + 文字、選中的分頁是淡主色膠囊＋`aria-current="page"`，底部留 `env(safe-area-inset-bottom)`。
+- **頁首**：每個分頁頂端是大標題（24/600）＋一行副標，右邊放圓鈕（今日頁的前一天 / 後一天、挑戰頁的「新增 / 加入」）。頁首不放 app 名稱；今日頁不是今天時副標多一顆「回到今天」膠囊。
 
 ## 每個檔案在幹嘛
 
@@ -118,8 +122,8 @@ Supabase ⇄ db.js ⇄ useAppData.js ⇄ App.jsx ⇄ components/*
 - `FoodSheet` / `AdvancedSheet` / `ChallengeCreateSheet` / `EditMealItemSheet` — 四個底部彈出面板（`AdvancedSheet` 關閉時才存當日摘要；存檔失敗會問要不要放棄修改直接關，不會卡住關不掉）
 - `FoodHistoryCard` — 報表頁裡的飲食歷史卡片（搜尋/依餐別統計/編輯/複製進菜單）
 - `WeightChart` — 挑戰用的多人折線圖（SVG）
-- `TabBar` — 底部分頁列
-- `Sheet` — 共用的彈出面板外框
+- `TabBar` — 底部分頁列（包共用的 `BottomTabs`）
+- `Sheet` — 共用的彈出面板外框；`SheetHeader` 是面板標題列（標題、副標、右上 × 或「完成」，旁邊可放動作按鈕）
 - `Auth` — 登入 / 註冊 / 忘記密碼頁，LINE 自動登入失敗時會在最下面顯示除錯文字（`lineDebug` prop）
 
 ### LINE 整合 + AI 功能（`src/liff.js` + `api/`）
@@ -132,8 +136,8 @@ Supabase ⇄ db.js ⇄ useAppData.js ⇄ App.jsx ⇄ components/*
   **`@line/liff` 是動態 import**：只有「有設 `VITE_LIFF_ID` 且 user agent 含 `Line/`」才會下載
   liff SDK（獨立 chunk 約 116kB），一般瀏覽器完全不載入，主 bundle 變小。
 - **`api/_groq.js`** — 呼叫 Groq Chat Completions 的最底層共用函式。
-- **`api/food-search.js`** + `_groqFoodSearch.js` — AI 食物搜尋（FoodSheet 的「✨ AI 搜尋」）。
-- **`api/day-summary.js`** + `_groqDaySummary.js` — AI 當日摘要（AdvancedSheet 的「✨ AI 幫我寫」），會把今天吃的東西、總營養素、目標值、當天標籤一起送給 AI。
+- **`api/food-search.js`** + `_groqFoodSearch.js` — AI 食物搜尋（FoodSheet 的「AI 搜尋」）。
+- **`api/day-summary.js`** + `_groqDaySummary.js` — AI 當日摘要（AdvancedSheet 的「AI 幫我寫」），會把今天吃的東西、總營養素、目標值、當天標籤一起送給 AI。
 - **`api/line-login.js`** + `_lineVerify.js` + `_lineLogin.js` — 驗證 LIFF 給的 LINE ID Token，自動建立/比對 Supabase 帳號，回傳一次性登入憑證。
 - **`api/line-link.js`** + `_lineLink.js` — 把目前登入中的帳號跟 LINE 身份綁定，存進 `line_links` 表。
 - **`api/_supabaseAdmin.js`** — 建立帶 `service_role` 金鑰的 Supabase admin client，只能在這些 `api/*.js` 裡用，**絕對不能被前端程式碼 import**。
@@ -242,8 +246,8 @@ SET pgrst.db_schemas = '...'` + `NOTIFY pgrst, 'reload config'`，見根目錄
 - **自訂食物的品牌/備註** — `custom_foods.brand`、`custom_foods.note` 都是選填欄位，純粹給使用者自己標記用（例如「全家」「去冰半糖」），不影響任何計算邏輯。因為 `meal_items` 是快照，**改自訂食物的品牌/備註/數值都不會動到已經記錄過的歷史餐點**——這點對話中問過好幾次，是這個 App 的核心設計原則，改任何 `custom_foods` 欄位都要記住這個前提。
 - **`meal_items` 也有 `brand`** — 加入餐點時把當時食物的品牌也一起快照進去，今日頁才能顯示「名稱 · 品牌」。
 - **食物庫排序用 `food_usage`，不是排序 `custom_foods`/`FOODS` 本身** — 選用/新增/編輯食物時都會 `upsert` 一筆 `food_usage`（`useAppData.js` 的 `touchFood()`），`FoodSheet.jsx` 顯示清單時依這張表的時間排序，最近用過的排最上面。刪除自訂食物或「清除全部」時會一併清掉對應的 `food_usage` 紀錄，避免累積孤兒排序資料。
-- **食物庫搜尋框** — `FoodSheet.jsx` 清單最上方有一個搜尋框，純前端過濾（比對名稱／品牌／備註，忽略大小寫），排序後再套用；沒結果時顯示提示引導改用「新增自訂食物」。這跟表單裡的「✨ AI 搜尋」（打 `/api/food-search` 估營養）是兩回事。
-- **食物庫面板頂部按鈕** — `FoodSheet.jsx` 標題列右側的關閉鈕文字是「跳出」；開啟自訂食物表單時，「儲存並加入{餐別}」（編輯模式為「儲存修改」）會出現在「跳出」左邊、同在頂部，表單底部沒有儲存鈕——避免使用者填完表單誤按關閉鈕整張表單消失。
+- **食物庫搜尋框** — `FoodSheet.jsx` 清單最上方有一個搜尋框，純前端過濾（比對名稱／品牌／備註，忽略大小寫），排序後再套用；沒結果時顯示提示引導改用「新增自訂食物」。這跟表單裡的「AI 搜尋」（打 `/api/food-search` 估營養）是兩回事。
+- **食物庫面板頂部按鈕** — `FoodSheet.jsx` 標題列（`SheetHeader`）右側是 × 關閉鈕；開啟自訂食物表單時，「儲存並加入」（編輯模式為「儲存」）會出現在 × 左邊、同在頂部，表單底部沒有儲存鈕——避免使用者填完表單誤按關閉鈕整張表單消失。自訂食物要編輯時**點清單裡的食物名稱**（名稱是按鈕），刪除在編輯表單裡（`confirmDialog` 確認）。
 - **記錄原因標籤顏色存在 `tag_defs.color`** — 主要給 `type='other'` 的標籤使用；設定頁可選顏色，報表月曆會把當天啟用的每個記錄原因標籤畫成對應顏色的小點。舊標籤沒有顏色時前端 fallback 為 `#E8A13C`。
 
 ---
@@ -268,7 +272,7 @@ SET pgrst.db_schemas = '...'` + `NOTIFY pgrst, 'reload config'`，見根目錄
 ## 報表頁的飲食歷史（`FoodHistoryCard.jsx`）
 
 - **搜尋食物**：輸入名稱（模糊比對，忽略大小寫），列出吃過幾次、最近一次日期；展開可以看到完整的歷史清單（哪天、哪一餐、多少卡路里），每筆都有：
-  - **✏ 編輯**：直接改「那一天」那一筆的數值（呼叫 `app.editMeal`）。
+  - **編輯（鉛筆 icon）**：直接改「那一天」那一筆的數值（呼叫 `app.editMeal`）。
   - **📋 複製進菜單**：把這筆歷史記錄存成一筆新的自訂食物（呼叫 `app.addCustomFood`），**不是**加進今天的餐點——因為原本那筆歷史記錄之後可能被刪掉，存進食物庫菜單才留得住。
 - **依餐別統計**：選早/午/晚/點心/宵夜，列出這個餐別吃過的食物排行（依次數多到少），附帶平均卡路里，回答「我早餐通常吃什麼」。
 - 這些統計全部是前端對已載入的 `days` 資料做運算（`selectors.js` 的 `buildFoodHistory()` / `mealTypeBreakdown()`），沒有額外打 API。
@@ -326,7 +330,7 @@ SET pgrst.db_schemas = '...'` + `NOTIFY pgrst, 'reload config'`，見根目錄
 > 「管理員」不是獨立角色 — 誰建立挑戰，誰就是該挑戰的建立者。一個人可以同時是 A 挑戰的建立者、B 挑戰的成員。
 
 ### 結束 vs 刪除
-- **結束挑戰**：`status` 從 `active` 變 `ended`，自動標記冠軍。挑戰會從主畫面移到「🗂 歷史挑戰」摺疊區，預設不渲染完整挑戰內容；展開歷史並選取場次後，才以同一個 `ChallengeView` 顯示結束前的排行榜、頒獎台與每週戰績，預覽上方的「回到挑戰」會清除歷史選取並返回進行中的挑戰或歷史清單，**所有資料保留**。
+- **結束挑戰**：`status` 從 `active` 變 `ended`，自動標記冠軍。挑戰會從主畫面移到「歷史挑戰」摺疊區，預設不渲染完整挑戰內容；展開歷史並選取場次後，才以同一個 `ChallengeView` 顯示結束前的排行榜、頒獎台與每週戰績，預覽上方的「回到挑戰」會清除歷史選取並返回進行中的挑戰或歷史清單，**所有資料保留**。
 - **刪除挑戰**：`ON DELETE CASCADE` 把成員、體重紀錄整批清掉，**無法復原**。
 - **挑戰 Banner 排版**：`ChallengeTab.jsx` 的主挑戰卡與歷史挑戰卡都把 `challenge.name` 固定成單行省略（ellipsis），右上的剩餘天數改成較窄的 badge，避免標題因倒數區塊太寬而被擠成兩行。
 
@@ -341,8 +345,8 @@ SET pgrst.db_schemas = '...'` + `NOTIFY pgrst, 'reload config'`，見根目錄
 - 折線圖 X 軸是所有人實際登記過的日期（distinct），不是強制「每週一格」 — 但若大家都選週五，畫面就會自然每週一個點。
 - **排行榜排序用 `week_label` 不是 `recordedAt`**——`week_label` 代表「哪一週」，`recordedAt` 是「寫入資料庫的時間」。如果用 SQL 一次性補登多筆歷史資料（例如幫朋友手動 insert 過去半年的紀錄），這些筆的 `recordedAt` 幾乎同一時間，用它排序會抓錯「最新一筆」。`selectors.js` 的 `computeLeaderboard()` 已修正為比較 `week_label` 字串大小，同時會計算最新一週與前一週的差值（`weeklyChange`），並在排行榜與頒獎台下方顯示如「比上週 -0.7 kg」的動態差值反饋。
 - **輸入框有 `±` 切換鈕**——某些 Android 手機的數字鍵盤打不出負號，`ChallengeTab.jsx` 的 `EntryForm` 把輸入框換成 `inputMode="decimal"` 文字框，並在旁邊加一個按鈕直接反轉正負號，不用靠鍵盤打 `-`。
-- **登記紀錄可編輯**——`EntryForm` 顯示「全部」歷史登記（不只最近幾筆），每筆旁邊有 ✏ 編輯按鈕：點了會把數值帶回表單、鎖住日期欄位（避免改日期變成新增一筆），送出後會 upsert 覆蓋原本那筆。
-- **起始體重 / 當前體重是選填輔助欄位**——存在 `challenge_members.start_weight`、`challenge_members.current_weight`，前端在 `ChallengeTab.jsx` 另外拆出一張 `體重紀錄（選填）` 卡片；這兩個值跟每週登記分開保存，進入挑戰時直接讀上次保存的值；點「協助帶入並送出」會換算 `kg_diff`，並直接登記到目前選擇的日期。
+- **登記紀錄可編輯**——`EntryForm` 顯示「全部」歷史登記（不只最近幾筆），每筆旁邊有編輯（鉛筆 icon）按鈕：點了會把數值帶回表單、鎖住日期欄位（避免改日期變成新增一筆），送出後會 upsert 覆蓋原本那筆。
+- **起始體重 / 當前體重是選填輔助欄位**——存在 `challenge_members.start_weight`、`challenge_members.current_weight`，前端在 `ChallengeTab.jsx` 另外拆出一張 `體重紀錄（選填）` 卡片；這兩個值跟每週登記分開保存，進入挑戰時直接讀上次保存的值；點「用差值送出」會換算 `kg_diff`，並直接登記到目前選擇的日期。
 
 ### 邀請碼
 - 建立挑戰時自動生 6 碼。若撞名最多重試 5 次（unique violation `23505`）。
@@ -356,7 +360,7 @@ SET pgrst.db_schemas = '...'` + `NOTIFY pgrst, 'reload config'`，見根目錄
 - 點圖例任一人名可單獨高亮那條線、其他人淡化到 0.18 透明度（`highlightUserId` 狀態存在 `ChallengeTab.jsx` 的 `ProgressChartCard`）。同時支援點選圖表特定週數的柱位，點選後會在圖表下方展開該週的戰績詳情，顯示當週所有人的登記體重差值以及與上週相比的變化。
 - X 軸標籤太多週數時只挑約 8 個顯示（含最後一週），避免擠成一團。
 - **顏色分配**：`selectors.js` 的 `memberColor(challenge, userId)` 優先用 `challenge_members.color`（使用者自訂），沒設就依「加入挑戰的時間順序」從 16 色色盤（`MEMBER_PALETTE`）固定分配 index，保證同一挑戰內每個人顏色都不同（不是用 userId 雜湊，雜湊在人少色盤小時容易撞色）。
-- **自訂顏色 UI**：圖表下方圖例，自己的名字旁邊有 🎨 按鈕，點開 `ColorPicker` 選色盤裡的顏色，存到 `challenge_members.color`（透過 `db.js` 的 `setMemberColor()`），只影響自己這個挑戰裡的顯示顏色。
+- **自訂顏色 UI**：圖表下方圖例，自己的名字旁邊有調色盤 icon 按鈕，點開 `ColorPicker` 選色盤裡的顏色，存到 `challenge_members.color`（透過 `db.js` 的 `setMemberColor()`），只影響自己這個挑戰裡的顯示顏色。
 
 ### 想清掉所有歷史挑戰
 Supabase SQL Editor 跑這行：

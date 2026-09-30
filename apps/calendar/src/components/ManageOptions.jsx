@@ -4,30 +4,28 @@
 import React, { useMemo, useState } from 'react';
 import { THEME } from '../theme.js';
 import Icon from '@peggy-life/shared/Icon.jsx';
+import { UI } from '@peggy-life/shared/ui';
 import { scrollIntoViewOnMount } from '../utils.js';
 import { confirmDialog } from '@peggy-life/shared/feedback.jsx';
 
 const S = {
-  header: { display: 'flex', alignItems: 'center', gap: 12, padding: 16, background: THEME.surface, borderBottom: `1px solid ${THEME.border}` },
-  backBtn: { border: 'none', background: 'none', color: THEME.textMuted, padding: 2, display: 'flex', alignItems: 'center' },
-  title: { fontSize: 18, fontWeight: 700, color: THEME.textDark },
-  body: { padding: '20px 20px 48px', display: 'flex', flexDirection: 'column', gap: 28 },
-  errorBox: { background: THEME.errorBg, color: THEME.errorInk, padding: '10px 12px', borderRadius: THEME.radiusSm, fontSize: 13, fontWeight: 600 },
-  sectionName: { fontSize: 14, fontWeight: 700, color: THEME.textDark, marginBottom: 4 },
-  sectionHint: { fontSize: 13, color: THEME.textFaint, marginBottom: 10 },
+  body: { padding: '8px 20px 48px', display: 'flex', flexDirection: 'column', gap: 28 },
+  errorBox: { ...UI.note('danger') },
+  sectionName: { ...UI.sectionTitle, marginBottom: 4 },
+  sectionHint: { fontSize: 13, color: THEME.textMuted, marginBottom: 10 },
   rows: { display: 'flex', flexDirection: 'column', gap: 8 },
-  row: (archived) => ({ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: THEME.radiusSm, border: `1px solid ${THEME.border}`, background: THEME.surface, opacity: archived ? 0.5 : 1 }),
-  childRow: (archived) => ({ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: THEME.radiusSmInner, border: `1px solid ${THEME.border}`, background: THEME.surfaceAlt, opacity: archived ? 0.5 : 1 }),
+  row: (archived) => ({ ...UI.card, display: 'flex', alignItems: 'center', gap: 8, minHeight: 48, padding: '0 8px 0 12px', opacity: archived ? 0.5 : 1 }),
+  childRow: (archived) => ({ display: 'flex', alignItems: 'center', gap: 8, minHeight: 44, padding: '0 8px 0 10px', borderRadius: 10, background: THEME.surfaceAlt, opacity: archived ? 0.5 : 1 }),
   childMark: { color: THEME.textFaint, fontSize: 13, flexShrink: 0 },
-  rowInput: (bold) => ({ flex: 1, minWidth: 0, border: 'none', fontSize: bold ? 15 : 14, fontWeight: bold ? 600 : 400, color: THEME.textDark, background: 'transparent' }),
-  usage: { fontSize: 12, color: THEME.textFaint, whiteSpace: 'nowrap' },
-  toggleBtn: { border: `1px solid ${THEME.border}`, background: THEME.surface, borderRadius: THEME.radiusSmInner, padding: '5px 10px', fontSize: 13, color: THEME.textMuted, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' },
-  deleteBtn: { border: 'none', background: 'none', color: THEME.errorInk, cursor: 'pointer', padding: '0 2px', display: 'flex' },
-  addRow: (indent) => ({ display: 'flex', alignItems: 'center', gap: 8, marginTop: indent ? 0 : 10, padding: '8px 12px', borderRadius: THEME.radiusSm, border: `1px dashed ${THEME.textFaint}`, background: indent ? 'transparent' : THEME.surface }),
-  addInput: { flex: 1, minWidth: 0, border: 'none', fontSize: 14, color: THEME.textDark, background: 'transparent' },
-  tagCard: { border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSm, background: THEME.surface, padding: 10 },
+  rowInput: (bold) => ({ flex: 1, minWidth: 0, border: 'none', fontSize: 15, fontWeight: bold ? 600 : 400, color: THEME.textDark, background: 'transparent' }),
+  usage: { fontSize: 12, color: THEME.textMuted, whiteSpace: 'nowrap' },
+  toggleBtn: { ...UI.btnNeutral, minHeight: 32, padding: '0 10px', fontSize: 13 },
+  deleteBtn: { width: 32, height: 32, padding: 0, border: 'none', background: 'none', color: THEME.errorInk, display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  addRow: (indent) => ({ display: 'flex', alignItems: 'center', gap: 8, marginTop: indent ? 0 : 8, minHeight: 44, padding: '0 12px', borderRadius: 10, border: '1px dashed var(--line-strong)', background: 'transparent' }),
+  addInput: { flex: 1, minWidth: 0, border: 'none', fontSize: 15, color: THEME.textDark, background: 'transparent' },
+  tagCard: { ...UI.card, padding: 12 },
   tagCardTop: (archived) => ({ display: 'flex', alignItems: 'center', gap: 8, opacity: archived ? 0.5 : 1 }),
-  children: { display: 'flex', flexDirection: 'column', gap: 6, margin: '10px 0 0 18px' },
+  children: { display: 'flex', flexDirection: 'column', gap: 6, margin: '10px 0 0 12px' },
   empty: { fontSize: 13, color: THEME.textFaint },
 };
 
@@ -64,7 +62,7 @@ function OptionRow({ option, usage, canDelete, onRename, onToggleArchive, onDele
   );
 }
 
-// 虛線的「＋ 新增」輸入列，Enter 送出
+// 虛線外框的「新增」輸入列，Enter 送出
 function AddRow({ placeholder, onAdd, indent }) {
   const [draft, setDraft] = useState('');
   const submit = () => {
@@ -144,10 +142,10 @@ export default function ManageOptions({ opts, records, renameField, onClose }) {
 
   return (
     <div>
-      <div style={S.header}>
-        <button type="button" onClick={onClose} style={S.backBtn} className="tap" aria-label="返回"><Icon name="chevron-left" size={24} /></button>
-        <div style={S.title}>管理地點、人名與事件標籤</div>
-      </div>
+      <header style={UI.subBar}>
+        <button type="button" onClick={onClose} style={UI.iconBtn} aria-label="返回"><Icon name="chevron-left" size={20} /></button>
+        <h1 style={UI.subTitle}>管理地點、人名與事件標籤</h1>
+      </header>
 
       <div style={S.body}>
         {opts.loadError && <div style={S.errorBox}>選項庫載入失敗：{opts.loadError}（可能還沒執行 2026-07-09_event_options.sql migration）</div>}

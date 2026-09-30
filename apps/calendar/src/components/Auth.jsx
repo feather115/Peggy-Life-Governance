@@ -1,7 +1,20 @@
-// 登入 / 註冊 / 忘記密碼頁面（未登入時顯示）。Supabase Email + Password。
+// 登入 / 註冊 / 忘記密碼頁面（未登入時顯示）。Supabase Email + Password。三個 app 的登入頁同一個版型。
 import React, { useState } from 'react';
 import { supabase } from '../supabase.js';
-import { THEME } from '../theme.js';
+import { UI } from '@peggy-life/shared/ui';
+
+const S = {
+  wrap: { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 },
+  card: { ...UI.card, padding: 24, width: '100%', maxWidth: 380 },
+  title: { ...UI.title, textAlign: 'center' },
+  sub: { fontSize: 14, color: 'var(--text-muted)', textAlign: 'center', marginTop: 4, marginBottom: 20 },
+  form: { display: 'flex', flexDirection: 'column', gap: 14 },
+  links: { marginTop: 12, display: 'flex', flexDirection: 'column', alignItems: 'center' },
+  link: { ...UI.btnText, color: 'var(--text-muted)' },
+  debug: { marginTop: 16, fontSize: 12, color: 'var(--text-faint)', lineHeight: 1.6, wordBreak: 'break-word' },
+};
+
+const MSG_TONE = { error: 'danger', success: 'success', info: 'warning' };
 
 export default function Auth({ lineDebug }) {
   const [mode, setMode] = useState('signin'); // 'signin' | 'signup' | 'forgot'
@@ -50,55 +63,41 @@ export default function Auth({ lineDebug }) {
     signin: '登入', signup: '建立帳號', forgot: '寄送重設信件',
   };
 
-  const msgStyles = {
-    error:   { color: THEME.errorInk, bg: THEME.errorBg },
-    success: { color: THEME.successInk, bg: THEME.successBg },
-    info:    { color: 'var(--warning-ink)', bg: 'var(--warning-bg)' },
-  };
-  const ms = msgStyles[msgKind];
-
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 28, background: THEME.bg }}>
-      <div style={{ width: 52, height: 52, borderRadius: 14, background: THEME.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 18, marginBottom: 16 }}>TY</div>
-      <div style={{ fontSize: 20, fontWeight: 700, color: THEME.textDark, marginBottom: 4 }}>TY Calendar</div>
-      <div style={{ fontSize: 14, color: THEME.textMuted, marginBottom: 28 }}>{titles[mode]}</div>
-
-      <div style={{ width: '100%', maxWidth: 380, background: THEME.surface, borderRadius: THEME.radius, padding: 24, boxShadow: THEME.shadow }}>
-        <form onSubmit={submit}>
-          <div style={{ marginBottom: 14 }}>
-            <div style={{ fontSize: 13, color: THEME.textMuted, marginBottom: 6 }}>電子郵件</div>
-            <input aria-label="電子郵件" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required
-              style={{ width: '100%', boxSizing: 'border-box', border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSm, padding: '11px 12px', fontSize: 15, color: THEME.textDark, background: THEME.surface }} />
-          </div>
+    <div style={S.wrap}>
+      <div style={S.card}>
+        <h1 style={S.title}>TY Calendar</h1>
+        <div style={S.sub}>{titles[mode]}</div>
+        <form onSubmit={submit} style={S.form}>
+          <label>
+            <span style={UI.fieldLabel}>電子郵件</span>
+            <input type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required style={UI.input} />
+          </label>
           {mode !== 'forgot' && (
-            <div style={{ marginBottom: 14 }}>
-              <div style={{ fontSize: 13, color: THEME.textMuted, marginBottom: 6 }}>密碼</div>
-              <input aria-label="密碼" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6}
-                style={{ width: '100%', boxSizing: 'border-box', border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSm, padding: '11px 12px', fontSize: 15, color: THEME.textDark, background: THEME.surface }} />
-            </div>
+            <label>
+              <span style={UI.fieldLabel}>密碼</span>
+              <input type="password" placeholder="至少 6 字元" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} style={UI.input} />
+            </label>
           )}
-          <button type="submit" disabled={busy}
-            style={{ width: '100%', border: 'none', cursor: 'pointer', padding: 12, borderRadius: THEME.radiusSm, background: THEME.primary, color: '#fff', fontSize: 15, fontWeight: 600, marginBottom: 12 }}>
+          <button type="submit" disabled={busy} style={{ ...UI.btnPrimary, marginTop: 4, opacity: busy ? 0.6 : 1 }}>
             {busy ? '處理中…' : submitLabels[mode]}
           </button>
         </form>
-        {msg && <div style={{ fontSize: 13, color: ms.color, background: ms.bg, borderRadius: THEME.radiusSm, padding: '8px 10px', marginBottom: 14 }}>{msg}</div>}
+        {msg && <div style={{ ...UI.note(MSG_TONE[msgKind]), marginTop: 12 }}>{msg}</div>}
 
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-          {mode === 'signin' && (
-            <div style={{ display: 'flex', gap: 16, fontSize: 13 }}>
-              <button type="button" className="btn-reset" onClick={() => switchMode('signup')} style={{ color: THEME.primaryInk, fontWeight: 600, padding: '8px 4px' }}>建立新帳號</button>
-              <button type="button" className="btn-reset" onClick={() => switchMode('forgot')} style={{ color: THEME.textMuted, padding: '8px 4px' }}>忘記密碼？</button>
-            </div>
-          )}
+        <div style={S.links}>
+          {mode === 'signin' && <>
+            <button type="button" onClick={() => switchMode('signup')} style={S.link}>還沒有帳號？建立一個</button>
+            <button type="button" onClick={() => switchMode('forgot')} style={S.link}>忘記密碼？</button>
+          </>}
           {mode === 'signup' && (
-            <button type="button" className="btn-reset" onClick={() => switchMode('signin')} style={{ color: THEME.primaryInk, fontSize: 13, fontWeight: 600, padding: '8px 4px' }}>已經有帳號？登入</button>
+            <button type="button" onClick={() => switchMode('signin')} style={S.link}>已經有帳號？登入</button>
           )}
           {mode === 'forgot' && (
-            <button type="button" className="btn-reset" onClick={() => switchMode('signin')} style={{ color: THEME.primaryInk, fontSize: 13, fontWeight: 600, padding: '8px 4px' }}>返回登入</button>
+            <button type="button" onClick={() => switchMode('signin')} style={S.link}>返回登入</button>
           )}
         </div>
-        {lineDebug && <div style={{ marginTop: 16, fontSize: 12, color: THEME.textFaint, fontWeight: 600, lineHeight: 1.6, wordBreak: 'break-word' }}>LINE 自動登入除錯：{lineDebug}</div>}
+        {lineDebug && <div style={S.debug}>LINE 自動登入除錯：{lineDebug}</div>}
       </div>
     </div>
   );

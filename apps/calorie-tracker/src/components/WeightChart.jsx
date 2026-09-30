@@ -9,7 +9,8 @@ export default function WeightChart({ challenge, highlightUserId = null, selecte
   const allWeeks = [...new Set(entries.map(e => e.weekLabel))].sort();
   if (!allWeeks.length) return null;
 
-  const W = 580, H = 280;
+  // 座標系寬度接近手機上的實際寬度，文字與線條大約 1:1 顯示；高度跟著寬度等比例縮放，不留上下空白
+  const W = 340, H = 200;
   // Reduce right padding (name+kg labels are no longer placed there, names are shown in the bottom legend instead)
   const PAD = { l: 26, r: 16, t: 18, b: 36 };
   const cW = W - PAD.l - PAD.r, cH = H - PAD.t - PAD.b;
@@ -28,7 +29,7 @@ export default function WeightChart({ challenge, highlightUserId = null, selecte
 
   return (
     <div style={{ width: '100%', overflow: 'hidden' }}>
-      <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} style={{ overflow: 'visible', display: 'block' }}>
+      <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ overflow: 'visible', display: 'block', height: 'auto' }}>
         <defs>
           {challenge.members.map(m => (
             <linearGradient key={m.userId} id={`wc_g_${m.userId}`} x1="0" y1="0" x2="0" y2="1">
@@ -70,7 +71,7 @@ export default function WeightChart({ challenge, highlightUserId = null, selecte
             return (
               <g key={`x${i}`}>
                 <line x1={x} y1={H - PAD.b} x2={x} y2={H - PAD.b + 5} stroke="var(--text-faint)" strokeWidth={1} />
-                <text x={x} y={H - PAD.b + 18} textAnchor="middle" fill="var(--text-muted)" fontSize={11} fontWeight={700}>{w.slice(5).replace('-', '/')}</text>
+                <text x={x} y={H - PAD.b + 18} textAnchor="middle" fill="var(--text-muted)" fontSize={11} fontWeight={500}>{w.slice(5).replace('-', '/')}</text>
               </g>
             );
           });
@@ -108,7 +109,7 @@ export default function WeightChart({ challenge, highlightUserId = null, selecte
           if (idx === -1) return null;
           const x = xS(idx);
           return (
-            <line x1={x} y1={PAD.t} x2={x} y2={H - PAD.b} stroke="var(--primary)" strokeWidth={1.5} strokeDasharray="4,4" pointerEvents="none" />
+            <line x1={x} y1={PAD.t} x2={x} y2={H - PAD.b} stroke="var(--primary-ink)" strokeWidth={1.5} strokeDasharray="4,4" pointerEvents="none" />
           );
         })()}
 

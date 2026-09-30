@@ -1,62 +1,26 @@
-// Recipe catalog view: search, category tabs, and grid cards.
+// Recipe catalog view: 頁首、擁有者篩選（複選）、搜尋、分類膠囊（單選）、兩欄食譜卡片、右下浮動「新增食譜」。
+// 沒有照片的食譜用菜名第一個字當佔位（不再用 emoji）
 import React from 'react';
 import { ALL_CATEGORY } from '../utils.js';
 import Icon from '@peggy-life/shared/Icon.jsx';
+import { UI } from '@peggy-life/shared/ui';
 
 const S = {
-  viewHome: { padding: '6px 18px 20px' },
-  title: { fontSize: 24, fontWeight: 900, color: 'var(--text)', lineHeight: 1.2, margin: 0 },
-  status: { fontSize: 13, color: 'var(--primary-ink)', fontWeight: 700, marginTop: 4, margin: 0 },
-  search: {
-    width: '100%', border: 'none', background: 'var(--surface-alt)', borderRadius: 14,
-    padding: '12px 16px', fontSize: 15, fontWeight: 700, color: 'var(--text)', marginTop: 12,
-    boxSizing: 'border-box',
-  },
-  tabsContainer: { display: 'flex', gap: 8, overflowX: 'auto', padding: '12px 0' },
-  tabInactive: {
-    border: 'none', background: 'var(--surface-alt)', color: 'var(--text-muted)', padding: '8px 16px',
-    borderRadius: 20, fontSize: 13, fontWeight: 800, cursor: 'pointer',
-    whiteSpace: 'nowrap', flexShrink: 0,
-  },
-  tabActive: {
-    border: 'none', background: 'var(--primary)', color: '#fff', padding: '8px 16px',
-    borderRadius: 20, fontSize: 13, fontWeight: 800, cursor: 'pointer',
-    whiteSpace: 'nowrap', flexShrink: 0,
-  },
-  grid: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginTop: 4 },
-  card: {
-    display: 'block', color: 'inherit', textDecoration: 'none',
-    background: 'var(--surface)', borderRadius: 20, overflow: 'hidden',
-    boxShadow: 'var(--shadow-card)',
-  },
-  cardImage: { width: '100%', height: 120, objectFit: 'cover', display: 'block' },
-  placeholder: {
-    width: '100%', height: 120, background: 'var(--surface-alt)', display: 'flex',
-    alignItems: 'center', justifyContent: 'center', fontSize: 36,
-  },
-  cardInfo: { padding: '10px 12px 12px' },
-  badge: {
-    fontSize: 12, background: 'var(--bg)', color: 'var(--primary-ink)', padding: '3px 8px',
-    borderRadius: 10, fontWeight: 800, marginRight: 4, display: 'inline-block',
-  },
-  likeChip: {
-    position: 'absolute', top: 8, right: 8, background: 'rgba(0,0,0,.55)', color: '#fff',
-    padding: '3px 8px', borderRadius: 14, fontSize: 12, fontWeight: 900,
-    display: 'flex', alignItems: 'center', gap: 3,
-  },
-  ownerChips: { display: 'flex', gap: 6, marginTop: 12, marginBottom: 2, flexWrap: 'wrap' },
-  ownerChip: {
-    border: 'none', background: 'var(--surface-alt)', color: 'var(--text-muted)',
-    padding: '8px 12px', borderRadius: 999, fontSize: 12, fontWeight: 800, cursor: 'pointer',
-    display: 'flex', alignItems: 'center', gap: 5,
-  },
-  ownerChipOn: {
-    border: 'none', background: 'var(--text)', color: '#fff',
-    padding: '8px 12px', borderRadius: 999, fontSize: 12, fontWeight: 900, cursor: 'pointer',
-    display: 'flex', alignItems: 'center', gap: 5,
-  },
-  cardTitle: { fontSize: 14, fontWeight: 900, color: 'var(--text)', marginTop: 6, lineHeight: 1.3, margin: 0, marginBlockStart: 6 },
-  empty: { textAlign: 'center', padding: '40px 20px', color: 'var(--text-faint)', fontSize: 15, fontWeight: 700 },
+  page: { paddingBottom: 100 },
+  ownerRow: { ...UI.chipRow, padding: '8px 20px 0' },
+  searchWrap: { position: 'relative', margin: '12px 20px 0' },
+  searchIcon: { position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-faint)', pointerEvents: 'none' },
+  search: { ...UI.input, paddingLeft: 40 },
+  categories: { display: 'flex', gap: 8, overflowX: 'auto', padding: '12px 20px 0' },
+  grid: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12, padding: '16px 20px 0' },
+  card: { ...UI.card, display: 'flex', flexDirection: 'column', overflow: 'hidden', color: 'inherit', textDecoration: 'none' },
+  cardImage: { width: '100%', aspectRatio: '4 / 3', objectFit: 'cover', display: 'block' },
+  monogram: { width: '100%', aspectRatio: '4 / 3', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--primary-soft)', color: 'var(--primary-ink)', fontSize: 36, fontWeight: 500 },
+  cardInfo: { padding: '10px 12px 12px', display: 'flex', flexDirection: 'column', gap: 4 },
+  cardTitle: { margin: 0, fontSize: 15, fontWeight: 500, lineHeight: 1.35, color: 'var(--text)', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' },
+  cardMeta: { display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, color: 'var(--text-muted)', minWidth: 0 },
+  empty: { ...UI.card, margin: '16px 20px 0', padding: '32px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, textAlign: 'center' },
+  emptyIcon: { width: 48, height: 48, borderRadius: 999, background: 'var(--sunken)', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center' },
 };
 
 const OWNER_TABS = [
@@ -85,78 +49,46 @@ export default function RecipeCatalog({
   myLikedSet,
 }) {
   const subtitle = isGuest
-    ? `● 訪客模式・共 ${recipes.length} 道分享食譜`
-    : `● 共 ${recipes.length} 道食譜，這個分頁 ${filteredRecipes.length} 道`;
+    ? `訪客模式 · 共 ${recipes.length} 道分享食譜`
+    : `共 ${recipes.length} 道 · 這個分頁 ${filteredRecipes.length} 道`;
   return (
-    <div style={S.viewHome}>
-      <header style={{ marginBottom: 14 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-          <div>
-            <h1 style={S.title}>TY Recipe Book</h1>
-            <p style={S.status}>{subtitle}</p>
-          </div>
-          <div style={{ display: 'flex', gap: 6 }}>
-            {onCreate && (
-              <button onClick={onCreate} style={{ border: 'none', background: 'var(--primary)', color: '#fff', fontWeight: 900, fontSize: 13, padding: '8px 14px', borderRadius: 14, cursor: 'pointer' }}>＋ 新增</button>
-            )}
-            {onSignOut && (
-              <button onClick={onSignOut} style={{ border: 'none', background: 'var(--sunken)', color: 'var(--text-muted)', fontWeight: 800, fontSize: 13, padding: '8px 14px', borderRadius: 14, cursor: 'pointer' }}>{signOutLabel}</button>
-            )}
-          </div>
+    <div style={S.page}>
+      <header style={UI.header}>
+        <div style={{ minWidth: 0 }}>
+          <h1 style={UI.title}>食譜</h1>
+          <p style={UI.subtitle}>{subtitle}</p>
         </div>
-
-        {!isGuest && (
-          <div style={S.ownerChips}>
-            {OWNER_TABS.map((t) => {
-              const on = ownershipFilter?.has(t.key);
-              return (
-                <button
-                  key={t.key}
-                  type="button"
-                  onClick={() => onToggleOwnership(t.key)}
-                  aria-pressed={on}
-                  style={on ? S.ownerChipOn : S.ownerChip}
-                >
-                  <Icon name={on ? 'check-square' : 'square'} size={15} />
-                  {t.label}
-                </button>
-              );
-            })}
-          </div>
+        {/* 登出在「設定」分頁；訪客沒有設定分頁，所以登入鈕留在這裡 */}
+        {isGuest && onSignOut && (
+          <button type="button" onClick={onSignOut} style={UI.btnSecondary}><Icon name="log-in" size={16} />{signOutLabel}</button>
         )}
-
-        <div>
-          <input aria-label="搜尋食譜"
-            value={searchQuery}
-            onChange={(e) => onSearchQueryChange(e.target.value)}
-            type="text"
-            placeholder="搜尋你想吃什麼料理..."
-            style={S.search}
-          />
-        </div>
       </header>
 
-      {/* 🌟 調整後的獨立分類頁籤區塊 */}
-      <div>
-        <div className="ps" style={S.tabsContainer}>
-          <button
-            type="button"
-            style={selectedCategory === ALL_CATEGORY ? S.tabActive : S.tabInactive}
-            onClick={() => onSelectedCategoryChange(ALL_CATEGORY)}
-          >
-            全部
-          </button>
-          {availableCategories.map((cat) => (
-            <button
-              key={cat}
-              type="button"
-              style={selectedCategory === cat ? S.tabActive : S.tabInactive}
-              onClick={() => onSelectedCategoryChange(cat)}
-            >
-              {cat}
-            </button>
-          ))}
+      {!isGuest && (
+        <div style={S.ownerRow}>
+          {OWNER_TABS.map((t) => {
+            const on = ownershipFilter?.has(t.key);
+            return (
+              <button key={t.key} type="button" onClick={() => onToggleOwnership(t.key)} aria-pressed={on} style={{ ...UI.chip(on), ...(on ? { paddingLeft: 10 } : {}) }}>
+                {on && <Icon name="check" size={16} strokeWidth={2} />}
+                {t.label}
+              </button>
+            );
+          })}
         </div>
+      )}
+
+      <div style={S.searchWrap}>
+        <Icon name="search" size={18} style={S.searchIcon} />
+        <input aria-label="搜尋食譜" value={searchQuery} onChange={(e) => onSearchQueryChange(e.target.value)} type="search" placeholder="搜尋料理名稱" style={S.search} />
+      </div>
+
+      <div className="ps" style={S.categories}>
+        {[ALL_CATEGORY, ...availableCategories].map((cat) => (
+          <button key={cat} type="button" aria-pressed={selectedCategory === cat} onClick={() => onSelectedCategoryChange(cat)} style={UI.chip(selectedCategory === cat)}>
+            {cat}
+          </button>
+        ))}
       </div>
 
       <main>
@@ -167,16 +99,19 @@ export default function RecipeCatalog({
               const liked = myLikedSet?.has(recipe.id);
               return (
                 <a key={recipe.id} href={`?recipe=${recipe.id}`} style={S.card} onClick={(e) => { e.preventDefault(); onOpenDetail(recipe); }}>
-                  <div style={{ position: 'relative' }}>
-                    {recipe.image_url
-                      ? <img src={recipe.image_url} alt={recipe.title} style={S.cardImage} loading="lazy" />
-                      : <div style={S.placeholder}>🍳</div>}
-                    {count > 0 && (
-                      <div style={S.likeChip}><Icon name="heart" size={12} filled={liked} />{count}</div>
-                    )}
-                  </div>
+                  {recipe.image_url
+                    ? <img src={recipe.image_url} alt="" style={S.cardImage} loading="lazy" />
+                    : <div aria-hidden="true" style={S.monogram}>{recipe.title?.trim().slice(0, 1)}</div>}
                   <div style={S.cardInfo}>
-                    <h3 style={{ ...S.cardTitle, marginBlockStart: 0, marginTop: 0 }}>{recipe.title}</h3>
+                    <h3 style={S.cardTitle}>{recipe.title}</h3>
+                    {/* 卡片只放圖片、名稱與按讚數（2026-06-28 起刻意不放分類，保持簡潔） */}
+                    {count > 0 && (
+                      <div style={S.cardMeta}>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, flexShrink: 0, color: liked ? 'var(--like)' : 'var(--text-muted)' }} aria-label={`${count} 人按讚${liked ? '，包含你' : ''}`}>
+                          <Icon name="heart" size={13} filled={liked} />{count}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </a>
               );
@@ -184,10 +119,18 @@ export default function RecipeCatalog({
           </div>
         ) : (
           <div style={S.empty}>
-            <p>這個分頁目前沒有食譜 🥲</p>
+            <span aria-hidden="true" style={S.emptyIcon}><Icon name="utensils" size={22} /></span>
+            <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--text)' }}>這個分頁目前沒有食譜</div>
+            <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>換個分類或篩選條件看看{onCreate ? '，或新增一道' : ''}</div>
           </div>
         )}
       </main>
+
+      {onCreate && (
+        <button type="button" aria-label="新增食譜" onClick={onCreate} style={UI.fab}>
+          <Icon name="plus" size={24} strokeWidth={2} />
+        </button>
+      )}
     </div>
   );
 }

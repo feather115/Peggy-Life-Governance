@@ -1,55 +1,53 @@
-// 設定頁：帳號資訊（暱稱 + LINE 連結）+ 「管理分類與標籤」入口，之後有新設定選項可以加在這個清單裡。
+// 設定頁：跟另外兩個 app 同一個分組清單版型——個人資料（暱稱）、管理（分類標籤、選項庫）、其他 App、帳號（LINE）、登出。
+// 之後有新設定選項可以加在「管理」這組裡。
 import React, { useEffect, useState } from 'react';
 import { THEME } from '../theme.js';
 import { canLinkLine, useLineLinked } from '../liff.js';
 import { loadMyDisplayName, updateDisplayName } from '../db.js';
 import Icon from '@peggy-life/shared/Icon.jsx';
+import { UI } from '@peggy-life/shared/ui';
 import OtherApps from '@peggy-life/shared/OtherApps.jsx';
 
 const S = {
-  header: { display: 'flex', alignItems: 'center', gap: 12, padding: 16, background: THEME.surface, borderBottom: `1px solid ${THEME.border}` },
-  backBtn: { border: 'none', background: 'none', color: THEME.textMuted, padding: 2, display: 'flex', alignItems: 'center' },
-  title: { fontSize: 18, fontWeight: 700, color: THEME.textDark },
-  body: { padding: 20, display: 'flex', flexDirection: 'column', gap: 10 },
-  row: { width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: THEME.surface, borderRadius: THEME.radiusSm, padding: '16px 18px', boxShadow: THEME.shadow },
-  rowLabel: { fontSize: 15, fontWeight: 600, color: THEME.textDark },
-  accountCard: { background: THEME.surface, borderRadius: THEME.radiusSm, padding: '16px 18px', boxShadow: THEME.shadow },
-  accountLabel: { fontSize: 12, color: THEME.textMuted, marginBottom: 4 },
-  accountEmail: { fontSize: 14, fontWeight: 700, color: THEME.textDark, marginBottom: 14, wordBreak: 'break-all' },
-  linkedBadge: { display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 700, color: THEME.successInk, background: THEME.successBg, padding: '9px 16px', borderRadius: THEME.radiusSmInner },
-  linkBtn: { display: 'inline-flex', alignItems: 'center', gap: 6, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700, color: THEME.primaryInk, background: THEME.primarySoft, padding: '9px 16px', borderRadius: THEME.radiusSmInner },
-  linkHint: { fontSize: 12, color: THEME.textFaint, marginTop: 8 },
-  msgSuccess: { marginTop: 8, fontSize: 13, fontWeight: 700, color: THEME.successInk, background: THEME.successBg, padding: '8px 12px', borderRadius: THEME.radiusSmInner },
-  msgError: { marginTop: 8, fontSize: 13, fontWeight: 700, color: THEME.errorInk, background: THEME.errorBg, padding: '8px 12px', borderRadius: THEME.radiusSmInner },
-  fieldLabel: { fontSize: 12, color: THEME.textMuted, marginTop: 14, marginBottom: 6 },
-  nameRow: { display: 'flex', gap: 8 },
-  nameInput: { flex: 1, boxSizing: 'border-box', border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSmInner, padding: '10px 12px', fontSize: 14, color: THEME.textDark, background: THEME.surface },
-  nameSaveBtn: { border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700, color: '#fff', background: THEME.primary, padding: '0 16px', borderRadius: THEME.radiusSmInner },
-  nameHint: { fontSize: 12, color: THEME.textFaint, marginTop: 6 },
+  page: { paddingBottom: 24 },
+  headText: { flex: 1, minWidth: 0 },
+  email: { ...UI.subtitle, margin: '2px 0 0', wordBreak: 'break-all' },
+  group: { margin: '28px 20px 0', display: 'flex', flexDirection: 'column', gap: 8 },
+  groupHint: { margin: 0, padding: '0 4px', fontSize: 13, color: THEME.textMuted, lineHeight: 1.5 },
+  rowLabel: { flex: 1, minWidth: 0, fontSize: 15 },
+  nameInput: { ...UI.input, flex: 1, minWidth: 0, minHeight: 40 },
+  rowNote: { padding: '0 16px 12px' },
+  linked: { display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 13, fontWeight: 500, color: THEME.successInk },
+  chevron: { color: THEME.textFaint },
+  signOut: { margin: '28px 20px 0' },
+  footer: { margin: '16px 0 0', textAlign: 'center', fontSize: 12, color: THEME.textFaint },
 };
 
 const LINE_LINKED_CACHE_KEY = 'calendar:line-linked';
 
-// 顯示目前登入的 email/LINE 連結狀態，以及（只有在 LINE App 裡開啟時）「連結 LINE 帳號」按鈕。
+// 顯示 LINE 連結狀態，以及（只有在 LINE App 裡開啟時）「連結」按鈕；兩者都不適用時整組不顯示。
 // 連結狀態邏輯（含 localStorage 快取）在 @peggy-life/shared/lineAuth 的 useLineLinked，三個 app 共用，這裡只負責畫面。
-function LineLinker() {
+function LineGroup() {
   const { linked, busy, msg, link } = useLineLinked(LINE_LINKED_CACHE_KEY);
 
-  if (linked) {
-    return <div style={S.linkedBadge}><Icon name="check-circle" size={16} />已連結 LINE 帳號</div>;
-  }
-
-  if (!canLinkLine()) return null;
+  if (!linked && !canLinkLine()) return null;
 
   return (
-    <>
-      <button type="button" onClick={link} disabled={busy} style={S.linkBtn}>
-        {busy ? '連結中…' : <><Icon name="link" size={16} style={{ color: '#06C755' }} />連結 LINE 帳號</>}
-      </button>
-      <div style={S.linkHint}>連結後，之後從 LINE 開啟會直接登入這個帳號</div>
-      {msg === 'success' && <div style={S.msgSuccess}>已連結成功</div>}
-      {msg && msg !== 'success' && <div style={S.msgError}>{msg}</div>}
-    </>
+    <section style={S.group}>
+      <h2 style={UI.groupLabel}>帳號</h2>
+      <div style={UI.listCard}>
+        <div style={UI.row}>
+          <Icon name="link" size={20} style={{ color: THEME.textMuted }} />
+          <span style={S.rowLabel}>LINE 帳號</span>
+          {linked
+            ? <span style={S.linked}><Icon name="check-circle" size={16} />已連結</span>
+            : <button type="button" onClick={link} disabled={busy} style={{ ...UI.btnSecondary, minHeight: 36 }}>{busy ? '連結中…' : '連結'}</button>}
+        </div>
+        {!linked && msg === 'success' && <div style={S.rowNote}><div style={UI.note('success')}>已連結成功</div></div>}
+        {!linked && msg && msg !== 'success' && <div style={S.rowNote}><div style={UI.note('danger')}>{msg}</div></div>}
+      </div>
+      {canLinkLine() && <p style={S.groupHint}>連結後，之後從 LINE 開啟會直接登入這個帳號</p>}
+    </section>
   );
 }
 
@@ -84,26 +82,31 @@ function NicknameEditor({ userId }) {
     }
   };
 
+  const unchanged = value.trim() === saved;
+
   return (
-    <>
-      <div style={S.fieldLabel}>暱稱</div>
-      <div style={S.nameRow}>
-        <input aria-label="暱稱"
-          type="text"
-          style={S.nameInput}
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          placeholder="例如：小明"
-          maxLength={20}
-        />
-        <button type="button" style={S.nameSaveBtn} onClick={save} disabled={busy || value.trim() === saved}>
-          {busy ? '儲存中…' : '儲存'}
-        </button>
+    <section style={S.group}>
+      <h2 style={UI.groupLabel}>個人資料</h2>
+      <div style={UI.listCard}>
+        <div style={UI.row}>
+          <label htmlFor="nickname" style={{ fontSize: 15, flexShrink: 0 }}>暱稱</label>
+          <input id="nickname"
+            type="text"
+            style={S.nameInput}
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            placeholder="例如：小明"
+            maxLength={20}
+          />
+          <button type="button" style={{ ...UI.btnSecondary, opacity: busy || unchanged ? 0.5 : 1 }} onClick={save} disabled={busy || unchanged}>
+            {busy ? '儲存中…' : '儲存'}
+          </button>
+        </div>
+        {msg === 'success' && <div style={S.rowNote}><div style={UI.note('success')}>已儲存</div></div>}
+        {msg && msg !== 'success' && <div style={S.rowNote}><div style={UI.note('danger')}>{msg}</div></div>}
       </div>
-      <div style={S.nameHint}>跟 calorie-tracker、recipe-book 共用同一個暱稱</div>
-      {msg === 'success' && <div style={S.msgSuccess}>已儲存</div>}
-      {msg && msg !== 'success' && <div style={S.msgError}>{msg}</div>}
-    </>
+      <p style={S.groupHint}>跟飲食卡路里、食譜本共用同一個暱稱</p>
+    </section>
   );
 }
 
@@ -118,40 +121,44 @@ export default function Settings({ session, onClose, onManageTags, onManageOptio
   })();
 
   return (
-    <div>
-      <div style={S.header}>
-        <button type="button" onClick={onClose} style={S.backBtn} className="tap" aria-label="返回"><Icon name="chevron-left" size={24} /></button>
-        <div style={S.title}>設定</div>
-      </div>
-
-      <div style={S.body}>
-        <div style={S.accountCard}>
-          <div style={S.accountLabel}>帳號</div>
-          <div style={S.accountEmail}>{displayEmail}</div>
-          <NicknameEditor userId={session?.user?.id} />
-          <div style={{ marginTop: 14 }}>
-            <LineLinker />
-          </div>
+    <div style={S.page}>
+      <header style={UI.subBar}>
+        <button type="button" onClick={onClose} style={UI.iconBtn} aria-label="返回"><Icon name="chevron-left" size={20} /></button>
+        <div style={S.headText}>
+          <h1 style={UI.subTitle}>設定</h1>
+          <p style={S.email}>{displayEmail}</p>
         </div>
+      </header>
 
-        <button type="button" className="btn-reset" style={S.row} onClick={onManageTags}>
-          <span style={S.rowLabel}>管理日記分類與標籤</span>
-          <Icon name="chevron-right" size={18} style={{ color: THEME.textFaint }} />
-        </button>
+      <NicknameEditor userId={session?.user?.id} />
 
-        <button type="button" className="btn-reset" style={S.row} onClick={onManageOptions}>
-          <span style={S.rowLabel}>管理地點、人名與事件標籤</span>
-          <Icon name="chevron-right" size={18} style={{ color: THEME.textFaint }} />
-        </button>
-
-        <OtherApps current="calendar" />
-
-        {onSignOut && (
-          <button type="button" className="btn-reset" style={{ ...S.row, justifyContent: 'center' }} onClick={onSignOut}>
-            <span style={{ ...S.rowLabel, color: THEME.errorInk }}>登出</span>
+      <section style={S.group}>
+        <h2 style={UI.groupLabel}>管理</h2>
+        <div style={UI.listCard}>
+          <button type="button" style={UI.row} onClick={onManageTags}>
+            <Icon name="tag" size={20} style={{ color: THEME.textMuted }} />
+            <span style={S.rowLabel}>日記分類與標籤</span>
+            <Icon name="chevron-right" size={18} style={S.chevron} />
           </button>
-        )}
-      </div>
+          <div style={UI.divider} />
+          <button type="button" style={UI.row} onClick={onManageOptions}>
+            <Icon name="map-pin" size={20} style={{ color: THEME.textMuted }} />
+            <span style={S.rowLabel}>地點、人名與事件標籤</span>
+            <Icon name="chevron-right" size={18} style={S.chevron} />
+          </button>
+        </div>
+      </section>
+
+      <OtherApps current="calendar" style={S.group} />
+
+      <LineGroup />
+
+      {onSignOut && (
+        <div style={S.signOut}>
+          <button type="button" onClick={onSignOut} style={{ ...UI.btnNeutral, width: '100%', minHeight: 48, fontSize: 15 }}>登出</button>
+        </div>
+      )}
+      <p style={S.footer}>TY Calendar</p>
     </div>
   );
 }

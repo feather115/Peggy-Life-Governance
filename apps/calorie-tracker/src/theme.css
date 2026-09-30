@@ -1,41 +1,44 @@
-/* 飲食卡路里：綠色系色票。文字類色票（text / *-ink）在 --surface / --bg / --surface-alt 上都 ≥4.5:1。
+/* 飲食卡路里：森林綠主色。中性色（--bg～--text-faint）與語意色三個 app 共用同一組暖白色票，
+   各 app 只換主色（--primary / --primary-ink / --primary-soft）和自己的資料色。
+   文字類色票（text / *-ink）在 --surface / --bg / --surface-alt 上都 ≥4.5:1。
    --primary / --info / --danger 是「實心底色」（上面放白字）；當字色用請用 *-ink（深色模式比較亮）。
+   卡片不加陰影：--shadow-card 是 1px 邊線；浮在上層的東西（面板、浮動按鈕、提示）才用 --shadow-float。
    深色模式跟著系統設定（prefers-color-scheme）。改色後跑 npm test 會檢查對比度。 */
 :root{
   color-scheme:light;
-  --bg:#EAF5EE;--surface:#FFFFFF;--surface-alt:#F6FAF7;--sunken:#F0F3F1;
-  --line:#EEF4F0;--line-strong:#C7D6CC;--track:#DCEDE3;
-  --text:#234034;--text-muted:#4D6858;--text-faint:#5A7566;
-  --primary:#257A50;--primary-ink:#257A50;--primary-soft:#EAF5EE;--on-primary:#FFFFFF;--ring:#257A50;
-  --info:#3A55D8;--info-ink:#3A55D8;--info-bg:#E8EDFF;
-  --success:#15803D;--success-ink:#147C3B;--success-bg:#DCFCE7;
-  --danger:#B91C1C;--danger-ink:#B91C1C;--danger-bg:#FEE2E2;
-  --warning:#E8A13C;--warning-ink:#8B5A00;--warning-bg:#FFF3DC;
-  --carb:#E8A13C;--carb-ink:#8B5A00;--fat:#5FA8D3;--fat-ink:#2B729C;
-  --over:#D9544F;--bar-empty:#E0E5E2;--heat-near:#FEEFC3;--heat-over:#FECACA;
-  --future-bg:#F8FAF8;--future-text:#A9B8AF;--goal-line:rgba(37,122,80,.35);--bronze-ink:#936236;
-  --scrim:rgba(35,64,52,.42);
-  --shadow-card:0 12px 28px -18px rgba(37,122,80,.45);
-  --shadow-nav:0 -4px 20px rgba(35,64,52,.08);
-  --shadow-sheet:0 -12px 40px rgba(35,64,52,.22);
+  --bg:#F8F6F2;--surface:#FFFFFF;--surface-alt:#F4F2EE;--sunken:#F0EDE9;
+  --line:#E9E6E0;--line-strong:#D4D1CA;--track:#EAE7E2;
+  --text:#25211D;--text-muted:#5F5A54;--text-faint:#6F6963;
+  --primary:#29774F;--primary-ink:#29774F;--primary-soft:#E5F5EB;--on-primary:#FFFFFF;--ring:#29774F;
+  --info:#4365B3;--info-ink:#4365B3;--info-bg:#E6F0FF;
+  --success:#21763C;--success-ink:#21763C;--success-bg:#E3F6E6;
+  --danger:#B6322D;--danger-ink:#B6322D;--danger-bg:#FFE9E5;
+  --warning:#E1A447;--warning-ink:#90601F;--warning-bg:#FEEDDB;
+  --carb:#E0AE57;--fat:#538EB0;
+  --over:#CE5249;--bar-empty:#E4E1DB;--heat-ok:#DDEFE3;--heat-near:#FBEBC8;--heat-over:#F8D3CE;
+  --future-bg:#F8F6F2;--future-text:#A8A29B;--goal-line:rgba(41,119,79,.35);--bronze-ink:#8A5A2E;
+  --scrim:rgba(18,16,14,.42);
+  --shadow-card:0 0 0 1px var(--line);
+  --shadow-nav:0 -1px 0 var(--line);
+  --shadow-sheet:0 -8px 32px rgba(37,33,29,.16);
+  --shadow-float:0 8px 24px rgba(37,33,29,.14);
 }
 @media (prefers-color-scheme:dark){
   :root{
     color-scheme:dark;
-    --bg:#0F1612;--surface:#18221C;--surface-alt:#1D2922;--sunken:#223028;
-    --line:#26352D;--line-strong:#3B4D43;--track:#2A3A31;
-    --text:#E5EFE9;--text-muted:#AEC2B6;--text-faint:#93A99C;
-    --primary:#257A50;--primary-ink:#6CCB98;--primary-soft:#1B3527;--ring:#6CCB98;
-    --info:#3A55D8;--info-ink:#A3B4FF;--info-bg:#1E2650;
-    --success:#15803D;--success-ink:#6CCB98;--success-bg:#153222;
-    --danger:#B91C1C;--danger-ink:#FF9189;--danger-bg:#3B1A1A;
-    --warning:#E8A13C;--warning-ink:#F0B85E;--warning-bg:#3A2C14;
-    --carb:#E8A13C;--carb-ink:#F0B85E;--fat:#5FA8D3;--fat-ink:#86C3E8;
-    --over:#E06A63;--bar-empty:#2E3D35;--heat-near:#4A3B16;--heat-over:#4D2222;
-    --future-bg:#141D18;--future-text:#56685E;--goal-line:rgba(108,203,152,.4);--bronze-ink:#D09A6A;
+    --bg:#12100E;--surface:#1B1916;--surface-alt:#211F1C;--sunken:#24211E;
+    --line:#2C2A26;--line-strong:#433F3B;--track:#302D2A;
+    --text:#EBE7E2;--text-muted:#BBB7B0;--text-faint:#A29E98;
+    --primary:#29774F;--primary-ink:#8ECFA9;--primary-soft:#163223;--ring:#8ECFA9;
+    --info:#4365B3;--info-ink:#9DBDFF;--info-bg:#1D2842;
+    --success:#21763C;--success-ink:#90D09D;--success-bg:#15301B;
+    --danger:#B6322D;--danger-ink:#FF9A8E;--danger-bg:#3E1F1B;
+    --warning:#E1A447;--warning-ink:#DFB585;--warning-bg:#382409;
+    --carb:#F1C77F;--fat:#93C5E4;
+    --over:#FF9388;--bar-empty:#2E2B28;--heat-ok:#1C3527;--heat-near:#3F3219;--heat-over:#4A2522;
+    --future-bg:#161412;--future-text:#5E5953;--goal-line:rgba(142,207,169,.4);--bronze-ink:#D09A6A;
     --scrim:rgba(0,0,0,.6);
-    --shadow-card:0 1px 2px rgba(0,0,0,.45);
-    --shadow-nav:0 -1px 0 rgba(255,255,255,.06);
-    --shadow-sheet:0 -12px 40px rgba(0,0,0,.55);
+    --shadow-sheet:0 -8px 32px rgba(0,0,0,.55);
+    --shadow-float:0 8px 24px rgba(0,0,0,.5);
   }
 }
