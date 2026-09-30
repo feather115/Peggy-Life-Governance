@@ -32,13 +32,13 @@ export default function TodayTab({ app, selectedDate, setSelectedDate, onOpenShe
     if (!def) return null;
     const isFasting = fastingIds.includes(tid);
     const tagColor = def.color || '#E8A13C';
-    return { label: def.label, bg: isFasting ? 'var(--info-bg)' : tagColor, color: isFasting ? 'var(--info)' : readableOn(tagColor) };
+    return { label: def.label, bg: isFasting ? 'var(--info-bg)' : tagColor, color: isFasting ? 'var(--info-ink)' : readableOn(tagColor) };
   }).filter(Boolean);
 
   const macros = [
-    { label: '蛋白質', t: Math.round(cur.p), g: goalP, color: 'var(--primary)' },
-    { label: '碳水', t: Math.round(cur.c), g: goalC, color: '#E8A13C' },
-    { label: '脂肪', t: Math.round(cur.f), g: goalF, color: '#5FA8D3' },
+    { label: '蛋白質', t: Math.round(cur.p), g: goalP, color: 'var(--primary-ink)' },
+    { label: '碳水', t: Math.round(cur.c), g: goalC, color: 'var(--carb)' },
+    { label: '脂肪', t: Math.round(cur.f), g: goalF, color: 'var(--fat)' },
   ];
 
   // 刪除不先問，直接刪、給 5 秒「復原」（比每次都跳確認框順；復原＝把同一筆重新加回去，會排到該餐最後）
@@ -75,8 +75,8 @@ export default function TodayTab({ app, selectedDate, setSelectedDate, onOpenShe
         <button aria-label="前一天" className="tap" onClick={prevDay} style={{ border: 'none', background: 'var(--surface)', color: 'var(--text)', width: 36, height: 36, borderRadius: '50%', cursor: 'pointer', fontSize: 20, fontWeight: 900, lineHeight: 1, boxShadow: '0 4px 12px -8px rgba(0,0,0,.2)' }}><Icon name="chevron-left" size={14} /></button>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: 20, fontWeight: 900, color: 'var(--text)' }}>{dateLabel(selectedDate)}</div>
-          {isTod && <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--primary)', marginTop: 2 }}>今天</div>}
-          {!isTod && <button onClick={() => setSelectedDate(todayKey())} style={{ border: 'none', background: 'var(--primary)', color: '#fff', fontSize: 12, fontWeight: 800, padding: '4px 12px', borderRadius: 12, cursor: 'pointer', marginTop: 3 }}>回到今天</button>}
+          {isTod && <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--primary-ink)', marginTop: 2 }}>今天</div>}
+          {!isTod && <button onClick={() => setSelectedDate(todayKey())} style={{ border: 'none', background: 'var(--primary)', color: '#fff', fontSize: 12, fontWeight: 800, padding: '4px 12px', borderRadius: 14, cursor: 'pointer', marginTop: 3 }}>回到今天</button>}
         </div>
         <button aria-label="後一天" className="tap" onClick={nextDay} disabled={isTod} style={{ border: 'none', background: 'var(--surface)', color: 'var(--text)', width: 36, height: 36, borderRadius: '50%', cursor: 'pointer', fontSize: 20, fontWeight: 900, lineHeight: 1, opacity: isTod ? 0.3 : 1, boxShadow: '0 4px 12px -8px rgba(0,0,0,.2)' }}><Icon name="chevron-right" size={14} /></button>
       </div>
@@ -110,8 +110,8 @@ export default function TodayTab({ app, selectedDate, setSelectedDate, onOpenShe
                 <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--text)' }}>{macro.label}</span>
                 <span style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 700 }}>{macro.t} / {macro.g} g</span>
               </div>
-              <div style={{ height: 9, borderRadius: 9, background: 'var(--track)', overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${pct(macro.t, macro.g)}%`, background: macro.color, borderRadius: 9 }} />
+              <div style={{ height: 9, borderRadius: 10, background: 'var(--track)', overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${pct(macro.t, macro.g)}%`, background: macro.color, borderRadius: 10 }} />
               </div>
             </div>
           ))}
@@ -120,7 +120,7 @@ export default function TodayTab({ app, selectedDate, setSelectedDate, onOpenShe
 
       {/* 五個餐別卡片 */}
       {meals.map((meal) => (
-        <div key={meal.key} style={{ background: 'var(--surface)', borderRadius: 22, padding: '15px 16px 13px', marginTop: 10, boxShadow: 'var(--shadow-card)' }}>
+        <div key={meal.key} style={{ background: 'var(--surface)', borderRadius: 20, padding: '15px 16px 13px', marginTop: 10, boxShadow: 'var(--shadow-card)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{ width: 32, height: 32, borderRadius: 10, background: meal.iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, lineHeight: 1 }}>{meal.icon}</div>
@@ -129,7 +129,7 @@ export default function TodayTab({ app, selectedDate, setSelectedDate, onOpenShe
                 <div style={{ fontSize: 12, color: 'var(--text-faint)', fontWeight: 700, marginTop: 2 }}>{Math.round(meal.subtotal)} kcal</div>
               </div>
             </div>
-            <button onClick={() => onOpenSheet(meal.key)} style={{ border: 'none', background: 'var(--primary)', color: '#fff', fontWeight: 800, fontSize: 13, padding: '8px 14px', borderRadius: 18, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="plus" size={14} />加入</button>
+            <button onClick={() => onOpenSheet(meal.key)} style={{ border: 'none', background: 'var(--primary)', color: '#fff', fontWeight: 800, fontSize: 13, padding: '8px 14px', borderRadius: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="plus" size={14} />加入</button>
           </div>
           {meal.isEmpty && <div style={{ fontSize: 13, color: 'var(--text-faint)', padding: '10px 2px 0', fontWeight: 700 }}>{meal.eh}</div>}
           {meal.items.map((it) => (
@@ -154,21 +154,21 @@ export default function TodayTab({ app, selectedDate, setSelectedDate, onOpenShe
 
       {/* 當日 AI 摘要（有內容才顯示）*/}
       {curDay.dayNote && (
-        <div style={{ background: 'var(--surface)', borderRadius: 22, padding: '14px 16px', marginTop: 10, boxShadow: 'var(--shadow-card)' }}>
+        <div style={{ background: 'var(--surface)', borderRadius: 20, padding: '14px 16px', marginTop: 10, boxShadow: 'var(--shadow-card)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
             <div style={{ fontSize: 14, fontWeight: 900, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 6 }}><Icon name="clipboard" size={16} />今日摘要</div>
             <button onClick={onOpenAdvanced} style={{ border: 'none', background: 'var(--bg)', color: 'var(--text-muted)', padding: '4px 10px', borderRadius: 10, cursor: 'pointer', fontSize: 12, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="pencil" size={12} />編輯</button>
           </div>
-          <div style={{ fontSize: 13, color: '#4A7260', fontWeight: 600, lineHeight: 1.75, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{curDay.dayNote}</div>
+          <div style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 600, lineHeight: 1.75, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{curDay.dayNote}</div>
         </div>
       )}
 
       {/* 進階設定入口 */}
-      <button onClick={onOpenAdvanced} style={{ width: '100%', marginTop: 10, border: 'none', background: 'var(--sunken)', color: 'var(--text-muted)', fontWeight: 800, fontSize: 14, padding: '13px 18px', borderRadius: 18, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+      <button onClick={onOpenAdvanced} style={{ width: '100%', marginTop: 10, border: 'none', background: 'var(--sunken)', color: 'var(--text-muted)', fontWeight: 800, fontSize: 14, padding: '13px 18px', borderRadius: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
         <Icon name="sliders" size={16} />
         <span>進階設定</span>
         {activeTags.length > 0 && <span style={{ background: 'var(--info)', color: '#fff', borderRadius: 10, padding: '1px 8px', fontSize: 12, fontWeight: 900 }}>{activeTags.length} 標籤</span>}
-        {curDay.dayNote && <span style={{ background: 'var(--info-bg)', color: 'var(--info)', borderRadius: 10, padding: '1px 8px', fontSize: 12, fontWeight: 900 }}>摘要</span>}
+        {curDay.dayNote && <span style={{ background: 'var(--info-bg)', color: 'var(--info-ink)', borderRadius: 10, padding: '1px 8px', fontSize: 12, fontWeight: 900 }}>摘要</span>}
       </button>
 
       {editing && (

@@ -51,15 +51,15 @@ export default function Auth({ lineDebug }) {
   };
 
   const msgStyles = {
-    error:   { color: THEME.error, bg: THEME.errorBg },
-    success: { color: THEME.success, bg: THEME.successBg },
-    info:    { color: '#8B5A00', bg: '#FFF6E6' },
+    error:   { color: THEME.errorInk, bg: THEME.errorBg },
+    success: { color: THEME.successInk, bg: THEME.successBg },
+    info:    { color: 'var(--warning-ink)', bg: 'var(--warning-bg)' },
   };
   const ms = msgStyles[msgKind];
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 28, background: THEME.bg }}>
-      <div style={{ width: 52, height: 52, borderRadius: 16, background: THEME.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 18, marginBottom: 16 }}>TY</div>
+      <div style={{ width: 52, height: 52, borderRadius: 14, background: THEME.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 18, marginBottom: 16 }}>TY</div>
       <div style={{ fontSize: 20, fontWeight: 700, color: THEME.textDark, marginBottom: 4 }}>TY Calendar</div>
       <div style={{ fontSize: 14, color: THEME.textMuted, marginBottom: 28 }}>{titles[mode]}</div>
 
@@ -87,15 +87,15 @@ export default function Auth({ lineDebug }) {
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
           {mode === 'signin' && (
             <div style={{ display: 'flex', gap: 16, fontSize: 13 }}>
-              <button type="button" className="btn-reset" onClick={() => switchMode('signup')} style={{ color: THEME.primary, fontWeight: 600, padding: '8px 4px' }}>建立新帳號</button>
+              <button type="button" className="btn-reset" onClick={() => switchMode('signup')} style={{ color: THEME.primaryInk, fontWeight: 600, padding: '8px 4px' }}>建立新帳號</button>
               <button type="button" className="btn-reset" onClick={() => switchMode('forgot')} style={{ color: THEME.textMuted, padding: '8px 4px' }}>忘記密碼？</button>
             </div>
           )}
           {mode === 'signup' && (
-            <button type="button" className="btn-reset" onClick={() => switchMode('signin')} style={{ color: THEME.primary, fontSize: 13, fontWeight: 600, padding: '8px 4px' }}>已經有帳號？登入</button>
+            <button type="button" className="btn-reset" onClick={() => switchMode('signin')} style={{ color: THEME.primaryInk, fontSize: 13, fontWeight: 600, padding: '8px 4px' }}>已經有帳號？登入</button>
           )}
           {mode === 'forgot' && (
-            <button type="button" className="btn-reset" onClick={() => switchMode('signin')} style={{ color: THEME.primary, fontSize: 13, fontWeight: 600, padding: '8px 4px' }}>返回登入</button>
+            <button type="button" className="btn-reset" onClick={() => switchMode('signin')} style={{ color: THEME.primaryInk, fontSize: 13, fontWeight: 600, padding: '8px 4px' }}>返回登入</button>
           )}
         </div>
         {lineDebug && <div style={{ marginTop: 16, fontSize: 12, color: THEME.textFaint, fontWeight: 600, lineHeight: 1.6, wordBreak: 'break-word' }}>LINE 自動登入除錯：{lineDebug}</div>}

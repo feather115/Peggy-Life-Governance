@@ -38,7 +38,7 @@ export default function FoodHistoryCard({ app }) {
   };
 
   return (
-    <div style={{ background: 'var(--surface)', borderRadius: 24, padding: '20px 16px', marginTop: 12, boxShadow: 'var(--shadow-card)' }}>
+    <div style={{ background: 'var(--surface)', borderRadius: 28, padding: '20px 16px', marginTop: 12, boxShadow: 'var(--shadow-card)' }}>
       <div style={{ fontSize: 16, fontWeight: 900, color: 'var(--text)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}><Icon name="search" size={17} />飲食歷史</div>
       <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
         <button onClick={() => setTab('search')} style={tabBtn(tab === 'search')}>搜尋食物</button>
@@ -59,7 +59,7 @@ export default function FoodHistoryCard({ app }) {
                     <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--text)' }}>{f.name}</div>
                     <div style={{ fontSize: 12, color: 'var(--text-faint)', marginTop: 2, fontWeight: 600 }}>吃過 {f.count} 次 · 最近 {dateLabel(f.lastDate)}</div>
                   </div>
-                  <span style={{ fontSize: 12, color: 'var(--primary)', fontWeight: 800, flexShrink: 0 }}>{expanded === f.name ? '收合 ▲' : '看日期 ▼'}</span>
+                  <span style={{ fontSize: 12, color: 'var(--primary-ink)', fontWeight: 800, flexShrink: 0 }}>{expanded === f.name ? '收合 ▲' : '看日期 ▼'}</span>
                 </button>
                 {expanded === f.name && (
                   <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--track)', display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 280, overflowY: 'auto' }}>
@@ -73,8 +73,8 @@ export default function FoodHistoryCard({ app }) {
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
                             {copiedKey === entryKey
-                              ? <span style={{ fontSize: 12, color: 'var(--primary)', fontWeight: 800 }}>已加入菜單 ✓</span>
-                              : <button aria-label="複製到食物庫菜單" className="tap" onClick={() => copyToMenu(e, entryKey)} title="複製到食物庫菜單" style={{ border: 'none', background: 'var(--bg)', color: 'var(--primary)', width: 26, height: 26, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}><Icon name="copy" size={13} /></button>}
+                              ? <span style={{ fontSize: 12, color: 'var(--primary-ink)', fontWeight: 800 }}>已加入菜單 ✓</span>
+                              : <button aria-label="複製到食物庫菜單" className="tap" onClick={() => copyToMenu(e, entryKey)} title="複製到食物庫菜單" style={{ border: 'none', background: 'var(--bg)', color: 'var(--primary-ink)', width: 26, height: 26, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}><Icon name="copy" size={13} /></button>}
                             <button aria-label="編輯這筆" className="tap" onClick={() => setEditing({ date: e.date, mealKey: e.mealKey, item: e.item })} title="編輯這筆" style={{ border: 'none', background: 'var(--bg)', color: 'var(--text-muted)', width: 26, height: 26, borderRadius: '50%', cursor: 'pointer', fontSize: 12 }}><Icon name="pencil" size={14} /></button>
                           </div>
                         </div>
@@ -104,7 +104,7 @@ export default function FoodHistoryCard({ app }) {
                   <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--text)' }}>{f.name}</span>
                 </div>
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--primary)' }}>{f.count} 次</div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--primary-ink)' }}>{f.count} 次</div>
                   <div style={{ fontSize: 12, color: 'var(--text-faint)', fontWeight: 600 }}>平均 {Math.round(f.totalCal / f.count)} kcal</div>
                 </div>
               </div>
@@ -127,5 +127,5 @@ export default function FoodHistoryCard({ app }) {
 
 const tabBtn = (active) => ({
   border: 'none', background: active ? 'var(--primary)' : 'var(--sunken)', color: active ? '#fff' : 'var(--text-muted)',
-  fontWeight: 800, fontSize: 13, padding: '8px 14px', borderRadius: 12, cursor: 'pointer',
+  fontWeight: 800, fontSize: 13, padding: '8px 14px', borderRadius: 14, cursor: 'pointer',
 });

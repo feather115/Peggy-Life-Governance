@@ -95,7 +95,7 @@ export default function WeightChart({ challenge, highlightUserId = null, selecte
               {pts.map((p, i) => {
                 const isSelected = selectedWeek === pe[i].weekLabel;
                 return (
-                  <circle key={`p${i}`} cx={p.x} cy={p.y} r={isSelected ? 6.5 : (isDim ? 2.5 : 3.5)} fill={color} stroke="#fff" strokeWidth={isSelected ? 2 : 1.5} />
+                  <circle key={`p${i}`} cx={p.x} cy={p.y} r={isSelected ? 6.5 : (isDim ? 2.5 : 3.5)} fill={color} stroke="var(--surface)" strokeWidth={isSelected ? 2 : 1.5} />
                 );
               })}
             </g>

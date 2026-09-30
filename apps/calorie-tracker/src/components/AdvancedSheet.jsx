@@ -70,7 +70,7 @@ export default function AdvancedSheet({ app, selectedDate, onClose }) {
           <div style={{ fontSize: 18, fontWeight: 900, color: 'var(--text)' }}>進階</div>
           <div style={{ fontSize: 12, color: 'var(--text-faint)', fontWeight: 700, marginTop: 1 }}>{dateLabel(selectedDate)}</div>
         </div>
-        <button onClick={close} style={{ border: 'none', background: 'var(--primary)', color: '#fff', fontWeight: 800, fontSize: 14, padding: '8px 18px', borderRadius: 18, cursor: 'pointer' }}>完成</button>
+        <button onClick={close} style={{ border: 'none', background: 'var(--primary)', color: '#fff', fontWeight: 800, fontSize: 14, padding: '8px 18px', borderRadius: 20, cursor: 'pointer' }}>完成</button>
       </div>
       <div className="ps" style={{ flex: 1, overflowY: 'auto', padding: '4px 18px 28px' }}>
         <TagToggleGroup title={<><Icon name="timer" size={16} />斷食</>} hint="今天的斷食方式，可複選" tags={fastingTagDefs} activeTags={activeTags} activeBg="var(--info)"
@@ -82,11 +82,11 @@ export default function AdvancedSheet({ app, selectedDate, onClose }) {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
             <div style={{ fontSize: 14, fontWeight: 900, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 6 }}><Icon name="clipboard" size={16} />當日 AI 摘要</div>
-            <button onClick={generateSummary} disabled={aiBusy} style={{ border: 'none', background: aiBusy ? 'var(--line-strong)' : 'var(--bg)', color: aiBusy ? '#fff' : 'var(--primary)', fontWeight: 800, fontSize: 12, padding: '6px 12px', borderRadius: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>{aiBusy ? '產生中…' : <><Icon name="sparkles" size={14} />AI 幫我寫</>}</button>
+            <button onClick={generateSummary} disabled={aiBusy} style={{ border: 'none', background: aiBusy ? 'var(--line-strong)' : 'var(--bg)', color: aiBusy ? '#fff' : 'var(--primary-ink)', fontWeight: 800, fontSize: 12, padding: '6px 12px', borderRadius: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>{aiBusy ? '產生中…' : <><Icon name="sparkles" size={14} />AI 幫我寫</>}</button>
           </div>
           <div style={{ fontSize: 12, color: 'var(--text-faint)', fontWeight: 700, marginBottom: 11 }}>貼上 AI 對今日飲食的評價，或點上面按鈕自動產生 · 關閉時自動儲存</div>
-          {aiError && <div style={{ marginBottom: 8, fontSize: 12, fontWeight: 700, color: 'var(--danger)' }}>{aiError}</div>}
-          <textarea aria-label="當日摘要" value={note} onChange={(e) => setNote(e.target.value)} placeholder="例如：今天蛋白質達標，碳水偏高。建議明天減少精緻澱粉，多補充蔬菜纖維…" style={{ width: '100%', height: 130, border: 'none', background: 'var(--surface-alt)', borderRadius: 16, padding: '12px 14px', fontSize: 16, fontWeight: 600, color: 'var(--text)', resize: 'none', lineHeight: 1.75 }} />
+          {aiError && <div style={{ marginBottom: 8, fontSize: 12, fontWeight: 700, color: 'var(--danger-ink)' }}>{aiError}</div>}
+          <textarea aria-label="當日摘要" value={note} onChange={(e) => setNote(e.target.value)} placeholder="例如：今天蛋白質達標，碳水偏高。建議明天減少精緻澱粉，多補充蔬菜纖維…" style={{ width: '100%', height: 130, border: 'none', background: 'var(--surface-alt)', borderRadius: 14, padding: '12px 14px', fontSize: 16, fontWeight: 600, color: 'var(--text)', resize: 'none', lineHeight: 1.75 }} />
         </div>
       </div>
     </Sheet>
@@ -103,7 +103,7 @@ function TagToggleGroup({ title, hint, tags, activeTags, activeBg, useTagColor =
           const active = activeTags.includes(t.id);
           const bg = active && useTagColor ? (t.color || activeBg) : active ? activeBg : 'var(--sunken)';
           return (
-            <button key={t.id} onClick={() => onToggle(t.id, active)} aria-pressed={active} style={{ border: 'none', background: bg, color: active ? readableOn(bg) : 'var(--text-muted)', padding: '11px 20px', borderRadius: 22, fontSize: 14, fontWeight: 800, cursor: 'pointer' }}>{t.label}</button>
+            <button key={t.id} onClick={() => onToggle(t.id, active)} aria-pressed={active} style={{ border: 'none', background: bg, color: active ? readableOn(bg) : 'var(--text-muted)', padding: '11px 20px', borderRadius: 20, fontSize: 14, fontWeight: 800, cursor: 'pointer' }}>{t.label}</button>
           );
         })}
       </div>

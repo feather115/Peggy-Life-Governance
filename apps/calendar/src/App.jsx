@@ -32,7 +32,7 @@ const S = {
   header: { padding: '10px 12px 10px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: THEME.surface },
   appTitle: { fontSize: 18, fontWeight: 700, color: THEME.textDark, margin: 0 },
   headerActions: { display: 'flex', alignItems: 'center', gap: 4 },
-  todayBtn: { border: `1px solid ${THEME.border}`, background: THEME.surface, padding: '8px 14px', borderRadius: THEME.radiusSm, fontSize: 13, fontWeight: 700, color: THEME.primary, whiteSpace: 'nowrap' },
+  todayBtn: { border: `1px solid ${THEME.border}`, background: THEME.surface, padding: '8px 14px', borderRadius: THEME.radiusSm, fontSize: 13, fontWeight: 700, color: THEME.primaryInk, whiteSpace: 'nowrap' },
   iconBtn: { border: 'none', background: 'none', color: THEME.textMuted, padding: 8, display: 'flex' },
   fab: { position: 'absolute', right: 20, bottom: 'calc(78px + env(safe-area-inset-bottom))', zIndex: 5, width: 56, height: 56, borderRadius: '50%', border: 'none', background: THEME.primary, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 20px -6px rgba(31,45,66,.45)' },
 };

@@ -7,13 +7,13 @@ import Icon from '@peggy-life/shared/Icon.jsx';
 const S = {
   header: { display: 'flex', alignItems: 'center', gap: 12, padding: 16, background: THEME.surface, borderBottom: `1px solid ${THEME.border}` },
   backBtn: { border: 'none', background: 'none', color: THEME.textMuted, padding: 2, display: 'flex', alignItems: 'center' },
-  title: { fontSize: 17, fontWeight: 700, color: THEME.textDark },
+  title: { fontSize: 18, fontWeight: 700, color: THEME.textDark },
   body: { padding: 20, display: 'flex', flexDirection: 'column', gap: 18 },
   fieldLabel: { fontSize: 13, color: THEME.textMuted, marginBottom: 6 },
-  required: { color: THEME.error },
+  required: { color: THEME.errorInk },
   input: { width: '100%', boxSizing: 'border-box', border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSm, padding: '11px 12px', fontSize: 15, color: THEME.textDark, background: THEME.surface },
   inputError: { borderColor: THEME.error },
-  errorText: { fontSize: 12, color: THEME.error, marginTop: 5 },
+  errorText: { fontSize: 12, color: THEME.errorInk, marginTop: 5 },
   intervalRow: { display: 'flex', gap: 8, alignItems: 'center' },
   intervalInput: { width: 70, boxSizing: 'border-box', border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSm, padding: '11px 12px', fontSize: 15, color: THEME.textDark, background: THEME.surface },
   unitSegment: { flex: 1, display: 'flex', background: THEME.surfaceAlt, borderRadius: THEME.radiusSm, padding: 3, gap: 2 },
@@ -22,11 +22,11 @@ const S = {
   toggleTextWrap: {},
   toggleTitle: { fontSize: 14, color: THEME.textDark, fontWeight: 600 },
   toggleHint: { fontSize: 12, color: THEME.textMuted, marginTop: 2 },
-  toggleTrack: (on) => ({ width: 44, height: 26, borderRadius: 13, background: on ? THEME.primary : THEME.textFaint, position: 'relative', cursor: 'pointer', flexShrink: 0 }),
+  toggleTrack: (on) => ({ width: 44, height: 26, borderRadius: 14, background: on ? THEME.primary : THEME.textFaint, position: 'relative', cursor: 'pointer', flexShrink: 0 }),
   toggleKnob: (on) => ({ width: 20, height: 20, borderRadius: '50%', background: '#fff', position: 'absolute', top: 3, left: on ? 21 : 3, boxShadow: '0 1px 3px rgba(0,0,0,.25)' }),
   footer: { padding: '14px 16px calc(14px + env(safe-area-inset-bottom))', background: THEME.surface, borderTop: `1px solid ${THEME.border}` },
   saveBtn: { width: '100%', border: 'none', cursor: 'pointer', padding: 13, borderRadius: THEME.radiusSm, background: THEME.primary, color: '#fff', fontSize: 15, fontWeight: 700 },
-  errorBox: { background: THEME.errorBg, color: THEME.error, padding: '10px 12px', borderRadius: THEME.radiusSm, fontSize: 13, fontWeight: 600, margin: '0 20px' },
+  errorBox: { background: THEME.errorBg, color: THEME.errorInk, padding: '10px 12px', borderRadius: THEME.radiusSm, fontSize: 13, fontWeight: 600, margin: '0 20px' },
 };
 
 const UNITS = [

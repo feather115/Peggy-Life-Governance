@@ -61,11 +61,13 @@ Supabase ⇄ db.js ⇄ useRecipes.js ⇄ App.jsx ⇄ components/*
 
 - **色票 = CSS 變數**：`src/theme.css` 的 `:root` 定義本 app 的色票（`--bg / --surface / --text / --text-muted / --text-faint / --primary / --line / --danger …`）與陰影（`--shadow-card / --shadow-nav / --shadow-sheet`）。元件 inline style 一律寫 `'var(--text)'`，**不要再寫死色碼**；要換色只改 `theme.css`。三個 app 變數名相同、色值不同（綠 / 橘棕 / 藍）。
 - **共用全域樣式**：`packages/shared/src/base.css`（由 `main.jsx` import）— reset、`:focus-visible` 焦點環（`--ring`）、按鈕按壓回饋、`prefers-reduced-motion`、`.tap`（把小按鈕點擊範圍撐到 ≥44px，不影響版面）、`.ps`（隱藏捲軸）。因為 inline style 優先級高於 CSS，**元件裡不可再寫 `outline: 'none'`**，否則焦點環會被蓋掉。
-- **對比度**：`--text-muted / --text-faint` 已算過在 `--surface` / `--bg` 上 ≥4.5:1（WCAG AA）。改色票後要重新驗證，不要把淺灰當內文色。
+- **實心底色 vs 字色（*-ink）**：`--primary / --info / --danger / --success` 是實心底色（上面放白字，使用者存的標籤色也可能是 `var(--primary)`）；**當字色用一律寫 `*-ink`**（`var(--primary-ink)`）。淺色模式兩者同色，深色模式 ink 比較亮，深底上才讀得到。本 app 另有 `--warning-ink / --warning-bg`、`--like / --like-bg`（按讚）、`--today-ring`（料理行事曆的今天外框）。
+- **深色模式**：`theme.css` 的 `@media (prefers-color-scheme: dark)` 區塊整組換色，跟著手機系統設定；元件不用改。新增顏色時兩個模式都要給值，不要在元件裡寫死色碼（寫死的白底在深色模式會變成一塊亮白）。
+- **對比度有測試守著**：`packages/shared/src/themeContrast.test.js` 檢查淺色/深色兩組色票：文字與 *-ink 在 `--surface / --bg / --surface-alt` 上 ≥4.5:1、*-ink 在對應的淡色底上 ≥4.5:1、`--primary / --info / --danger` 上的白字 ≥4.5:1。改色後跑 `npm test`。
 - **icon**：`@peggy-life/shared/Icon.jsx`（內建線條 SVG，`<Icon name="pencil" />`，`aria-hidden`）。icon-only 按鈕必須加 `aria-label`；小按鈕加 `className="tap"`。內容性 emoji（餐別圖示等）保留，UI 操作符號（✏ × ＋ ‹ ›）用 `Icon`。
 - **表單欄位**：每個 `<input>/<textarea>/<select>` 都要有 `aria-label`（或 `<label>` 包住）；只靠 placeholder 不算。
 - **viewport 不鎖縮放**（無 `maximum-scale` / `user-scalable=no`）；為了避免 iOS 聚焦輸入框自動放大，`base.css` 在觸控裝置把輸入框強制 16px。
-- **字級下限 12px**。
+- **尺寸規格**：字級只用 12/13/14/15/16/18/20/24（28 以上是大數字），圓角只用 8/10/14/20/28/999（5 以下的細節不限）。`packages/shared/src/designScale.test.js` 會掃所有元件，寫了規格外的值 `npm test` 會失敗。
 - **`TabBar.jsx`**：`<nav>` + icon + 文字，`aria-current="page"`，底部留 `env(safe-area-inset-bottom)`。
 
 ## 每個檔案在幹嘛

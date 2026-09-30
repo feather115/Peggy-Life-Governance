@@ -7,6 +7,8 @@ export const THEME = {
   surfaceAlt: 'var(--surface-alt)',
   surfaceAlt2: 'var(--surface-alt2)',
   primary: 'var(--primary)',
+  // 當「字色」用的主色：淺色模式跟 primary 一樣；深色模式比較亮，深底上才讀得到（primary 本身留給實心按鈕底色）
+  primaryInk: 'var(--primary-ink)',
   primaryDark: 'var(--primary-strong)',
   primarySoft: 'var(--primary-soft)',
   textDark: 'var(--text)',
@@ -15,10 +17,12 @@ export const THEME = {
   border: 'var(--line)',
   radius: 20,
   radiusSm: 14,
-  radiusSmInner: 11,
+  radiusSmInner: 10,
   success: 'var(--success)',
+  successInk: 'var(--success-ink)',
   successBg: 'var(--success-bg)',
   error: 'var(--danger)',
+  errorInk: 'var(--danger-ink)',
   errorBg: 'var(--danger-bg)',
   shadow: 'var(--shadow-card)',
   // ＃快速注記的深藍色（2026-07-10 從暖橘改藍，使用者反饋）
@@ -34,8 +38,8 @@ export const THEME = {
 export const EVENT_COLORS = ['#5497E3', '#27A594', '#4EA651', '#C68910', '#ED6C45', '#9787E8', '#E56C9C'];
 
 // 日記標籤依所屬分類上色（分類本身沒有存顏色，用分類在清單裡的順序固定分配）
-// 12px 小字放在淡藍底（primarySoft）上，每色都要 ≥4.5:1（2026-09-30 加深，原本後四色只有 3.2～3.6）
-const CATEGORY_ACCENTS = ['#3D5A80', '#556890', '#785D8A', '#3C7071', '#816149'];
+// 12px 小字放在淡藍底（primarySoft）上，每色都要 ≥4.5:1；實際色值在 theme.css 的 --cat-1～5（深色模式有另一組比較亮的）
+const CATEGORY_ACCENTS = ['var(--cat-1)', 'var(--cat-2)', 'var(--cat-3)', 'var(--cat-4)', 'var(--cat-5)'];
 export function categoryAccentForTag(tag, categories) {
   const idx = categories.findIndex((c) => c.tags.some((t) => t.name === tag || (t.subs || []).includes(tag)));
   if (idx === -1) return THEME.textMuted;

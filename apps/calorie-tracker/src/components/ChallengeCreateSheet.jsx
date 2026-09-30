@@ -15,7 +15,7 @@ export default function ChallengeCreateSheet({ onClose, onCreate, onJoin, repeat
 
       {!repeatSource && (
         <div style={{ padding: '4px 16px 0' }}>
-          <div style={{ display: 'flex', background: 'var(--sunken)', borderRadius: 12, padding: 3, gap: 3 }}>
+          <div style={{ display: 'flex', background: 'var(--sunken)', borderRadius: 14, padding: 3, gap: 3 }}>
             <button onClick={() => setTab('create')} aria-pressed={tab === 'create'} style={tabBtn(tab === 'create')}><Icon name="plus" size={15} />建立</button>
             <button onClick={() => setTab('join')} aria-pressed={tab === 'join'} style={tabBtn(tab === 'join')}><Icon name="log-in" size={15} />加入</button>
           </div>
@@ -34,7 +34,7 @@ const tabBtn = (active) => ({
   fontSize: 14, fontWeight: 800, fontFamily: 'inherit',
   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
   background: active ? 'var(--surface)' : 'transparent',
-  color: active ? 'var(--primary)' : 'var(--text-faint)',
+  color: active ? 'var(--primary-ink)' : 'var(--text-faint)',
   boxShadow: active ? 'var(--shadow-card)' : 'none',
 });
 
@@ -114,7 +114,7 @@ function JoinForm({ onJoin }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <Field label="邀請碼">
         <input aria-label="邀請碼" type="text" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="6 碼英數字" maxLength={6}
-          style={{ ...input, textAlign: 'center', letterSpacing: 4, fontSize: 22, fontWeight: 900 }} />
+          style={{ ...input, textAlign: 'center', letterSpacing: 4, fontSize: 24, fontWeight: 900 }} />
       </Field>
       {err && <div style={errBox}>{err}</div>}
       <button onClick={submit} disabled={busy} style={{ ...primaryBtn, marginTop: 6, opacity: busy ? 0.6 : 1 }}>{busy ? '加入中…' : '加入挑戰'}</button>
@@ -132,6 +132,6 @@ function Field({ label, children }) {
   );
 }
 
-const input = { width: '100%', border: 'none', background: 'var(--surface-alt)', borderRadius: 12, padding: '14px 15px', fontSize: 16, fontWeight: 700, color: 'var(--text)' };
+const input = { width: '100%', border: 'none', background: 'var(--surface-alt)', borderRadius: 14, padding: '14px 15px', fontSize: 16, fontWeight: 700, color: 'var(--text)' };
 const primaryBtn = { border: 'none', background: 'var(--primary)', color: '#fff', fontWeight: 900, fontSize: 15, padding: 14, borderRadius: 14, cursor: 'pointer' };
-const errBox = { background: 'var(--danger-bg)', color: 'var(--danger)', borderRadius: 10, padding: '10px 12px', fontSize: 13, fontWeight: 700 };
+const errBox = { background: 'var(--danger-bg)', color: 'var(--danger-ink)', borderRadius: 10, padding: '10px 12px', fontSize: 13, fontWeight: 700 };

@@ -6,7 +6,7 @@ import Icon from '@peggy-life/shared/Icon.jsx';
 const S = {
   viewHome: { padding: '6px 18px 20px' },
   title: { fontSize: 24, fontWeight: 900, color: 'var(--text)', lineHeight: 1.2, margin: 0 },
-  status: { fontSize: 13, color: 'var(--primary)', fontWeight: 700, marginTop: 4, margin: 0 },
+  status: { fontSize: 13, color: 'var(--primary-ink)', fontWeight: 700, marginTop: 4, margin: 0 },
   search: {
     width: '100%', border: 'none', background: 'var(--surface-alt)', borderRadius: 14,
     padding: '12px 16px', fontSize: 15, fontWeight: 700, color: 'var(--text)', marginTop: 12,
@@ -36,12 +36,12 @@ const S = {
   },
   cardInfo: { padding: '10px 12px 12px' },
   badge: {
-    fontSize: 12, background: 'var(--bg)', color: 'var(--primary)', padding: '3px 8px',
+    fontSize: 12, background: 'var(--bg)', color: 'var(--primary-ink)', padding: '3px 8px',
     borderRadius: 10, fontWeight: 800, marginRight: 4, display: 'inline-block',
   },
   likeChip: {
     position: 'absolute', top: 8, right: 8, background: 'rgba(0,0,0,.55)', color: '#fff',
-    padding: '3px 8px', borderRadius: 12, fontSize: 12, fontWeight: 900,
+    padding: '3px 8px', borderRadius: 14, fontSize: 12, fontWeight: 900,
     display: 'flex', alignItems: 'center', gap: 3,
   },
   ownerChips: { display: 'flex', gap: 6, marginTop: 12, marginBottom: 2, flexWrap: 'wrap' },

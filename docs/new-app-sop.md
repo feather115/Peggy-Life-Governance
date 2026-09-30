@@ -218,12 +218,17 @@ Supabase ⇄ db.js ⇄ use<Domain>.js ⇄ Root.jsx/App.jsx ⇄ components/*
   （放函式裡每次 render 都會重新建立物件，是這個專案踩過的效能坑，見
   `RecipeDetail.jsx` 的 commit history）
 - **色票與全域樣式**：每個 app 有自己的 `src/theme.css`（`:root` 的 CSS 變數，變數名對齊其他 app：
-  `--bg / --surface / --surface-alt / --sunken / --line / --track / --text / --text-muted /
-  --text-faint / --primary / --primary-soft / --on-primary / --ring / --info / --success /
-  --danger / --scrim / --shadow-card / --shadow-nav / --shadow-sheet`），`main.jsx` 依序 import
+  `--bg / --surface / --surface-alt / --sunken / --line / --line-strong / --track / --text / --text-muted /
+  --text-faint / --primary / --primary-ink / --primary-soft / --on-primary / --ring / --info / --info-ink / --info-bg /
+  --success / --success-ink / --success-bg / --danger / --danger-ink / --danger-bg / --warning-ink / --warning-bg /
+  --scrim / --shadow-card / --shadow-nav / --shadow-sheet`），`main.jsx` 依序 import
   `@peggy-life/shared/base.css` 和 `./theme.css`。inline style 寫 `'var(--text)'`，**不要寫死色碼**。
-  文字色要對 `--surface` / `--bg` 算過對比度 ≥4.5:1。`index.html` 不再放 `<style>`，
-  viewport 不要加 `maximum-scale` / `user-scalable=no`。
+  - `--primary / --info / --danger / --success` 是**實心底色**（上面放白字）；**當字色用寫 `*-ink`**
+  - theme.css 要同時給**淺色與深色**兩組值（`@media (prefers-color-scheme: dark)` 區塊，深色的 `*-ink` 要比較亮）
+  - 新 app 的 theme.css 要加進 `packages/shared/src/themeContrast.test.js` 的 `APPS`，`npm test` 會檢查兩個模式的對比度
+  - `index.html` 不再放 `<style>`，viewport 不要加 `maximum-scale` / `user-scalable=no`。
+- **尺寸規格**：字級只用 12/13/14/15/16/18/20/24（28 以上給大數字），圓角只用 8/10/14/20/28/999
+  （5 以下的細節不限）。`designScale.test.js` 會掃元件，新 app 的 `src` 要加進它的 `DIRS`。
 - 互動元素（button）：
   - **不要寫 `outline: 'none'`**——焦點環由 `base.css` 的 `:focus-visible` 提供，inline 寫了會蓋掉它
   - `cursor: 'pointer'` 已由 `base.css` 提供，不必再寫
@@ -233,7 +238,6 @@ Supabase ⇄ db.js ⇄ use<Domain>.js ⇄ Root.jsx/App.jsx ⇄ components/*
   - 載入中用 `<LoadingSkeleton />`、載入失敗用 `<LoadError message />`（shared），不要只放一行文字
   - 設定頁放 `<OtherApps current="…" />`，並在 `.env.example` 與 `OtherApps.jsx` 的清單加上新 app
   - 每個 `<input>/<textarea>/<select>` 要有 `aria-label`（或 `<label>` 包住），placeholder 不算
-  - 字級不低於 12px
   - 可點的東西一律用 `<button>`（或 `<a href>`），不要 `<div onClick>` / `<span onClick>`——後者鍵盤點不到、也沒有按壓回饋；
     要保留原本外觀就加 `className="btn-reset"` 清掉按鈕預設樣式
   - 覆蓋畫面 / bottom sheet 要呼叫 `useBackClose(open, onBack)`（`@peggy-life/shared/useBackClose`），

@@ -26,7 +26,7 @@ export function LoadError({ message }) {
     <div role="alert" style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, padding: 24, textAlign: 'center' }}>
       <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>資料載入失敗</div>
       <div style={{ fontSize: 14, color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: 320 }}>{message || '請檢查網路連線後再試一次'}</div>
-      <button type="button" onClick={() => window.location.reload()} style={{ border: 'none', background: 'var(--primary-fill, var(--primary))', color: '#fff', fontSize: 15, fontWeight: 800, padding: '12px 24px', borderRadius: 14 }}>重新載入</button>
+      <button type="button" onClick={() => window.location.reload()} style={{ border: 'none', background: 'var(--primary)', color: '#fff', fontSize: 15, fontWeight: 800, padding: '12px 24px', borderRadius: 14 }}>重新載入</button>
     </div>
   );
 }

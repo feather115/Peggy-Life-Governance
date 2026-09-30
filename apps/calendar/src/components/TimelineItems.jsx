@@ -18,13 +18,13 @@ const S = {
   // 計時與全天卡的標題都維持 15px，避免全天標題過度突出
   entryTitle: { fontSize: 15, fontWeight: 700, color: THEME.textDark },
   titleRow: { display: 'flex', alignItems: 'center', gap: 8 },
-  note: { fontSize: 13.5, color: THEME.textMuted, lineHeight: 1.5, whiteSpace: 'pre-wrap' },
+  note: { fontSize: 14, color: THEME.textMuted, lineHeight: 1.5, whiteSpace: 'pre-wrap' },
   hashtagsRow: { display: 'flex', flexWrap: 'wrap', gap: '4px 8px' },
-  hashtagChip: { background: THEME.hashtagBg, color: THEME.hashtagInk, fontSize: 12.5, fontWeight: 600, padding: '4px 10px', borderRadius: 999 },
+  hashtagChip: { background: THEME.hashtagBg, color: THEME.hashtagInk, fontSize: 13, fontWeight: 600, padding: '4px 10px', borderRadius: 999 },
   divider: { height: 1, background: THEME.border },
-  tagChip: { fontSize: 12.5, fontWeight: 600, color: THEME.textMuted, background: THEME.bg, padding: '4px 10px', borderRadius: 999 },
+  tagChip: { fontSize: 13, fontWeight: 600, color: THEME.textMuted, background: THEME.bg, padding: '4px 10px', borderRadius: 999 },
   tagsRow: { display: 'flex', flexWrap: 'wrap', gap: 8 },
-  meta: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '4px 14px', fontSize: 12.5, color: THEME.textMuted },
+  meta: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '4px 14px', fontSize: 13, color: THEME.textMuted },
   // 分類標籤 chip 與地點/同伴資訊列同一行（放不下才換行）
   footerRow: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '6px 12px' },
   metaItem: { display: 'inline-flex', alignItems: 'center', gap: 4, fontWeight: 500 },
@@ -32,7 +32,7 @@ const S = {
   taskCard: { padding: '12px 14px', background: THEME.surfaceAlt, borderRadius: THEME.radiusSm, border: `1px dashed ${THEME.border}` },
   taskRow: { display: 'flex', gap: 12, alignItems: 'center' },
   // 圓形勾選框：點了展開「完成日期 + 確認完成」，不用跳到任務頁
-  taskCheck: (active) => ({ width: 24, height: 24, flex: 'none', borderRadius: '50%', border: `2px solid ${THEME.primary}`, background: active ? THEME.primarySoft : THEME.surface }),
+  taskCheck: (active) => ({ width: 24, height: 24, flex: 'none', borderRadius: '50%', border: `2px solid ${THEME.primaryInk}`, background: active ? THEME.primarySoft : THEME.surface }),
   taskMain: { flex: 1, minWidth: 0, textAlign: 'left' },
   taskTitle: { fontSize: 15, fontWeight: 600, color: THEME.textDark },
   taskMeta: { fontSize: 12, color: THEME.textMuted, marginTop: 2 },

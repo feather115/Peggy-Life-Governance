@@ -14,41 +14,41 @@ import Icon from '@peggy-life/shared/Icon.jsx';
 const S = {
   viewDetail: { padding: '6px 18px 20px' },
   hintBadge: { background: 'var(--surface-alt)', color: 'var(--text-muted)', padding: '6px 14px', borderRadius: 20, fontWeight: 800, fontSize: 12, textAlign: 'center', marginBottom: 8 },
-  cookingCard: { background: 'var(--surface)', borderRadius: 24, padding: '20px 18px', boxShadow: 'var(--shadow-card)' },
-  recipeImage: { width: '100%', height: 200, objectFit: 'cover', borderRadius: 16, marginBottom: 14 },
+  cookingCard: { background: 'var(--surface)', borderRadius: 28, padding: '20px 18px', boxShadow: 'var(--shadow-card)' },
+  recipeImage: { width: '100%', height: 200, objectFit: 'cover', borderRadius: 14, marginBottom: 14 },
   badgesRow: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 },
   categoryBadge: { background: 'var(--primary)', color: '#fff', padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 800 },
   yieldBadge: { display: 'inline-flex', alignItems: 'center', gap: 4, background: 'var(--surface-alt)', color: 'var(--text-muted)', padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 800 },
   titleRow: { display: 'flex', alignItems: 'center', marginBottom: 10 },
-  recipeTitle: { fontSize: 22, fontWeight: 900, color: 'var(--text)', margin: 0 },
-  paramsDashboard: { background: 'var(--surface-alt)', borderRadius: 16, padding: 14, marginBottom: 10 },
+  recipeTitle: { fontSize: 24, fontWeight: 900, color: 'var(--text)', margin: 0 },
+  paramsDashboard: { background: 'var(--surface-alt)', borderRadius: 14, padding: 14, marginBottom: 10 },
   dashboardTitle: { fontSize: 13, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8 },
   dashboardGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 },
   paramKey: { fontSize: 12, fontWeight: 800, color: 'var(--text-muted)' },
   paramValue: { fontSize: 16, fontWeight: 900, color: 'var(--text)' },
-  scaleController: { background: 'var(--surface-alt)', borderRadius: 16, padding: 14, marginBottom: 10 },
+  scaleController: { background: 'var(--surface-alt)', borderRadius: 14, padding: 14, marginBottom: 10 },
   scaleLabel: { fontSize: 13, fontWeight: 700, color: 'var(--text)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 },
   scaleInputs: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
   baseName: { fontSize: 14, fontWeight: 800, color: 'var(--text)' },
   weightInput: { border: 'none', background: 'var(--surface)', borderRadius: 14, padding: '10px 12px', fontSize: 16, fontWeight: 800, color: 'var(--text)', width: 80 },
   unitText: { fontSize: 13, color: 'var(--text-muted)', fontWeight: 700 },
   resetBtn: { background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: 14, padding: '8px 14px', fontSize: 13, fontWeight: 800, cursor: 'pointer' },
-  scaleAlert: { background: 'var(--primary-soft)', color: 'var(--primary)', borderRadius: 12, padding: '8px 12px', fontSize: 13, fontWeight: 700, marginTop: 8 },
+  scaleAlert: { background: 'var(--primary-soft)', color: 'var(--primary-ink)', borderRadius: 14, padding: '8px 12px', fontSize: 13, fontWeight: 700, marginTop: 8 },
   sectionTitle: { display: 'inline-flex', alignItems: 'center', gap: 6 },
   sectionDivider: { fontSize: 15, fontWeight: 900, color: 'var(--text)', marginTop: 20, marginBottom: 10 },
   ingredientRow: { cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: 'var(--surface-alt)', borderRadius: 14, marginBottom: 6 },
   ingName: { fontSize: 14, fontWeight: 800, color: 'var(--text)' },
-  ingBrand: { fontSize: 12, background: 'var(--info-bg)', color: 'var(--info)', borderRadius: 10, padding: '2px 8px', marginLeft: 6 },
-  ingAmount: { fontSize: 14, fontWeight: 900, color: 'var(--primary)' },
+  ingBrand: { fontSize: 12, background: 'var(--info-bg)', color: 'var(--info-ink)', borderRadius: 10, padding: '2px 8px', marginLeft: 6 },
+  ingAmount: { fontSize: 14, fontWeight: 900, color: 'var(--primary-ink)' },
   completedOverlay: { opacity: 0.25, textDecoration: 'line-through' },
   stepsOl: { listStyle: 'none', padding: 0, margin: 0 },
   stepLi: { cursor: 'pointer', display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 10 },
   stepNumber: { width: 28, height: 28, borderRadius: '50%', background: 'var(--primary)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, flexShrink: 0 },
   stepText: { fontSize: 14, fontWeight: 700, color: 'var(--text)', lineHeight: 1.6 },
-  noteSection: { background: 'var(--surface-alt)', borderRadius: 16, padding: 14, border: '1px solid #FCDCC7' },
+  noteSection: { background: 'var(--surface-alt)', borderRadius: 14, padding: 14, border: '1px solid var(--line)' },
   notesList: { listStyle: 'none', padding: 0, margin: 0 },
   noteLi: { cursor: 'pointer', display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 8 },
-  notesBullet: { color: 'var(--primary)', fontWeight: 800, flexShrink: 0 },
+  notesBullet: { color: 'var(--primary-ink)', fontWeight: 800, flexShrink: 0 },
   notesText: { margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--text)', lineHeight: 1.6 },
   lastCooked: { fontSize: 12, color: 'var(--text-faint)', fontWeight: 700, textAlign: 'center', marginTop: 16 },
 };
@@ -124,7 +124,7 @@ export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, o
     <div style={S.viewDetail}>
       <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
         {onBack && (
-          <button onClick={onBack} style={{ border: 'none', background: 'var(--surface)', color: 'var(--primary)', fontWeight: 900, fontSize: 14, padding: '8px 16px', borderRadius: 14, cursor: 'pointer', boxShadow: '0 4px 12px -8px rgba(0,0,0,.2)' }}>
+          <button onClick={onBack} style={{ border: 'none', background: 'var(--surface)', color: 'var(--primary-ink)', fontWeight: 900, fontSize: 14, padding: '8px 16px', borderRadius: 14, cursor: 'pointer', boxShadow: '0 4px 12px -8px rgba(0,0,0,.2)' }}>
             ‹ 返回
           </button>
         )}
@@ -162,14 +162,14 @@ export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, o
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
               {isOwner ? (
-                <div style={{ background: 'var(--surface-alt)', padding: '8px 12px', borderRadius: 12, fontSize: 13, fontWeight: 800, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <div style={{ background: 'var(--surface-alt)', padding: '8px 12px', borderRadius: 14, fontSize: 13, fontWeight: 800, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 6 }}>
                   <Icon name="heart" size={14} filled style={{ color: 'var(--like)' }} />{likeCount} 人按讚
                   <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 700 }}>
                     · {recipe.is_shared ? '已分享' : '未分享（按編輯可開啟）'}
                   </span>
                 </div>
               ) : isGuest ? (
-                <div style={{ background: 'var(--surface-alt)', padding: '8px 12px', borderRadius: 12, fontSize: 13, fontWeight: 800, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <div style={{ background: 'var(--surface-alt)', padding: '8px 12px', borderRadius: 14, fontSize: 13, fontWeight: 800, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 6 }}>
                   <Icon name="heart" size={14} filled style={{ color: 'var(--like)' }} />{likeCount} 人按讚 · 別人分享的食譜
                 </div>
               ) : (
@@ -182,7 +182,7 @@ export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, o
                     background: isLiked ? 'var(--like-bg)' : 'var(--surface-alt)',
                     color: isLiked ? 'var(--like)' : 'var(--text)',
                     padding: '8px 14px',
-                    borderRadius: 12,
+                    borderRadius: 14,
                     fontSize: 13,
                     fontWeight: 900,
                     cursor: likeBusy ? 'wait' : 'pointer',
@@ -198,7 +198,7 @@ export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, o
                 </button>
               )}
               {likeError && (
-                <div style={{ fontSize: 12, color: 'var(--danger)', fontWeight: 800 }}>{likeError}</div>
+                <div style={{ fontSize: 12, color: 'var(--danger-ink)', fontWeight: 800 }}>{likeError}</div>
               )}
               {likerNames.length > 0 && (
                 <div style={{ width: '100%', fontSize: 12, color: 'var(--text-muted)', fontWeight: 700 }}>

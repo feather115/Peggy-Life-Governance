@@ -14,7 +14,7 @@ const TABS = [
 const S = {
   nav: { flex: 'none', background: THEME.surface, boxShadow: 'var(--shadow-nav)', paddingBottom: 'env(safe-area-inset-bottom)' },
   row: { display: 'flex', alignItems: 'stretch', justifyContent: 'space-around', padding: '6px 8px 4px' },
-  tab: (active) => ({ flex: 1, minHeight: 52, border: 'none', background: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, color: active ? THEME.primary : THEME.textFaint }),
+  tab: (active) => ({ flex: 1, minHeight: 52, border: 'none', background: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, color: active ? THEME.primaryInk : THEME.textFaint }),
   pill: (active) => ({ width: 52, height: 28, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', background: active ? THEME.primarySoft : 'transparent' }),
   label: { fontSize: 12, fontWeight: 700 },
 };

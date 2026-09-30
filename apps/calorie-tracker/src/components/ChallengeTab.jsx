@@ -21,8 +21,8 @@ function fmtWeight(v) {
   if (v === null || v === undefined) return '—';
   return `${v.toFixed(1)} kg`;
 }
-const diffColor = (v) => v === null ? 'var(--text-faint)' : v < 0 ? 'var(--primary)' : '#D9544F';
-const rankColor = (r) => r === 1 ? '#E8A13C' : r === 2 ? 'var(--text-faint)' : r === 3 ? '#A06B3B' : 'var(--text-faint)';
+const diffColor = (v) => v === null ? 'var(--text-faint)' : v < 0 ? 'var(--primary-ink)' : 'var(--danger-ink)';
+const rankColor = (r) => r === 1 ? 'var(--warning-ink)' : r === 2 ? 'var(--text-faint)' : r === 3 ? 'var(--bronze-ink)' : 'var(--text-faint)';
 
 const getWeeklyChangeText = (change) => {
   if (change === null || change === undefined) return '累積差值';
@@ -34,7 +34,7 @@ const getWeeklyChangeText = (change) => {
 const getWeeklyChangeColor = (change) => {
   if (change === null || change === undefined) return 'var(--text-faint)';
   if (change < 0) return 'var(--primary)';
-  if (change > 0) return '#D9544F';
+  if (change > 0) return 'var(--danger-ink)';
   return 'var(--text-faint)';
 };
 
@@ -72,7 +72,7 @@ export default function ChallengeTab({ app }) {
             <div style={{ display: 'flex', gap: 6, marginTop: 12, overflowX: 'auto', paddingBottom: 4 }}>
               {active.map(c => (
                 <button key={c.id} onClick={() => setSelectedId(c.id)}
-                  style={{ flexShrink: 0, border: 'none', background: c.id === current?.id ? 'var(--primary)' : '#fff', color: c.id === current?.id ? '#fff' : 'var(--text)', fontWeight: 800, fontSize: 13, padding: '8px 14px', borderRadius: 14, cursor: 'pointer' }}>
+                  style={{ flexShrink: 0, border: 'none', background: c.id === current?.id ? 'var(--primary)' : 'var(--surface)', color: c.id === current?.id ? '#fff' : 'var(--text)', fontWeight: 800, fontSize: 13, padding: '8px 14px', borderRadius: 14, cursor: 'pointer' }}>
                   {c.name}
                 </button>
               ))}
@@ -81,7 +81,7 @@ export default function ChallengeTab({ app }) {
 
           {current?.status === 'ended' && (
             <button onClick={() => setSelectedId(null)}
-              style={{ border: 'none', background: 'transparent', color: 'var(--primary)', fontWeight: 900, fontSize: 14, padding: '14px 2px 0', cursor: 'pointer' }}>
+              style={{ border: 'none', background: 'transparent', color: 'var(--primary-ink)', fontWeight: 900, fontSize: 14, padding: '14px 2px 0', cursor: 'pointer' }}>
               ‹ 回到挑戰
             </button>
           )}
@@ -104,7 +104,7 @@ export default function ChallengeTab({ app }) {
           {ended.length > 0 && (
             <div style={{ marginTop: 16 }}>
               <button onClick={() => setShowEnded(!showEnded)}
-                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', background: 'var(--surface)', border: 'none', borderRadius: 18, cursor: 'pointer', color: 'var(--text)', boxShadow: 'var(--shadow-card)' }}>
+                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', background: 'var(--surface)', border: 'none', borderRadius: 20, cursor: 'pointer', color: 'var(--text)', boxShadow: 'var(--shadow-card)' }}>
                 <span style={{ fontSize: 16, fontWeight: 900 }}>🗂 歷史挑戰</span>
                 <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{ended.length} 場 {showEnded ? '▲' : '▼'}</span>
               </button>
@@ -139,11 +139,11 @@ export default function ChallengeTab({ app }) {
 
 function EmptyState({ onOpen }) {
   return (
-    <div style={{ background: 'var(--surface)', borderRadius: 24, padding: '40px 24px', marginTop: 20, textAlign: 'center', boxShadow: 'var(--shadow-card)' }}>
+    <div style={{ background: 'var(--surface)', borderRadius: 28, padding: '40px 24px', marginTop: 20, textAlign: 'center', boxShadow: 'var(--shadow-card)' }}>
       <div style={{ fontSize: 56, marginBottom: 12 }}>🏆</div>
       <div style={{ fontSize: 18, fontWeight: 900, color: 'var(--text)', marginBottom: 6 }}>加入或建立你的第一個挑戰</div>
       <div style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 600, lineHeight: 1.8, marginBottom: 18 }}>跟朋友互相監督，<br/>看誰先成功減重</div>
-      <button onClick={onOpen} style={{ border: 'none', background: 'var(--primary)', color: '#fff', fontWeight: 900, fontSize: 15, padding: '14px 28px', borderRadius: 16, cursor: 'pointer' }}>開始</button>
+      <button onClick={onOpen} style={{ border: 'none', background: 'var(--primary)', color: '#fff', fontWeight: 900, fontSize: 15, padding: '14px 28px', borderRadius: 14, cursor: 'pointer' }}>開始</button>
     </div>
   );
 }
@@ -154,25 +154,25 @@ function ChallengeView({ challenge, myUserId, onSubmitEntry, onRemoveEntry, onUp
   const lb = useMemo(() => computeLeaderboard(challenge, myUserId), [challenge, myUserId]);
   const myRank = myRankIn(lb, myUserId);
   const dl = daysLeft(challenge.endDate);
-  const dlColor = dl <= 7 ? '#D9544F' : dl <= 14 ? '#E8A13C' : 'var(--primary)';
+  const dlColor = dl <= 7 ? 'var(--danger-ink)' : dl <= 14 ? 'var(--warning-ink)' : 'var(--primary-ink)';
 
   return (
     <div>
       {/* Banner */}
-      <div style={{ background: 'var(--surface)', borderRadius: 24, padding: '20px 22px', marginTop: 14, boxShadow: 'var(--shadow-card)' }}>
+      <div style={{ background: 'var(--surface)', borderRadius: 28, padding: '20px 22px', marginTop: 14, boxShadow: 'var(--shadow-card)' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
               {isActive ? (
                 <>
                   <div style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--primary)' }} />
-                  <span style={{ fontSize: 12, fontWeight: 900, letterSpacing: 1, color: 'var(--primary)' }}>進行中</span>
+                  <span style={{ fontSize: 12, fontWeight: 900, letterSpacing: 1, color: 'var(--primary-ink)' }}>進行中</span>
                 </>
               ) : (
                 <span style={{ fontSize: 12, fontWeight: 900, letterSpacing: 1, color: 'var(--text-faint)' }}>已結束</span>
               )}
             </div>
-            <div style={{ fontSize: 22, fontWeight: 900, color: 'var(--text)', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{challenge.name}</div>
+            <div style={{ fontSize: 24, fontWeight: 900, color: 'var(--text)', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{challenge.name}</div>
             <div style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 600, marginTop: 4 }}>{dateLabel(challenge.startDate)} → {dateLabel(challenge.endDate)}</div>
           </div>
           {isActive && (
@@ -186,7 +186,7 @@ function ChallengeView({ challenge, myUserId, onSubmitEntry, onRemoveEntry, onUp
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--line)' }}>
           <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 700 }}>邀請碼</span>
-          <code style={{ fontSize: 16, fontWeight: 900, letterSpacing: 2, color: 'var(--primary)', background: 'var(--bg)', padding: '4px 10px', borderRadius: 8 }}>{challenge.inviteCode}</code>
+          <code style={{ fontSize: 16, fontWeight: 900, letterSpacing: 2, color: 'var(--primary-ink)', background: 'var(--bg)', padding: '4px 10px', borderRadius: 8 }}>{challenge.inviteCode}</code>
           <button onClick={() => navigator.clipboard?.writeText(challenge.inviteCode)} style={{ border: 'none', background: 'var(--sunken)', color: 'var(--text-muted)', fontWeight: 700, fontSize: 12, padding: '5px 10px', borderRadius: 8, cursor: 'pointer' }}>複製</button>
           <span style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--text-faint)', fontWeight: 700 }}>{challenge.members.length} 人</span>
         </div>
@@ -243,7 +243,7 @@ function ChallengeView({ challenge, myUserId, onSubmitEntry, onRemoveEntry, onUp
         </div>
 
         {/* Full list */}
-        <div style={{ background: 'var(--surface)', borderRadius: 18, marginTop: 10, boxShadow: 'var(--shadow-card)', overflow: 'hidden' }}>
+        <div style={{ background: 'var(--surface)', borderRadius: 20, marginTop: 10, boxShadow: 'var(--shadow-card)', overflow: 'hidden' }}>
           {lb.map(item => (
             <div key={item.userId} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderTop: '1px solid var(--line)', background: item.isMe ? 'var(--surface-alt)' : 'transparent' }}>
               <div style={{ width: 28, textAlign: 'center', fontSize: 16, fontWeight: 900, color: rankColor(item.rank) }}>
@@ -251,7 +251,7 @@ function ChallengeView({ challenge, myUserId, onSubmitEntry, onRemoveEntry, onUp
               </div>
               <Avatar name={item.name} color={item.color} size={32} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 15, fontWeight: 700, color: item.isMe ? 'var(--primary)' : 'var(--text)' }}>{item.name}{item.isMe ? ' (你)' : ''}</div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: item.isMe ? 'var(--primary-ink)' : 'var(--text)' }}>{item.name}{item.isMe ? ' (你)' : ''}</div>
                 <div style={{ fontSize: 12, color: 'var(--text-faint)', fontWeight: 600, marginTop: 1 }}>{item.lastUpdated ? `更新 ${dateLabel(item.lastUpdated.slice(0,10))}` : '尚未登記'}</div>
               </div>
               <div style={{ textAlign: 'right' }}>
@@ -272,7 +272,7 @@ function ChallengeView({ challenge, myUserId, onSubmitEntry, onRemoveEntry, onUp
       {isActive && <EntryForm challenge={challenge} myUserId={myUserId} onSubmit={onSubmitEntry} onRemove={onRemoveEntry} onSetWeights={onSetWeights} />}
 
       {/* 管理 / 退出 */}
-      <div style={{ marginTop: 16, background: 'var(--surface)', borderRadius: 18, padding: '16px 18px', boxShadow: 'var(--shadow-card)' }}>
+      <div style={{ marginTop: 16, background: 'var(--surface)', borderRadius: 20, padding: '16px 18px', boxShadow: 'var(--shadow-card)' }}>
         <div style={{ fontSize: 14, fontWeight: 900, color: 'var(--text)', marginBottom: 10 }}>{isCreator ? '建立者選項' : '挑戰選項'}</div>
 
         {isCreator && isActive && (
@@ -326,7 +326,7 @@ function ProgressChartCard({ challenge, myUserId, onSetColor }) {
       <WeightChart challenge={challenge} highlightUserId={highlight} selectedWeek={selectedWeek} onSelectWeek={setSelectedWeek} />
       
       {selectedWeek && (
-        <div style={{ marginTop: 14, padding: '12px 14px', background: 'var(--surface-alt)', borderRadius: 16, border: '1px solid var(--track)' }}>
+        <div style={{ marginTop: 14, padding: '12px 14px', background: 'var(--surface-alt)', borderRadius: 14, border: '1px solid var(--track)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
             <span style={{ fontSize: 13, fontWeight: 900, color: 'var(--text)' }}>📅 {dateLabel(selectedWeek)} 戰績清單</span>
             <button aria-label="關閉戰績清單" className="tap" onClick={() => setSelectedWeek(null)} style={{ border: 'none', background: 'transparent', color: 'var(--text-muted)', fontWeight: 800, fontSize: 15, cursor: 'pointer', padding: '0 4px' }}><Icon name="x" size={14} /></button>
@@ -412,10 +412,10 @@ function ProgressChartCard({ challenge, myUserId, onSetColor }) {
 
 function ColorPicker({ current, onPick }) {
   return (
-    <div style={{ marginTop: 10, padding: 12, background: 'var(--surface-alt)', borderRadius: 12, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+    <div style={{ marginTop: 10, padding: 12, background: 'var(--surface-alt)', borderRadius: 14, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
       {MEMBER_PALETTE.map(hex => (
         <button key={hex} onClick={() => onPick(hex)}
-          style={{ width: 30, height: 30, borderRadius: '50%', background: hex, border: hex === current ? '3px solid var(--text)' : '2px solid #fff', cursor: 'pointer', boxShadow: '0 1px 4px rgba(0,0,0,.15)' }} />
+          style={{ width: 30, height: 30, borderRadius: '50%', background: hex, border: hex === current ? '3px solid var(--text)' : '2px solid var(--surface)', cursor: 'pointer', boxShadow: '0 1px 4px rgba(0,0,0,.15)' }} />
       ))}
     </div>
   );
@@ -525,13 +525,13 @@ function EntryForm({ challenge, myUserId, onSubmit, onRemove, onSetWeights }) {
           </div>
         </div>
 
-        {weightMsg && <div style={{ padding: '10px 14px', borderRadius: 12, marginBottom: 12, fontSize: 13, fontWeight: 700, color: weightMsg.kind === 'success' ? 'var(--success)' : 'var(--danger)', background: weightMsg.kind === 'success' ? 'var(--success-bg)' : 'var(--danger-bg)' }}>{weightMsg.text}</div>}
+        {weightMsg && <div style={{ padding: '10px 14px', borderRadius: 14, marginBottom: 12, fontSize: 13, fontWeight: 700, color: weightMsg.kind === 'success' ? 'var(--success-ink)' : 'var(--danger-ink)', background: weightMsg.kind === 'success' ? 'var(--success-bg)' : 'var(--danger-bg)' }}>{weightMsg.text}</div>}
 
         <div style={{ display: 'flex', gap: 10 }}>
           <button type="button" disabled={assistedKgDiff === null || busy} onClick={() => submit(assistedKgDiff)}
-            style={{ flex: 1, border: 'none', background: assistedKgDiff === null || busy ? '#DCE3DE' : 'var(--bg)', color: assistedKgDiff === null || busy ? 'var(--text-faint)' : 'var(--primary)', fontWeight: 900, fontSize: 13, padding: '12px 12px', borderRadius: 12, cursor: assistedKgDiff === null || busy ? 'not-allowed' : 'pointer' }}>{busy ? '送出中…' : '協助帶入並送出'}</button>
+            style={{ flex: 1, border: 'none', background: assistedKgDiff === null || busy ? 'var(--sunken)' : 'var(--bg)', color: assistedKgDiff === null || busy ? 'var(--text-faint)' : 'var(--primary-ink)', fontWeight: 900, fontSize: 13, padding: '12px 12px', borderRadius: 14, cursor: assistedKgDiff === null || busy ? 'not-allowed' : 'pointer' }}>{busy ? '送出中…' : '協助帶入並送出'}</button>
           <button type="button" onClick={persistWeights} disabled={busy}
-            style={{ flex: 1, border: 'none', background: busy ? 'var(--line-strong)' : 'var(--primary)', color: '#fff', fontWeight: 900, fontSize: 13, padding: '12px 12px', borderRadius: 12, cursor: 'pointer' }}>{busy ? '儲存中…' : '修改體重'}</button>
+            style={{ flex: 1, border: 'none', background: busy ? 'var(--line-strong)' : 'var(--primary)', color: '#fff', fontWeight: 900, fontSize: 13, padding: '12px 12px', borderRadius: 14, cursor: 'pointer' }}>{busy ? '儲存中…' : '修改體重'}</button>
         </div>
       </div>
 
@@ -545,9 +545,9 @@ function EntryForm({ challenge, myUserId, onSubmit, onRemove, onSetWeights }) {
             <div style={{ display: 'flex', alignItems: 'stretch', gap: 6 }}>
               {/* 有些手機鍵盤打不出負號，所以用按鈕切換正負，不用打字也行 */}
               <button aria-label="切換正負號" className="tap" type="button" onClick={() => setKg((v) => v.startsWith('-') ? v.slice(1) : v ? `-${v}` : '-')}
-                style={{ width: 44, border: 'none', background: 'var(--bg)', color: 'var(--primary)', fontWeight: 900, fontSize: 20, borderRadius: 12, cursor: 'pointer', flexShrink: 0 }}>±</button>
+                style={{ width: 44, border: 'none', background: 'var(--bg)', color: 'var(--primary-ink)', fontWeight: 900, fontSize: 20, borderRadius: 14, cursor: 'pointer', flexShrink: 0 }}>±</button>
               <input aria-label="體重變化（公斤）" type="text" inputMode="decimal" value={kg} onChange={(e) => { if (/^-?\d*\.?\d*$/.test(e.target.value)) setKg(e.target.value); }} placeholder="-2.5"
-                style={{ flex: 1, minWidth: 0, border: 'none', background: 'var(--surface-alt)', borderRadius: 14, padding: '14px 8px', fontSize: 22, fontWeight: 900, color: 'var(--text)', textAlign: 'center' }} />
+                style={{ flex: 1, minWidth: 0, border: 'none', background: 'var(--surface-alt)', borderRadius: 14, padding: '14px 8px', fontSize: 24, fontWeight: 900, color: 'var(--text)', textAlign: 'center' }} />
             </div>
           </div>
           <div style={{ flex: 1, minWidth: 130 }}>
@@ -557,7 +557,7 @@ function EntryForm({ challenge, myUserId, onSubmit, onRemove, onSetWeights }) {
           </div>
         </div>
 
-        {entryMsg && <div style={{ padding: '10px 14px', borderRadius: 12, marginBottom: 12, fontSize: 13, fontWeight: 700, color: entryMsg.kind === 'success' ? 'var(--success)' : 'var(--danger)', background: entryMsg.kind === 'success' ? 'var(--success-bg)' : 'var(--danger-bg)' }}>{entryMsg.text}</div>}
+        {entryMsg && <div style={{ padding: '10px 14px', borderRadius: 14, marginBottom: 12, fontSize: 13, fontWeight: 700, color: entryMsg.kind === 'success' ? 'var(--success-ink)' : 'var(--danger-ink)', background: entryMsg.kind === 'success' ? 'var(--success-bg)' : 'var(--danger-bg)' }}>{entryMsg.text}</div>}
 
         <div style={{ display: 'flex', gap: 10 }}>
           <button onClick={() => submit()} disabled={busy} style={{ flex: 1, border: 'none', background: busy ? 'var(--line-strong)' : 'var(--primary)', color: '#fff', fontWeight: 900, fontSize: 15, padding: 14, borderRadius: 14, cursor: 'pointer' }}>{busy ? '送出中…' : editingWeek ? '更新記錄' : '送出記錄'}</button>
@@ -600,7 +600,7 @@ function EndedChallengeCard({ challenge, myUserId, onSelect, active }) {
         </div>
         <div style={{ textAlign: 'right' }}>
           <div style={{ fontSize: 12, color: 'var(--text-faint)', fontWeight: 700, letterSpacing: 1 }}>冠軍</div>
-          <div style={{ fontSize: 14, fontWeight: 800, color: '#E8A13C' }}>🏆 {winner?.name || '—'}</div>
+          <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--warning-ink)' }}>🏆 {winner?.name || '—'}</div>
         </div>
       </div>
     </button>
@@ -632,18 +632,18 @@ function EditName({ challenge, onUpdate }) {
   if (!editing) {
     return (
       <button onClick={() => { setName(challenge.name); setEditing(true); setErr(''); }}
-        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: 10, padding: '10px 14px', background: 'var(--surface-alt)', border: 'none', borderRadius: 12, cursor: 'pointer' }}>
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: 10, padding: '10px 14px', background: 'var(--surface-alt)', border: 'none', borderRadius: 14, cursor: 'pointer' }}>
         <span style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="pencil" size={13} />挑戰名稱</span>
         <span style={{ fontSize: 14, color: 'var(--text)', fontWeight: 800, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 180 }}>{challenge.name} ›</span>
       </button>
     );
   }
   return (
-    <div style={{ background: 'var(--surface-alt)', borderRadius: 12, padding: 12 }}>
+    <div style={{ background: 'var(--surface-alt)', borderRadius: 14, padding: 12 }}>
       <div style={{ fontSize: 12, fontWeight: 900, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 6 }}>新的挑戰名稱</div>
       <input aria-label="新的挑戰名稱" type="text" value={name} onChange={(e) => setName(e.target.value)} maxLength={40} autoFocus
         style={{ width: '100%', border: 'none', background: 'var(--surface)', borderRadius: 10, padding: '12px 14px', fontSize: 16, fontWeight: 700, color: 'var(--text)' }} />
-      {err && <div style={{ marginTop: 8, fontSize: 12, color: 'var(--danger)', fontWeight: 700 }}>{err}</div>}
+      {err && <div style={{ marginTop: 8, fontSize: 12, color: 'var(--danger-ink)', fontWeight: 700 }}>{err}</div>}
       <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
         <button onClick={save} disabled={busy} style={{ ...primaryBtn, flex: 1, opacity: busy ? 0.6 : 1 }}>{busy ? '儲存中…' : '儲存'}</button>
         <button onClick={() => setEditing(false)} style={{ ...dangerBtn, background: 'var(--surface)', color: 'var(--text-muted)', flex: 1 }}>取消</button>
@@ -678,18 +678,18 @@ function EditEndDate({ challenge, onUpdate }) {
   if (!editing) {
     return (
       <button onClick={() => { setDate(challenge.endDate); setEditing(true); setErr(''); }}
-        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: 10, padding: '10px 14px', background: 'var(--surface-alt)', border: 'none', borderRadius: 12, cursor: 'pointer' }}>
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: 10, padding: '10px 14px', background: 'var(--surface-alt)', border: 'none', borderRadius: 14, cursor: 'pointer' }}>
         <span style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="calendar" size={13} />結束日期</span>
         <span style={{ fontSize: 14, color: 'var(--text)', fontWeight: 800 }}>{challenge.endDate} ›</span>
       </button>
     );
   }
   return (
-    <div style={{ background: 'var(--surface-alt)', borderRadius: 12, padding: 12 }}>
+    <div style={{ background: 'var(--surface-alt)', borderRadius: 14, padding: 12 }}>
       <div style={{ fontSize: 12, fontWeight: 900, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 6 }}>新的結束日期</div>
       <input aria-label="新的結束日期" type="date" value={date} onChange={(e) => setDate(e.target.value)}
         style={{ width: '100%', border: 'none', background: 'var(--surface)', borderRadius: 10, padding: '12px 14px', fontSize: 16, fontWeight: 700, color: 'var(--text)' }} />
-      {err && <div style={{ marginTop: 8, fontSize: 12, color: 'var(--danger)', fontWeight: 700 }}>{err}</div>}
+      {err && <div style={{ marginTop: 8, fontSize: 12, color: 'var(--danger-ink)', fontWeight: 700 }}>{err}</div>}
       <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
         <button onClick={save} disabled={busy} style={{ ...primaryBtn, flex: 1, opacity: busy ? 0.6 : 1 }}>{busy ? '儲存中…' : '儲存'}</button>
         <button onClick={() => setEditing(false)} style={{ ...dangerBtn, background: 'var(--surface)', color: 'var(--text-muted)', flex: 1 }}>取消</button>
@@ -711,5 +711,5 @@ function Avatar({ name, color, size = 32, border = 'none' }) {
   );
 }
 
-const primaryBtn = { border: 'none', background: 'var(--primary)', color: '#fff', fontWeight: 800, fontSize: 13, padding: '10px 18px', borderRadius: 12, cursor: 'pointer' };
-const dangerBtn = { border: 'none', background: 'var(--danger-bg)', color: '#D9544F', fontWeight: 800, fontSize: 13, padding: '10px 18px', borderRadius: 12, cursor: 'pointer' };
+const primaryBtn = { border: 'none', background: 'var(--primary)', color: '#fff', fontWeight: 800, fontSize: 13, padding: '10px 18px', borderRadius: 14, cursor: 'pointer' };
+const dangerBtn = { border: 'none', background: 'var(--danger-bg)', color: 'var(--danger-ink)', fontWeight: 800, fontSize: 13, padding: '10px 18px', borderRadius: 14, cursor: 'pointer' };

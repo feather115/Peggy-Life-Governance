@@ -31,7 +31,7 @@ export default function TabBar({ tab, onTab, hideTabs = [] }) {
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: 2,
-                color: active ? 'var(--primary)' : 'var(--text-faint)',
+                color: active ? 'var(--primary-ink)' : 'var(--text-faint)',
               }}
             >
               <span style={{ width: 52, height: 28, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', background: active ? 'var(--primary-soft)' : 'transparent' }}>

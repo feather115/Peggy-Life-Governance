@@ -50,9 +50,9 @@ export default function Auth({ lineDebug }) {
   };
 
   const msgStyles = {
-    error:   { color: 'var(--danger)', bg: 'var(--danger-bg)' },
-    success: { color: 'var(--success)', bg: 'var(--success-bg)' },
-    info:    { color: '#8B5A00', bg: '#FFF6E6' },
+    error:   { color: 'var(--danger-ink)', bg: 'var(--danger-bg)' },
+    success: { color: 'var(--success-ink)', bg: 'var(--success-bg)' },
+    info:    { color: 'var(--warning-ink)', bg: 'var(--warning-bg)' },
   };
   const ms = msgStyles[msgKind];
 
@@ -75,7 +75,7 @@ export default function Auth({ lineDebug }) {
             {busy ? '處理中…' : submitLabels[mode]}
           </button>
         </form>
-        {msg && <div style={{ marginTop: 12, fontSize: 13, color: ms.color, background: ms.bg, padding: '10px 12px', borderRadius: 12, fontWeight: 700, lineHeight: 1.6 }}>{msg}</div>}
+        {msg && <div style={{ marginTop: 12, fontSize: 13, color: ms.color, background: ms.bg, padding: '10px 12px', borderRadius: 14, fontWeight: 700, lineHeight: 1.6 }}>{msg}</div>}
 
         <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 4 }}>
           {mode === 'signin' && <>

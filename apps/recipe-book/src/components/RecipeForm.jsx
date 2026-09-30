@@ -22,21 +22,21 @@ function useEditableList(initialItems, makeEmpty, { minOne = true } = {}) {
 
 const S = {
   view: { padding: '6px 18px 24px' },
-  title: { fontSize: 22, fontWeight: 900, color: 'var(--text)', margin: 0 },
+  title: { fontSize: 24, fontWeight: 900, color: 'var(--text)', margin: 0 },
   label: { display: 'block', fontSize: 13, fontWeight: 900, color: 'var(--text)', marginBottom: 6, marginTop: 14 },
   hint: { fontSize: 12, color: 'var(--text-muted)', fontWeight: 700, marginTop: 4 },
   input: { width: '100%', boxSizing: 'border-box', border: 'none', background: 'var(--surface-alt)', borderRadius: 14, padding: '11px 14px', fontSize: 14, fontWeight: 700, color: 'var(--text)' },
   textarea: { width: '100%', boxSizing: 'border-box', border: 'none', background: 'var(--surface-alt)', borderRadius: 14, padding: '11px 14px', fontSize: 14, fontWeight: 700, color: 'var(--text)', minHeight: 100, lineHeight: 1.6, fontFamily: 'inherit' },
   row: { display: 'grid', gap: 6, gridTemplateColumns: '1fr 110px 28px', marginBottom: 6, alignItems: 'center' },
   kvRow: { display: 'grid', gap: 6, gridTemplateColumns: '1fr 1fr 28px', marginBottom: 6 },
-  smallInput: { boxSizing: 'border-box', border: 'none', background: 'var(--surface-alt)', borderRadius: 12, padding: '9px 12px', fontSize: 13, fontWeight: 700, color: 'var(--text)' },
-  rowBtn: { border: 'none', background: 'var(--surface-alt)', color: 'var(--text-faint)', borderRadius: 12, width: 28, height: 30, fontSize: 16, fontWeight: 900, cursor: 'pointer', padding: 0 },
-  addBtn: { border: '1px dashed var(--primary)', background: 'transparent', color: 'var(--primary)', borderRadius: 12, padding: '8px 12px', fontSize: 12, fontWeight: 900, cursor: 'pointer', marginTop: 4 },
+  smallInput: { boxSizing: 'border-box', border: 'none', background: 'var(--surface-alt)', borderRadius: 14, padding: '9px 12px', fontSize: 13, fontWeight: 700, color: 'var(--text)' },
+  rowBtn: { border: 'none', background: 'var(--surface-alt)', color: 'var(--text-faint)', borderRadius: 14, width: 28, height: 30, fontSize: 16, fontWeight: 900, cursor: 'pointer', padding: 0 },
+  addBtn: { border: '1px dashed var(--primary)', background: 'transparent', color: 'var(--primary-ink)', borderRadius: 14, padding: '8px 12px', fontSize: 12, fontWeight: 900, cursor: 'pointer', marginTop: 4 },
   baseLabel: { display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--text-muted)', fontWeight: 800, marginTop: 6 },
   actions: { display: 'flex', gap: 10, marginTop: 24 },
   saveBtn: { flex: 1, border: 'none', background: 'var(--primary)', color: '#fff', borderRadius: 14, padding: '12px 14px', fontSize: 15, fontWeight: 900, cursor: 'pointer' },
   cancelBtn: { border: 'none', background: 'var(--sunken)', color: 'var(--text-muted)', borderRadius: 14, padding: '12px 18px', fontSize: 15, fontWeight: 900, cursor: 'pointer' },
-  errorBox: { background: 'var(--danger-bg)', color: 'var(--danger)', padding: '10px 12px', borderRadius: 12, fontSize: 13, fontWeight: 800, marginTop: 12 },
+  errorBox: { background: 'var(--danger-bg)', color: 'var(--danger-ink)', padding: '10px 12px', borderRadius: 14, fontSize: 13, fontWeight: 800, marginTop: 12 },
 };
 
 function emptyItem(isBase = false) {
@@ -241,7 +241,7 @@ export default function RecipeForm({ recipe, onSave, onCancel, onDelete }) {
   return (
     <div style={S.view}>
       <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-        <button type="button" onClick={onCancel} disabled={busy} style={{ border: 'none', background: 'var(--surface)', color: 'var(--primary)', fontWeight: 900, fontSize: 14, padding: '8px 16px', borderRadius: 14, cursor: 'pointer', boxShadow: '0 4px 12px -8px rgba(0,0,0,.2)' }}>
+        <button type="button" onClick={onCancel} disabled={busy} style={{ border: 'none', background: 'var(--surface)', color: 'var(--primary-ink)', fontWeight: 900, fontSize: 14, padding: '8px 16px', borderRadius: 14, cursor: 'pointer', boxShadow: '0 4px 12px -8px rgba(0,0,0,.2)' }}>
           ‹ 取消
         </button>
         <h1 style={S.title}>{isEdit ? '編輯食譜' : '新增食譜'}</h1>
@@ -253,7 +253,7 @@ export default function RecipeForm({ recipe, onSave, onCancel, onDelete }) {
           <button
             type="button"
             onClick={() => { setImportOpen((v) => !v); setImportError(''); }}
-            style={{ border: '1px dashed var(--text-muted)', background: 'transparent', color: 'var(--text-muted)', padding: '8px 14px', borderRadius: 12, fontSize: 12, fontWeight: 900, cursor: 'pointer', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}
+            style={{ border: '1px dashed var(--text-muted)', background: 'transparent', color: 'var(--text-muted)', padding: '8px 14px', borderRadius: 14, fontSize: 12, fontWeight: 900, cursor: 'pointer', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}
           >
             {importOpen ? <><Icon name="x" size={14} />關閉 JSON 匯入</> : <><Icon name="download" size={14} />用 JSON 匯入（之後仍可編輯）</>}
           </button>
@@ -349,7 +349,7 @@ export default function RecipeForm({ recipe, onSave, onCancel, onDelete }) {
         <label style={S.label}>心得備註（選填）</label>
         {notesList.items.map((text, idx) => (
           <div key={idx} style={{ display: 'grid', gap: 6, gridTemplateColumns: '24px 1fr 28px', alignItems: 'start', marginBottom: 6 }}>
-            <div style={{ width: 24, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)', fontSize: 16, fontWeight: 900 }}>
+            <div style={{ width: 24, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-ink)', fontSize: 16, fontWeight: 900 }}>
               ●
             </div>
             <textarea aria-label="備註"
@@ -394,7 +394,7 @@ export default function RecipeForm({ recipe, onSave, onCancel, onDelete }) {
               type="button"
               onClick={handleDelete}
               disabled={busy}
-              style={{ width: '100%', border: 'none', background: confirmDelete ? 'var(--danger-bg)' : 'var(--surface-alt)', color: confirmDelete ? 'var(--danger)' : 'var(--text-muted)', borderRadius: 14, padding: '12px 14px', fontSize: 13, fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+              style={{ width: '100%', border: 'none', background: confirmDelete ? 'var(--danger-bg)' : 'var(--surface-alt)', color: confirmDelete ? 'var(--danger-ink)' : 'var(--text-muted)', borderRadius: 14, padding: '12px 14px', fontSize: 13, fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
             >
               {confirmDelete ? '確認刪除（無法復原，再按一次）' : <><Icon name="trash" size={15} />刪除這個食譜</>}
             </button>

@@ -1,14 +1,37 @@
-/* 食譜本：暖橘棕色系色票。文字色皆已驗證在 --surface / --surface-alt / --bg 上 ≥4.5:1。 */
+/* 食譜本：暖橘棕色系色票。文字類色票（text / *-ink）在 --surface / --bg / --surface-alt 上都 ≥4.5:1。
+   --primary / --danger 是「實心底色」（上面放白字）；當字色用請用 *-ink（深色模式比較亮）。
+   深色模式跟著系統設定（prefers-color-scheme）。改色後跑 npm test 會檢查對比度。 */
 :root{
+  color-scheme:light;
   --bg:#FFF5EE;--surface:#FFFFFF;--surface-alt:#FDF7F4;--sunken:#F0E7E1;
   --line:#F3DFD4;--line-strong:#DCD3CC;--track:#F3DFD4;
   --text:#3D281E;--text-muted:#75594C;--text-faint:#7E6153;
-  --primary:#B85008;--primary-soft:#FFF3EB;--on-primary:#FFFFFF;--ring:#B85008;
-  --info:#3A55D8;--info-bg:#E8EDFF;
-  --success:#15803D;--success-bg:#DCFCE7;--danger:#B91C1C;--danger-bg:#FEE2E2;
-  --like:#C2185B;--like-bg:#FFE4EC;
+  --primary:#B85008;--primary-ink:#B85008;--primary-soft:#FFF3EB;--on-primary:#FFFFFF;--ring:#B85008;
+  --info:#3A55D8;--info-ink:#3A55D8;--info-bg:#E8EDFF;
+  --success:#15803D;--success-ink:#147C3B;--success-bg:#DCFCE7;
+  --danger:#B91C1C;--danger-ink:#B91C1C;--danger-bg:#FEE2E2;
+  --warning:#E8A13C;--warning-ink:#8B5A00;--warning-bg:#FFF6E6;
+  --like:#C2185B;--like-bg:#FFE4EC;--today-ring:rgba(184,80,8,.2);
   --scrim:rgba(61,40,30,.42);
   --shadow-card:0 10px 24px -18px rgba(184,80,8,.45);
   --shadow-nav:0 -4px 20px rgba(61,40,30,.08);
   --shadow-sheet:0 -12px 40px rgba(61,40,30,.22);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    color-scheme:dark;
+    --bg:#16100D;--surface:#201814;--surface-alt:#28201B;--sunken:#2F2520;
+    --line:#3A2D26;--line-strong:#4C3C33;--track:#3A2D26;
+    --text:#F4E9E2;--text-muted:#CFBAAE;--text-faint:#B6A194;
+    --primary:#B85008;--primary-ink:#F5A263;--primary-soft:#3A2416;--ring:#F5A263;
+    --info:#3A55D8;--info-ink:#A3B4FF;--info-bg:#1E2650;
+    --success:#15803D;--success-ink:#6CCB98;--success-bg:#153222;
+    --danger:#B91C1C;--danger-ink:#FF9189;--danger-bg:#3B1A1A;
+    --warning:#E8A13C;--warning-ink:#F0B85E;--warning-bg:#3A2C14;
+    --like:#FF85B4;--like-bg:#3D1A2A;--today-ring:rgba(245,162,99,.35);
+    --scrim:rgba(0,0,0,.6);
+    --shadow-card:0 1px 2px rgba(0,0,0,.45);
+    --shadow-nav:0 -1px 0 rgba(255,255,255,.06);
+    --shadow-sheet:0 -12px 40px rgba(0,0,0,.55);
+  }
 }

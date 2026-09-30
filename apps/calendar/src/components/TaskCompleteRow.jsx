@@ -9,7 +9,7 @@ const S = {
   dateInput: { flex: 1, minWidth: 0, boxSizing: 'border-box', padding: '10px', borderRadius: THEME.radiusSmInner, border: `1px solid ${THEME.border}`, fontSize: 14, color: THEME.textDark, background: THEME.surface },
   confirmBtn: { border: 'none', padding: '11px 14px', borderRadius: THEME.radiusSmInner, background: THEME.primary, color: '#fff', fontSize: 14, fontWeight: 700, whiteSpace: 'nowrap' },
   cancelBtn: { border: 'none', background: 'none', padding: '11px 6px', fontSize: 14, color: THEME.textMuted, whiteSpace: 'nowrap' },
-  error: { marginTop: 6, fontSize: 13, color: THEME.error },
+  error: { marginTop: 6, fontSize: 13, color: THEME.errorInk },
 };
 
 export default function TaskCompleteRow({ onConfirm, onCancel }) {

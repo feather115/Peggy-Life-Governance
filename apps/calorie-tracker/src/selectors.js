@@ -28,12 +28,12 @@ export function ringInfo(consumed, goalCal) {
   const diff = goalCal - consumed;
   const ratio = consumed / (goalCal || 1);
   if (ratio > 1) {
-    return { diff, ringColor: '#D9544F', remainColor: '#fff', remainBg: 'var(--danger)', remainText: `已超過 ${Math.abs(diff)} kcal` };
+    return { diff, ringColor: 'var(--over)', remainColor: '#fff', remainBg: 'var(--danger)', remainText: `已超過 ${Math.abs(diff)} kcal` };
   }
   if (ratio > 0.9) {
-    return { diff, ringColor: '#E8A13C', remainColor: '#8B5A00', remainBg: '#FFF1D6', remainText: `剩下 ${diff} kcal` };
+    return { diff, ringColor: 'var(--warning)', remainColor: 'var(--warning-ink)', remainBg: 'var(--warning-bg)', remainText: `剩下 ${diff} kcal` };
   }
-  return { diff, ringColor: 'var(--primary)', remainColor: 'var(--primary)', remainBg: 'var(--bg)', remainText: `還可以吃 ${diff} kcal` };
+  return { diff, ringColor: 'var(--primary-ink)', remainColor: 'var(--primary-ink)', remainBg: 'var(--bg)', remainText: `還可以吃 ${diff} kcal` };
 }
 
 // Report - Weekly bar chart (past 7 days)
@@ -55,11 +55,11 @@ export function buildWeek(days, goalCal, fastingIds, otherIds) {
   const glb = Math.round((goalCal / maxBC) * chartH);
   const weekBars = weekDays.map((d) => {
     const bh = d.cal > 0 ? Math.max(6, Math.round((d.cal / maxBC) * chartH)) : 6;
-    const bc = d.cal === 0 ? '#E0E5E2' : d.cal <= goalCal ? 'var(--primary)' : d.cal <= goalCal * 1.1 ? '#E8A13C' : '#D9544F';
+    const bc = d.cal === 0 ? 'var(--bar-empty)' : d.cal <= goalCal ? 'var(--primary-ink)' : d.cal <= goalCal * 1.1 ? 'var(--warning)' : 'var(--over)';
     return {
       cal: d.cal > 0 ? d.cal : '', height: bh + 'px', color: bc, label: d.dow,
       labelColor: d.isToday ? 'var(--text)' : 'var(--text-faint)', labelWeight: d.isToday ? '900' : '700',
-      calColor: d.cal > goalCal ? '#D9544F' : 'var(--text-muted)', hasFast: d.hasFast,
+      calColor: d.cal > goalCal ? 'var(--danger-ink)' : 'var(--text-muted)', hasFast: d.hasFast,
     };
   });
   const wRec = weekDays.filter((d) => d.cal > 0);
@@ -85,10 +85,10 @@ export function buildMonth(days, goalCal, fastingIds, otherTagDefs, monthDate = 
     const mt = dayTotals(days[mdk]);
     const mc = Math.round(mt.cal);
     const isFut = mdk > today;
-    let bg = isFut ? '#F8FAF8' : 'var(--sunken)';
+    let bg = isFut ? 'var(--future-bg)' : 'var(--sunken)';
     if (!isFut && mc > 0) {
       mTotalCal += mc; mRecD++; mTP += mt.p; mTC += mt.c; mTF += mt.f;
-      bg = mc <= goalCal ? 'var(--track)' : mc <= goalCal * 1.1 ? '#FEEFC3' : '#FECACA';
+      bg = mc <= goalCal ? 'var(--track)' : mc <= goalCal * 1.1 ? 'var(--heat-near)' : 'var(--heat-over)';
     }
     const mAT = days[mdk]?.tags?.activeTags || [];
     const mHF = mAT.some((t) => fastingIds.includes(t));
@@ -100,7 +100,7 @@ export function buildMonth(days, goalCal, fastingIds, otherTagDefs, monthDate = 
     calCells.push({
       empty: false, day: md, dateKey: mdk, isFuture: isFut, bg, hasFast: mHF, hasOther: mHO, otherColors,
       todayBorder: isCur ? '2px solid var(--primary)' : '2px solid transparent',
-      textColor: isFut ? '#C5CCC7' : 'var(--text)',
+      textColor: isFut ? 'var(--future-text)' : 'var(--text)',
     });
   }
   const mAvg = mRecD > 0 ? Math.round(mTotalCal / mRecD) : 0;

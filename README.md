@@ -43,6 +43,8 @@ npm run lint    # eslint：只開 React hooks 的兩條規則（rules-of-hooks�
 改完先跑 `npm test`。lint 設定在根目錄 `eslint.config.mjs`，刻意不開整包 recommended，
 避免為了風格規則大改既有程式碼。
 
+
+> `packages/shared` 另有兩個守門測試：`themeContrast.test.js`（三個 app 淺色/深色色票的文字對比 ≥4.5:1）與 `designScale.test.js`（元件的字級/圓角只能用規格內的值）。改色票或寫了規格外的尺寸，`npm test` 會失敗。
 ## 部署到 Vercel
 
 每個 app 各自建立獨立的 Vercel 專案，連到同一個 GitHub repo，並在專案設定的

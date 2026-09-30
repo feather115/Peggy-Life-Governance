@@ -1,13 +1,41 @@
-/* 飲食卡路里：綠色系色票。文字色皆已驗證在 --surface / --bg 上 ≥4.5:1。 */
+/* 飲食卡路里：綠色系色票。文字類色票（text / *-ink）在 --surface / --bg / --surface-alt 上都 ≥4.5:1。
+   --primary / --info / --danger 是「實心底色」（上面放白字）；當字色用請用 *-ink（深色模式比較亮）。
+   深色模式跟著系統設定（prefers-color-scheme）。改色後跑 npm test 會檢查對比度。 */
 :root{
+  color-scheme:light;
   --bg:#EAF5EE;--surface:#FFFFFF;--surface-alt:#F6FAF7;--sunken:#F0F3F1;
   --line:#EEF4F0;--line-strong:#C7D6CC;--track:#DCEDE3;
   --text:#234034;--text-muted:#4D6858;--text-faint:#5A7566;
-  --primary:#257A50;--primary-soft:#EAF5EE;--on-primary:#FFFFFF;--ring:#257A50;
-  --info:#3A55D8;--info-bg:#E8EDFF;
-  --success:#15803D;--success-bg:#DCFCE7;--danger:#B91C1C;--danger-bg:#FEE2E2;
+  --primary:#257A50;--primary-ink:#257A50;--primary-soft:#EAF5EE;--on-primary:#FFFFFF;--ring:#257A50;
+  --info:#3A55D8;--info-ink:#3A55D8;--info-bg:#E8EDFF;
+  --success:#15803D;--success-ink:#147C3B;--success-bg:#DCFCE7;
+  --danger:#B91C1C;--danger-ink:#B91C1C;--danger-bg:#FEE2E2;
+  --warning:#E8A13C;--warning-ink:#8B5A00;--warning-bg:#FFF3DC;
+  --carb:#E8A13C;--carb-ink:#8B5A00;--fat:#5FA8D3;--fat-ink:#2B729C;
+  --over:#D9544F;--bar-empty:#E0E5E2;--heat-near:#FEEFC3;--heat-over:#FECACA;
+  --future-bg:#F8FAF8;--future-text:#A9B8AF;--goal-line:rgba(37,122,80,.35);--bronze-ink:#936236;
   --scrim:rgba(35,64,52,.42);
   --shadow-card:0 12px 28px -18px rgba(37,122,80,.45);
   --shadow-nav:0 -4px 20px rgba(35,64,52,.08);
   --shadow-sheet:0 -12px 40px rgba(35,64,52,.22);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    color-scheme:dark;
+    --bg:#0F1612;--surface:#18221C;--surface-alt:#1D2922;--sunken:#223028;
+    --line:#26352D;--line-strong:#3B4D43;--track:#2A3A31;
+    --text:#E5EFE9;--text-muted:#AEC2B6;--text-faint:#93A99C;
+    --primary:#257A50;--primary-ink:#6CCB98;--primary-soft:#1B3527;--ring:#6CCB98;
+    --info:#3A55D8;--info-ink:#A3B4FF;--info-bg:#1E2650;
+    --success:#15803D;--success-ink:#6CCB98;--success-bg:#153222;
+    --danger:#B91C1C;--danger-ink:#FF9189;--danger-bg:#3B1A1A;
+    --warning:#E8A13C;--warning-ink:#F0B85E;--warning-bg:#3A2C14;
+    --carb:#E8A13C;--carb-ink:#F0B85E;--fat:#5FA8D3;--fat-ink:#86C3E8;
+    --over:#E06A63;--bar-empty:#2E3D35;--heat-near:#4A3B16;--heat-over:#4D2222;
+    --future-bg:#141D18;--future-text:#56685E;--goal-line:rgba(108,203,152,.4);--bronze-ink:#D09A6A;
+    --scrim:rgba(0,0,0,.6);
+    --shadow-card:0 1px 2px rgba(0,0,0,.45);
+    --shadow-nav:0 -1px 0 rgba(255,255,255,.06);
+    --shadow-sheet:0 -12px 40px rgba(0,0,0,.55);
+  }
 }

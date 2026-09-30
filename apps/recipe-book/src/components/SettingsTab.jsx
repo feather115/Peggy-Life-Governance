@@ -42,7 +42,7 @@ export default function SettingsTab({ session, myDisplayName, onSetDisplayName, 
         <button onClick={onSignOut} style={{ border: 'none', background: 'var(--sunken)', color: 'var(--text-muted)', fontWeight: 800, fontSize: 13, padding: '8px 14px', borderRadius: 14, cursor: 'pointer' }}>登出</button>
       </div>
 
-      <div style={{ background: 'var(--surface)', borderRadius: 24, padding: '20px 18px', marginTop: 14, boxShadow: 'var(--shadow-card)' }}>
+      <div style={{ background: 'var(--surface)', borderRadius: 28, padding: '20px 18px', marginTop: 14, boxShadow: 'var(--shadow-card)' }}>
         <div style={{ fontSize: 16, fontWeight: 900, color: 'var(--text)', marginBottom: 14 }}>個人資料</div>
 
         <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 6 }}>暱稱</div>
@@ -55,8 +55,8 @@ export default function SettingsTab({ session, myDisplayName, onSetDisplayName, 
           </button>
         </div>
         <div style={{ fontSize: 12, color: 'var(--text-faint)', marginTop: 6, fontWeight: 600 }}>會顯示在「誰按讚」名單裡，沒設定就用 email 帳號名稱代替</div>
-        {nameMsg === 'success' && <div style={{ marginTop: 8, fontSize: 13, color: 'var(--success)', background: 'var(--success-bg)', padding: '8px 12px', borderRadius: 10, fontWeight: 700 }}>已儲存</div>}
-        {nameMsg && nameMsg !== 'success' && <div style={{ marginTop: 8, fontSize: 13, color: 'var(--danger)', background: 'var(--danger-bg)', padding: '8px 12px', borderRadius: 10, fontWeight: 700 }}>{nameMsg}</div>}
+        {nameMsg === 'success' && <div style={{ marginTop: 8, fontSize: 13, color: 'var(--success-ink)', background: 'var(--success-bg)', padding: '8px 12px', borderRadius: 10, fontWeight: 700 }}>已儲存</div>}
+        {nameMsg && nameMsg !== 'success' && <div style={{ marginTop: 8, fontSize: 13, color: 'var(--danger-ink)', background: 'var(--danger-bg)', padding: '8px 12px', borderRadius: 10, fontWeight: 700 }}>{nameMsg}</div>}
 
         <div style={{ marginTop: 16, display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start' }}>
           <LineLinker />
@@ -80,7 +80,7 @@ function LineLinker() {
 
   if (linked) {
     return (
-      <div style={{ border: 'none', background: 'var(--success-bg)', color: 'var(--success)', fontWeight: 800, fontSize: 13, padding: '10px 16px', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+      <div style={{ border: 'none', background: 'var(--success-bg)', color: 'var(--success-ink)', fontWeight: 800, fontSize: 13, padding: '10px 16px', borderRadius: 14, display: 'flex', alignItems: 'center', gap: 6 }}>
         <Icon name="check-circle" size={16} />已連結 LINE 帳號
       </div>
     );
@@ -90,11 +90,11 @@ function LineLinker() {
 
   return (
     <>
-      <button onClick={link} disabled={busy} style={{ border: 'none', background: 'var(--sunken)', color: 'var(--text)', fontWeight: 800, fontSize: 13, padding: '10px 16px', borderRadius: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+      <button onClick={link} disabled={busy} style={{ border: 'none', background: 'var(--sunken)', color: 'var(--text)', fontWeight: 800, fontSize: 13, padding: '10px 16px', borderRadius: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
         {busy ? '連結中…' : <><Icon name="link" size={16} style={{ color: '#06C755' }} />連結 LINE 帳號</>}
       </button>
-      {msg === 'success' && <div style={{ width: '100%', marginTop: 8, fontSize: 13, color: 'var(--success)', background: 'var(--success-bg)', padding: '8px 12px', borderRadius: 10, fontWeight: 700 }}>已連結成功</div>}
-      {msg && msg !== 'success' && <div style={{ width: '100%', marginTop: 8, fontSize: 13, color: 'var(--danger)', background: 'var(--danger-bg)', padding: '8px 12px', borderRadius: 10, fontWeight: 700 }}>{msg}</div>}
+      {msg === 'success' && <div style={{ width: '100%', marginTop: 8, fontSize: 13, color: 'var(--success-ink)', background: 'var(--success-bg)', padding: '8px 12px', borderRadius: 10, fontWeight: 700 }}>已連結成功</div>}
+      {msg && msg !== 'success' && <div style={{ width: '100%', marginTop: 8, fontSize: 13, color: 'var(--danger-ink)', background: 'var(--danger-bg)', padding: '8px 12px', borderRadius: 10, fontWeight: 700 }}>{msg}</div>}
     </>
   );
 }

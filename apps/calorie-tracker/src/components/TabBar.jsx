@@ -17,7 +17,7 @@ export default function TabBar({ tab, onTab }) {
           const active = tab === t.key;
           return (
             <button key={t.key} type="button" onClick={() => onTab(t.key)} aria-current={active ? 'page' : undefined}
-              style={{ flex: 1, minHeight: 52, border: 'none', background: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, color: active ? 'var(--primary)' : 'var(--text-faint)' }}>
+              style={{ flex: 1, minHeight: 52, border: 'none', background: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, color: active ? 'var(--primary-ink)' : 'var(--text-faint)' }}>
               <span style={{ width: 52, height: 28, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', background: active ? 'var(--primary-soft)' : 'transparent' }}>
                 <Icon name={t.icon} size={20} />
               </span>

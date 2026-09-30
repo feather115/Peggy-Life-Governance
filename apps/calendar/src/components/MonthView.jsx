@@ -33,10 +33,10 @@ const DetailCardStyle = {
   cardHeaderLeft: { display: 'flex', alignItems: 'center', gap: 8 },
   cardHeaderTitle: { fontSize: 14, fontWeight: 700, color: THEME.textDark },
   todayBadge: { fontSize: 12, fontWeight: 700, color: '#fff', background: THEME.primary, padding: '2px 7px', borderRadius: 999 },
-  cardHeaderLink: { fontSize: 13, color: THEME.primary, fontWeight: 600 },
+  cardHeaderLink: { fontSize: 13, color: THEME.primaryInk, fontWeight: 600 },
   cardBody: { padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 4 },
   empty: { fontSize: 13, color: THEME.textFaint, padding: '8px 0' },
-  addBtn: { marginTop: 8, width: '100%', border: `1px dashed ${THEME.primary}`, background: THEME.primarySoft, color: THEME.primary, padding: '11px', borderRadius: THEME.radiusSm, fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 },
+  addBtn: { marginTop: 8, width: '100%', border: `1px dashed ${THEME.primaryInk}`, background: THEME.primarySoft, color: THEME.primaryInk, padding: '11px', borderRadius: THEME.radiusSm, fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 },
 };
 
 export default function MonthView({ anchorKey, onShift, selectedDateKey, onSelectDay, onOpenDay, onCreate, recordsByDate, categories, tasksByDueDate, onEditRecord, onEditTask, onCompleteTask }) {

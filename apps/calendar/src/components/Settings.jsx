@@ -9,18 +9,18 @@ import OtherApps from '@peggy-life/shared/OtherApps.jsx';
 const S = {
   header: { display: 'flex', alignItems: 'center', gap: 12, padding: 16, background: THEME.surface, borderBottom: `1px solid ${THEME.border}` },
   backBtn: { border: 'none', background: 'none', color: THEME.textMuted, padding: 2, display: 'flex', alignItems: 'center' },
-  title: { fontSize: 17, fontWeight: 700, color: THEME.textDark },
+  title: { fontSize: 18, fontWeight: 700, color: THEME.textDark },
   body: { padding: 20, display: 'flex', flexDirection: 'column', gap: 10 },
   row: { width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: THEME.surface, borderRadius: THEME.radiusSm, padding: '16px 18px', boxShadow: THEME.shadow },
   rowLabel: { fontSize: 15, fontWeight: 600, color: THEME.textDark },
   accountCard: { background: THEME.surface, borderRadius: THEME.radiusSm, padding: '16px 18px', boxShadow: THEME.shadow },
   accountLabel: { fontSize: 12, color: THEME.textMuted, marginBottom: 4 },
   accountEmail: { fontSize: 14, fontWeight: 700, color: THEME.textDark, marginBottom: 14, wordBreak: 'break-all' },
-  linkedBadge: { display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 700, color: THEME.success, background: THEME.successBg, padding: '9px 16px', borderRadius: THEME.radiusSmInner },
-  linkBtn: { display: 'inline-flex', alignItems: 'center', gap: 6, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700, color: THEME.primary, background: THEME.primarySoft, padding: '9px 16px', borderRadius: THEME.radiusSmInner },
+  linkedBadge: { display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 700, color: THEME.successInk, background: THEME.successBg, padding: '9px 16px', borderRadius: THEME.radiusSmInner },
+  linkBtn: { display: 'inline-flex', alignItems: 'center', gap: 6, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700, color: THEME.primaryInk, background: THEME.primarySoft, padding: '9px 16px', borderRadius: THEME.radiusSmInner },
   linkHint: { fontSize: 12, color: THEME.textFaint, marginTop: 8 },
-  msgSuccess: { marginTop: 8, fontSize: 13, fontWeight: 700, color: THEME.success, background: THEME.successBg, padding: '8px 12px', borderRadius: THEME.radiusSmInner },
-  msgError: { marginTop: 8, fontSize: 13, fontWeight: 700, color: THEME.error, background: THEME.errorBg, padding: '8px 12px', borderRadius: THEME.radiusSmInner },
+  msgSuccess: { marginTop: 8, fontSize: 13, fontWeight: 700, color: THEME.successInk, background: THEME.successBg, padding: '8px 12px', borderRadius: THEME.radiusSmInner },
+  msgError: { marginTop: 8, fontSize: 13, fontWeight: 700, color: THEME.errorInk, background: THEME.errorBg, padding: '8px 12px', borderRadius: THEME.radiusSmInner },
   fieldLabel: { fontSize: 12, color: THEME.textMuted, marginTop: 14, marginBottom: 6 },
   nameRow: { display: 'flex', gap: 8 },
   nameInput: { flex: 1, boxSizing: 'border-box', border: `1px solid ${THEME.border}`, borderRadius: THEME.radiusSmInner, padding: '10px 12px', fontSize: 14, color: THEME.textDark, background: THEME.surface },
@@ -148,7 +148,7 @@ export default function Settings({ session, onClose, onManageTags, onManageOptio
 
         {onSignOut && (
           <button type="button" className="btn-reset" style={{ ...S.row, justifyContent: 'center' }} onClick={onSignOut}>
-            <span style={{ ...S.rowLabel, color: THEME.error }}>登出</span>
+            <span style={{ ...S.rowLabel, color: THEME.errorInk }}>登出</span>
           </button>
         )}
       </div>

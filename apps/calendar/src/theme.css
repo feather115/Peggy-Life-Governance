@@ -1,13 +1,39 @@
-/* 行事曆：柔和藍色系色票。文字色皆已驗證在 --surface / --bg / --surface-alt 上 ≥4.5:1。 */
+/* 行事曆：柔和藍色系色票。文字類色票（text / *-ink / cat-*）在 --surface / --bg / --surface-alt 上都 ≥4.5:1。
+   --primary / --danger 是「實心底色」（上面放白字）；當字色用請用 *-ink（theme.js 的 THEME.primaryInk 等，深色模式比較亮）。
+   深色模式跟著系統設定（prefers-color-scheme）。改色後跑 npm test 會檢查對比度。 */
 :root{
+  color-scheme:light;
   --bg:#EEF2F7;--surface:#FFFFFF;--surface-alt:#F4F7FB;--surface-alt2:#F7F9FC;--sunken:#F4F7FB;
   --line:#E7ECF3;--line-strong:#C9D2E0;--track:#E3EAF4;
   --text:#1F2D42;--text-muted:#52617A;--text-faint:#5B6A82;
-  --primary:#3D5A80;--primary-strong:#2C4562;--primary-soft:#E3EAF4;--on-primary:#FFFFFF;--ring:#3D5A80;
-  --success:#15803D;--success-bg:#DCFCE7;--danger:#B91C1C;--danger-bg:#FEE2E2;
+  --primary:#3D5A80;--primary-ink:#3D5A80;--primary-strong:#2C4562;--primary-soft:#E3EAF4;--on-primary:#FFFFFF;--ring:#3D5A80;
+  --success:#15803D;--success-ink:#147C3B;--success-bg:#DCFCE7;
+  --danger:#B91C1C;--danger-ink:#B91C1C;--danger-bg:#FEE2E2;
+  --warning-ink:#8B5A00;--warning-bg:#FFF6E6;
+  --band-1:#D9E7F6;--band-2:#AFC9E5;
+  /* 日記分類標籤的強調色（12px 小字，放在淡藍底上） */
+  --cat-1:#3D5A80;--cat-2:#556890;--cat-3:#785D8A;--cat-4:#3C7071;--cat-5:#816149;
   --scrim:rgba(31,45,66,.42);
   --toast-offset:148px;
   --shadow-card:0 1px 3px rgba(31,45,66,.06),0 10px 26px rgba(31,45,66,.08);
   --shadow-nav:0 -4px 20px rgba(31,45,66,.08);
   --shadow-sheet:0 -12px 40px rgba(31,45,66,.22);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    color-scheme:dark;
+    --bg:#0F141B;--surface:#18202A;--surface-alt:#1D2631;--surface-alt2:#1B232D;--sunken:#1D2631;
+    --line:#2A3441;--line-strong:#3A4656;--track:#2A3441;
+    --text:#E4EAF2;--text-muted:#A9B5C6;--text-faint:#909DB0;
+    --primary:#3D5A80;--primary-ink:#9BBBEA;--primary-strong:#BCD0F0;--primary-soft:#22324A;--ring:#9BBBEA;
+    --success:#15803D;--success-ink:#6CCB98;--success-bg:#153222;
+    --danger:#B91C1C;--danger-ink:#FF9189;--danger-bg:#3B1A1A;
+    --warning-ink:#F0B85E;--warning-bg:#3A2C14;
+    --band-1:#1F2B3B;--band-2:#2A3A50;
+    --cat-1:#9BBBEA;--cat-2:#AEB9D6;--cat-3:#C8ADD8;--cat-4:#86CACB;--cat-5:#D6B394;
+    --scrim:rgba(0,0,0,.6);
+    --shadow-card:0 1px 2px rgba(0,0,0,.45);
+    --shadow-nav:0 -1px 0 rgba(255,255,255,.06);
+    --shadow-sheet:0 -12px 40px rgba(0,0,0,.55);
+  }
 }

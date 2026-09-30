@@ -18,7 +18,7 @@ const S = {
   meta: { fontSize: 12, color: THEME.textMuted, marginTop: 2 },
   status: (color) => ({ fontSize: 13, fontWeight: 700, color, whiteSpace: 'nowrap' }),
   actionsRow: { display: 'flex', alignItems: 'center', gap: 4, marginTop: 10, flexWrap: 'wrap' },
-  completeBtn: { display: 'flex', alignItems: 'center', gap: 5, border: 'none', padding: '8px 12px', borderRadius: 999, background: THEME.primarySoft, color: THEME.primary, fontSize: 13, fontWeight: 700 },
+  completeBtn: { display: 'flex', alignItems: 'center', gap: 5, border: 'none', padding: '8px 12px', borderRadius: 999, background: THEME.primarySoft, color: THEME.primaryInk, fontSize: 13, fontWeight: 700 },
   textBtn: (color) => ({ border: 'none', background: 'none', padding: '8px 10px', fontSize: 13, fontWeight: 600, color }),
   notShown: { fontSize: 12, color: THEME.textFaint, marginTop: 8 },
   history: { marginTop: 10, paddingTop: 10, borderTop: `1px solid ${THEME.border}`, display: 'flex', flexDirection: 'column', gap: 4 },

@@ -54,9 +54,9 @@ export default function Auth({ lineDebug, onGuest }) {
   };
 
   const msgStyles = {
-    error:   { color: 'var(--danger)', bg: 'var(--danger-bg)' },
-    success: { color: 'var(--success)', bg: 'var(--success-bg)' },
-    info:    { color: '#8B5A00', bg: '#FFF6E6' },
+    error:   { color: 'var(--danger-ink)', bg: 'var(--danger-bg)' },
+    success: { color: 'var(--success-ink)', bg: 'var(--success-bg)' },
+    info:    { color: 'var(--warning-ink)', bg: 'var(--warning-bg)' },
   };
   const ms = msgStyles[msgKind];
 
@@ -96,7 +96,7 @@ export default function Auth({ lineDebug, onGuest }) {
           {titles[mode]}
         </div>
         {lineHint && (
-          <div style={{ marginBottom: 16, fontSize: 13, color: '#8B5A00', background: '#FFF6E6', padding: '10px 12px', borderRadius: 12, fontWeight: 700, lineHeight: 1.6 }}>
+          <div style={{ marginBottom: 16, fontSize: 13, color: 'var(--warning-ink)', background: 'var(--warning-bg)', padding: '10px 12px', borderRadius: 14, fontWeight: 700, lineHeight: 1.6 }}>
             💬 {lineHint}
             {isPermissionIssue && canLinkLine() && (
               <button
@@ -109,7 +109,7 @@ export default function Auth({ lineDebug, onGuest }) {
               </button>
             )}
             {authRetryMsg && (
-              <div style={{ marginTop: 8, fontSize: 12, fontWeight: 700, color: '#8B5A00' }}>{authRetryMsg}</div>
+              <div style={{ marginTop: 8, fontSize: 12, fontWeight: 700, color: 'var(--warning-ink)' }}>{authRetryMsg}</div>
             )}
           </div>
         )}
@@ -125,7 +125,7 @@ export default function Auth({ lineDebug, onGuest }) {
             {busy ? '處理中…' : submitLabels[mode]}
           </button>
         </form>
-        {msg && <div style={{ marginTop: 12, fontSize: 13, color: ms.color, background: ms.bg, padding: '10px 12px', borderRadius: 12, fontWeight: 700, lineHeight: 1.6 }}>{msg}</div>}
+        {msg && <div style={{ marginTop: 12, fontSize: 13, color: ms.color, background: ms.bg, padding: '10px 12px', borderRadius: 14, fontWeight: 700, lineHeight: 1.6 }}>{msg}</div>}
 
         <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 4 }}>
           {mode === 'signin' && <>

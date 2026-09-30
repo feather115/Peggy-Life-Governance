@@ -11,9 +11,9 @@ const S = {
   row: { display: 'flex', gap: 8 },
   backBtn: { border: `1px solid ${THEME.border}`, background: THEME.surface, cursor: 'pointer', padding: '0 12px', borderRadius: THEME.radiusSm, fontSize: 12, color: THEME.textMuted, fontWeight: 600, whiteSpace: 'nowrap' },
   chipsWrap: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 },
-  chip: { display: 'flex', alignItems: 'center', gap: 4, background: THEME.primarySoft, color: THEME.primary, fontSize: 13, fontWeight: 600, padding: '5px 8px 5px 12px', borderRadius: 999 },
+  chip: { display: 'flex', alignItems: 'center', gap: 4, background: THEME.primarySoft, color: THEME.primaryInk, fontSize: 13, fontWeight: 600, padding: '5px 8px 5px 12px', borderRadius: 999 },
   chipRemove: { cursor: 'pointer', fontSize: 14, lineHeight: 1 },
-  addBtn: { border: 'none', cursor: 'pointer', padding: '0 16px', borderRadius: THEME.radiusSm, background: THEME.primarySoft, color: THEME.primary, fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0 },
+  addBtn: { border: 'none', cursor: 'pointer', padding: '0 16px', borderRadius: THEME.radiusSm, background: THEME.primarySoft, color: THEME.primaryInk, fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0 },
   suggestWrap: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 },
   suggestChip: { border: `1px dashed ${THEME.border}`, background: THEME.surface, cursor: 'pointer', padding: '5px 12px', borderRadius: 999, fontSize: 13, color: THEME.textDark },
 };

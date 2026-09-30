@@ -35,9 +35,9 @@ export default function SettingsTab({ app, session, onSignOut }) {
   })();
 
   const goals = [
-    { label: '蛋白質 (g)', color: 'var(--primary)', val: goalP, set: setGoalP },
-    { label: '碳水 (g)', color: '#E8A13C', val: goalC, set: setGoalC },
-    { label: '脂肪 (g)', color: '#5FA8D3', val: goalF, set: setGoalF },
+    { label: '蛋白質 (g)', color: 'var(--primary-ink)', val: goalP, set: setGoalP },
+    { label: '碳水 (g)', color: 'var(--carb-ink)', val: goalC, set: setGoalC },
+    { label: '脂肪 (g)', color: 'var(--fat-ink)', val: goalF, set: setGoalF },
   ];
 
   const submitFasting = async () => {
@@ -87,7 +87,7 @@ export default function SettingsTab({ app, session, onSignOut }) {
       </div>
 
       {/* Personal Profile */}
-      <div style={{ background: 'var(--surface)', borderRadius: 24, padding: '20px 18px', marginTop: 14, boxShadow: 'var(--shadow-card)' }}>
+      <div style={{ background: 'var(--surface)', borderRadius: 28, padding: '20px 18px', marginTop: 14, boxShadow: 'var(--shadow-card)' }}>
         <div style={{ fontSize: 16, fontWeight: 900, color: 'var(--text)', marginBottom: 14 }}>個人資料</div>
         <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 6 }}>暱稱</div>
         <input aria-label="暱稱" type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="例如：小明" maxLength={20}
@@ -105,7 +105,7 @@ export default function SettingsTab({ app, session, onSignOut }) {
       </div>
 
       {/* Daily Goals */}
-      <div style={{ background: 'var(--surface)', borderRadius: 24, padding: '20px 18px', marginTop: 14, boxShadow: 'var(--shadow-card)' }}>
+      <div style={{ background: 'var(--surface)', borderRadius: 28, padding: '20px 18px', marginTop: 14, boxShadow: 'var(--shadow-card)' }}>
         <div style={{ fontSize: 16, fontWeight: 900, color: 'var(--text)', marginBottom: 14 }}>每日目標</div>
         <div style={{ marginBottom: 14 }}>
           <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 6 }}>卡路里 (kcal)</div>
@@ -122,13 +122,13 @@ export default function SettingsTab({ app, session, onSignOut }) {
       </div>
 
       {/* Tag Management */}
-      <div style={{ background: 'var(--surface)', borderRadius: 24, padding: '20px 18px', marginTop: 12, boxShadow: 'var(--shadow-card)' }}>
+      <div style={{ background: 'var(--surface)', borderRadius: 28, padding: '20px 18px', marginTop: 12, boxShadow: 'var(--shadow-card)' }}>
         <div style={{ fontSize: 16, fontWeight: 900, color: 'var(--text)', marginBottom: 16 }}>標籤管理</div>
-        <TagGroup title={<><Icon name="timer" size={15} />斷食標籤</>} titleColor="var(--info)" chipBg="var(--info-bg)" chipColor="var(--info)" delColor="#8899DD"
+        <TagGroup title={<><Icon name="timer" size={15} />斷食標籤</>} titleColor="var(--info-ink)" chipBg="var(--info-bg)" chipColor="var(--info-ink)" delColor="var(--info-ink)"
           tags={fastingTagDefs} onDelete={(id) => deleteTagDef('fasting', id).catch((e) => alertError('刪除標籤', e))}
           input={addFastingInput} setInput={setAddFastingInput} onAdd={submitFasting} addBg="var(--info)" placeholder="新增斷食標籤…" />
         <div style={{ height: 20 }} />
-        <TagGroup title={<><Icon name="tag" size={15} />記錄原因標籤</>} titleColor="#C4780A" chipBg="#FFF3DC" chipColor="#8B5A00" delColor="#D4923E"
+        <TagGroup title={<><Icon name="tag" size={15} />記錄原因標籤</>} titleColor="var(--warning-ink)" chipBg="var(--warning-bg)" chipColor="var(--warning-ink)" delColor="var(--warning-ink)"
           tags={otherTagDefs} onDelete={(id) => deleteTagDef('other', id).catch((e) => alertError('刪除標籤', e))}
           onColor={(id, color) => updateTagColor('other', id, color)}
           input={addOtherInput} setInput={setAddOtherInput} onAdd={submitOther} addBg={addOtherColor} placeholder="新增標籤（如：聚餐、旅行）…"
@@ -138,14 +138,14 @@ export default function SettingsTab({ app, session, onSignOut }) {
       <div style={{ marginTop: 12 }}><OtherApps current="calorie" /></div>
 
       {/* Data Management */}
-      <div style={{ background: 'var(--surface)', borderRadius: 24, padding: '20px 18px', marginTop: 12, boxShadow: 'var(--shadow-card)' }}>
+      <div style={{ background: 'var(--surface)', borderRadius: 28, padding: '20px 18px', marginTop: 12, boxShadow: 'var(--shadow-card)' }}>
         <div style={{ fontSize: 16, fontWeight: 900, color: 'var(--text)', marginBottom: 6 }}>資料管理</div>
         <div style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 700, marginBottom: 14 }}>已記錄 {totalRec} 天 · 食物庫 {FOODS.length} + {customFoods.length} 自訂</div>
         <div style={{ display: 'flex', gap: 10 }}>
-          {!confirmClear && <button onClick={doClear} style={{ flex: 1, border: 'none', background: 'var(--sunken)', color: '#D9544F', fontWeight: 800, fontSize: 14, padding: 14, borderRadius: 16, cursor: 'pointer' }}>清除全部</button>}
+          {!confirmClear && <button onClick={doClear} style={{ flex: 1, border: 'none', background: 'var(--sunken)', color: 'var(--danger-ink)', fontWeight: 800, fontSize: 14, padding: 14, borderRadius: 14, cursor: 'pointer' }}>清除全部</button>}
           {confirmClear && <>
-            <button onClick={doClear} style={{ flex: 1, border: 'none', background: 'var(--danger)', color: '#fff', fontWeight: 800, fontSize: 14, padding: 14, borderRadius: 16, cursor: 'pointer' }}>確定清除</button>
-            <button onClick={() => setConfirmClear(false)} style={{ flex: 1, border: 'none', background: 'var(--sunken)', color: 'var(--text-muted)', fontWeight: 800, fontSize: 14, padding: 14, borderRadius: 16, cursor: 'pointer' }}>取消</button>
+            <button onClick={doClear} style={{ flex: 1, border: 'none', background: 'var(--danger)', color: '#fff', fontWeight: 800, fontSize: 14, padding: 14, borderRadius: 14, cursor: 'pointer' }}>確定清除</button>
+            <button onClick={() => setConfirmClear(false)} style={{ flex: 1, border: 'none', background: 'var(--sunken)', color: 'var(--text-muted)', fontWeight: 800, fontSize: 14, padding: 14, borderRadius: 14, cursor: 'pointer' }}>取消</button>
           </>}
         </div>
       </div>
@@ -162,7 +162,7 @@ function TagGroup({ title, titleColor, chipBg, chipColor, delColor, tags, onDele
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, minHeight: 28 }}>
         {tags.map((mt) => (
           <div key={mt.id}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: onColor ? (mt.color || chipBg) : chipBg, borderRadius: 12, padding: '5px 6px 5px 8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: onColor ? (mt.color || chipBg) : chipBg, borderRadius: 14, padding: '5px 6px 5px 8px' }}>
               {onColor && <button onClick={() => setEditingColorId(editingColorId === mt.id ? null : mt.id)} title="選擇標籤顏色" style={{ width: 18, height: 18, borderRadius: '50%', border: '2px solid rgba(255,255,255,.9)', background: mt.color || '#E8A13C', cursor: 'pointer', padding: 0, boxShadow: '0 1px 4px rgba(0,0,0,.15)' }} />}
               <span style={{ fontSize: 13, fontWeight: 800, color: onColor ? readableOn(mt.color || chipBg) : chipColor }}>{mt.label}</span>
               <button aria-label={`刪除標籤「${mt.label}」`} className="tap" onClick={async () => { if (await confirmDialog({ title: `刪除標籤「${mt.label}」？`, message: '過去紀錄上的這個標籤也會一起消失。', confirmText: '刪除', danger: true })) onDelete(mt.id); }} style={{ border: 'none', background: 'none', color: onColor ? readableOn(mt.color || chipBg) : delColor, cursor: 'pointer', fontSize: 15, lineHeight: 1, padding: 0, width: 18, height: 18, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="x" size={14} /></button>
@@ -178,8 +178,8 @@ function TagGroup({ title, titleColor, chipBg, chipColor, delColor, tags, onDele
       </div>
       {setColor && <ColorSwatches current={color} onPick={setColor} compact />}
       <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-        <input aria-label={placeholder} value={input} onChange={(e) => setInput(e.target.value)} placeholder={placeholder} style={{ flex: 1, border: 'none', background: 'var(--surface-alt)', borderRadius: 12, padding: '10px 12px', fontSize: 16, fontWeight: 700, color: 'var(--text)' }} />
-        <button aria-label="新增" className="tap" onClick={onAdd} style={{ border: 'none', background: addBg, color: readableOn(addBg), fontWeight: 900, fontSize: 14, padding: '10px 16px', borderRadius: 12, cursor: 'pointer', whiteSpace: 'nowrap' }}><Icon name="plus" size={14} /></button>
+        <input aria-label={placeholder} value={input} onChange={(e) => setInput(e.target.value)} placeholder={placeholder} style={{ flex: 1, border: 'none', background: 'var(--surface-alt)', borderRadius: 14, padding: '10px 12px', fontSize: 16, fontWeight: 700, color: 'var(--text)' }} />
+        <button aria-label="新增" className="tap" onClick={onAdd} style={{ border: 'none', background: addBg, color: readableOn(addBg), fontWeight: 900, fontSize: 14, padding: '10px 16px', borderRadius: 14, cursor: 'pointer', whiteSpace: 'nowrap' }}><Icon name="plus" size={14} /></button>
       </div>
     </div>
   );
@@ -190,7 +190,7 @@ function ColorSwatches({ current, onPick, compact = false }) {
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: compact ? 10 : 6, marginBottom: compact ? 0 : 4 }}>
       {TAG_COLORS.map((hex) => (
         <button key={hex} onClick={() => onPick(hex)} title={hex}
-          style={{ width: compact ? 24 : 22, height: compact ? 24 : 22, borderRadius: '50%', background: hex, border: hex === current ? '3px solid var(--text)' : '2px solid #fff', cursor: 'pointer', padding: 0, boxShadow: '0 1px 4px rgba(0,0,0,.15)' }} />
+          style={{ width: compact ? 24 : 22, height: compact ? 24 : 22, borderRadius: '50%', background: hex, border: hex === current ? '3px solid var(--text)' : '2px solid var(--surface)', cursor: 'pointer', padding: 0, boxShadow: '0 1px 4px rgba(0,0,0,.15)' }} />
       ))}
     </div>
   );
@@ -206,7 +206,7 @@ function LineLinker() {
 
   if (linked) {
     return (
-      <div style={{ border: 'none', background: 'var(--success-bg)', color: 'var(--success)', fontWeight: 800, fontSize: 13, padding: '10px 16px', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+      <div style={{ border: 'none', background: 'var(--success-bg)', color: 'var(--success-ink)', fontWeight: 800, fontSize: 13, padding: '10px 16px', borderRadius: 14, display: 'flex', alignItems: 'center', gap: 6 }}>
         <Icon name="check-circle" size={16} />已連結 LINE 帳號
       </div>
     );
@@ -216,11 +216,11 @@ function LineLinker() {
 
   return (
     <>
-      <button onClick={link} disabled={busy} style={{ border: 'none', background: 'var(--sunken)', color: 'var(--text)', fontWeight: 800, fontSize: 13, padding: '10px 16px', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
+      <button onClick={link} disabled={busy} style={{ border: 'none', background: 'var(--sunken)', color: 'var(--text)', fontWeight: 800, fontSize: 13, padding: '10px 16px', borderRadius: 14, display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
         {busy ? '連結中…' : <><Icon name="link" size={16} style={{ color: '#06C755' }} />連結 LINE 帳號</>}
       </button>
-      {msg === 'success' && <div style={{ width: '100%', marginTop: 8, fontSize: 13, color: 'var(--success)', background: 'var(--success-bg)', padding: '8px 12px', borderRadius: 10, fontWeight: 700 }}>已連結成功</div>}
-      {msg && msg !== 'success' && <div style={{ width: '100%', marginTop: 8, fontSize: 13, color: 'var(--danger)', background: 'var(--danger-bg)', padding: '8px 12px', borderRadius: 10, fontWeight: 700 }}>{msg}</div>}
+      {msg === 'success' && <div style={{ width: '100%', marginTop: 8, fontSize: 13, color: 'var(--success-ink)', background: 'var(--success-bg)', padding: '8px 12px', borderRadius: 10, fontWeight: 700 }}>已連結成功</div>}
+      {msg && msg !== 'success' && <div style={{ width: '100%', marginTop: 8, fontSize: 13, color: 'var(--danger-ink)', background: 'var(--danger-bg)', padding: '8px 12px', borderRadius: 10, fontWeight: 700 }}>{msg}</div>}
     </>
   );
 }
@@ -243,7 +243,7 @@ function PasswordChanger() {
 
   if (!open) {
     return (
-      <button onClick={() => setOpen(true)} style={{ border: 'none', background: 'var(--sunken)', color: 'var(--text-muted)', fontWeight: 800, fontSize: 13, padding: '10px 16px', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
+      <button onClick={() => setOpen(true)} style={{ border: 'none', background: 'var(--sunken)', color: 'var(--text-muted)', fontWeight: 800, fontSize: 13, padding: '10px 16px', borderRadius: 14, display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
         <Icon name="key" size={16} />變更密碼
       </button>
     );
@@ -254,10 +254,10 @@ function PasswordChanger() {
       <input aria-label="新密碼" type="password" value={pw} onChange={(e) => setPw(e.target.value)} minLength={6} placeholder="至少 6 字元"
         style={{ width: '100%', border: 'none', background: 'var(--surface-alt)', borderRadius: 14, padding: '14px 15px', fontSize: 16, fontWeight: 700, color: 'var(--text)' }} />
       <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
-        <button onClick={save} disabled={busy} style={{ flex: 1, border: 'none', background: busy ? 'var(--line-strong)' : 'var(--primary)', color: '#fff', fontWeight: 900, fontSize: 14, padding: 12, borderRadius: 12, cursor: 'pointer' }}>{busy ? '更新中…' : '儲存新密碼'}</button>
-        <button onClick={() => { setOpen(false); setPw(''); setMsg(''); }} style={{ flex: 1, border: 'none', background: 'var(--sunken)', color: 'var(--text-muted)', fontWeight: 800, fontSize: 14, padding: 12, borderRadius: 12, cursor: 'pointer' }}>取消</button>
+        <button onClick={save} disabled={busy} style={{ flex: 1, border: 'none', background: busy ? 'var(--line-strong)' : 'var(--primary)', color: '#fff', fontWeight: 900, fontSize: 14, padding: 12, borderRadius: 14, cursor: 'pointer' }}>{busy ? '更新中…' : '儲存新密碼'}</button>
+        <button onClick={() => { setOpen(false); setPw(''); setMsg(''); }} style={{ flex: 1, border: 'none', background: 'var(--sunken)', color: 'var(--text-muted)', fontWeight: 800, fontSize: 14, padding: 12, borderRadius: 14, cursor: 'pointer' }}>取消</button>
       </div>
-      {msg && <div style={{ marginTop: 10, fontSize: 13, color: msg === '密碼已更新' ? 'var(--success)' : 'var(--danger)', background: msg === '密碼已更新' ? 'var(--success-bg)' : 'var(--danger-bg)', padding: '8px 12px', borderRadius: 10, fontWeight: 700 }}>{msg}</div>}
+      {msg && <div style={{ marginTop: 10, fontSize: 13, color: msg === '密碼已更新' ? 'var(--success-ink)' : 'var(--danger-ink)', background: msg === '密碼已更新' ? 'var(--success-bg)' : 'var(--danger-bg)', padding: '8px 12px', borderRadius: 10, fontWeight: 700 }}>{msg}</div>}
     </div>
   );
 }

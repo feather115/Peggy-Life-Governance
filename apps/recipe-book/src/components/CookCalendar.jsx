@@ -15,7 +15,7 @@ const S = {
   recordTitle: { display: 'block', maxWidth: '100%', fontSize: 14, fontWeight: 900, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
   view: { padding: '6px 18px 24px' },
   title: { fontSize: 24, fontWeight: 900, color: 'var(--text)', lineHeight: 1.2, margin: 0 },
-  status: { fontSize: 13, color: 'var(--primary)', fontWeight: 700, marginTop: 4, margin: 0 },
+  status: { fontSize: 13, color: 'var(--primary-ink)', fontWeight: 700, marginTop: 4, margin: 0 },
   panel: { background: 'var(--surface)', borderRadius: 20, padding: 14, boxShadow: 'var(--shadow-card)', marginBottom: 12 },
   monthBtn: { border: 'none', background: 'var(--surface-alt)', color: 'var(--text-muted)', width: 36, height: 36, borderRadius: 14, fontSize: 18, fontWeight: 900, cursor: 'pointer' },
   monthTitle: { fontSize: 18, fontWeight: 900, color: 'var(--text)' },
@@ -34,19 +34,19 @@ const S = {
     cursor: 'pointer',
   },
   selectedDay: { borderColor: 'var(--primary)', background: 'var(--primary-soft)' },
-  todayDay: { boxShadow: 'inset 0 0 0 2px rgba(232,122,36,.16)' },
+  todayDay: { boxShadow: 'inset 0 0 0 2px var(--today-ring)' },
   dayNum: { fontSize: 13, fontWeight: 900, color: 'var(--text)' },
-  count: { minWidth: 18, height: 18, borderRadius: 9, background: 'var(--primary)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 900 },
+  count: { minWidth: 18, height: 18, borderRadius: 10, background: 'var(--primary)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 900 },
   tinyTitle: { width: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'center', fontSize: 12, fontWeight: 800, color: 'var(--text-muted)' },
   formRow: { display: 'grid', gridTemplateColumns: '1fr auto', gap: 8, marginTop: 12 },
   select: { width: '100%', border: 'none', background: 'var(--surface-alt)', borderRadius: 14, padding: '11px 12px', fontSize: 14, fontWeight: 800, color: 'var(--text)' },
   addBtn: { border: 'none', background: 'var(--primary)', color: '#fff', borderRadius: 14, padding: '0 16px', fontSize: 14, fontWeight: 900, cursor: 'pointer' },
-  warning: { background: 'var(--primary-soft)', color: '#B45309', borderRadius: 14, padding: '10px 12px', fontSize: 13, fontWeight: 800, lineHeight: 1.5, marginTop: 12 },
+  warning: { background: 'var(--primary-soft)', color: 'var(--warning-ink)', borderRadius: 14, padding: '10px 12px', fontSize: 13, fontWeight: 800, lineHeight: 1.5, marginTop: 12 },
   sectionTitle: { fontSize: 15, fontWeight: 900, color: 'var(--text)', marginBottom: 10 },
   recordRow: { display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderTop: '1px solid var(--line)' },
-  recordThumb: { width: 42, height: 42, borderRadius: 12, objectFit: 'cover', background: 'var(--surface-alt)', flexShrink: 0 },
-  placeholder: { width: 42, height: 42, borderRadius: 12, background: 'var(--surface-alt)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
-  removeBtn: { border: 'none', background: 'var(--surface-alt)', color: 'var(--text-faint)', width: 30, height: 30, borderRadius: 15, fontSize: 18, lineHeight: 1, cursor: 'pointer' },
+  recordThumb: { width: 42, height: 42, borderRadius: 14, objectFit: 'cover', background: 'var(--surface-alt)', flexShrink: 0 },
+  placeholder: { width: 42, height: 42, borderRadius: 14, background: 'var(--surface-alt)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  removeBtn: { border: 'none', background: 'var(--surface-alt)', color: 'var(--text-faint)', width: 30, height: 30, borderRadius: 14, fontSize: 18, lineHeight: 1, cursor: 'pointer' },
   empty: { color: 'var(--text-faint)', fontSize: 14, fontWeight: 700, textAlign: 'center', padding: '18px 4px' },
   addRecordBtn: {
     display: 'flex',
@@ -56,7 +56,7 @@ const S = {
     width: '100%',
     border: '1px dashed var(--primary)',
     background: 'var(--primary-soft)',
-    color: 'var(--primary)',
+    color: 'var(--primary-ink)',
     borderRadius: 14,
     padding: '12px',
     fontSize: 14,
@@ -322,7 +322,7 @@ export default function CookCalendar({ recipes, cookRecords, cookRecordError, on
                       width: '100%',
                       border: 'none',
                       background: 'var(--surface-alt)',
-                      borderRadius: 12,
+                      borderRadius: 14,
                       padding: '10px 14px',
                       fontSize: 14,
                       fontWeight: 800,
@@ -335,7 +335,7 @@ export default function CookCalendar({ recipes, cookRecords, cookRecordError, on
                     onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--surface-alt)'; }}
                   >
                     <span>{recipe.title}</span>
-                    <span style={{ fontSize: 12, color: 'var(--primary)', fontWeight: 900 }}>＋ 加入</span>
+                    <span style={{ fontSize: 12, color: 'var(--primary-ink)', fontWeight: 900 }}>＋ 加入</span>
                   </button>
                 ))}
                 {availableRecipes.length > 8 && (
