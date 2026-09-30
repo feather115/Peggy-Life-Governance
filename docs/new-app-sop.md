@@ -229,6 +229,10 @@ Supabase ⇄ db.js ⇄ use<Domain>.js ⇄ Root.jsx/App.jsx ⇄ components/*
   - icon 用 `@peggy-life/shared/Icon.jsx`，不要用 emoji / 文字符號（✏ × ＋）當操作圖示
   - 每個 `<input>/<textarea>/<select>` 要有 `aria-label`（或 `<label>` 包住），placeholder 不算
   - 字級不低於 12px
+  - 可點的東西一律用 `<button>`（或 `<a href>`），不要 `<div onClick>` / `<span onClick>`——後者鍵盤點不到、也沒有按壓回饋；
+    要保留原本外觀就加 `className="btn-reset"` 清掉按鈕預設樣式
+  - 覆蓋畫面 / bottom sheet 要呼叫 `useBackClose(open, onBack)`（`@peggy-life/shared/useBackClose`），
+    手機返回鍵才會先關閉畫面而不是直接離開 app；刪除類操作要先確認
 - **App 外殼固定模式**（三個 app 一致，抄任一個的 `App.jsx`）：
   - 最外層 `maxWidth: 520` 置中（手機優先，桌機看起來像一台手機）
   - `height: '100vh'` + `maxHeight: '100dvh'` + `overflow: 'hidden'`，只讓中間內容區

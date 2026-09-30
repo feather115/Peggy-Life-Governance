@@ -21,6 +21,9 @@ button{cursor:pointer;touch-action:manipulation;transition:opacity .15s ease,bac
 button:not(:disabled):active{opacity:.72;}
 button:disabled{cursor:not-allowed;}
 
+/* 把原本用 div/span 做的可點元素改成 <button> 時，先清掉瀏覽器預設按鈕外觀，再用 inline style 疊上原樣式 */
+.btn-reset{border:none;background:none;padding:0;margin:0;font:inherit;color:inherit;text-align:inherit;}
+
 /* 視覺上小的按鈕（icon 鈕、×、✏）用這個 class 把點擊範圍撐到 ≥44px，不影響版面 */
 .tap{position:relative;}
 .tap::after{content:'';position:absolute;top:50%;left:50%;width:max(100%,44px);height:max(100%,44px);transform:translate(-50%,-50%);}

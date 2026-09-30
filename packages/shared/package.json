@@ -10,7 +10,8 @@
     "./lineAuth": "./src/lineAuth.js",
     "./ConfigMissing.jsx": "./src/ConfigMissing.jsx",
     "./Icon.jsx": "./src/Icon.jsx",
-    "./base.css": "./src/base.css"
+    "./base.css": "./src/base.css",
+    "./useBackClose": "./src/useBackClose.js"
   },
   "peerDependencies": {
     "@line/liff": "^2.29.0",
