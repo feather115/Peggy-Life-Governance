@@ -12,6 +12,7 @@ import {
 import Icon from '@peggy-life/shared/Icon.jsx';
 
 const S = {
+  recordTitle: { display: 'block', maxWidth: '100%', fontSize: 14, fontWeight: 900, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
   view: { padding: '6px 18px 24px' },
   title: { fontSize: 24, fontWeight: 900, color: 'var(--text)', lineHeight: 1.2, margin: 0 },
   status: { fontSize: 13, color: 'var(--primary)', fontWeight: 700, marginTop: 4, margin: 0 },
@@ -219,29 +220,18 @@ export default function CookCalendar({ recipes, cookRecords, cookRecordError, on
             return (
               <div key={record.id} style={S.recordRow}>
                 {recipe ? (
-                  <div onClick={() => onOpenRecipe(recipe)} style={{ cursor: 'pointer', flexShrink: 0 }}>
+                  <button type="button" className="btn-reset" tabIndex={-1} aria-hidden="true" onClick={() => onOpenRecipe(recipe)} style={{ flexShrink: 0 }}>
                     {recipe.image_url
-                      ? <img src={recipe.image_url} alt={recipe.title} style={S.recordThumb} />
+                      ? <img src={recipe.image_url} alt="" style={S.recordThumb} />
                       : <div style={S.placeholder}>🍳</div>}
-                  </div>
+                  </button>
                 ) : (
                   <div style={S.placeholder}>🍳</div>
                 )}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div
-                    onClick={() => recipe && onOpenRecipe(recipe)}
-                    style={{
-                      fontSize: 14,
-                      fontWeight: 900,
-                      color: 'var(--text)',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                      cursor: recipe ? 'pointer' : 'default',
-                    }}
-                  >
-                    {recipe?.title || '已刪除的料理'}
-                  </div>
+                  {recipe
+                    ? <button type="button" className="btn-reset" onClick={() => onOpenRecipe(recipe)} style={S.recordTitle}>{recipe.title}</button>
+                    : <div style={S.recordTitle}>已刪除的料理</div>}
                   {recipe?.category?.length > 0 && (
                     <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 800, marginTop: 1 }}>
                       {recipe.category.join('、')}

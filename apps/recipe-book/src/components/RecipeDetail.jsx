@@ -1,5 +1,5 @@
 // Recipe detail view: ingredients, steps, notes, recipe scaling based on base ingredient, and long-press to complete.
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   formatDate,
   groupItemsByType,
@@ -34,18 +34,18 @@ const S = {
   resetBtn: { background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: 14, padding: '8px 14px', fontSize: 13, fontWeight: 800, cursor: 'pointer' },
   scaleAlert: { background: 'var(--primary-soft)', color: 'var(--primary)', borderRadius: 12, padding: '8px 12px', fontSize: 13, fontWeight: 700, marginTop: 8 },
   sectionDivider: { fontSize: 15, fontWeight: 900, color: 'var(--text)', marginTop: 20, marginBottom: 10 },
-  ingredientRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: 'var(--surface-alt)', borderRadius: 14, marginBottom: 6 },
+  ingredientRow: { cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: 'var(--surface-alt)', borderRadius: 14, marginBottom: 6 },
   ingName: { fontSize: 14, fontWeight: 800, color: 'var(--text)' },
   ingBrand: { fontSize: 12, background: 'var(--info-bg)', color: 'var(--info)', borderRadius: 10, padding: '2px 8px', marginLeft: 6 },
   ingAmount: { fontSize: 14, fontWeight: 900, color: 'var(--primary)' },
   completedOverlay: { opacity: 0.25, textDecoration: 'line-through' },
   stepsOl: { listStyle: 'none', padding: 0, margin: 0 },
-  stepLi: { display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 10 },
+  stepLi: { cursor: 'pointer', display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 10 },
   stepNumber: { width: 28, height: 28, borderRadius: '50%', background: 'var(--primary)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, flexShrink: 0 },
   stepText: { fontSize: 14, fontWeight: 700, color: 'var(--text)', lineHeight: 1.6 },
   noteSection: { background: 'var(--surface-alt)', borderRadius: 16, padding: 14, border: '1px solid #FCDCC7' },
   notesList: { listStyle: 'none', padding: 0, margin: 0 },
-  noteLi: { display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 8 },
+  noteLi: { cursor: 'pointer', display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 8 },
   notesBullet: { color: 'var(--primary)', fontWeight: 800, flexShrink: 0 },
   notesText: { margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--text)', lineHeight: 1.6 },
   lastCooked: { fontSize: 12, color: 'var(--text-faint)', fontWeight: 700, textAlign: 'center', marginTop: 16 },
@@ -56,7 +56,6 @@ export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, o
   const [completedItems, setCompletedItems] = useState({});
   const [likeBusy, setLikeBusy] = useState(false);
   const [likeError, setLikeError] = useState('');
-  const pressTimer = useRef(null);
 
   const isOwner = !isGuest && currentUserId && recipe.user_id === currentUserId;
 
@@ -107,21 +106,15 @@ export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, o
     return `${(originalNumber * scaleRatio).toFixed(1)} ${unit}`;
   }
 
-  function startLongPress(id) {
-    if (pressTimer.current) clearTimeout(pressTimer.current);
-    pressTimer.current = setTimeout(() => {
-      setCompletedItems((prev) => ({ ...prev, [id]: !prev[id] }));
-    }, 700);
-  }
-  function endLongPress() {
-    if (pressTimer.current) clearTimeout(pressTimer.current);
-  }
+  // 點一下劃掉/恢復某個食材、步驟或備註（原本要長按 0.7 秒，不好發現，慢慢捲動時還會誤觸）
   function pressHandlers(id) {
+    const toggle = () => setCompletedItems((prev) => ({ ...prev, [id]: !prev[id] }));
     return {
-      onTouchStart: () => startLongPress(id),
-      onTouchEnd: endLongPress,
-      onMouseDown: () => startLongPress(id),
-      onMouseUp: endLongPress,
+      role: 'checkbox',
+      tabIndex: 0,
+      'aria-checked': !!completedItems[id],
+      onClick: toggle,
+      onKeyDown: (e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggle(); } },
     };
   }
 
@@ -139,7 +132,7 @@ export default function RecipeDetail({ recipe, onBack, currentUserId, isGuest, o
               ✏️ 編輯
             </button>
           )}
-          <div style={{ ...S.hintBadge, marginBottom: 0 }}>⏱️ 長按標記進度</div>
+          <div style={{ ...S.hintBadge, marginBottom: 0 }}>✓ 點一下標記進度</div>
         </div>
       </header>
 

@@ -7,7 +7,7 @@
 ## 一句話總覽
 
 Vite + React 19 單頁 App：瀏覽與**管理**食譜（搜尋、分類、擁有者/分享篩選、按讚、
-新增/編輯/刪除食譜、料理行事曆、配方縮放、長按標記完成），支援訪客模式（只能看分享的食譜）。
+新增/編輯/刪除食譜、料理行事曆、配方縮放、點一下標記完成），支援訪客模式（只能看分享的食譜）。
 畫面分三個分頁（食譜 / 行事曆 / 設定）＋ 食譜編輯表單。
 資料存在 Supabase（`recipe_book` schema，4 張表，見下方「資料庫結構」），RLS 控管
 「訪客只看分享的、登入者多看自己的、只能改自己的」。
@@ -36,7 +36,7 @@ Supabase ⇄ db.js ⇄ useRecipes.js ⇄ App.jsx ⇄ components/*
 | **食譜清單（搜尋框、分類 tab、卡片網格、登出鈕）** | `src/components/RecipeCatalog.jsx` (Inline styles) |
 | **單一食譜詳情（返回鈕、食材、步驟、心得、參數）** | `src/components/RecipeDetail.jsx` (Inline styles) |
 | **配方等比例縮放** | `src/components/RecipeDetail.jsx` → `getScaledAmount()` |
-| **長按標記完成** | `src/components/RecipeDetail.jsx` → `startLongPress()` / `pressHandlers()` |
+| **點一下標記完成** | `src/components/RecipeDetail.jsx` → `pressHandlers()` |
 | **搜尋 / 分類篩選邏輯** | `src/utils.js` → `filterRecipes()` / `getAvailableCategories()` |
 | **食譜欄位正規化（ingredients/steps/notes/parameters 的各種格式）** | `src/utils.js` → `normalizeRecipe()` / `parseIngredients()` / `parseSteps()` / `parseNotes()` |
 | **食材 / 步驟依 type 分組** | `src/utils.js` → `groupItemsByType()` / `groupStepsByType()` |
@@ -264,5 +264,11 @@ LINE，其他 app 就能即時識別並支援 LINE 自動免密碼登入。
 ### 配方等比例縮放
 `RecipeDetail.jsx` 裡有一個輸入框可以填入主食材（`is_base: true`）的新重量（克），所有食材的數量會依比例即時換算。重設按鈕清空輸入恢復原始值。縮放只影響畫面顯示，不改 DB。
 
-### 長按標記完成
-食材、步驟、心得都支援長按 700ms 標記完成（加刪除線）。狀態存在 React state（`completedItems`），離開頁面就重設，不存 DB。
+### 點一下標記完成
+食材、步驟、心得**點一下**就標記完成（加刪除線），再點一下恢復；`role="checkbox"` + `aria-checked`，鍵盤 Space/Enter 也能切換。
+狀態存在 React state（`completedItems`），離開頁面就重設，不存 DB。
+（2026-09-30 以前是長按 700ms：不好發現，而且慢慢捲動時手指停太久會誤觸，所以改成點一下。）
+
+### 食譜卡片是連結
+`RecipeCatalog.jsx` 的卡片是 `<a href="?recipe=ID">`（點擊時 `preventDefault` 走 SPA 的 `openRecipeDetail`），
+所以鍵盤可以 Tab 到、也能長按/中鍵開新分頁。料理行事曆裡的料理名稱是 `<button>`（縮圖同樣可點，但不進 Tab 順序）。

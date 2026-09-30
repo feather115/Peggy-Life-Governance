@@ -24,7 +24,8 @@ const S = {
   },
   grid: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginTop: 4 },
   card: {
-    background: 'var(--surface)', borderRadius: 20, overflow: 'hidden', cursor: 'pointer',
+    display: 'block', color: 'inherit', textDecoration: 'none',
+    background: 'var(--surface)', borderRadius: 20, overflow: 'hidden',
     boxShadow: 'var(--shadow-card)',
   },
   cardImage: { width: '100%', height: 120, objectFit: 'cover', display: 'block' },
@@ -163,7 +164,7 @@ export default function RecipeCatalog({
               const count = likeCounts?.get(recipe.id) || 0;
               const liked = myLikedSet?.has(recipe.id);
               return (
-                <div key={recipe.id} style={S.card} onClick={() => onOpenDetail(recipe)}>
+                <a key={recipe.id} href={`?recipe=${recipe.id}`} style={S.card} onClick={(e) => { e.preventDefault(); onOpenDetail(recipe); }}>
                   <div style={{ position: 'relative' }}>
                     {recipe.image_url
                       ? <img src={recipe.image_url} alt={recipe.title} style={S.cardImage} loading="lazy" />
@@ -175,7 +176,7 @@ export default function RecipeCatalog({
                   <div style={S.cardInfo}>
                     <h3 style={{ ...S.cardTitle, marginBlockStart: 0, marginTop: 0 }}>{recipe.title}</h3>
                   </div>
-                </div>
+                </a>
               );
             })}
           </div>
