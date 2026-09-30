@@ -60,7 +60,7 @@ export function PeopleSelect({ people, onChange, history, addPlaceholder = '輸�
           {people.map((name) => (
             <div key={name} style={S.chip}>
               <span>{name}</span>
-              <span style={S.chipRemove} onClick={() => onChange(people.filter((p) => p !== name))}>×</span>
+              <button type="button" className="btn-reset tap" style={S.chipRemove} aria-label={`移除「${name}」`} onClick={() => onChange(people.filter((p) => p !== name))}>×</button>
             </div>
           ))}
         </div>

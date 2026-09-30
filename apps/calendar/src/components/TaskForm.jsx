@@ -2,10 +2,11 @@
 import React, { useState } from 'react';
 import { THEME } from '../theme.js';
 import { todayKey } from '../utils.js';
+import Icon from '@peggy-life/shared/Icon.jsx';
 
 const S = {
   header: { display: 'flex', alignItems: 'center', gap: 12, padding: 16, background: THEME.surface, borderBottom: `1px solid ${THEME.border}` },
-  backBtn: { border: 'none', background: 'none', cursor: 'pointer', fontSize: 20, color: THEME.textMuted, padding: '2px 6px' },
+  backBtn: { border: 'none', background: 'none', color: THEME.textMuted, padding: 2, display: 'flex', alignItems: 'center' },
   title: { fontSize: 17, fontWeight: 700, color: THEME.textDark },
   body: { padding: 20, display: 'flex', flexDirection: 'column', gap: 18 },
   fieldLabel: { fontSize: 13, color: THEME.textMuted, marginBottom: 6 },
@@ -71,7 +72,7 @@ export default function TaskForm({ task, onSave, onCancel }) {
   return (
     <div>
       <div style={S.header}>
-        <button type="button" onClick={onCancel} disabled={busy} style={S.backBtn} aria-label="返回">←</button>
+        <button type="button" onClick={onCancel} disabled={busy} style={S.backBtn} className="tap" aria-label="返回"><Icon name="chevron-left" size={24} /></button>
         <div style={S.title}>{isEdit ? '編輯任務' : '新增任務'}</div>
       </div>
 
@@ -111,9 +112,9 @@ export default function TaskForm({ task, onSave, onCancel }) {
             <div style={S.toggleTitle}>顯示在行事曆</div>
             <div style={S.toggleHint}>到期日會出現在月/週/日檢視</div>
           </div>
-          <div style={S.toggleTrack(showOnCalendar)} onClick={() => setShowOnCalendar((v) => !v)}>
-            <div style={S.toggleKnob(showOnCalendar)} />
-          </div>
+          <button type="button" className="btn-reset" role="switch" aria-checked={showOnCalendar} aria-label="顯示在行事曆" style={S.toggleTrack(showOnCalendar)} onClick={() => setShowOnCalendar((v) => !v)}>
+            <span style={S.toggleKnob(showOnCalendar)} />
+          </button>
         </div>
       </div>
 

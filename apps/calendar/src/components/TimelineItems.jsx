@@ -2,9 +2,10 @@
 // 事件與日記合併後只剩兩種項目：紀錄（record）與任務（task）。一張紀錄卡把計畫面
 // （標題+備註+選項庫標籤）與回顧面（今天的感覺+＃注記+分類標籤+📍👤）疊在一起，
 // 有什麼顯示什麼。改這裡一次，三個檢視同時生效。
-import React from 'react';
+import React, { useState } from 'react';
 import { INTERVAL_UNIT_LABEL, formatRecordTime } from '../utils.js';
 import { THEME, categoryAccentForTag } from '../theme.js';
+import TaskCompleteRow from './TaskCompleteRow.jsx';
 
 const S = {
   list: { display: 'flex', flexDirection: 'column', gap: 8 },
@@ -28,8 +29,11 @@ const S = {
   metaItem: { display: 'inline-flex', alignItems: 'center', gap: 4, fontWeight: 500 },
   metaIcon: { fontSize: 12 },
   empty: { fontSize: 13, color: THEME.textFaint },
-  taskCard: { display: 'flex', gap: 10, alignItems: 'center', padding: 14, background: THEME.surfaceAlt, borderRadius: THEME.radiusSm, border: `1px dashed ${THEME.border}` },
-  taskCheck: { fontSize: 15 },
+  taskCard: { padding: '12px 14px', background: THEME.surfaceAlt, borderRadius: THEME.radiusSm, border: `1px dashed ${THEME.border}` },
+  taskRow: { display: 'flex', gap: 12, alignItems: 'center' },
+  // 圓形勾選框：點了展開「完成日期 + 確認完成」，不用跳到任務頁
+  taskCheck: (active) => ({ width: 24, height: 24, flex: 'none', borderRadius: '50%', border: `2px solid ${THEME.primary}`, background: active ? THEME.primarySoft : THEME.surface }),
+  taskMain: { flex: 1, minWidth: 0, textAlign: 'left' },
   taskTitle: { fontSize: 15, fontWeight: 600, color: THEME.textDark },
   taskMeta: { fontSize: 12, color: THEME.textMuted, marginTop: 2 },
   tagChipWrap: { display: 'flex', flexWrap: 'wrap', gap: 6 },
@@ -69,32 +73,46 @@ function MetaRow({ locations, people }) {
   );
 }
 
-// onRecordClick/onTaskClick 選填：有傳項目才可點（Day/Month 用，直接進編輯）；
-// 沒傳就純顯示（Week 用，整個日列本身已經可點跳日檢視）。
-export default function TimelineItems({ timeline, categories, onRecordClick, onTaskClick }) {
-  const clickable = (handler) => handler
-    ? { onClick: (e) => { e.stopPropagation(); handler(); }, style: { cursor: 'pointer' } }
-    : { style: {} };
+// onRecordClick/onTaskClick/onTaskComplete 選填：有傳才可點。紀錄卡點了進編輯；任務卡點標題進編輯、
+// 點左邊圓圈在原地展開「標記完成」。三個檢視（月/週/日）傳一樣的 handler，點同一種卡片行為都一樣。
+export default function TimelineItems({ timeline, categories, onRecordClick, onTaskClick, onTaskComplete }) {
+  const [completingId, setCompletingId] = useState(null);
 
   return (
     <div style={S.list}>
       {timeline.map((item) => {
         if (item.kind === 'task') {
           const t = item.data;
-          const c = clickable(onTaskClick && (() => onTaskClick(t)));
+          const isCompleting = completingId === t.id;
+          const Main = onTaskClick ? 'button' : 'div';
           return (
-            <div key={`task-${t.id}`} style={{ ...S.taskCard, ...c.style }} onClick={c.onClick}>
-              <span style={S.taskCheck}>☐</span>
-              <div>
-                <div style={S.taskTitle}>{t.title}</div>
-                <div style={S.taskMeta}>任務 · 每 {t.interval_value}{INTERVAL_UNIT_LABEL[t.interval_unit]}一次</div>
+            <div key={`task-${t.id}`} style={S.taskCard}>
+              <div style={S.taskRow}>
+                {onTaskComplete ? (
+                  <button type="button" className="btn-reset tap" style={S.taskCheck(isCompleting)}
+                    aria-label={`標記「${t.title}」完成`} aria-expanded={isCompleting}
+                    onClick={() => setCompletingId(isCompleting ? null : t.id)} />
+                ) : (
+                  <span style={S.taskCheck(false)} aria-hidden="true" />
+                )}
+                <Main {...(onTaskClick ? { type: 'button', className: 'btn-reset', onClick: () => onTaskClick(t) } : {})} style={S.taskMain}>
+                  <div style={S.taskTitle}>{t.title}</div>
+                  <div style={S.taskMeta}>任務 · 每 {t.interval_value}{INTERVAL_UNIT_LABEL[t.interval_unit]}一次</div>
+                </Main>
               </div>
+              {isCompleting && (
+                <TaskCompleteRow
+                  onConfirm={async (date) => { await onTaskComplete(t, date); setCompletingId(null); }}
+                  onCancel={() => setCompletingId(null)}
+                />
+              )}
             </div>
           );
         }
         // record（事件+日記合併後的單一項目）
         const r = item.data;
-        const c = clickable(onRecordClick && (() => onRecordClick(r)));
+        const Card = onRecordClick ? 'button' : 'div';
+        const cardProps = onRecordClick ? { type: 'button', className: 'btn-reset', onClick: () => onRecordClick(r) } : {};
         const evTags = r.tags || [];
         const diaryTags = r.diary_tags || [];
         const hashtags = r.hashtags || [];
@@ -105,7 +123,7 @@ export default function TimelineItems({ timeline, categories, onRecordClick, onT
         const isEmpty = !hasBody && !hasFooter;
 
         return (
-          <div key={`rec-${r.id}`} style={{ ...(r.all_day ? S.allDayCard : S.card), ...c.style }} onClick={c.onClick}>
+          <Card key={`rec-${r.id}`} {...cardProps} style={{ ...(r.all_day ? S.allDayCard : S.card), width: '100%', textAlign: 'left' }}>
             {!r.all_day && <div style={S.cardTime}>{formatRecordTime(r)}</div>}
 
             {(hasHeader || r.description || r.note) && (
@@ -148,7 +166,7 @@ export default function TimelineItems({ timeline, categories, onRecordClick, onT
             )}
 
             {isEmpty && <span style={S.empty}>✎ 這則紀錄還沒有內容</span>}
-          </div>
+          </Card>
         );
       })}
     </div>

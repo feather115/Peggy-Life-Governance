@@ -87,15 +87,15 @@ export default function Auth({ lineDebug }) {
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
           {mode === 'signin' && (
             <div style={{ display: 'flex', gap: 16, fontSize: 13 }}>
-              <span onClick={() => switchMode('signup')} style={{ color: THEME.primary, cursor: 'pointer', fontWeight: 600 }}>建立新帳號</span>
-              <span onClick={() => switchMode('forgot')} style={{ color: THEME.textMuted, cursor: 'pointer' }}>忘記密碼？</span>
+              <button type="button" className="btn-reset" onClick={() => switchMode('signup')} style={{ color: THEME.primary, fontWeight: 600, padding: '8px 4px' }}>建立新帳號</button>
+              <button type="button" className="btn-reset" onClick={() => switchMode('forgot')} style={{ color: THEME.textMuted, padding: '8px 4px' }}>忘記密碼？</button>
             </div>
           )}
           {mode === 'signup' && (
-            <span onClick={() => switchMode('signin')} style={{ color: THEME.primary, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>已經有帳號？登入</span>
+            <button type="button" className="btn-reset" onClick={() => switchMode('signin')} style={{ color: THEME.primary, fontSize: 13, fontWeight: 600, padding: '8px 4px' }}>已經有帳號？登入</button>
           )}
           {mode === 'forgot' && (
-            <span onClick={() => switchMode('signin')} style={{ color: THEME.primary, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>返回登入</span>
+            <button type="button" className="btn-reset" onClick={() => switchMode('signin')} style={{ color: THEME.primary, fontSize: 13, fontWeight: 600, padding: '8px 4px' }}>返回登入</button>
           )}
         </div>
         {lineDebug && <div style={{ marginTop: 16, fontSize: 12, color: THEME.textFaint, fontWeight: 600, lineHeight: 1.6, wordBreak: 'break-word' }}>LINE 自動登入除錯：{lineDebug}</div>}

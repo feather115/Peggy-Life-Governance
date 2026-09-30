@@ -1,8 +1,9 @@
 // 月檢視：格線月曆（有紀錄的日期顯示顏色小圓點）+ 下方選中日期的摘要卡。
 // 點日期只會「選中」該天並更新摘要卡，不會離開月檢視；點摘要卡標題跳去日檢視（onOpenDay），
-// 點摘要卡裡的單一項目直接開對應的編輯畫面（紀錄表單、任務檢視），不用先繞去日檢視。
+// 摘要卡裡的項目跟日檢視一樣可以直接點（紀錄→編輯、任務圓圈→標記完成），摘要卡底部可直接在選中那天新增紀錄。
 import React, { useMemo } from 'react';
-import { DOW, buildDayTimeline, dateKeyFrom, getMonthDays, monthLabel, parseDateKey, todayKey } from '../utils.js';
+import Icon from '@peggy-life/shared/Icon.jsx';
+import { DOW, buildDayTimeline, getMonthDays, monthLabel, parseDateKey, todayKey } from '../utils.js';
 import { THEME } from '../theme.js';
 import TimelineItems from './TimelineItems.jsx';
 
@@ -11,7 +12,7 @@ const taskDotStyle = { width: 6, height: 6, borderRadius: 1, background: THEME.t
 const S = {
   panel: { background: THEME.surface, borderRadius: THEME.radius, padding: 14, margin: '6px 20px 0', boxShadow: THEME.shadow },
   header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
-  navBtn: { border: 'none', background: 'none', cursor: 'pointer', fontSize: 18, color: THEME.textMuted, padding: '4px 10px' },
+  navBtn: { border: 'none', background: 'none', color: THEME.textMuted, width: 40, height: 40, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' },
   title: { fontSize: 16, fontWeight: 700, color: THEME.textDark },
   legend: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, padding: '0 4px 8px' },
   legendItem: { display: 'flex', alignItems: 'center', gap: 5 },
@@ -20,7 +21,7 @@ const S = {
   dowRow: { display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', padding: '8px 2px 2px', textAlign: 'center' },
   dow: { fontSize: 12, color: THEME.textFaint, fontWeight: 600, paddingBottom: 6 },
   grid: { display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 2, paddingBottom: 4 },
-  dayCell: { cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, minHeight: 46, borderRadius: THEME.radiusSm, padding: '4px 0' },
+  dayCell: { width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, minHeight: 46, borderRadius: THEME.radiusSm, padding: '4px 0' },
   badge: { width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 },
   dotsRow: { display: 'flex', gap: 3, alignItems: 'center', height: 6 },
   dot: { width: 6, height: 6, borderRadius: '50%' },
@@ -28,23 +29,19 @@ const S = {
 
 const DetailCardStyle = {
   card: { margin: '16px 20px 20px', background: THEME.surface, borderRadius: THEME.radius, boxShadow: THEME.shadow, overflow: 'hidden' },
-  cardHeader: { cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderBottom: `1px solid ${THEME.border}` },
+  cardHeader: { width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderBottom: `1px solid ${THEME.border}` },
   cardHeaderLeft: { display: 'flex', alignItems: 'center', gap: 8 },
   cardHeaderTitle: { fontSize: 14, fontWeight: 700, color: THEME.textDark },
   todayBadge: { fontSize: 12, fontWeight: 700, color: '#fff', background: THEME.primary, padding: '2px 7px', borderRadius: 999 },
   cardHeaderLink: { fontSize: 13, color: THEME.primary, fontWeight: 600 },
   cardBody: { padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 4 },
   empty: { fontSize: 13, color: THEME.textFaint, padding: '8px 0' },
+  addBtn: { marginTop: 8, width: '100%', border: `1px dashed ${THEME.primary}`, background: THEME.primarySoft, color: THEME.primary, padding: '11px', borderRadius: THEME.radiusSm, fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 },
 };
 
-export default function MonthView({ anchorKey, onAnchorChange, selectedDateKey, onSelectDay, onOpenDay, recordsByDate, categories, tasksByDueDate, onEditRecord, onGoToTasks }) {
+export default function MonthView({ anchorKey, onShift, selectedDateKey, onSelectDay, onOpenDay, onCreate, recordsByDate, categories, tasksByDueDate, onEditRecord, onEditTask, onCompleteTask }) {
   const anchor = parseDateKey(anchorKey);
   const monthDays = useMemo(() => getMonthDays(anchor.getFullYear(), anchor.getMonth()), [anchor]);
-
-  const shiftMonth = (delta) => {
-    const next = new Date(anchor.getFullYear(), anchor.getMonth() + delta, 1);
-    onAnchorChange(dateKeyFrom(next));
-  };
 
   const today = todayKey();
   const selectedDate = parseDateKey(selectedDateKey);
@@ -55,9 +52,9 @@ export default function MonthView({ anchorKey, onAnchorChange, selectedDateKey, 
     <>
       <div style={S.panel}>
         <div style={S.header}>
-          <button type="button" onClick={() => shiftMonth(-1)} style={S.navBtn} aria-label="上一個月">‹</button>
+          <button type="button" onClick={() => onShift(-1)} style={S.navBtn} aria-label="上一個月"><Icon name="chevron-left" size={22} /></button>
           <div style={S.title}>{monthLabel(anchor.getFullYear(), anchor.getMonth())}</div>
-          <button type="button" onClick={() => shiftMonth(1)} style={S.navBtn} aria-label="下一個月">›</button>
+          <button type="button" onClick={() => onShift(1)} style={S.navBtn} aria-label="下一個月"><Icon name="chevron-right" size={22} /></button>
         </div>
 
         <div style={S.legend}>
@@ -91,10 +88,14 @@ export default function MonthView({ anchorKey, onAnchorChange, selectedDateKey, 
             });
 
             return (
-              <div
+              <button
+                type="button"
+                className="btn-reset"
                 key={dateKey}
                 style={{ ...S.dayCell, background: isSelected && !isToday ? THEME.primarySoft : 'transparent' }}
                 onClick={() => onSelectDay(dateKey)}
+                aria-pressed={isSelected}
+                aria-label={`${date.getMonth() + 1}月${date.getDate()}日${isToday ? '（今天）' : ''}${dayRecords.length ? `，${dayRecords.length} 筆紀錄` : ''}${hasTaskDue ? '，有任務到期' : ''}`}
               >
                 <div style={{
                   ...S.badge,
@@ -110,20 +111,20 @@ export default function MonthView({ anchorKey, onAnchorChange, selectedDateKey, 
                   ))}
                   {hasTaskDue && <span style={taskDotStyle} />}
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>
       </div>
 
       <div style={DetailCardStyle.card}>
-        <div style={DetailCardStyle.cardHeader} onClick={() => onOpenDay(selectedDateKey)}>
+        <button type="button" className="btn-reset" style={DetailCardStyle.cardHeader} onClick={() => onOpenDay(selectedDateKey)}>
           <div style={DetailCardStyle.cardHeaderLeft}>
             <div style={DetailCardStyle.cardHeaderTitle}>{selectedDate.getMonth() + 1}月{selectedDate.getDate()}日 週{DOW[selectedDate.getDay()]}</div>
             {isSelectedToday && <span style={DetailCardStyle.todayBadge}>今天</span>}
           </div>
           <div style={DetailCardStyle.cardHeaderLink}>完整檢視 ›</div>
-        </div>
+        </button>
         <div style={DetailCardStyle.cardBody}>
           {selectedTimeline.length === 0 ? (
             <div style={DetailCardStyle.empty}>這天還沒有記錄</div>
@@ -132,9 +133,13 @@ export default function MonthView({ anchorKey, onAnchorChange, selectedDateKey, 
               timeline={selectedTimeline}
               categories={categories}
               onRecordClick={onEditRecord}
-              onTaskClick={onGoToTasks ? () => onGoToTasks() : undefined}
+              onTaskClick={onEditTask}
+              onTaskComplete={onCompleteTask}
             />
           )}
+          <button type="button" style={DetailCardStyle.addBtn} onClick={() => onCreate(selectedDateKey)}>
+            <Icon name="plus" size={16} />新增 {selectedDate.getMonth() + 1}/{selectedDate.getDate()} 的紀錄
+          </button>
         </div>
       </div>
     </>

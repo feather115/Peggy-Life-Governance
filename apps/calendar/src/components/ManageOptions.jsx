@@ -3,10 +3,11 @@
 // 過去紀錄照舊保留；使用 0 次（標籤還要沒有子標籤）才能永久刪除。
 import React, { useMemo, useState } from 'react';
 import { THEME } from '../theme.js';
+import Icon from '@peggy-life/shared/Icon.jsx';
 
 const S = {
   header: { display: 'flex', alignItems: 'center', gap: 12, padding: 16, background: THEME.surface, borderBottom: `1px solid ${THEME.border}` },
-  backBtn: { border: 'none', background: 'none', cursor: 'pointer', fontSize: 20, color: THEME.textMuted, padding: '2px 6px' },
+  backBtn: { border: 'none', background: 'none', color: THEME.textMuted, padding: 2, display: 'flex', alignItems: 'center' },
   title: { fontSize: 17, fontWeight: 700, color: THEME.textDark },
   body: { padding: '20px 20px 48px', display: 'flex', flexDirection: 'column', gap: 28 },
   errorBox: { background: THEME.errorBg, color: THEME.error, padding: '10px 12px', borderRadius: THEME.radiusSm, fontSize: 13, fontWeight: 600 },
@@ -142,7 +143,7 @@ export default function ManageOptions({ opts, records, renameField, onClose }) {
   return (
     <div>
       <div style={S.header}>
-        <button type="button" onClick={onClose} style={S.backBtn} aria-label="返回">←</button>
+        <button type="button" onClick={onClose} style={S.backBtn} className="tap" aria-label="返回"><Icon name="chevron-left" size={24} /></button>
         <div style={S.title}>管理地點、人名與事件標籤</div>
       </div>
 

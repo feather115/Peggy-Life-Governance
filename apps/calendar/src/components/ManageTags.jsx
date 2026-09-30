@@ -5,10 +5,11 @@
 import React, { useState } from 'react';
 import { THEME } from '../theme.js';
 import { findTagOwner } from '../useDiaryTags.js';
+import Icon from '@peggy-life/shared/Icon.jsx';
 
 const S = {
   header: { display: 'flex', alignItems: 'center', gap: 12, padding: 16, background: THEME.surface, borderBottom: `1px solid ${THEME.border}` },
-  backBtn: { border: 'none', background: 'none', cursor: 'pointer', fontSize: 20, color: THEME.textMuted, padding: '2px 6px' },
+  backBtn: { border: 'none', background: 'none', color: THEME.textMuted, padding: 2, display: 'flex', alignItems: 'center' },
   title: { fontSize: 17, fontWeight: 700, color: THEME.textDark },
   body: { padding: 20, display: 'flex', flexDirection: 'column', gap: 14 },
   card: { background: THEME.surface, borderRadius: THEME.radius, padding: '14px 16px', boxShadow: THEME.shadow },
@@ -73,7 +74,7 @@ function InlineName({ name, spanStyle, inputStyle, onCommit }) {
   };
 
   if (!editing) {
-    return <span style={spanStyle} onClick={() => { setValue(name); setError(''); setEditing(true); }}>{name}</span>;
+    return <button type="button" className="btn-reset" style={spanStyle} aria-label={`重新命名「${name}」`} onClick={() => { setValue(name); setError(''); setEditing(true); }}>{name}</button>;
   }
   return (
     <>
@@ -104,12 +105,15 @@ function DetailHistory({ tag, details, onRename, onRemove }) {
               inputStyle={S.detailNameInput}
               onCommit={(val) => { onRename(detail, val); return null; }}
             />
-            <span
+            <button
+              type="button"
+              className="btn-reset tap"
               style={S.subRemove}
+              aria-label={`刪除細節「${detail}」`}
               onClick={() => {
                 if (window.confirm(`確定刪除「${detail}」？所有使用這個細節的歷史紀錄都會同步清除。`)) onRemove(detail);
               }}
-            >×</span>
+            >×</button>
           </div>
         ))}
       </div>
@@ -153,8 +157,8 @@ function TagBox({ tag, isFirst, isLast, allCategories, tagDetailHistory, actions
           onCommit={(val) => { const err = checkRename(val); if (err) return err; actions.onRename(val); return null; }}
         />
         {tag.subs.length > 0 && <span style={S.subBadge}>{tag.subs.length}</span>}
-        <span style={S.tagChevron} onClick={() => setExpanded((v) => !v)}>{expanded ? '▾' : '▸'}</span>
-        <span style={S.removeX} onClick={actions.onRemove}>×</span>
+        <button type="button" className="btn-reset tap" style={S.tagChevron} aria-expanded={expanded} aria-label={expanded ? '收合子標籤' : '展開子標籤'} onClick={() => setExpanded((v) => !v)}>{expanded ? '▾' : '▸'}</button>
+        <button type="button" className="btn-reset" style={S.removeX} aria-label={`刪除標籤「${tag.name}」`} onClick={actions.onRemove}>×</button>
       </div>
 
       {expanded && (
@@ -170,7 +174,7 @@ function TagBox({ tag, isFirst, isLast, allCategories, tagDetailHistory, actions
                   onCommit={(val) => { const err = checkRename(val); if (err) return err; actions.onRenameSub(sub, val); return null; }}
                 />
                 <button type="button" style={S.subMoveBtn(i === tag.subs.length - 1)} disabled={i === tag.subs.length - 1} onClick={() => actions.onMoveSub(sub, 1)} aria-label="子標籤右移">›</button>
-                <span style={S.subRemove} onClick={() => actions.onRemoveSub(sub)}>×</span>
+                <button type="button" className="btn-reset tap" style={S.subRemove} aria-label={`刪除子標籤「${sub}」`} onClick={() => actions.onRemoveSub(sub)}>×</button>
               </div>
             ))}
             {addingSub ? (
@@ -184,7 +188,7 @@ function TagBox({ tag, isFirst, isLast, allCategories, tagDetailHistory, actions
                 onKeyDown={(e) => { if (e.nativeEvent.isComposing) return; if (e.key === 'Enter') submitSub(); if (e.key === 'Escape') { setAddingSub(false); setSubDraft(''); setSubHint(''); } }}
               />
             ) : (
-              <div style={S.addPill} onClick={() => setAddingSub(true)}>+ 新增</div>
+              <button type="button" className="btn-reset" style={S.addPill} onClick={() => setAddingSub(true)}>+ 新增子標籤</button>
             )}
             {subHint && <div style={S.hint}>{subHint}</div>}
           </div>
@@ -254,10 +258,10 @@ function CategoryCard({ category, allCategories, tagDetailHistory, onRename, onD
           inputStyle={S.catNameInput}
           onCommit={(val) => { onRename(val); return null; }}
         />
-        <span style={S.chevronBtn} onClick={() => setExpanded((v) => !v)}>{expanded ? '▾' : '▸'}</span>
-        <div style={S.deleteLabel(confirmDelete)} onClick={handleDeleteClick}>
+        <button type="button" className="btn-reset tap" style={S.chevronBtn} aria-expanded={expanded} aria-label={expanded ? '收合分類' : '展開分類'} onClick={() => setExpanded((v) => !v)}>{expanded ? '▾' : '▸'}</button>
+        <button type="button" className="btn-reset tap" style={S.deleteLabel(confirmDelete)} onClick={handleDeleteClick}>
           {confirmDelete ? '確定？' : '刪除分類'}
-        </div>
+        </button>
       </div>
 
       {expanded && (
@@ -295,7 +299,7 @@ function CategoryCard({ category, allCategories, tagDetailHistory, onRename, onD
               onKeyDown={(e) => { if (e.nativeEvent.isComposing) return; if (e.key === 'Enter') { e.preventDefault(); submitTag(); } if (e.key === 'Escape') { setAddingTag(false); setTagDraft(''); setTagHint(''); } }}
             />
           ) : (
-            <div style={S.addTagPill} onClick={() => setAddingTag(true)}>+ 新增主標籤</div>
+            <button type="button" className="btn-reset" style={S.addTagPill} onClick={() => setAddingTag(true)}>+ 新增主標籤</button>
           )}
           {tagHint && <div style={S.hint}>{tagHint}</div>}
 
@@ -329,7 +333,7 @@ export default function ManageTags({ categories, tagDetailHistory, onRenameCateg
   return (
     <div>
       <div style={S.header}>
-        <button type="button" onClick={onClose} style={S.backBtn} aria-label="返回">←</button>
+        <button type="button" onClick={onClose} style={S.backBtn} className="tap" aria-label="返回"><Icon name="chevron-left" size={24} /></button>
         <div style={S.title}>管理分類與標籤</div>
       </div>
 

@@ -5,13 +5,15 @@
 //   | { type: 'task', mode: 'create' } | { type: 'task', mode: 'edit', task }
 //   | { type: 'settings' } | { type: 'manageTags' } | { type: 'manageOptions' }
 // 之後要加新畫面就加一個 type，不要再疊三元運算子鏈。
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import Icon from '@peggy-life/shared/Icon.jsx';
+import { useBackClose } from '@peggy-life/shared/useBackClose';
 import { useRecords } from './useRecords.js';
 import { useDiaryTags } from './useDiaryTags.js';
 import { useTasks } from './useTasks.js';
 import { useOptions } from './useOptions.js';
 import { THEME } from './theme.js';
-import { dateKeyFrom, parseDateKey } from './utils.js';
+import { parseDateKey } from './utils.js';
 import ViewTabs from './components/ViewTabs.jsx';
 import MonthView from './components/MonthView.jsx';
 import WeekView from './components/WeekView.jsx';
@@ -44,6 +46,36 @@ export default function App({ session, onSignOut }) {
 
   const [overlay, setOverlay] = useState(null);
   const closeOverlay = () => setOverlay(null);
+
+  // 手機返回鍵：管理頁回設定頁、其他覆蓋畫面直接關閉（紀錄表單有未儲存防呆，自己在 RecordForm 裡處理）
+  useBackClose(overlay !== null && overlay.type !== 'record', () => {
+    if (overlay?.type === 'manageTags' || overlay?.type === 'manageOptions') setOverlay({ type: 'settings' });
+    else closeOverlay();
+  });
+
+  // 操作完成的短暫提示（例如在時間軸上勾掉任務後，任務會移到下次到期日，不提示會以為它不見了）
+  const [toast, setToast] = useState('');
+  useEffect(() => {
+    if (!toast) return undefined;
+    const id = setTimeout(() => setToast(''), 2600);
+    return () => clearTimeout(id);
+  }, [toast]);
+
+  // 月/週/日檢視左右滑動翻頁（跟 ‹ › 按鈕同一個 shiftPeriod）；垂直捲動、在輸入框上滑動都不算
+  const touchStart = useRef(null);
+  const onTouchStart = (e) => {
+    const t = e.touches[0];
+    touchStart.current = e.target.closest('input, textarea, select') ? null : { x: t.clientX, y: t.clientY };
+  };
+  const onTouchEnd = (e) => {
+    const start = touchStart.current;
+    touchStart.current = null;
+    if (!start || rec.view === 'tasks') return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - start.x;
+    const dy = t.clientY - start.y;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 2) rec.shiftPeriod(dx < 0 ? 1 : -1);
+  };
 
   // 地點/人名選單依「最近一次使用」排序：從紀錄（start_at）補入未成功回填到選項庫的歷史值
   // （已封存者除外），再依最近使用排序。
@@ -80,14 +112,6 @@ export default function App({ session, onSignOut }) {
   if (diaryTags.loadError) return <Centered color={THEME.error}>載入失敗：{diaryTags.loadError}</Centered>;
   if (tasksHub.loadError) return <Centered color={THEME.error}>載入失敗：{tasksHub.loadError}</Centered>;
 
-  const shiftSelectedDay = (delta) => {
-    const next = new Date(parseDateKey(rec.selectedDateKey));
-    next.setDate(next.getDate() + delta);
-    const nextKey = dateKeyFrom(next);
-    rec.setAnchorKey(nextKey);
-    rec.setSelectedDateKey(nextKey);
-  };
-
   const handleSaveRecord = async (payload, existingId) => {
     if (existingId) await rec.updateRecord(existingId, payload);
     else await rec.createRecord(payload);
@@ -112,7 +136,14 @@ export default function App({ session, onSignOut }) {
   };
 
   const editRecord = (record) => setOverlay({ type: 'record', mode: 'edit', record });
-  const goToTasks = () => { closeOverlay(); rec.setView('tasks'); };
+  const createRecord = (dateKey) => setOverlay({ type: 'record', mode: 'create', dateKey });
+  const editTask = (task) => setOverlay({ type: 'task', mode: 'edit', task });
+
+  const completeTask = async (task, doneDate) => {
+    const updated = await tasksHub.confirmComplete(task.id, doneDate);
+    const next = updated && parseDateKey(updated.next_due);
+    setToast(`已完成「${task.title}」${next ? `，下次到期 ${next.getMonth() + 1}/${next.getDate()}` : ''}`);
+  };
 
   const renderOverlay = () => {
     switch (overlay?.type) {
@@ -212,61 +243,73 @@ export default function App({ session, onSignOut }) {
         <>
           <header style={{ padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: THEME.surface }}>
             <h1 style={{ fontSize: 18, fontWeight: 700, color: THEME.textDark, margin: 0 }}>TY Calendar</h1>
-            <button onClick={() => setOverlay({ type: 'settings' })} aria-label="設定" style={{ border: 'none', background: 'none', color: THEME.textMuted, fontSize: 18, cursor: 'pointer', lineHeight: 1, padding: 4 }}>⚙</button>
+            <button type="button" className="tap" onClick={() => setOverlay({ type: 'settings' })} aria-label="設定" style={{ border: 'none', background: 'none', color: THEME.textMuted, padding: 4 }}><Icon name="sliders" size={20} /></button>
           </header>
 
           <ViewTabs view={rec.view} onChange={rec.setView} onToday={rec.goToday} />
 
-          <div className="ps" style={{ flex: 1, overflowY: 'auto', minHeight: 0, position: 'relative', background: THEME.bg }}>
+          <div className="ps" style={{ flex: 1, overflowY: 'auto', minHeight: 0, position: 'relative', background: THEME.bg }} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
             {rec.view === 'month' && (
               <MonthView
                 anchorKey={rec.anchorKey}
-                onAnchorChange={rec.setAnchorKey}
+                onShift={rec.shiftPeriod}
                 selectedDateKey={rec.selectedDateKey}
                 onSelectDay={rec.setSelectedDateKey}
                 onOpenDay={rec.openDay}
+                onCreate={createRecord}
                 recordsByDate={rec.recordsByDate}
                 categories={diaryTags.categories}
                 tasksByDueDate={tasksHub.tasksByDueDate}
                 onEditRecord={editRecord}
-                onGoToTasks={goToTasks}
+                onEditTask={editTask}
+                onCompleteTask={completeTask}
               />
             )}
             {rec.view === 'week' && (
               <WeekView
                 anchorKey={rec.anchorKey}
-                onAnchorChange={rec.setAnchorKey}
+                onShift={rec.shiftPeriod}
                 selectedDateKey={rec.selectedDateKey}
                 onOpenDay={rec.openDay}
+                onCreate={createRecord}
                 recordsByDate={rec.recordsByDate}
                 categories={diaryTags.categories}
                 tasksByDueDate={tasksHub.tasksByDueDate}
+                onEditRecord={editRecord}
+                onEditTask={editTask}
+                onCompleteTask={completeTask}
               />
             )}
             {rec.view === 'day' && (
               <DayView
                 dateKey={rec.selectedDateKey}
-                onShiftDay={shiftSelectedDay}
+                onShiftDay={rec.shiftPeriod}
                 recordsByDate={rec.recordsByDate}
                 categories={diaryTags.categories}
                 tasksByDueDate={tasksHub.tasksByDueDate}
                 onEdit={editRecord}
-                onCreate={(dateKey) => setOverlay({ type: 'record', mode: 'create', dateKey })}
-                onGoToTasks={goToTasks}
+                onCreate={createRecord}
+                onEditTask={editTask}
+                onCompleteTask={completeTask}
               />
             )}
             {rec.view === 'tasks' && (
               <TasksView
                 tasks={tasksHub.tasks}
-                onEdit={(task) => setOverlay({ type: 'task', mode: 'edit', task })}
+                onEdit={editTask}
                 onCreate={() => setOverlay({ type: 'task', mode: 'create' })}
                 onDelete={tasksHub.deleteTask}
-                onConfirmComplete={tasksHub.confirmComplete}
+                onComplete={completeTask}
               />
             )}
           </div>
         </>
       )}
+      <div aria-live="polite" style={{ position: 'absolute', left: 16, right: 16, bottom: 'calc(84px + env(safe-area-inset-bottom))', display: 'flex', justifyContent: 'center', pointerEvents: 'none', zIndex: 20 }}>
+        {toast && (
+          <div style={{ background: THEME.textDark, color: '#fff', fontSize: 14, fontWeight: 600, padding: '10px 16px', borderRadius: 999, boxShadow: THEME.shadow }}>{toast}</div>
+        )}
+      </div>
     </div>
   );
 }

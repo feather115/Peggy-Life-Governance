@@ -4,15 +4,17 @@
 // allRecords：目前所有紀錄（給標題自動完成建議用，只在新增模式才出現）。
 // 動作列：確認按鈕固定在頂部 header，返回鍵在有未儲存變更時會先確認。
 import React, { useMemo, useState } from 'react';
+import { useBackClose } from '@peggy-life/shared/useBackClose';
 import { fromDatetimeLocalValue, toDatetimeLocalValue } from '../utils.js';
 import { EVENT_COLORS, THEME } from '../theme.js';
 import TimeSelect from './TimeSelect.jsx';
 import { PeopleSelect } from './HistoryFields.jsx';
+import Icon from '@peggy-life/shared/Icon.jsx';
 
 const S = {
   header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', background: THEME.surface, borderBottom: `1px solid ${THEME.border}` },
   headerLeft: { display: 'flex', alignItems: 'center', gap: 10 },
-  backBtn: { border: 'none', background: 'none', cursor: 'pointer', fontSize: 20, color: THEME.textMuted, padding: '2px 6px' },
+  backBtn: { border: 'none', background: 'none', color: THEME.textMuted, padding: 2, display: 'flex', alignItems: 'center' },
   title: { fontSize: 17, fontWeight: 700, color: THEME.textDark, margin: 0 },
   confirmBtn: { border: 'none', cursor: 'pointer', padding: '9px 18px', borderRadius: 999, background: THEME.primary, color: '#fff', fontSize: 14, fontWeight: 700, boxShadow: '0 4px 12px rgba(61,90,128,.28)' },
   body: { padding: '18px 20px 24px' },
@@ -144,16 +146,16 @@ function CategoryTagCard({ category, allCategories, selectedTags, onToggleTag, o
     <div style={S.categoryCard}>
       <div style={S.categoryHeader}>
         <div style={S.categoryName}>{category.name}</div>
-        <button type="button" style={S.addTagIconBtn} onClick={() => { setAdding(true); setHint(''); }} aria-label="新增標籤">＋</button>
+        <button type="button" className="tap" style={S.addTagIconBtn} onClick={() => { setAdding(true); setHint(''); }} aria-label={`在「${category.name}」新增標籤`}><Icon name="plus" size={14} /></button>
       </div>
 
       {category.tags.length > 0 && (
         <div style={S.tagWrap}>
           {category.tags.map((tag) => (
             <React.Fragment key={tag.name}>
-              <div style={S.tagChip(selectedTags.includes(tag.name))} onClick={() => onToggleTag(tag.name)}>{tag.name}</div>
+              <button type="button" className="btn-reset" style={S.tagChip(selectedTags.includes(tag.name))} aria-pressed={selectedTags.includes(tag.name)} onClick={() => onToggleTag(tag.name)}>{tag.name}</button>
               {tag.subs.map((sub) => (
-                <div key={sub} style={S.subTagChip(selectedTags.includes(sub))} onClick={() => onToggleTag(sub)}>└ {sub}</div>
+                <button type="button" className="btn-reset" key={sub} style={S.subTagChip(selectedTags.includes(sub))} aria-pressed={selectedTags.includes(sub)} onClick={() => onToggleTag(sub)}>└ {sub}</button>
               ))}
             </React.Fragment>
           ))}
@@ -238,6 +240,8 @@ export default function RecordForm({ record, defaultDateKey, allRecords = [], ca
     if (snapshot !== initialSnapshot && !window.confirm('內容還沒儲存，確定要離開嗎？')) return;
     onCancel();
   };
+  // 手機返回鍵 = 左上角返回（同樣有未儲存防呆）；儲存中不理會
+  useBackClose(true, () => { if (!busy) handleCancel(); });
 
   // 過去用過的標題（新增模式才顯示，輸入時比對片段），點了直接帶入標題 + 顏色
   const titleSuggestions = useMemo(() => {
@@ -347,7 +351,7 @@ export default function RecordForm({ record, defaultDateKey, allRecords = [], ca
     <div>
       <header style={S.header}>
         <div style={S.headerLeft}>
-          <button type="button" onClick={handleCancel} disabled={busy} style={S.backBtn} aria-label="返回">←</button>
+          <button type="button" onClick={handleCancel} disabled={busy} style={S.backBtn} className="tap" aria-label="返回"><Icon name="chevron-left" size={24} /></button>
           <h1 style={S.title}>{isEdit ? '編輯紀錄' : '新增紀錄'}</h1>
         </div>
         <button type="button" onClick={handleSave} disabled={busy} style={S.confirmBtn}>{busy ? '儲存中…' : '儲存'}</button>
@@ -363,10 +367,10 @@ export default function RecordForm({ record, defaultDateKey, allRecords = [], ca
           {titleSuggestions.length > 0 && (
             <div style={S.suggestions}>
               {titleSuggestions.map(([t, r]) => (
-                <div key={t} style={S.suggestionChip} onClick={() => { setTitle(t); setColor(r.color || EVENT_COLORS[0]); }}>
+                <button type="button" className="btn-reset" key={t} style={S.suggestionChip} onClick={() => { setTitle(t); setColor(r.color || EVENT_COLORS[0]); }}>
                   <span style={{ ...S.suggestionDot, background: r.color || THEME.primary }} />
                   <span>{t}</span>
-                </div>
+                </button>
               ))}
             </div>
           )}
@@ -375,9 +379,9 @@ export default function RecordForm({ record, defaultDateKey, allRecords = [], ca
         {/* ---- 時間 ---- */}
         <div style={S.toggleRow}>
           <div style={S.toggleLabel}>全天</div>
-          <div style={S.toggleTrack(allDay)} onClick={toggleAllDay}>
-            <div style={S.toggleKnob(allDay)} />
-          </div>
+          <button type="button" className="btn-reset" role="switch" aria-checked={allDay} aria-label="全天" style={S.toggleTrack(allDay)} onClick={toggleAllDay}>
+            <span style={S.toggleKnob(allDay)} />
+          </button>
         </div>
 
         <div style={S.field}>
@@ -428,8 +432,8 @@ export default function RecordForm({ record, defaultDateKey, allRecords = [], ca
         <div style={S.field}>
           <div style={S.label}>顏色</div>
           <div style={S.colorsRow}>
-            {EVENT_COLORS.map((c) => (
-              <div key={c} style={{ ...S.colorDot(color === c), background: c }} onClick={() => setColor(c)} />
+            {EVENT_COLORS.map((c, i) => (
+              <button type="button" className="btn-reset" key={c} style={{ ...S.colorDot(color === c), background: c }} aria-label={`顏色 ${i + 1}`} aria-pressed={color === c} onClick={() => setColor(c)} />
             ))}
           </div>
         </div>
@@ -523,9 +527,9 @@ export default function RecordForm({ record, defaultDateKey, allRecords = [], ca
         )}
 
         {isEdit && onDelete && (
-          <div style={S.deleteLink(confirmDelete)} onClick={busy ? undefined : handleDelete}>
+          <button type="button" className="btn-reset" style={{ ...S.deleteLink(confirmDelete), display: 'block', width: '100%', padding: 10 }} disabled={busy} onClick={handleDelete}>
             {confirmDelete ? '確定要刪除嗎？' : '刪除紀錄'}
-          </div>
+          </button>
         )}
       </div>
     </div>

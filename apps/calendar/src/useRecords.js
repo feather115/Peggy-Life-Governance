@@ -8,7 +8,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import * as db from './db.js';
-import { groupRecordsByDate, todayKey } from './utils.js';
+import { dateKeyFrom, groupRecordsByDate, parseDateKey, todayKey } from './utils.js';
 
 const VIEW_STATE_KEY_PREFIX = 'ty-calendar:view-state:';
 const VALID_VIEWS = new Set(['month', 'week', 'day', 'tasks']);
@@ -174,6 +174,24 @@ export function useRecords(userId) {
     setSelectedDateKey(t);
   }, []);
 
+  // 往前/往後翻一頁：月檢視翻月、週檢視翻週、日檢視換天（‹ › 按鈕與左右滑動共用）
+  const shiftPeriod = useCallback((delta) => {
+    if (view === 'month') {
+      const a = parseDateKey(anchorKey);
+      setAnchorKey(dateKeyFrom(new Date(a.getFullYear(), a.getMonth() + delta, 1)));
+    } else if (view === 'week') {
+      const a = parseDateKey(anchorKey);
+      a.setDate(a.getDate() + delta * 7);
+      setAnchorKey(dateKeyFrom(a));
+    } else if (view === 'day') {
+      const d = parseDateKey(selectedDateKey);
+      d.setDate(d.getDate() + delta);
+      const key = dateKeyFrom(d);
+      setAnchorKey(key);
+      setSelectedDateKey(key);
+    }
+  }, [view, anchorKey, selectedDateKey]);
+
   // 開啟日檢視聚焦到某一天（月/週檢視點下去都會走這條）：翻頁錨點跟選中日期一起對齊，並切到日檢視。
   const openDay = useCallback((dateKey) => {
     setAnchorKey(dateKey);
@@ -186,7 +204,7 @@ export function useRecords(userId) {
     view, setView,
     anchorKey, setAnchorKey,
     selectedDateKey, setSelectedDateKey,
-    goToday, openDay,
+    goToday, openDay, shiftPeriod,
     createRecord, updateRecord, deleteRecord, renameFieldValue,
     renameDiaryTagEverywhere, removeDiaryTagsEverywhere,
     renameTagDetailEverywhere, removeTagDetailEverywhere,

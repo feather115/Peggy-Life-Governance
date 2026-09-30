@@ -3,15 +3,15 @@ import React, { useEffect, useState } from 'react';
 import { THEME } from '../theme.js';
 import { canLinkLine, useLineLinked } from '../liff.js';
 import { loadMyDisplayName, updateDisplayName } from '../db.js';
+import Icon from '@peggy-life/shared/Icon.jsx';
 
 const S = {
   header: { display: 'flex', alignItems: 'center', gap: 12, padding: 16, background: THEME.surface, borderBottom: `1px solid ${THEME.border}` },
-  backBtn: { border: 'none', background: 'none', cursor: 'pointer', fontSize: 20, color: THEME.textMuted, padding: '2px 6px' },
+  backBtn: { border: 'none', background: 'none', color: THEME.textMuted, padding: 2, display: 'flex', alignItems: 'center' },
   title: { fontSize: 17, fontWeight: 700, color: THEME.textDark },
   body: { padding: 20, display: 'flex', flexDirection: 'column', gap: 10 },
-  row: { cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: THEME.surface, borderRadius: THEME.radiusSm, padding: '16px 18px', boxShadow: THEME.shadow },
+  row: { width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: THEME.surface, borderRadius: THEME.radiusSm, padding: '16px 18px', boxShadow: THEME.shadow },
   rowLabel: { fontSize: 15, fontWeight: 600, color: THEME.textDark },
-  rowArrow: { fontSize: 15, color: THEME.textFaint },
   accountCard: { background: THEME.surface, borderRadius: THEME.radiusSm, padding: '16px 18px', boxShadow: THEME.shadow },
   accountLabel: { fontSize: 12, color: THEME.textMuted, marginBottom: 4 },
   accountEmail: { fontSize: 14, fontWeight: 700, color: THEME.textDark, marginBottom: 14, wordBreak: 'break-all' },
@@ -119,7 +119,7 @@ export default function Settings({ session, onClose, onManageTags, onManageOptio
   return (
     <div>
       <div style={S.header}>
-        <button type="button" onClick={onClose} style={S.backBtn} aria-label="返回">←</button>
+        <button type="button" onClick={onClose} style={S.backBtn} className="tap" aria-label="返回"><Icon name="chevron-left" size={24} /></button>
         <div style={S.title}>設定</div>
       </div>
 
@@ -133,20 +133,20 @@ export default function Settings({ session, onClose, onManageTags, onManageOptio
           </div>
         </div>
 
-        <div style={S.row} onClick={onManageTags}>
-          <div style={S.rowLabel}>管理日記分類與標籤</div>
-          <div style={S.rowArrow}>›</div>
-        </div>
+        <button type="button" className="btn-reset" style={S.row} onClick={onManageTags}>
+          <span style={S.rowLabel}>管理日記分類與標籤</span>
+          <Icon name="chevron-right" size={18} style={{ color: THEME.textFaint }} />
+        </button>
 
-        <div style={S.row} onClick={onManageOptions}>
-          <div style={S.rowLabel}>管理地點、人名與事件標籤</div>
-          <div style={S.rowArrow}>›</div>
-        </div>
+        <button type="button" className="btn-reset" style={S.row} onClick={onManageOptions}>
+          <span style={S.rowLabel}>管理地點、人名與事件標籤</span>
+          <Icon name="chevron-right" size={18} style={{ color: THEME.textFaint }} />
+        </button>
 
         {onSignOut && (
-          <div style={{ ...S.row, justifyContent: 'center' }} onClick={onSignOut}>
-            <div style={{ ...S.rowLabel, color: THEME.error }}>登出</div>
-          </div>
+          <button type="button" className="btn-reset" style={{ ...S.row, justifyContent: 'center' }} onClick={onSignOut}>
+            <span style={{ ...S.rowLabel, color: THEME.error }}>登出</span>
+          </button>
         )}
       </div>
     </div>
