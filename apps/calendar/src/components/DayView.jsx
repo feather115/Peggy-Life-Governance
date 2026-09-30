@@ -1,5 +1,6 @@
-// 日檢視：單日紀錄 + 到期任務合併時間軸，可切換前一天/後一天（也可左右滑動），底部有「新增紀錄」按鈕。
-// 卡片渲染在 TimelineItems（三個檢視共用同一套白卡版型與點擊行為），這裡只負責日期導覽、空狀態與新增按鈕。
+// 日檢視：單日紀錄 + 到期任務合併時間軸，可切換前一天/後一天（也可左右滑動）。
+// 卡片渲染在 TimelineItems（三個檢視共用同一套白卡版型與點擊行為），這裡只負責日期導覽與空狀態；
+// 新增紀錄是 App.jsx 右下角的浮動 ＋ 按鈕。
 import React from 'react';
 import Icon from '@peggy-life/shared/Icon.jsx';
 import { buildDayTimeline, dayLabel, todayKey } from '../utils.js';
@@ -13,13 +14,12 @@ const S = {
   titleWrap: { display: 'flex', alignItems: 'center', gap: 8 },
   title: { fontSize: 16, fontWeight: 700, color: THEME.textDark },
   todayBadge: { fontSize: 12, fontWeight: 700, color: '#fff', background: THEME.primary, padding: '2px 7px', borderRadius: 999 },
-  list: { flex: 1, padding: '4px 20px 16px' },
+  // 底部留空間給浮動 ＋ 按鈕，最後一張卡片才不會被蓋住
+  list: { flex: 1, padding: '4px 20px 96px' },
   empty: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '60px 0', fontSize: 14, color: THEME.textFaint, textAlign: 'center' },
-  footer: { position: 'sticky', bottom: 0, padding: '14px 20px calc(14px + env(safe-area-inset-bottom))', background: THEME.bg, display: 'flex', gap: 10 },
-  addBtn: { flex: 1, border: 'none', padding: 13, borderRadius: THEME.radiusSm, background: THEME.primary, color: '#fff', fontSize: 15, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 },
 };
 
-export default function DayView({ dateKey, onShiftDay, recordsByDate, categories, tasksByDueDate, onEdit, onCreate, onEditTask, onCompleteTask }) {
+export default function DayView({ dateKey, onShiftDay, recordsByDate, categories, tasksByDueDate, onEdit, onEditTask, onCompleteTask }) {
   const dayRecords = recordsByDate[dateKey] || [];
   const dayTasks = (tasksByDueDate && tasksByDueDate[dateKey]) || [];
   const timeline = buildDayTimeline(dayRecords, dayTasks);
@@ -39,7 +39,7 @@ export default function DayView({ dateKey, onShiftDay, recordsByDate, categories
         {timeline.length === 0 ? (
           <div style={S.empty}>
             <div>這天還沒有記錄</div>
-            <div style={{ fontSize: 13 }}>按下方「新增紀錄」開始記錄</div>
+            <div style={{ fontSize: 13 }}>按右下角的 ＋ 新增紀錄</div>
           </div>
         ) : (
           <TimelineItems
@@ -50,10 +50,6 @@ export default function DayView({ dateKey, onShiftDay, recordsByDate, categories
             onTaskComplete={onCompleteTask}
           />
         )}
-      </div>
-
-      <div style={S.footer}>
-        <button type="button" style={S.addBtn} onClick={() => onCreate(dateKey)}><Icon name="plus" size={18} />新增紀錄</button>
       </div>
     </div>
   );

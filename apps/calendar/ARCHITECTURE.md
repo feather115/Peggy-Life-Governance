@@ -62,7 +62,8 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
 | **月檢視（格線月曆、紀錄/任務圓點、選中日摘要卡 + 在選中日新增）** | `src/components/MonthView.jsx` |
 | **週檢視（7 天直向列表，含紀錄+任務時間軸，每天標題有 ＋）** | `src/components/WeekView.jsx` |
 | **日檢視（紀錄+任務合併時間軸、新增按鈕）** | `src/components/DayView.jsx` |
-| **月/週/日/任務切換 tab、回到今天** | `src/components/ViewTabs.jsx` |
+| **底部導覽列（月/週/日/任務）** | `src/components/ViewTabs.jsx` |
+| **header 的「今天」與設定按鈕、右下角浮動 ＋ 按鈕** | `src/App.jsx` |
 | **時間軸卡的共用渲染與點擊行為（紀錄卡/任務卡、分類標籤 chip、地點/同伴小字）** | `src/components/TimelineItems.jsx` |
 | **任務「標記完成」行內確認列（選完成日期 → 確認；任務列表與時間軸共用）** | `src/components/TaskCompleteRow.jsx` |
 | **新增/編輯紀錄表單（標題在最上面；計畫面：顏色/標籤/備註；回顧面：今天感覺/＃注記/分類標籤，可收合）** | `src/components/RecordForm.jsx` |
@@ -97,7 +98,8 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
 - **表單欄位**：每個 `<input>/<textarea>/<select>` 都要有 `aria-label`（或 `<label>` 包住）；只靠 placeholder 不算。
 - **viewport 不鎖縮放**（無 `maximum-scale` / `user-scalable=no`）；為了避免 iOS 聚焦輸入框自動放大，`base.css` 在觸控裝置把輸入框強制 16px。
 - **字級下限 12px**。
-- **`ViewTabs.jsx`**：月/週/日/任務切換按鈕用 `aria-pressed` 標示目前檢視。
+- **`ViewTabs.jsx`**：底部導覽列用 `aria-current="page"` 標示目前檢視。
+- **浮動 ＋ 按鈕（FAB）**：`App.jsx` 在日檢視（新增這一天的紀錄，`aria-label` 帶日期）與任務檢視（新增任務）顯示在右下角、導覽列上方；日檢視/任務列表底部留 96px 空間避免最後一張卡被蓋住。共用 toast 在這個 app 用 `--toast-offset:148px` 抬高，不會壓到 FAB。
 
 ## 每個檔案在幹嘛
 
@@ -189,8 +191,9 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
   跑 vitest，用本地時間建測資，不受執行環境時區影響）。
 
 ### 畫面（`src/components/`）
-- **`ViewTabs.jsx`** — 月/週/日/任務四個 tab + 「今天」按鈕（`view==='tasks'` 時不顯示，
-  任務列表沒有「翻頁到某一天」的概念）。
+- **`ViewTabs.jsx`** — **底部導覽列**：月/週/日/任務四個檢視（icon + 文字、`aria-current`，底部留 `safe-area`）。
+  2026-09-30 從頂端的分段按鈕移到底部，跟另外兩個 app 一致、單手拇指按得到。「今天」按鈕移到 `App.jsx`
+  header 右側（任務檢視不顯示，任務列表沒有「翻頁到某一天」的概念）。
 - **`TimelineItems.jsx`** — ⭐ **時間軸卡片的共用渲染**。之前 Week/Month/Day 各自複製
   一份渲染邏輯，連續好幾個需求都要三個檢視改三遍，所以抽出來：Week 的每日清單、Month
   的選中日摘要卡、Day 的當日清單**全部**直接用 `<TimelineItems>`。合併後只剩兩種項目：
@@ -217,7 +220,7 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
   （2026-09-30 以前整個日列都是「跳日檢視」，卡片本身不能點，跟另外兩個檢視不一致）。
 - **`DayView.jsx`** — 單日紀錄+任務合併時間軸（`buildDayTimeline` + `<TimelineItems>`，
   卡片版型與點擊行為見上），可切換前一天/後一天（‹ › 或左右滑動），日期旁邊顯示「今天」徽章，
-  底部固定一顆「＋ 新增紀錄」按鈕。
+  新增紀錄用右下角的浮動 ＋ 按鈕（在 `App.jsx`）。
 - **全天項目的呈現** — 跟計時項目**同一套卡片版型**，只差兩件事：**不顯示時間列**
   （不寫「全天」文字——使用者反饋在時間位置寫「全天」很生硬），**底色改稍深的淺藍**
   （`allDayCard`＝`THEME.primarySoft`、無邊框）跟白卡區分。淺藍底上的 chip 要換
@@ -323,7 +326,7 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
   （紅）/「今天到期」（主色）/「N 天後到期」（灰）。每筆有「✓ 標記完成」按鈕（展開
   `TaskCompleteRow`，確認後呼叫 `onComplete`，跟時間軸同一個流程）、「歷史紀錄 (N)」（有完成過才顯示，
   展開列出過去完成日期）、「刪除」（兩段確認）。`show_on_calendar=false` 的任務會標註
-  「不會顯示在行事曆」。「＋ 新增任務」跟日檢視的新增按鈕一樣固定在底部（拇指好按、位置一致）。
+  「不會顯示在行事曆」。新增任務是右下角的浮動 ＋ 按鈕（跟日檢視同一個位置）。
 - **`TaskCompleteRow.jsx`** — 「標記完成」的行內確認列：日期輸入（預設今天）+「確認完成」+「取消」，
   失敗時在下方顯示錯誤。任務列表與時間軸共用。
 - **`TaskForm.jsx`** — 新增/編輯任務：標題、重複間隔（數字 + 天/週/個月 三段式選擇器）、
@@ -341,7 +344,7 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
 
 | 動作 | 月檢視 | 週檢視 | 日檢視 | 任務檢視 |
 |---|---|---|---|---|
-| 新增紀錄 | 摘要卡底部「＋ 新增 M/D 的紀錄」 | 每天標題右邊「＋」 | 底部「＋ 新增紀錄」 | — |
+| 新增紀錄 | 摘要卡底部「＋ 新增 M/D 的紀錄」 | 每天標題右邊「＋」 | 右下角浮動 ＋ | —（右下角浮動 ＋ 是新增任務） |
 | 開紀錄編輯 | 點紀錄卡 | 點紀錄卡 | 點紀錄卡 | — |
 | 勾掉任務 | 點任務圓圈 | 點任務圓圈 | 點任務圓圈 | 「✓ 標記完成」 |
 | 開任務編輯 | 點任務標題 | 點任務標題 | 點任務標題 | 點任務標題 |

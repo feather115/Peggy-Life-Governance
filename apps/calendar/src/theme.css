@@ -6,6 +6,7 @@
   --primary:#3D5A80;--primary-strong:#2C4562;--primary-soft:#E3EAF4;--on-primary:#FFFFFF;--ring:#3D5A80;
   --success:#15803D;--success-bg:#DCFCE7;--danger:#B91C1C;--danger-bg:#FEE2E2;
   --scrim:rgba(31,45,66,.42);
+  --toast-offset:148px;
   --shadow-card:0 1px 3px rgba(31,45,66,.06),0 10px 26px rgba(31,45,66,.08);
   --shadow-nav:0 -4px 20px rgba(31,45,66,.08);
   --shadow-sheet:0 -12px 40px rgba(31,45,66,.22);

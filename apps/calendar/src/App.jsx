@@ -28,6 +28,15 @@ import TaskForm from './components/TaskForm.jsx';
 import { toast } from '@peggy-life/shared/feedback.jsx';
 import LoadingSkeleton, { LoadError } from '@peggy-life/shared/LoadingSkeleton.jsx';
 
+const S = {
+  header: { padding: '10px 12px 10px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: THEME.surface },
+  appTitle: { fontSize: 18, fontWeight: 700, color: THEME.textDark, margin: 0 },
+  headerActions: { display: 'flex', alignItems: 'center', gap: 4 },
+  todayBtn: { border: `1px solid ${THEME.border}`, background: THEME.surface, padding: '8px 14px', borderRadius: THEME.radiusSm, fontSize: 13, fontWeight: 700, color: THEME.primary, whiteSpace: 'nowrap' },
+  iconBtn: { border: 'none', background: 'none', color: THEME.textMuted, padding: 8, display: 'flex' },
+  fab: { position: 'absolute', right: 20, bottom: 'calc(78px + env(safe-area-inset-bottom))', zIndex: 5, width: 56, height: 56, borderRadius: '50%', border: 'none', background: THEME.primary, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 20px -6px rgba(31,45,66,.45)' },
+};
+
 export default function App({ session, onSignOut }) {
   const userId = session.user.id;
   const rec = useRecords(userId);
@@ -209,6 +218,7 @@ export default function App({ session, onSignOut }) {
   };
 
   const overlayNode = renderOverlay();
+  const fabDate = parseDateKey(rec.selectedDateKey);
 
   return (
     <div style={{
@@ -230,12 +240,13 @@ export default function App({ session, onSignOut }) {
         </div>
       ) : (
         <>
-          <header style={{ padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: THEME.surface }}>
-            <h1 style={{ fontSize: 18, fontWeight: 700, color: THEME.textDark, margin: 0 }}>TY Calendar</h1>
-            <button type="button" className="tap" onClick={() => setOverlay({ type: 'settings' })} aria-label="設定" style={{ border: 'none', background: 'none', color: THEME.textMuted, padding: 4 }}><Icon name="sliders" size={20} /></button>
+          <header style={S.header}>
+            <h1 style={S.appTitle}>TY Calendar</h1>
+            <div style={S.headerActions}>
+              {rec.view !== 'tasks' && <button type="button" onClick={rec.goToday} style={S.todayBtn}>今天</button>}
+              <button type="button" className="tap" onClick={() => setOverlay({ type: 'settings' })} aria-label="設定" style={S.iconBtn}><Icon name="sliders" size={20} /></button>
+            </div>
           </header>
-
-          <ViewTabs view={rec.view} onChange={rec.setView} onToday={rec.goToday} />
 
           <div className="ps" style={{ flex: 1, overflowY: 'auto', minHeight: 0, position: 'relative', background: THEME.bg }} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
             {rec.view === 'month' && (
@@ -277,7 +288,6 @@ export default function App({ session, onSignOut }) {
                 categories={diaryTags.categories}
                 tasksByDueDate={tasksHub.tasksByDueDate}
                 onEdit={editRecord}
-                onCreate={createRecord}
                 onEditTask={editTask}
                 onCompleteTask={completeTask}
               />
@@ -286,12 +296,25 @@ export default function App({ session, onSignOut }) {
               <TasksView
                 tasks={tasksHub.tasks}
                 onEdit={editTask}
-                onCreate={() => setOverlay({ type: 'task', mode: 'create' })}
                 onDelete={tasksHub.deleteTask}
                 onComplete={completeTask}
               />
             )}
           </div>
+
+          {/* 浮動新增按鈕：日檢視新增這一天的紀錄、任務檢視新增任務（月/週檢視在各自的日期卡上有新增按鈕） */}
+          {rec.view === 'day' && (
+            <button type="button" style={S.fab} onClick={() => createRecord(rec.selectedDateKey)} aria-label={`新增 ${fabDate.getMonth() + 1}/${fabDate.getDate()} 的紀錄`}>
+              <Icon name="plus" size={26} strokeWidth={2.5} />
+            </button>
+          )}
+          {rec.view === 'tasks' && (
+            <button type="button" style={S.fab} onClick={() => setOverlay({ type: 'task', mode: 'create' })} aria-label="新增任務">
+              <Icon name="plus" size={26} strokeWidth={2.5} />
+            </button>
+          )}
+
+          <ViewTabs view={rec.view} onChange={rec.setView} />
         </>
       )}
     </div>

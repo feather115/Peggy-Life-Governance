@@ -1,5 +1,5 @@
 // 任務列表：週期性家務事之類，標記完成會自動算下次到期日、保留完成歷史。
-// 新增按鈕跟日檢視一樣固定在底部；「標記完成」的確認列與時間軸共用 TaskCompleteRow。
+// 新增任務是 App.jsx 右下角的浮動 ＋ 按鈕（跟日檢視同一個位置）；「標記完成」的確認列與時間軸共用 TaskCompleteRow。
 import React, { useState } from 'react';
 import Icon from '@peggy-life/shared/Icon.jsx';
 import { THEME } from '../theme.js';
@@ -10,7 +10,7 @@ const S = {
   wrap: { display: 'flex', flexDirection: 'column', minHeight: '100%' },
   header: { padding: '14px 20px 10px' },
   title: { fontSize: 16, fontWeight: 700, color: THEME.textDark },
-  list: { flex: 1, padding: '4px 20px 16px', display: 'flex', flexDirection: 'column', gap: 10 },
+  list: { flex: 1, padding: '4px 20px 96px', display: 'flex', flexDirection: 'column', gap: 10 },
   card: { padding: 14, background: THEME.surfaceAlt2, borderRadius: THEME.radiusSm },
   cardTop: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 },
   cardMain: { flex: 1, minWidth: 0 },
@@ -24,8 +24,6 @@ const S = {
   history: { marginTop: 10, paddingTop: 10, borderTop: `1px solid ${THEME.border}`, display: 'flex', flexDirection: 'column', gap: 4 },
   historyItem: { fontSize: 12, color: THEME.textMuted },
   empty: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '60px 0', fontSize: 14, color: THEME.textFaint, textAlign: 'center' },
-  footer: { position: 'sticky', bottom: 0, padding: '14px 20px calc(14px + env(safe-area-inset-bottom))', background: THEME.bg },
-  addBtn: { width: '100%', border: 'none', padding: 13, borderRadius: THEME.radiusSm, background: THEME.primary, color: '#fff', fontSize: 15, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 },
 };
 
 function fmtMD(dateKey) {
@@ -33,7 +31,7 @@ function fmtMD(dateKey) {
   return `${d.getMonth() + 1}/${d.getDate()}`;
 }
 
-export default function TasksView({ tasks, onEdit, onCreate, onDelete, onComplete }) {
+export default function TasksView({ tasks, onEdit, onDelete, onComplete }) {
   const [completingId, setCompletingId] = useState(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const [expandedId, setExpandedId] = useState(null);
@@ -114,10 +112,6 @@ export default function TasksView({ tasks, onEdit, onCreate, onDelete, onComplet
             </div>
           );
         })}
-      </div>
-
-      <div style={S.footer}>
-        <button type="button" style={S.addBtn} onClick={onCreate}><Icon name="plus" size={18} />新增任務</button>
       </div>
     </div>
   );
