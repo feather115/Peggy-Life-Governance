@@ -45,6 +45,7 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
   `view` 本身（月/週/日/任務）是 `useRecords()` 管理的狀態，任務列表雖然邏輯上跟
   `useTasks()` 有關，但「目前在看哪個 tab」統一由 `useRecords.view` 控制，不要另外開一份 view state。
 - **回到 app 自動更新**：`App.jsx` 用 `@peggy-life/shared/useRefreshOnReturn`，切到別的 app（LINE 聊天、鎖螢幕）**超過 30 秒**再回來，就呼叫資料中樞的 `refresh()` 靜默重抓。refresh 不動 `loaded`（畫面不會閃回載入中），失敗只 console.warn、保留舊資料。四個中樞（`useRecords`/`useDiaryTags`/`useTasks`/`useOptions`）各有 `refresh()`；`useDiaryTags.refresh` 抓到空的就不動（預設分類種子只在初次載入做）。
+- **提示與確認**：不用瀏覽器原生 `alert`/`confirm`（在 LINE 內建瀏覽器會帶網址當標題、卡住畫面），一律用 `@peggy-life/shared/feedback.jsx` 的 `toast(message, { tone, action })` 與 `await confirmDialog({ title, message, confirmText, danger })`。`main.jsx` 在 `<Root />` 旁邊掛了 `<FeedbackHost />`。確認框焦點預設在「取消」、Esc/返回鍵/點背景都是取消。紀錄表單的未儲存防呆、選項庫永久刪除、刪除分類細節都用 `confirmDialog`；勾掉任務後的「已完成…下次到期」也改用共用 toast（原本是 App.jsx 自己的）。
 - **表單錯誤訊息**（紀錄/任務/選項庫）：`role="alert"`，出現時用 `utils.js` 的 `scrollIntoViewOnMount` 捲到畫面中間（`key={error}` 讓訊息改變時重新捲動）。不能用 smooth 捲動——錯誤框插在頁面上方時瀏覽器的捲動錨定會把動畫中斷，實測會停在錯誤框上面看不到。
 
 ---
@@ -233,7 +234,7 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
   **回顧區可收合**：已有回顧內容、或這筆 `start_at` 在現在之前（過期＝可回顧）時預設展開，
   否則收起成一顆「＋ 補上心情 / 回顧」按鈕——對應「行程過了再補心情」的心智。
   「儲存」固定在 header 右側、返回鍵在左上，**未儲存變更防呆**：mount 記欄位 JSON 快照，
-  返回時有差異先 `window.confirm`。**手機返回鍵走同一個防呆**（`useBackClose(true, handleCancel)`；
+  返回時有差異先跳 `confirmDialog`（「繼續編輯 / 離開」）。**手機返回鍵走同一個防呆**（`useBackClose(true, handleCancel)`；
   確認框按取消會留在表單，儲存中則不理會返回）。`CategoryTagCard` 是內部元件：分類卡右上角一顆小「＋」
   展開輸入框新增標籤（Enter/按鈕送出；名字若已在別分類存在不建重複、直接選起來並提示）；
   標籤 chip 列表下方，若這分類有標籤被選中就列出「標籤名稱 + 細節輸入框」（`tag_details`），

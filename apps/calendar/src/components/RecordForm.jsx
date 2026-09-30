@@ -10,6 +10,7 @@ import { EVENT_COLORS, THEME } from '../theme.js';
 import TimeSelect from './TimeSelect.jsx';
 import { PeopleSelect } from './HistoryFields.jsx';
 import Icon from '@peggy-life/shared/Icon.jsx';
+import { confirmDialog } from '@peggy-life/shared/feedback.jsx';
 
 const S = {
   header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', background: THEME.surface, borderBottom: `1px solid ${THEME.border}` },
@@ -250,8 +251,8 @@ export default function RecordForm({ record, defaultDateKey, allRecords = [], ca
   // 未儲存變更防呆：記住第一次 render 的欄位快照，按返回時有差異就先問一聲
   const snapshot = JSON.stringify({ title, color, tags, description, locations, people, allDay, startValue, endValue, note, hashtags, diaryTags, tagDetails });
   const [initialSnapshot] = useState(snapshot);
-  const handleCancel = () => {
-    if (snapshot !== initialSnapshot && !window.confirm('內容還沒儲存，確定要離開嗎？')) return;
+  const handleCancel = async () => {
+    if (snapshot !== initialSnapshot && !(await confirmDialog({ title: '內容還沒儲存', message: '確定要離開嗎？這次的修改不會保留。', confirmText: '離開', cancelText: '繼續編輯', danger: true }))) return;
     onCancel();
   };
   // 手機返回鍵 = 左上角返回（同樣有未儲存防呆）；儲存中不理會

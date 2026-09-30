@@ -4,9 +4,10 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import '@peggy-life/shared/base.css';
 import './theme.css';
+import { FeedbackHost } from '@peggy-life/shared/feedback.jsx';
 import Root from './Root.jsx';
 import { initLiff } from './liff.js';
 
 initLiff().finally(() => {
-  createRoot(document.getElementById('root')).render(<Root />);
+  createRoot(document.getElementById('root')).render(<><Root /><FeedbackHost /></>);
 });

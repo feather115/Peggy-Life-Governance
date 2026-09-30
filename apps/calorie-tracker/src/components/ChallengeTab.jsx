@@ -5,6 +5,7 @@ import { dateLabel, alertError, readableOn } from '../utils.js';
 import ChallengeCreateSheet from './ChallengeCreateSheet.jsx';
 import WeightChart from './WeightChart.jsx';
 import Icon from '@peggy-life/shared/Icon.jsx';
+import { confirmDialog } from '@peggy-life/shared/feedback.jsx';
 
 const MEDAL_RGBS = ['192,192,192', '255,215,0', '205,127,50']; // 2/1/3
 const MEDAL_EMOJIS = ['🥈', '🥇', '🥉'];
@@ -287,20 +288,20 @@ function ChallengeView({ challenge, myUserId, onSubmitEntry, onRemoveEntry, onUp
           )}
           {isCreator && isActive && (
             <button onClick={async () => {
-              if (!confirm('確定結束這個挑戰嗎？冠軍會被自動決定。')) return;
+              if (!(await confirmDialog({ title: '結束這個挑戰？', message: '冠軍會依目前成績自動決定。', confirmText: '結束挑戰' }))) return;
               const winner = lb.find(x => x.kgDiff !== null);
               await onEnd(challenge.id, winner ? winner.userId : null).catch((e) => alertError('結束挑戰', e));
             }} style={primaryBtn}>結束挑戰</button>
           )}
           {isCreator && (
             <button onClick={async () => {
-              if (!confirm('完全刪除這個挑戰？所有人的記錄都會消失，無法復原。')) return;
+              if (!(await confirmDialog({ title: '完全刪除這個挑戰？', message: '所有人的記錄都會消失，無法復原。', confirmText: '刪除', danger: true }))) return;
               await onDelete(challenge.id).catch((e) => alertError('刪除挑戰', e));
             }} style={dangerBtn}>刪除挑戰</button>
           )}
           {!isCreator && (
             <button onClick={async () => {
-              if (!confirm('退出這個挑戰嗎？你的記錄會被刪除。')) return;
+              if (!(await confirmDialog({ title: '退出這個挑戰？', message: '你在這個挑戰的記錄會被刪除。', confirmText: '退出', danger: true }))) return;
               await onLeave(challenge.id).catch((e) => alertError('退出挑戰', e));
             }} style={dangerBtn}>退出挑戰</button>
           )}
@@ -575,7 +576,7 @@ function EntryForm({ challenge, myUserId, onSubmit, onRemove, onSetWeights }) {
                   <span style={{ fontSize: 16, fontWeight: 900, color: diffColor(e.kgDiff) }}>{fmtKgDiff(e.kgDiff)}</span>
                   <div style={{ display: 'flex', gap: 4 }}>
                     <button aria-label="編輯紀錄" className="tap" onClick={() => startEdit(e)} style={{ border: 'none', background: 'var(--surface)', color: 'var(--text-muted)', width: 26, height: 26, borderRadius: '50%', cursor: 'pointer', fontSize: 13 }}><Icon name="pencil" size={14} /></button>
-                    <button aria-label="刪除紀錄" className="tap" onClick={async () => { if (confirm('刪除這筆紀錄？')) { if (editingWeek === e.weekLabel) cancelEdit(); await onRemove(e.id).catch((err) => alertError('刪除紀錄', err)); } }} style={{ border: 'none', background: 'var(--surface)', color: 'var(--text-faint)', width: 26, height: 26, borderRadius: '50%', cursor: 'pointer', fontSize: 15, lineHeight: 1 }}><Icon name="x" size={14} /></button>
+                    <button aria-label="刪除紀錄" className="tap" onClick={async () => { if (await confirmDialog({ title: '刪除這筆體重紀錄？', confirmText: '刪除', danger: true })) { if (editingWeek === e.weekLabel) cancelEdit(); await onRemove(e.id).catch((err) => alertError('刪除紀錄', err)); } }} style={{ border: 'none', background: 'var(--surface)', color: 'var(--text-faint)', width: 26, height: 26, borderRadius: '50%', cursor: 'pointer', fontSize: 15, lineHeight: 1 }}><Icon name="x" size={14} /></button>
                   </div>
                 </div>
               ))}

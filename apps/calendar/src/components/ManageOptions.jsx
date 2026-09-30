@@ -5,6 +5,7 @@ import React, { useMemo, useState } from 'react';
 import { THEME } from '../theme.js';
 import Icon from '@peggy-life/shared/Icon.jsx';
 import { scrollIntoViewOnMount } from '../utils.js';
+import { confirmDialog } from '@peggy-life/shared/feedback.jsx';
 
 const S = {
   header: { display: 'flex', alignItems: 'center', gap: 12, padding: 16, background: THEME.surface, borderBottom: `1px solid ${THEME.border}` },
@@ -129,8 +130,8 @@ export default function ManageOptions({ opts, records, renameField, onClose }) {
 
   const toggleArchive = (option) => run(() => opts.setArchived(option.id, !option.archived));
 
-  const remove = (option) => {
-    if (!window.confirm(`確定要永久刪除「${option.name}」嗎？`)) return;
+  const remove = async (option) => {
+    if (!(await confirmDialog({ title: `永久刪除「${option.name}」？`, message: '刪除後無法復原。', confirmText: '刪除', danger: true }))) return;
     run(() => opts.removeOption(option.id));
   };
 

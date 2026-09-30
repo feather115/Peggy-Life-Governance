@@ -6,6 +6,7 @@ import { alertError, readableOn } from '../utils.js';
 import { supabase } from '../supabase.js';
 import { canLinkLine, useLineLinked } from '../liff.js';
 import Icon from '@peggy-life/shared/Icon.jsx';
+import { confirmDialog } from '@peggy-life/shared/feedback.jsx';
 
 const TAG_COLORS = ['#E8A13C', '#D9544F', '#EC4899', '#8B5CF6', 'var(--info)', '#5FA8D3', '#14B8A6', 'var(--primary)'];
 
@@ -62,7 +63,7 @@ export default function SettingsTab({ app, session, onSignOut }) {
   };
   const doClear = async () => {
     if (!confirmClear) { setConfirmClear(true); return; }
-    if (!confirm('⚠️ 警告：確定要清除所有的飲食紀錄與自訂食物嗎？這個動作將會刪除所有歷史資料，且無法復原！')) {
+    if (!(await confirmDialog({ title: '清除所有資料？', message: '所有飲食紀錄與自訂食物都會刪除，無法復原。', confirmText: '全部清除', danger: true }))) {
       setConfirmClear(false);
       return;
     }
@@ -161,7 +162,7 @@ function TagGroup({ title, titleColor, chipBg, chipColor, delColor, tags, onDele
             <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: onColor ? (mt.color || chipBg) : chipBg, borderRadius: 12, padding: '5px 6px 5px 8px' }}>
               {onColor && <button onClick={() => setEditingColorId(editingColorId === mt.id ? null : mt.id)} title="選擇標籤顏色" style={{ width: 18, height: 18, borderRadius: '50%', border: '2px solid rgba(255,255,255,.9)', background: mt.color || '#E8A13C', cursor: 'pointer', padding: 0, boxShadow: '0 1px 4px rgba(0,0,0,.15)' }} />}
               <span style={{ fontSize: 13, fontWeight: 800, color: onColor ? readableOn(mt.color || chipBg) : chipColor }}>{mt.label}</span>
-              <button aria-label={`刪除標籤「${mt.label}」`} className="tap" onClick={() => { if (confirm(`刪除標籤「${mt.label}」？`)) onDelete(mt.id); }} style={{ border: 'none', background: 'none', color: onColor ? readableOn(mt.color || chipBg) : delColor, cursor: 'pointer', fontSize: 15, lineHeight: 1, padding: 0, width: 18, height: 18, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="x" size={14} /></button>
+              <button aria-label={`刪除標籤「${mt.label}」`} className="tap" onClick={async () => { if (await confirmDialog({ title: `刪除標籤「${mt.label}」？`, message: '過去紀錄上的這個標籤也會一起消失。', confirmText: '刪除', danger: true })) onDelete(mt.id); }} style={{ border: 'none', background: 'none', color: onColor ? readableOn(mt.color || chipBg) : delColor, cursor: 'pointer', fontSize: 15, lineHeight: 1, padding: 0, width: 18, height: 18, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="x" size={14} /></button>
             </div>
             {onColor && editingColorId === mt.id && (
               <ColorSwatches
@@ -175,7 +176,7 @@ function TagGroup({ title, titleColor, chipBg, chipColor, delColor, tags, onDele
       {setColor && <ColorSwatches current={color} onPick={setColor} compact />}
       <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
         <input aria-label={placeholder} value={input} onChange={(e) => setInput(e.target.value)} placeholder={placeholder} style={{ flex: 1, border: 'none', background: 'var(--surface-alt)', borderRadius: 12, padding: '10px 12px', fontSize: 16, fontWeight: 700, color: 'var(--text)' }} />
-        <button aria-label="新增" className="tap" onClick={onAdd} style={{ border: 'none', background: addBg, color: '#fff', fontWeight: 900, fontSize: 14, padding: '10px 16px', borderRadius: 12, cursor: 'pointer', whiteSpace: 'nowrap' }}><Icon name="plus" size={14} /></button>
+        <button aria-label="新增" className="tap" onClick={onAdd} style={{ border: 'none', background: addBg, color: readableOn(addBg), fontWeight: 900, fontSize: 14, padding: '10px 16px', borderRadius: 12, cursor: 'pointer', whiteSpace: 'nowrap' }}><Icon name="plus" size={14} /></button>
       </div>
     </div>
   );

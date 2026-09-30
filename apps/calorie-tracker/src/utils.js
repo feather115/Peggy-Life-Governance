@@ -3,6 +3,7 @@
 //  No React or Supabase dependencies, safe to import anywhere
 // ============================================================
 
+import { toast } from '@peggy-life/shared/feedback.jsx';
 import { DOW } from './constants.js';
 
 // Today's date key, format YYYY-MM-DD (maps to day_records.date in the database)
@@ -61,7 +62,7 @@ export function readableOn(color) {
   return onDark > onWhite ? '#111' : '#fff';
 }
 
-// 寫入失敗時的共用提示：不要默默失敗（畫面看起來只會像「沒反應」）
+// 寫入失敗時的共用提示：不要默默失敗（畫面看起來只會像「沒反應」）。用 app 內的紅色 toast，不用原生 alert。
 export function alertError(action, e) {
-  alert(`${action}失敗：${e?.message || '請稍後再試'}`);
+  toast(`${action}失敗：${e?.message || '請稍後再試'}`, { tone: 'error' });
 }

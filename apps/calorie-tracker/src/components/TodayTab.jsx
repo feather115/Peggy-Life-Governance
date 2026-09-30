@@ -5,9 +5,10 @@ import { todayKey, dkFrom, parseDk, dateLabel, greeting, pct, emptyDay, alertErr
 import { dayTotals, ringInfo } from '../selectors.js';
 import EditMealItemSheet from './EditMealItemSheet.jsx';
 import Icon from '@peggy-life/shared/Icon.jsx';
+import { toast } from '@peggy-life/shared/feedback.jsx';
 
 export default function TodayTab({ app, selectedDate, setSelectedDate, onOpenSheet, onOpenAdvanced }) {
-  const { days, goalCal, goalP, goalC, goalF, fastingTagDefs, otherTagDefs, removeMeal, editMeal, displayName } = app;
+  const { days, goalCal, goalP, goalC, goalF, fastingTagDefs, otherTagDefs, addMeal, removeMeal, editMeal, displayName } = app;
   const [editing, setEditing] = useState(null); // { mealKey, mealLabel, item } | null
 
   const isTod = selectedDate === todayKey();
@@ -39,6 +40,24 @@ export default function TodayTab({ app, selectedDate, setSelectedDate, onOpenShe
     { label: '碳水', t: Math.round(cur.c), g: goalC, color: '#E8A13C' },
     { label: '脂肪', t: Math.round(cur.f), g: goalF, color: '#5FA8D3' },
   ];
+
+  // 刪除不先問，直接刪、給 5 秒「復原」（比每次都跳確認框順；復原＝把同一筆重新加回去，會排到該餐最後）
+  const deleteItem = async (meal, it) => {
+    const date = selectedDate;
+    try {
+      await removeMeal(date, meal.key, it.id);
+    } catch (e) {
+      alertError('刪除', e);
+      return;
+    }
+    toast(`已刪除「${it.name}」`, {
+      action: {
+        label: '復原',
+        onClick: () => addMeal(date, meal.key, { name: it.name, brand: it.brand, unit: it.unit, cal: it.cal, p: it.p, c: it.c, f: it.f })
+          .catch((e) => alertError('復原', e)),
+      },
+    });
+  };
 
   const prevDay = () => { const d = parseDk(selectedDate); d.setDate(d.getDate() - 1); setSelectedDate(dkFrom(d)); };
   const nextDay = () => { const d = parseDk(selectedDate); d.setDate(d.getDate() + 1); if (d > new Date()) return; setSelectedDate(dkFrom(d)); };
@@ -126,7 +145,7 @@ export default function TodayTab({ app, selectedDate, setSelectedDate, onOpenShe
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
                 <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--text)' }}>{Math.round(Number(it.cal) || 0)}</span>
                 <button aria-label="編輯這筆餐點" className="tap" onClick={() => setEditing({ mealKey: meal.key, mealLabel: meal.label, item: it })} style={{ border: 'none', background: 'var(--bg)', color: 'var(--text-muted)', width: 25, height: 25, borderRadius: '50%', cursor: 'pointer', fontSize: 12 }}><Icon name="pencil" size={14} /></button>
-                <button aria-label="刪除這筆餐點" className="tap" onClick={() => { if (confirm(`刪除「${it.name}」？`)) removeMeal(selectedDate, meal.key, it.id).catch((e) => alertError('刪除', e)); }} style={{ border: 'none', background: 'var(--bg)', color: 'var(--text-faint)', width: 25, height: 25, borderRadius: '50%', cursor: 'pointer', fontSize: 15, lineHeight: 1 }}><Icon name="x" size={14} /></button>
+                <button aria-label="刪除這筆餐點" className="tap" onClick={() => deleteItem(meal, it)} style={{ border: 'none', background: 'var(--bg)', color: 'var(--text-faint)', width: 25, height: 25, borderRadius: '50%', cursor: 'pointer', fontSize: 15, lineHeight: 1 }}><Icon name="x" size={14} /></button>
               </div>
             </div>
           ))}

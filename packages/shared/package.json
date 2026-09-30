@@ -12,7 +12,8 @@
     "./Icon.jsx": "./src/Icon.jsx",
     "./base.css": "./src/base.css",
     "./useBackClose": "./src/useBackClose.js",
-    "./useRefreshOnReturn": "./src/useRefreshOnReturn.js"
+    "./useRefreshOnReturn": "./src/useRefreshOnReturn.js",
+    "./feedback.jsx": "./src/feedback.jsx"
   },
   "peerDependencies": {
     "@line/liff": "^2.29.0",

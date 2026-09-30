@@ -6,6 +6,7 @@ import React, { useState } from 'react';
 import { THEME } from '../theme.js';
 import { findTagOwner } from '../useDiaryTags.js';
 import Icon from '@peggy-life/shared/Icon.jsx';
+import { confirmDialog } from '@peggy-life/shared/feedback.jsx';
 
 const S = {
   header: { display: 'flex', alignItems: 'center', gap: 12, padding: 16, background: THEME.surface, borderBottom: `1px solid ${THEME.border}` },
@@ -110,8 +111,8 @@ function DetailHistory({ tag, details, onRename, onRemove }) {
               className="btn-reset tap"
               style={S.subRemove}
               aria-label={`刪除細節「${detail}」`}
-              onClick={() => {
-                if (window.confirm(`確定刪除「${detail}」？所有使用這個細節的歷史紀錄都會同步清除。`)) onRemove(detail);
+              onClick={async () => {
+                if (await confirmDialog({ title: `刪除細節「${detail}」？`, message: '所有使用這個細節的歷史紀錄都會同步清除。', confirmText: '刪除', danger: true })) onRemove(detail);
               }}
             >×</button>
           </div>

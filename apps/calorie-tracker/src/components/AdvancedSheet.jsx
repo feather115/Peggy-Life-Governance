@@ -4,6 +4,7 @@ import { dateLabel, emptyDay, alertError, readableOn } from '../utils.js';
 import { dayTotals } from '../selectors.js';
 import { MEALS_DEF } from '../constants.js';
 import Sheet from './Sheet.jsx';
+import { confirmDialog } from '@peggy-life/shared/feedback.jsx';
 
 export default function AdvancedSheet({ app, selectedDate, onClose }) {
   const { days, fastingTagDefs, otherTagDefs, toggleTag, saveDayNote, goalCal, goalP, goalC, goalF } = app;
@@ -21,7 +22,8 @@ export default function AdvancedSheet({ app, selectedDate, onClose }) {
       try {
         await saveDayNote(selectedDate, note);
       } catch (e) {
-        if (!confirm(`摘要儲存失敗（${e.message || '請稍後再試'}），仍要關閉嗎？這次的修改不會保留。`)) return;
+        const leave = await confirmDialog({ title: '摘要儲存失敗', message: `${e.message || '請稍後再試'}\n仍要關閉嗎？這次的修改不會保留。`, confirmText: '仍要關閉', cancelText: '留下來重試', danger: true });
+        if (!leave) return;
       }
     }
     onClose();

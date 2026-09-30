@@ -5,7 +5,7 @@
 //   | { type: 'task', mode: 'create' } | { type: 'task', mode: 'edit', task }
 //   | { type: 'settings' } | { type: 'manageTags' } | { type: 'manageOptions' }
 // 之後要加新畫面就加一個 type，不要再疊三元運算子鏈。
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import Icon from '@peggy-life/shared/Icon.jsx';
 import { useBackClose } from '@peggy-life/shared/useBackClose';
 import { useRefreshOnReturn } from '@peggy-life/shared/useRefreshOnReturn';
@@ -25,6 +25,7 @@ import ManageTags from './components/ManageTags.jsx';
 import ManageOptions from './components/ManageOptions.jsx';
 import Settings from './components/Settings.jsx';
 import TaskForm from './components/TaskForm.jsx';
+import { toast } from '@peggy-life/shared/feedback.jsx';
 
 function Centered({ children, color = THEME.primary }) {
   return (
@@ -54,14 +55,6 @@ export default function App({ session, onSignOut }) {
     if (overlay?.type === 'manageTags' || overlay?.type === 'manageOptions') setOverlay({ type: 'settings' });
     else closeOverlay();
   });
-
-  // 操作完成的短暫提示（例如在時間軸上勾掉任務後，任務會移到下次到期日，不提示會以為它不見了）
-  const [toast, setToast] = useState('');
-  useEffect(() => {
-    if (!toast) return undefined;
-    const id = setTimeout(() => setToast(''), 2600);
-    return () => clearTimeout(id);
-  }, [toast]);
 
   // 月/週/日檢視左右滑動翻頁（跟 ‹ › 按鈕同一個 shiftPeriod）；垂直捲動、在輸入框上滑動都不算
   const touchStart = useRef(null);
@@ -144,7 +137,8 @@ export default function App({ session, onSignOut }) {
   const completeTask = async (task, doneDate) => {
     const updated = await tasksHub.confirmComplete(task.id, doneDate);
     const next = updated && parseDateKey(updated.next_due);
-    setToast(`已完成「${task.title}」${next ? `，下次到期 ${next.getMonth() + 1}/${next.getDate()}` : ''}`);
+    // 任務會移到下次到期日、從今天的時間軸消失，不提示會以為它不見了
+    toast(`已完成「${task.title}」${next ? `，下次到期 ${next.getMonth() + 1}/${next.getDate()}` : ''}`);
   };
 
   const renderOverlay = () => {
@@ -307,11 +301,6 @@ export default function App({ session, onSignOut }) {
           </div>
         </>
       )}
-      <div aria-live="polite" style={{ position: 'absolute', left: 16, right: 16, bottom: 'calc(84px + env(safe-area-inset-bottom))', display: 'flex', justifyContent: 'center', pointerEvents: 'none', zIndex: 20 }}>
-        {toast && (
-          <div style={{ background: THEME.textDark, color: '#fff', fontSize: 14, fontWeight: 600, padding: '10px 16px', borderRadius: 999, boxShadow: THEME.shadow }}>{toast}</div>
-        )}
-      </div>
     </div>
   );
 }

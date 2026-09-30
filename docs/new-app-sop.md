@@ -235,6 +235,8 @@ Supabase ⇄ db.js ⇄ use<Domain>.js ⇄ Root.jsx/App.jsx ⇄ components/*
     要保留原本外觀就加 `className="btn-reset"` 清掉按鈕預設樣式
   - 覆蓋畫面 / bottom sheet 要呼叫 `useBackClose(open, onBack)`（`@peggy-life/shared/useBackClose`），
     手機返回鍵才會先關閉畫面而不是直接離開 app；刪除類操作要先確認
+  - 不要用原生 `alert`/`confirm`：`main.jsx` 掛 `<FeedbackHost />`，用 `toast()` / `await confirmDialog()`
+    （`@peggy-life/shared/feedback.jsx`）；能復原的刪除優先用「先刪 + toast 復原」，比每次跳確認框順
 - **App 外殼固定模式**（三個 app 一致，抄任一個的 `App.jsx`）：
   - 最外層 `maxWidth: 520` 置中（手機優先，桌機看起來像一台手機）
   - `height: '100vh'` + `maxHeight: '100dvh'` + `overflow: 'hidden'`，只讓中間內容區

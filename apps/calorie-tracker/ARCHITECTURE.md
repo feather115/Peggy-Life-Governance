@@ -88,7 +88,8 @@ Supabase ⇄ db.js ⇄ useAppData.js ⇄ App.jsx ⇄ components/*
 - **字級下限 12px**。
 - **`Sheet.jsx`**：`role="dialog" aria-modal`，開啟時焦點移進面板、`Esc` 關閉（多層時只關最上層）、關閉後焦點還給原觸發元素；新增面板要傳 `label`。**手機返回鍵也會關閉面板**（`@peggy-life/shared/useBackClose`），不會直接離開 app。
 - **自選顏色上的文字**：記錄原因標籤、挑戰成員頭像的字色用 `utils.js` 的 `readableOn(color)`，依底色亮度挑深字（`#111`）或白字（淺黃 `#E8A13C` 配白字只有 2.2:1）。超標提示「已超過 X kcal」底色用 `--danger`（原本 `#D9544F` 配白字只有 3.9:1）。
-- **刪除都要確認**：今日頁的餐點 ×、食物庫的自訂食物 ×、設定頁的標籤 × 都先 `confirm()`（原本一點就刪，很容易誤觸）。今天時「後一天」按鈕是 `disabled`。
+- **提示與確認**：不用瀏覽器原生 `alert`/`confirm`（在 LINE 內建瀏覽器會帶網址當標題、卡住畫面），一律用 `@peggy-life/shared/feedback.jsx` 的 `toast(message, { tone, action })` 與 `await confirmDialog({ title, message, confirmText, danger })`。`main.jsx` 在 `<Root />` 旁邊掛了 `<FeedbackHost />`。確認框焦點預設在「取消」、Esc/返回鍵/點背景都是取消。`utils.js` 的 `alertError()` 現在是紅色 toast。
+- **刪除**：今日頁的餐點 × **直接刪、給 5 秒「復原」**（復原＝用同樣內容重新 `addMeal`，會排到該餐最後、`food_ref` 不保留——目前沒有地方讀它）。自訂食物、標籤、挑戰的刪除重建會換新 id、斷掉引用，所以維持先用 `confirmDialog` 確認。食物庫面板的成功/失敗提示也改用共用 toast（原本是面板內自己的 toast）。今天時「後一天」按鈕是 `disabled`。
 - **`TabBar.jsx`**：`<nav>` + icon + 文字，`aria-current="page"`，底部留 `env(safe-area-inset-bottom)`（取代原本的假 home-indicator 橫條）。
 
 ## 每個檔案在幹嘛

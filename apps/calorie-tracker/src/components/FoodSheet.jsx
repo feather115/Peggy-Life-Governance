@@ -1,8 +1,9 @@
 // Food library bottom sheet: select built-in/custom food to add to meal, or switch to the form to add new custom foods.
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { FOODS, MEALS_DEF } from '../constants.js';
 import Sheet from './Sheet.jsx';
 import Icon from '@peggy-life/shared/Icon.jsx';
+import { confirmDialog, toast } from '@peggy-life/shared/feedback.jsx';
 
 export default function FoodSheet({ app, selectedDate, mealKey, onClose }) {
   const { customFoods, foodUsage, addMeal, addCustomFood, removeCustomFood, updateCustomFood, importFoods } = app;
@@ -18,16 +19,8 @@ export default function FoodSheet({ app, selectedDate, mealKey, onClose }) {
   const [jsonSuccess, setJsonSuccess] = useState(0);
   const [qtyMap, setQtyMap] = useState({}); // Currently selected servings for each food, defaults to 1
   const [search, setSearch] = useState('');
-  const [toast, setToast] = useState(null); // { message, isError } | null
-  const toastTimerRef = useRef(null);
-
-  const showToast = (message, isError = false) => {
-    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-    setToast({ message, isError });
-    toastTimerRef.current = setTimeout(() => {
-      setToast(null);
-    }, isError ? 3000 : 1500);
-  };
+  // 成功/失敗提示改用三個 app 共用的 toast（畫面底部）
+  const showToast = (message, isError = false) => toast(isError ? message : `✓ ${message}`, { tone: isError ? 'error' : 'default' });
 
   const mealLabel = MEALS_DEF.find((m) => m.key === mealKey)?.label || '';
 
@@ -193,18 +186,6 @@ export default function FoodSheet({ app, selectedDate, mealKey, onClose }) {
 
   return (
     <Sheet label="食物庫" onBackdrop={onClose} height="min(76vh, 720px)" zIndex={10}>
-      {toast && (
-        <div style={{
-          position: 'absolute', top: 58, left: '50%', transform: 'translateX(-50%)',
-          background: toast.isError ? '#D9544F' : 'var(--primary)', color: '#fff',
-          padding: '8px 16px', borderRadius: 20, zIndex: 100,
-          fontWeight: 800, fontSize: 13, boxShadow: '0 8px 24px rgba(46,139,94,.3)',
-          pointerEvents: 'none', display: 'flex', alignItems: 'center', gap: 6
-        }}>
-          <span>{toast.isError ? '!' : '✓'}</span>
-          <span>{toast.message}</span>
-        </div>
-      )}
       <div style={{ padding: '8px 20px 6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ fontSize: 18, fontWeight: 900, color: 'var(--text)' }}>加入{mealLabel}</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -253,7 +234,7 @@ export default function FoodSheet({ app, selectedDate, mealKey, onClose }) {
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 'none' }}>
                   {fo.custom && <button aria-label="編輯食物" className="tap" onClick={() => startEdit(fo)} style={{ border: 'none', background: 'var(--surface)', color: 'var(--text-muted)', width: 28, height: 28, borderRadius: '50%', cursor: 'pointer', fontSize: 13 }}><Icon name="pencil" size={14} /></button>}
-                  {fo.custom && <button aria-label="刪除食物" className="tap" onClick={() => confirm(`刪除自訂食物「${fo.name}」？`) && removeCustomFood(fo.id).catch((e) => showToast(`刪除失敗：${e.message || '請稍後再試'}`, true))} style={{ border: 'none', background: 'var(--surface)', color: 'var(--text-faint)', width: 28, height: 28, borderRadius: '50%', cursor: 'pointer', fontSize: 14, lineHeight: 1 }}><Icon name="x" size={14} /></button>}
+                  {fo.custom && <button aria-label="刪除食物" className="tap" onClick={async () => (await confirmDialog({ title: `刪除自訂食物「${fo.name}」？`, message: '已經記錄過的餐點不受影響。', confirmText: '刪除', danger: true })) && removeCustomFood(fo.id).catch((e) => showToast(`刪除失敗：${e.message || '請稍後再試'}`, true))} style={{ border: 'none', background: 'var(--surface)', color: 'var(--text-faint)', width: 28, height: 28, borderRadius: '50%', cursor: 'pointer', fontSize: 14, lineHeight: 1 }}><Icon name="x" size={14} /></button>}
                   <button aria-label={`加入 ${fo.name}`} className="tap" onClick={() => pick(fo)} disabled={isNaN(getQtyNum(fo.id)) || getQtyNum(fo.id) <= 0}
                     style={{ border: 'none', background: (isNaN(getQtyNum(fo.id)) || getQtyNum(fo.id) <= 0) ? 'var(--text-faint)' : 'var(--primary)', color: '#fff', width: 34, height: 34, borderRadius: '50%', cursor: (isNaN(getQtyNum(fo.id)) || getQtyNum(fo.id) <= 0) ? 'not-allowed' : 'pointer', fontSize: 18, lineHeight: 1, fontWeight: 700 }}><Icon name="plus" size={14} /></button>
                 </div>
