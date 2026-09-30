@@ -168,7 +168,8 @@ Supabase ⇄ db.js ⇄ useRecords.js / useDiaryTags.js / useTasks.js / useOption
 
 ### 無狀態工具
 - **`src/theme.js`** — 視覺常數集中地：`THEME`（配色/圓角/陰影）、`EVENT_COLORS`
-  （事件顏色的 7 個預設色；紀錄也可以存任意自訂色碼，見 RecordForm）、`categoryAccentForTag(tag, categories)`（日記標籤依所屬分類
+  （事件顏色的 7 個預設色，2026-09-30 換成清新色系：天空藍/湖水綠/嫩芽綠/蜂蜜黃/蜜桃橘/薰衣草/櫻花粉，
+  亮度一致、白底對比 ≥3:1 讓月曆小圓點看得清楚；紀錄也可以存任意自訂色碼，見 RecordForm）、`categoryAccentForTag(tag, categories)`（日記標籤依所屬分類
   在清單裡的順序固定分配一個強調色，不是存在資料庫裡的欄位）。
 - **`src/utils.js`** — 日期字串轉換（`dateKeyFrom`/`parseDateKey`）、月曆格線
   （`getMonthDays`）、週的 7 天（`getWeekDays`）、紀錄分組（`groupRecordsByDate`，依
@@ -529,6 +530,7 @@ createAppSupabase({ schema: 'calendar' })
 | `2026-07-10_diary_title.sql` | `diary_entries` 加 `title text` 欄位（日記標題，配合新版當日排版） |
 | **`2026-07-15_merge_diary_into_events.sql`** | **事件與日記合併**：`events` 加 `note`/`locations`/`diary_tags`/`tag_details`/`hashtags`、`title` 放寬可空、舊 `location` 併進 `locations`；把 `diary_entries` 整批以 Asia/Taipei 換算時間 `insert into events`；尾端（註解、需手動）把 `diary_entries` 改名成 `diary_entries_bak`、drop 舊 `location` 欄位 |
 | `2026-09-29_drop_diary_entries_bak.sql` | 清理：確認 `diary_entries_bak` 每一筆在 `events` 都找得到對應後刪掉備份表（對不上就報錯不刪；表不存在就略過） |
+| `2026-09-30_refresh_event_colors.sql` | **選擇性**：預設 7 色換新後，把舊紀錄用的舊預設色依位置換成新色（自訂色與沒設顏色的不動）。不跑的話舊紀錄維持舊色、編輯時顯示成「自訂」 |
 
 > 新環境依序跑上表（`schema.sql` 起、按日期）到最後一支（全新環境沒有備份表，最後一支會自動略過）。
 > `2026-07-02_diary.sql` 之後那串 `diary_*` migration 仍要照跑（合併 migration 假設
